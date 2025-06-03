@@ -23,6 +23,7 @@ pub struct ForCommand {
     do_script: Option<Script>,
     redirects: Vec<Redirect>,
     force_fork: bool,
+    lineno: usize,
 }
 
 impl Command for ForCommand {
@@ -47,6 +48,7 @@ impl Command for ForCommand {
 
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn get_lineno(&mut self) -> usize { self.lineno }
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
@@ -233,6 +235,7 @@ impl ForCommand {
             return Ok(None);
         }
         let mut ans = Self::default();
+        ans.lineno = feeder.lineno;
         ans.text = feeder.consume(3);
 
         if Self::eat_name(feeder, &mut ans, core) {

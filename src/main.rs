@@ -44,12 +44,11 @@ fn read_rc_file(core: &mut ShellCore) {
     let rc_file = dir + "/.sushrc";
 
     if file_check::is_regular_file(&rc_file) {
-        core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]);
+        let _ = core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]);
     }
 }
 
-fn configure(args: &Vec<String>) -> ShellCore {
-    let mut core = ShellCore::new();
+fn configure(args: &Vec<String>, core: &mut ShellCore) {
     let mut parameters = vec![args[0].clone()];
     let mut options = vec![];
 
@@ -63,43 +62,64 @@ fn configure(args: &Vec<String>) -> ShellCore {
         }
     }
 
-    if let Err(e) = parameter::set_positions(&mut core, &parameters) {
-        e.print(&mut core);
+    if let Err(e) = parameter::set_positions(core, &parameters) {
+        e.print(core);
         core.db.exit_status = 2;
-        exit::normal(&mut core);
+        exit::normal(core);
     }
-    if let Err(e) = option::set_options(&mut core, &options) {
-        e.print(&mut core);
+    if let Err(e) = option::set_options(core, &mut options) {
+        e.print(core);
         core.db.exit_status = 2;
-        exit::normal(&mut core);
+        exit::normal(core);
     }
-
-    core
+    core.configure();
 }
 
 fn main() {
     let mut args = arg::dissolve_options(&env::args().collect());
+    let command = args[0].clone();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
 
-    let compat_bash = arg::consume_option("-b", &mut args);
-    let c_parts = arg::consume_with_subsequents("-c", &mut args);
-    if c_parts.len() != 0 {
-        run_and_exit_c_option(&args, &c_parts, compat_bash);
+    let mut options = vec![];
+    loop {
+        if let Some(opt) = arg::consume_with_next_arg("-o", &mut args) {
+            options.push(opt);
+        }else{
+            break;
+        }
     }
 
-    let mut core = configure(&args);
+    let mut core = ShellCore::new();
+
+    let compat_bash = arg::consume_option("-b", &mut args);
     if compat_bash {
         core.compat_bash = true;
         core.db.flags += "b";
     }
+
+    for opt in options {
+        if let Err(e) = core.options.set(&opt, true) {
+            e.print(&mut core);
+            process::exit(2);
+        }
+    }
+
+    let c_parts = arg::consume_with_subsequents("-c", &mut args);
+    if c_parts.len() != 0 {
+        core.configure_c_mode();
+
+        run_and_exit_c_option(&args, &c_parts, &mut core);
+    }
+
+    configure(&args, &mut core);
     signal::run_signal_check(&mut core);
 
     if core.script_name == "-" {
         read_rc_file(&mut core);
     }
-    main_loop(&mut core);
+    main_loop(&mut core, &command);
 }
 
 fn set_history(core: &mut ShellCore, s: &str) {
@@ -121,13 +141,16 @@ fn show_message() {
     eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
 }
 
-fn main_loop(core: &mut ShellCore) {
+fn main_loop(core: &mut ShellCore, command: &String) {
     let mut feeder = Feeder::new("");
     feeder.main_feeder = true;
 
     if core.script_name != "-" {
         core.db.flags.retain(|f| f != 'i');
-        feeder.set_file(&core.script_name);
+        if let Err(_) = feeder.set_file(&core.script_name) {
+            eprintln!("{}: {}: No such file or directory", command, &core.script_name); 
+            process::exit(2);
+        }
     }
 
     if core.db.flags.contains('i') {
@@ -135,75 +158,44 @@ fn main_loop(core: &mut ShellCore) {
     }
 
     loop {
-        if let Err(e) = core.jobtable_check_status() {
-            e.print(core);
-        }
-        core.jobtable_print_status_change();
-
-        match feeder.feed_line(core) {
-            Ok(()) => {}, 
-            Err(InputError::Interrupt) => {
-                signal::input_interrupt_check(&mut feeder, core);
-                signal::check_trap(core);
-                continue;
-            },
-            _ => break,
+        match feed_script(&mut feeder, core) {
+            (true, false) => {},
+            (false, true) => break,
+            _ => parse_and_exec(&mut feeder, core, true),
         }
 
-        //core.word_eval_error = false;
-        core.sigint.store(false, Relaxed);
-        match Script::parse(&mut feeder, core, false){
-            Ok(Some(mut s)) => {
-                if let Err(e) = s.exec(core) {
-                    e.print(core);
-                }
-                set_history(core, &s.get_text());
-            },
-            Err(e) => {
-                e.print(core);
-                feeder.consume(feeder.len());
-                feeder.nest = vec![("".to_string(), vec![])];
-            },
-            _ => {
-                feeder.consume(feeder.len());
-                feeder.nest = vec![("".to_string(), vec![])];
-            },
+        if core.options.query("onecmd") {
+            break;
         }
-        core.sigint.store(false, Relaxed);
     }
     core.write_history_to_file();
     exit::normal(core);
 }
 
-fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash: bool) {
+fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut ShellCore) {
     if c_parts.len() < 2 {
         println!("{}: -c: option requires an argument", &args[0]);
         process::exit(2);                
     }
 
-    let mut core = ShellCore::new();
-    if compat_bash {
-        core.compat_bash = true;
-        core.db.flags += "b";
-    }
     let parameters = if c_parts.len() > 2 {
         c_parts[2..].to_vec()
     }else{
         vec![args[0].clone()]
     };
 
-    if let Err(e) = parameter::set_positions(&mut core, &parameters) {
-        e.print(&mut core);
+    if let Err(e) = parameter::set_positions(core, &parameters) {
+        e.print(core);
         core.db.exit_status = 2;
-        exit::normal(&mut core);
+        exit::normal(core);
     }
-    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
-        e.print(&mut core);
+    if let Err(e) = option::set_options(core, &mut args[1..].to_vec()) {
+        e.print(core);
         core.db.exit_status = 2;
-        exit::normal(&mut core);
+        exit::normal(core);
     }
 
-    signal::run_signal_check(&mut core);
+    signal::run_signal_check(core);
     core.db.flags.retain(|f| f != 'i');
 
     core.db.flags += "c";
@@ -211,15 +203,60 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, compat_bash:
         eprintln!("{}", &c_parts[1]);
     }
 
-    let mut feeder = Feeder::new(&c_parts[1]);
-    match Script::parse(&mut feeder, &mut core, false){
+    let mut feeder = Feeder::new_c_mode(c_parts[1].clone());
+    feeder.main_feeder = true;
+
+    loop {
+        match feed_script(&mut feeder, core) {
+            (true, false) => {},
+            (false, true) => break,
+            _ => parse_and_exec(&mut feeder, core, false),
+        }
+    }
+    exit::normal(core);
+}
+
+
+fn feed_script(feeder: &mut Feeder, core: &mut ShellCore) -> (bool, bool) {
+    if let Err(e) = core.jobtable_check_status() {          //(continue, break)
+        e.print(core);
+    }
+
+    if core.db.flags.contains('i') && core.options.query("monitor") {
+        core.jobtable_print_status_change();
+    }
+
+    match feeder.feed_line(core) {
+        Ok(()) => (false, false),
+        Err(InputError::Interrupt) => {
+            signal::input_interrupt_check(feeder, core);
+            signal::check_trap(core);
+            (true, false)
+        },
+        _ => (false, true),
+    }
+}
+
+fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
+    core.sigint.store(false, Relaxed);
+    match Script::parse(feeder, core, false){
         Ok(Some(mut s)) => {
-            if let Err(e) = s.exec(&mut core) {
-                e.print(&mut core);
+            if let Err(e) = s.exec(core) {
+                e.print(core);
+            }
+            if set_hist {
+                set_history(core, &s.get_text());
             }
         },
-        Err(e) => e.print(&mut core),
-        _ => {},
+        Err(e) => {
+            e.print(core);
+            feeder.consume(feeder.len());
+            feeder.nest = vec![("".to_string(), vec![])];
+        },
+        _ => {
+            feeder.consume(feeder.len());
+            feeder.nest = vec![("".to_string(), vec![])];
+        },
     }
-    exit::normal(&mut core)
+    core.sigint.store(false, Relaxed);
 }

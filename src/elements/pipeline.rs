@@ -49,7 +49,14 @@ impl Pipeline {
             prev = p.recv;
         }
 
-        match self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid)) {
+        let lastpipe = (! core.db.flags.contains('m')) && core.shopts.query("lastpipe");
+        let mut lastp = Pipe::end(prev, pgid, lastpipe);
+        let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
+        if lastpipe {
+            lastp.restore_lastpipe();
+        }
+
+        match result {
             Ok(pid) => pids.push(pid),
             Err(e) => return (pids, self.exclamation, self.time, Some(e)),
         }
@@ -75,6 +82,22 @@ impl Pipeline {
             command.read_heredoc(feeder, core)?;
         }
         Ok(())
+    }
+
+    pub fn get_one_line_text(&self) -> String {
+        let mut ans = String::new();
+
+        if self.exclamation {
+            ans += "! ";
+        }
+
+        for (i, c) in self.commands.iter().enumerate() {
+            ans += &c.get_one_line_text();
+            if i < self.pipes.len() {
+                ans += &self.pipes[i].text;
+            }
+        }
+        ans
     }
 
     fn eat_exclamation(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {

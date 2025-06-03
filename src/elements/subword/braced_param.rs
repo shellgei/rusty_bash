@@ -6,26 +6,21 @@ mod parse;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
-use crate::elements::subscript::Subscript;
+use crate::elements::substitution::subscript::Subscript;
+use crate::elements::substitution::variable::Variable;
 use crate::utils;
 use crate::utils::splitter;
 use crate::error::exec::ExecError;
 use self::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
-pub struct Param {
-    name: String,
-    subscript: Option<Subscript>,
-}
-
-#[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     text: String,
     array: Option<Vec<String>>,
-    param: Param,
+    param: Variable,
     optional_operation: Option<Box<dyn OptionalOperation>>,
     unknown: String,
-    is_array: bool,
+    treat_as_array: bool,
     num: bool,
     indirect: bool,
 }
@@ -37,7 +32,7 @@ impl Subword for BracedParam {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.check()?;
 
-        if self.indirect && self.has_aster_or_atmark_subscript() { // ${!name[@]}, ${!name[*]}
+        if self.indirect && self.param.is_var_array() { // ${!name[@]}, ${!name[*]}
             self.index_replace(core)?;
             return Ok(());
         }
@@ -47,9 +42,7 @@ impl Subword for BracedParam {
             self.check()?;
         }
 
-        if self.has_aster_or_atmark_subscript()
-        || self.param.name == "@" 
-        || self.param.name == "*" {
+        if self.param.is_array() {
             if let Some(s) = self.optional_operation.as_mut() {
                 if s.has_array_replace() {
                     let mut arr = vec![];
@@ -60,7 +53,7 @@ impl Subword for BracedParam {
             }
         }
 
-        match self.param.subscript.is_some() {
+        match self.param.index.is_some() {
             true  => self.subscript_operation(core),
             false => self.non_subscript_operation(core),
         }
@@ -68,8 +61,8 @@ impl Subword for BracedParam {
 
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
-    fn is_array(&self) -> bool {self.is_array && ! self.num}
-    fn get_array_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
+    fn is_array(&self) -> bool {self.treat_as_array }
+    fn get_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
 
     fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         match self.optional_operation.as_mut() {
@@ -103,14 +96,6 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn has_aster_or_atmark_subscript(&self) -> bool {
-        if self.param.subscript.is_none() {
-            return false;
-        }
-        let sub = &self.param.subscript.as_ref().unwrap().text;
-        sub == "[*]" || sub == "[@]"
-    }
-
     fn check(&mut self) -> Result<(), ExecError> {
         if self.param.name.is_empty() || ! utils::is_param(&self.param.name) {
             return Err(ExecError::BadSubstitution(self.text.clone()));
@@ -120,17 +105,15 @@ impl BracedParam {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
 
-        if self.param.subscript.is_some() {
-            if self.param.name == "@" || self.param.name == "*" {
-                return Err(ExecError::BadSubstitution(self.param.name.clone()));
-            }
+        if self.param.index.is_some() && self.param.is_pos_param_array() {
+            return Err(ExecError::BadSubstitution(self.param.name.clone()));
         }
         Ok(())
     }
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.optional_operation.is_some() {
-            let msg = core.db.get_array_all(&self.param.name).join(" ");
+            let msg = core.db.get_vec(&self.param.name, true)?.join(" ");
             return Err(ExecError::InvalidName(msg));
         }
 
@@ -155,7 +138,7 @@ impl BracedParam {
         let mut sw = self.clone();
         sw.indirect = false;
         sw.unknown = String::new();
-        sw.is_array = false;
+        sw.treat_as_array = false;
         sw.num = false;
 
         sw.substitute(core)?;
@@ -165,13 +148,13 @@ impl BracedParam {
             if let Ok(Some(mut bp)) = BracedParam::parse(&mut feeder, core) {
                 bp.substitute(core)?;
                 self.param.name = bp.param.name;
-                self.param.subscript = bp.param.subscript;
+                self.param.index = bp.param.index;
             }else{
                 return Err(ExecError::InvalidName(sw.text.clone()));
             }
         }else{
             self.param.name = sw.text.clone();
-            self.param.subscript = None;
+            self.param.index = None;
         }
 
         if ! utils::is_param(&self.param.name) {
@@ -187,7 +170,7 @@ impl BracedParam {
 
             let value = core.db.get_param(&self.param.name).unwrap_or_default();
             self.text = match self.num {
-                true  => value.chars().count().to_string(),
+                true  => core.db.get_len(&self.param.name)?.to_string(),//value.chars().count().to_string(),
                 false => value.to_string(),
             };
     
@@ -196,39 +179,33 @@ impl BracedParam {
     }
 
     fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let index = self.param.subscript.clone().unwrap().eval(core, &self.param.name)?;
+        let index = self.param.index.clone().unwrap().eval(core, &self.param.name)?;
 
-        if core.db.has_value(&self.param.name)
-        && ! core.db.is_array(&self.param.name)
-        && ! core.db.is_assoc(&self.param.name) {
-            let param = core.db.get_param(&self.param.name);
+        if self.num {
+            self.text = core.db.get_elem_len(&self.param.name, &index)?.to_string();
+            return Ok(());
+        }
+
+        if core.db.is_single(&self.param.name) {
+            let param = core.db.get_param(&self.param.name)?;
             self.text = match index.as_str() { //case: a=aaa; echo ${a[@]}; (output: aaa)
-                "@" | "*" | "0" => param.unwrap_or("".to_string()),
+                "@" | "*" | "0" => param,//.unwrap_or("".to_string()),
                  _ => "".to_string(),
             };
             return Ok(());
         }
 
-        let arr = core.db.get_array_all(&self.param.name);
-        if self.num && (index.as_str() == "@" || index.as_str() == "*" ) {
-            self.text = arr.len().to_string();
-            self.array = Some(arr);
-            return Ok(());
-        }
         if index.as_str() == "@" {
             self.atmark_operation(core)
         }else{
-            self.text = core.db.get_array_elem(&self.param.name, &index).unwrap();
-            if self.num {
-                self.text = self.text.chars().count().to_string();
-            }
-            self.text = self.optional_operation(self.text.clone(), core)?;
+            let tmp = core.db.get_elem(&self.param.name, &index)?;
+            self.text = self.optional_operation(tmp, core)?;
             Ok(())
         }
     }
 
     fn atmark_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut arr = core.db.get_array_all(&self.param.name);
+        let mut arr = core.db.get_vec(&self.param.name, true)?;
         self.array = Some(arr.clone());
         if self.num {
             self.text = arr.len().to_string();
@@ -237,7 +214,7 @@ impl BracedParam {
 
         self.text = match self.num {
             true  => core.db.len(&self.param.name).to_string(),
-            false => core.db.get_array_elem(&self.param.name, "@").unwrap(),
+            false => core.db.get_elem(&self.param.name, "@").unwrap(),
         };
 
         if arr.len() <= 1 || self.has_value_check() {

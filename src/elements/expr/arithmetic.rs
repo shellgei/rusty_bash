@@ -7,6 +7,7 @@ mod parser;
 mod rev_polish;
 
 use crate::{Feeder, ShellCore};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use self::calculator::calculate;
@@ -29,7 +30,9 @@ impl ArithmeticExpr {
             match e {
                 ArithElem::Word(w, inc) => {
                     if w.text.contains("'") {
-                        return Err(ExecError::OperandExpected(w.text.clone()));
+                        let err = ArithError::OperandExpected(w.text.clone());
+                        let arith_txt = self.text.trim_start().to_string();
+                        return Err(ExecError::ArithError(arith_txt, err));
                     }
                     let text = w.eval_as_value(core)?;
                     let word = ArithElem::Word( Word::from(&text), *inc);
@@ -56,14 +59,30 @@ impl ArithmeticExpr {
         let mut cp = self.clone();
         cp.eval_doller(core)?;
 
-        match cp.eval_elems(core, true)? {
-            ArithElem::Integer(n) => self.ans_to_string(n),
+        let ans = match cp.eval_elems(core, true) {
+            Ok(a) => a, 
+            Err(ExecError::ArithError(_, a)) => {
+                let text = cp.text.trim_start().to_string();
+                return Err(ExecError::ArithError(text, a))
+            },
+            Err(e) => return Err(e),
+        };
+
+        match ans {
+            ArithElem::Integer(n) => {
+                match self.ans_to_string(n) {
+                    Ok(ans) => Ok(ans),
+                    Err(a) => return Err(ExecError::ArithError(cp.text, a)),
+                }
+            },
             ArithElem::Float(f)   => Ok(f.to_string()),
-            e => return Err(ExecError::OperandExpected(e.to_string())),
+            e => return Err(ExecError::ArithError(cp.text,
+                            ArithError::OperandExpected(e.to_string()).into())),
         }
     }
 
-    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore)
+    -> Result<String, ExecError> {
         self.eval_doller(core)?;
         let mut ans = String::new();
 
@@ -104,7 +123,7 @@ impl ArithmeticExpr {
 
     pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<ArithElem, ExecError> {
         if self.elements.is_empty() && ! permit_empty {
-            return Err(ExecError::OperandExpected("\")\"".to_string()));
+            return Err(ArithError::OperandExpected("\")\"".to_string()).into());
         }
         let es = match self.decompose_increments() {
             Ok(data)     => data, 
@@ -114,7 +133,7 @@ impl ArithmeticExpr {
         calculate(&es, core)
     }
 
-    fn ans_to_string(&self, n: i128) -> Result<String, ExecError> {
+    fn ans_to_string(&self, n: i128) -> Result<String, ArithError> {
         let base_str = self.output_base.clone();
 
         if base_str == "10" {
@@ -124,12 +143,12 @@ impl ArithmeticExpr {
         let base = match base_str.parse::<i128>() {
             Ok(b) => b,
             _     => {
-                return Err(ExecError::InvalidBase(base_str));
+                return Err(ArithError::InvalidBase(base_str));
             },
         };
 
         if base <= 1 || base > 64 {
-            return Err(ExecError::InvalidBase(base_str));
+            return Err(ArithError::InvalidBase(base_str));
         }
 
         let mut tmp = n.abs();
@@ -217,9 +236,9 @@ impl ArithmeticExpr {
             };
         }
 
-        match pre_increment {
-            1  => Err(ExecError::OperandExpected("++".to_string())),
-            -1 => Err(ExecError::OperandExpected("--".to_string())),
+        match pre_increment { //↓treated as + or - in error messages
+            1  => Err(ArithError::OperandExpected("+".to_string()).into()),
+            -1 => Err(ArithError::OperandExpected("-".to_string()).into()),
             _  => Ok(ans),
         }
     }

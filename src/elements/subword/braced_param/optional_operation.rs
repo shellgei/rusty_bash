@@ -11,7 +11,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::parse::ParseError;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
-use super::Param;
+use super::Variable;
 use self::case_conv::CaseConv;
 use self::replace::Replace;
 use self::remove::Remove;
@@ -21,12 +21,12 @@ use core::fmt;
 use core::fmt::Debug;
 
 pub trait OptionalOperation {
-    fn exec(&mut self, _: &Param, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
+    fn exec(&mut self, _: &Variable, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
     fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
     fn get_text(&self) -> String;
     fn has_array_replace(&self) -> bool {false}
     fn is_value_check(&self) -> bool {false}
-    fn set_array(&mut self, _: &Param, _: &mut Vec<String>,
+    fn set_array(&mut self, _: &Variable, _: &mut Vec<String>,
                  _: &mut String, _: &mut ShellCore) -> Result<(), ExecError> {
         Ok(())
     }

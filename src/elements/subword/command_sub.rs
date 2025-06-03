@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{proc_ctrl, Script, ShellCore, Feeder};
-use crate::elements::{command, Pipe};
+use crate::{proc_ctrl, ShellCore, Feeder};
+use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::Subword;
@@ -19,7 +19,6 @@ use std::sync::atomic::Ordering::Relaxed;
 pub struct CommandSubstitution {
     pub text: String,
     command: ParenCommand,
-    old_style: bool,
 }
 
 impl Subword for CommandSubstitution {
@@ -33,6 +32,7 @@ impl Subword for CommandSubstitution {
         let result = self.read(pipe.recv, core);
         proc_ctrl::wait_pipeline(core, vec![pid], false, false);
         result?;
+        self.text = self.text.trim_end_matches("\n").to_string();
         Ok(())
     }
 }
@@ -72,27 +72,52 @@ impl CommandSubstitution {
         Ok(())
     }
 
-    pub fn parse_old_style(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if feeder.nest.last().unwrap().0 == "`" {
-            return Ok(None);
-        }
+    pub fn parse_old_style(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("`") {
             return Ok(None);
         }
-        let mut script = Some(Script::default());
 
-        if command::eat_inner_script(feeder, core, "`", vec!["`"], &mut script, false)? {
-            let mut ans = Self::default();
-            ans.old_style = true;
-            ans.text.push_str("`");
-            ans.text.push_str(&script.as_ref().expect("").get_text());
-            ans.text.push_str(&feeder.consume(1));
-            ans.command = ParenCommand::new(&ans.text, script);
+        let mut ans = Self::default();
+        ans.text = feeder.consume(1);
+        let mut esc = false;
+        while esc || ! feeder.starts_with("`") {
+            if feeder.is_empty() {
+                feeder.feed_additional_line(core)?;
+                continue;
+            }
 
-            Ok(Some(ans))
-        }else{
-            Ok(None)
+            let len = feeder.scanner_char();
+            let c = feeder.consume(len);
+
+            if esc && (c == "$" || c == "\\" || c == "`") {
+                ans.text.pop();
+            }
+
+            ans.text += &c;
+
+            if ! esc && c == "\\" {
+                esc = true;
+                continue;
+            }
+
+            esc = false;
         }
+
+        ans.text += &feeder.consume(1);
+        let mut paren = ans.text.clone();
+        paren.remove(0);
+        paren.insert(0, '(');
+        paren.pop();
+        paren.push(')');
+
+        let mut f = Feeder::new(&paren);
+        if let Some(s) = ParenCommand::parse(&mut f, core, false)? {
+            ans.command = s;
+            return Ok(Some(ans));
+        }
+
+        Ok(None)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

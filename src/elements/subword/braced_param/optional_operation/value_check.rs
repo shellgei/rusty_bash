@@ -4,9 +4,10 @@
 use crate::{exit, Feeder, ShellCore};
 use crate::elements::subword::Subword;
 use crate::elements::word::{Word, WordMode};
+use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::super::{Subscript, Param};
+use super::super::{Subscript, Variable};
 use super::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
@@ -19,8 +20,8 @@ pub struct ValueCheck {
 
 impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.set(&param.name, &param.subscript, text, core)
+    fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.set(&param.name, &param.index, text, core)
     }
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
@@ -55,7 +56,10 @@ impl ValueCheck {
     }
 
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let v = self.alternative_value.clone().ok_or(ExecError::OperandExpected("".to_string()))?;
+        let v = match &self.alternative_value {
+            Some(av) => av.clone(), 
+            None => return Err(ArithError::OperandExpected("".to_string()).into()),
+        };
         self.alternative_value = Some(v.tilde_and_dollar_expansion(core)? );
         let value = v.eval_as_value(core)?;//.ok_or(ExecError::OperandExpected("".to_string()))?;
         Ok(value.clone())
@@ -71,7 +75,7 @@ impl ValueCheck {
 
     fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> { 
         if core.db.is_array(&name) {
-            if core.db.get_array_all(&name).is_empty() {
+            if core.db.get_vec(&name, false)?.is_empty() {
                 self.alternative_value = None;
                 return Ok(text.clone());
             }

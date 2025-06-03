@@ -12,7 +12,7 @@ use crate::elements::subword::filler::FillerSubword;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::utils::exit;
+use crate::utils::{exit, file_check};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::os::fd::FromRawFd;
@@ -46,12 +46,29 @@ impl Redirect {
             return Err(ExecError::AmbiguousRedirect(self.right.text.clone()));
         }
 
+        if core.db.flags.contains('r') {
+            match self.symbol.as_str() {
+                ">" | ">|" | "<>" | ">&" | "&>" | ">>" => {
+                    let msg = format!("{}: restricted: cannot redirect output", &args[0]);
+                    return Err(ExecError::Other(msg));
+                },
+                _ => {},
+            }
+        }
+
         self.right.text = args[0].clone();
+
+        if core.options.query("noclobber") 
+        && (self.symbol.as_str() == ">" || self.symbol.as_str() == ">>")
+        && file_check::exists(&self.right.text) {
+            return Err(ExecError::CannotOverwriteExistingFile(self.right.text.clone()));
+        }
 
         match self.symbol.as_str() {
             "<" => self.redirect_simple_input(restore), // < 
             ">" => self.redirect_simple_output(restore), // > 
             ">&" => self.redirect_output_fd(restore), // >&2
+            "<&" => self.redirect_input_fd(restore), // <&2
             ">>" => self.redirect_append(restore),
             "&>" => self.redirect_both_output(restore),
             _ => exit::internal(" (Unknown redirect symbol)"),
@@ -100,11 +117,37 @@ impl Redirect {
     }
 
     fn redirect_output_fd(&mut self, restore: bool) -> Result<(), ExecError> {
+        if self.right.text == "-" {
+            self.set_left_fd(1);
+            io::close(self.left_fd, "cannot close");
+            return Ok(());
+        }
+
         let right_fd = match self.right.text.parse::<RawFd>() {
             Ok(n) => n,
             _     => return Err(ExecError::AmbiguousRedirect(self.right.text.clone())),
         };
         self.set_left_fd(1);
+
+        if restore {
+            self.left_backup = io::backup(self.left_fd);
+        }
+
+        io::share(right_fd, self.left_fd)
+    }
+
+    fn redirect_input_fd(&mut self, restore: bool) -> Result<(), ExecError> {
+        if self.right.text == "-" {
+            self.set_left_fd(0);
+            io::close(self.left_fd, "cannot close");
+            return Ok(());
+        }
+
+        let right_fd = match self.right.text.parse::<RawFd>() {
+            Ok(n) => n,
+            _     => return Err(ExecError::AmbiguousRedirect(self.right.text.clone())),
+        };
+        self.set_left_fd(0);
 
         if restore {
             self.left_backup = io::backup(self.left_fd);
@@ -196,7 +239,11 @@ impl Redirect {
 
     pub fn restore(&mut self) {
         if self.left_backup >= 0 && self.left_fd >= 0 {
-            io::replace(self.left_backup, self.left_fd);
+            if self.left_backup == self.left_fd {
+                io::close(self.left_fd, "cannot close");
+            }else{
+                io::replace(self.left_backup, self.left_fd);
+            }
         }
         if self.extra_left_backup >= 0 {
             io::replace(self.extra_left_backup, 2);

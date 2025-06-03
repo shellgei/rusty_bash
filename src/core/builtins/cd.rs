@@ -7,6 +7,10 @@ use crate::arg;
 use crate::utils::file;
 
 pub fn cd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if core.db.flags.contains('r') {
+        return super::error_exit(1, &args[0], "restricted", core);
+    }
+
     let _ = arg::consume_option("--", args);
 
     if args.len() > 2 {

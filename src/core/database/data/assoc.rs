@@ -35,9 +35,10 @@ impl Data for AssocData {
                 formatted += &format!("[{}]={} ", k, &ansi);
             }
         }
+        /*
         if formatted.ends_with(" ") {
             formatted.pop();
-        }
+        }*/
         formatted += ")";
         formatted
     }
@@ -46,6 +47,16 @@ impl Data for AssocData {
 
     fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         self.body.insert(key.to_string(), value.to_string());
+        self.last = Some(value.to_string());
+        Ok(())
+    }
+
+    fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+        if let Some(v) = self.body.get(key) {
+            self.body.insert(key.to_string(), v.to_owned() + value);
+        }else{
+            self.body.insert(key.to_string(), value.to_string());
+        }
         self.last = Some(value.to_string());
         Ok(())
     }
@@ -72,30 +83,56 @@ impl Data for AssocData {
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 
+    fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(self.len());
+        }
+
+        let s = self.body.get(key).unwrap_or(&"".to_string()).clone();
+
+        Ok(s.chars().count())
+    }
+
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
         Ok(self.keys().clone())
     }
 
-    fn get_all_as_array(&mut self) -> Result<Vec<String>, ExecError> {
+    fn get_all_as_array(&mut self, skip_none: bool) -> Result<Vec<String>, ExecError> {
         if self.body.is_empty() {
             return Ok(vec![]);
         }
         
         let mut keys = self.keys();
         keys.sort();
-        //let max = *keys.iter().max().unwrap() as usize;
         let mut ans = vec![];
         for i in keys {
             match self.body.get(&i) {
                 Some(s) => ans.push(s.clone()),
-                None => ans.push("".to_string()),
+                None => if ! skip_none {
+                    ans.push("".to_string());
+                },
             }
         }
         Ok(ans)
     }
+
+    fn get_vec_from(&mut self, _: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
+        self.get_all_as_array(skip_non)
+    }
+
+    fn remove_elem(&mut self, key: &str) -> Result<(), ExecError> {
+        if key == "*" || key == "@" {
+            self.body.clear();
+            return Ok(());
+        }
+
+        self.body.remove(key);
+        return Ok(());
+    }
 }
 
 impl AssocData {
+    /*
     pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), ExecError> {
         db_layer.insert(name.to_string(), Box::new(AssocData::default()));
         Ok(())
@@ -105,6 +142,14 @@ impl AssocData {
                      key: &String, val: &String) -> Result<(), ExecError> {
         match db_layer.get_mut(name) {
             Some(v) => v.set_as_assoc(key, val), 
+            _ => Err(ExecError::Other("TODO".to_string())),
+        }
+    }*/
+
+    pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
+                     key: &String, val: &String) -> Result<(), ExecError> {
+        match db_layer.get_mut(name) {
+            Some(v) => v.append_to_assoc_elem(key, val), 
             _ => Err(ExecError::Other("TODO".to_string())),
         }
     }

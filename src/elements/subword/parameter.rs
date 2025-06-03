@@ -25,7 +25,7 @@ impl Subword for Parameter {
             self.array = Some(core.db.get_position_params());
         }
 
-        self.text = core.db.get_param(&self.text[1..]).unwrap_or(String::new());
+        self.text = core.db.get_param(&self.text[1..])?;
         Ok(())
     }
 

@@ -135,6 +135,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-f" => compgen_f(core, &mut args, false),
         "-h" => compgen_h(core, &mut args), //history (sush original)
         "-j" => compgen_j(core, &mut args),
+        "-o" => compgen_o(core, &mut args),
         "-u" => compgen_u(core, &mut args),
         "-v" => compgen_v(core, &mut args),
         "-A function" => compgen_function(core, &mut args),

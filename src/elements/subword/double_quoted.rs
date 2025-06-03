@@ -37,7 +37,6 @@ impl Subword for DoubleQuoted {
             }
             self.text += sw.get_text();
         }
-        //dbg!("{:?}", &self.text);
         Ok(())
     }
 
@@ -110,7 +109,7 @@ impl DoubleQuoted {
                 "$@" | "${@}" => core.db.get_position_params(),
                 _ => {
                     sw.substitute(core)?;
-                    sw.get_array_elem()
+                    sw.get_elem()
                 },
             };
 
@@ -130,6 +129,7 @@ impl DoubleQuoted {
             = if let Some(a) = BracedParam::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Arithmetic::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
+            //else if let Some(a) = CommandSubstitutionOld::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
             else if let Some(a) = Self::parse_escaped_char(feeder) { Box::new(a) }
             else if let Some(a) = Self::parse_name(feeder, core) { Box::new(a) }

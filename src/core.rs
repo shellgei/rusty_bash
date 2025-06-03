@@ -10,6 +10,8 @@ pub mod jobtable;
 pub mod options;
 
 use crate::{error, proc_ctrl, signal};
+use crate::error::exec::ExecError;
+use crate::elements::substitution::Substitution;
 use self::database::DataBase;
 use self::options::Options;
 use self::completion::{Completion, CompletionEntry};
@@ -48,8 +50,10 @@ pub struct ShellCore {
     pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
+    pub substitution_builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>, &mut Vec<Substitution>) -> i32>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
+    pub traplist: Vec<(i32, String)>,
     pub is_subshell: bool,
     pub source_function_level: i32,
     pub source_files: Vec<String>,
@@ -74,50 +78,69 @@ pub struct ShellCore {
 }
 
 impl ShellCore {
-    pub fn new() -> ShellCore {
-        let mut core = ShellCore{
+    pub fn configure(&mut self) {
+        self.init_current_directory();
+        self.set_initial_parameters();
+        self.set_builtins();
+        signal::ignore(Signal::SIGPIPE);
+        signal::ignore(Signal::SIGTSTP);
+
+        let _ = self.db.set_param("PS4", "+ ", None);
+
+        if unistd::isatty(0) == Ok(true) && self.script_name == "-" {
+            self.db.flags += "himH";
+            let _ = self.db.set_param("PS1", "🍣 ", None);
+            let _ = self.db.set_param("PS2", "> ", None);
+            let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
+                .expect("sush(fatal): Can't allocate fd for tty FD");
+            self.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+        }else{
+            self.db.flags += "h";
+        }
+
+        let home = self.db.get_param("HOME").unwrap_or(String::new()).to_string();
+        let _ = self.db.set_param("HISTFILE", &(home + "/.sush_history"), None);
+        let _ = self.db.set_param("HISTFILESIZE", "2000", None);
+
+        match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+            Ok("1") => {
+                if self.db.flags.contains('i') {
+                    eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
+                }
+                self.compat_bash = true;
+            },
+            _ => {},
+        };
+    }
+
+    pub fn new() -> Self {
+        ShellCore{
             db: DataBase::new(),
             sigint: Arc::new(AtomicBool::new(false)),
-            //read_stdin: true,
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             script_name: "-".to_string(),
             ..Default::default()
-        };
+        }
+    }
 
-        core.init_current_directory();
-        core.set_initial_parameters();
-        core.set_builtins();
+    pub fn configure_c_mode(&mut self) {
+        if unistd::isatty(0) == Ok(true) {
+            let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
+                .expect("sush(fatal): Can't allocate fd for tty FD");
+            self.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+        }
+
+        self.init_current_directory();
+        self.set_initial_parameters();
+        self.set_builtins();
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
 
-        let _ = core.db.set_param("PS4", "+ ", None);
-
-        if unistd::isatty(0) == Ok(true) {
-            core.db.flags += "imH";
-            //core.read_stdin = false;
-            let _ = core.db.set_param("PS1", "🍣 ", None);
-            let _ = core.db.set_param("PS2", "> ", None);
-            let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
-                .expect("sush(fatal): Can't allocate fd for tty FD");
-            core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
-        }
-
-        let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
-        let _ = core.db.set_param("HISTFILE", &(home + "/.sush_history"), None);
-        let _ = core.db.set_param("HISTFILESIZE", "2000", None);
-
         match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-            Ok("1") => {
-                if core.db.flags.contains('i') {
-                    eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
-                }
-                core.compat_bash = true;
-            },
+            Ok("1") => self.compat_bash = true,
             _ => {},
         };
-
-        core
     }
 
     fn set_initial_parameters(&mut self) {
@@ -136,32 +159,58 @@ impl ShellCore {
         let _ = self.db.set_param("MACHTYPE", &machtype, None);
         let _ = self.db.set_param("HOSTTYPE", &t_arch, None);
         let _ = self.db.set_param("OSTYPE", &t_os, None);
-        let _ = self.db.set_array("BASH_VERSINFO", versinfo, None);
+        let _ = self.db.set_array("BASH_VERSINFO", Some(versinfo), None);
+        let _ = self.db.set_flag("BASH_VERSINFO", 'r');
     }
 
     pub fn flip_exit_status(&mut self) {
         self.db.exit_status = if self.db.exit_status == 0 { 1 } else { 0 };
     }
 
-    pub fn run_builtin(&mut self, args: &mut Vec<String>, special_args: &mut Vec<String>) -> bool {
+    pub fn run_builtin(&mut self, args: &mut Vec<String>, substitutions: &Vec<Substitution>)
+    -> Result<bool, ExecError> {
         if args.is_empty() {
             eprintln!("ShellCore::run_builtin");
-            return false;
+            return Ok(false);
         }
 
-        if self.builtins.contains_key(&args[0]) {
-            let func = self.builtins[&args[0]];
-            args.append(special_args);
-            self.db.exit_status = func(self, args);
-            return true;
+        if ! self.builtins.contains_key(&args[0]) {
+            return Ok(false);
         }
 
-        false
+        let mut special_args = vec![];
+        for sub in substitutions {
+            match args[0].as_ref() {
+                "eval" | "declare" => special_args.push(sub.get_string_for_eval(self)?),
+                _ => special_args.push(sub.text.clone()),
+            }
+        }
+
+        let func = self.builtins[&args[0]];
+        args.append(&mut special_args);
+        self.db.exit_status = func(self, args);
+        Ok(true)
+    }
+
+    pub fn run_substitution_builtin(&mut self, args: &mut Vec<String>,
+            substitutions: &mut Vec<Substitution>) -> Result<bool, ExecError> {
+        if args.is_empty() {
+            eprintln!("ShellCore::run_builtin");
+            return Ok(false);
+        }
+
+        if ! self.substitution_builtins.contains_key(&args[0]) {
+            return Ok(false);
+        }
+
+        let func = self.substitution_builtins[&args[0]];
+        self.db.exit_status = func(self, args, substitutions);
+        Ok(true)
     }
 
     fn set_subshell_parameters(&mut self) -> Result<(), String> {
         let pid = nix::unistd::getpid();
-        self.db.set_param("BASHPID", &pid.to_string(), Some(0))?;
+        self.db.init_as_num("BASHPID", &pid.to_string(), Some(0))?;
         match self.db.get_param("BASH_SUBSHELL").unwrap().parse::<usize>() {
             Ok(num) => self.db.set_param("BASH_SUBSHELL", &(num+1).to_string(), Some(0))?,
             Err(_) =>  self.db.set_param("BASH_SUBSHELL", "0", Some(0))?,
@@ -177,7 +226,7 @@ impl ShellCore {
         self.is_subshell = true;
         proc_ctrl::set_pgid(self, pid, pgid);
         let _ = self.set_subshell_parameters();
-        self.job_table.clear();
+        //self.job_table.clear();
 
         self.exit_script.clear();
     }

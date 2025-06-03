@@ -7,33 +7,50 @@ use super::{Command, Redirect};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ArithmeticCommand {
     pub text: String,
     expressions: Vec<ArithmeticExpr>,
     redirects: Vec<Redirect>,
     force_fork: bool,
+    lineno: usize,
 }
 
 impl Command for ArithmeticCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
-        let exit_status = match self.eval(core).as_deref() {
-            Ok("0") => 1,
-            Ok(_) => 0,
-            Err(e) => {e.print(core); 1 },
+        let mut err = None;
+
+        let exit_status = match self.eval(core) {
+            Ok(n) => if n == "0" { 1 } else {0},
+            Err(e) => {err = Some(e); 1},
         };
+
         core.db.exit_status = exit_status;
-        Ok(())
+
+        match err {
+            Some(ExecError::ArithError(s, e)) => {
+                let err_with_com = ExecError::ArithError("((: ".to_owned() + &s.trim_start(), e);
+                err_with_com.print(core);
+                Err(err_with_com)
+            }
+            Some(e) => {
+                e.print(core);
+                Err(e.clone())
+            },
+            _ => Ok(()),
+        }
     }
 
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn get_lineno(&mut self) -> usize { self.lineno }
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
 }
 
 impl ArithmeticCommand {
+    /*
     fn new() -> ArithmeticCommand {
         ArithmeticCommand {
             text: String::new(),
@@ -41,7 +58,7 @@ impl ArithmeticCommand {
             redirects: vec![],
             force_fork: false,
         }
-    }
+    }*/
 
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ans = String::new();
@@ -59,7 +76,8 @@ impl ArithmeticCommand {
         }
         feeder.set_backup();
 
-        let mut ans = Self::new();
+        let mut ans = Self::default();
+        ans.lineno = feeder.lineno;
         ans.text = feeder.consume(2);
 
         if let Some(c) = ArithmeticExpr::parse(feeder, core, true, "((")? {

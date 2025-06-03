@@ -4,7 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use super::expr::arithmetic::ArithmeticExpr;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
@@ -20,7 +20,7 @@ impl Subscript {
         }
 
         if let Some(a) = self.inner.as_mut() {
-            if a.text.chars().all(|c| " \t\n".contains(c)) {
+            if a.text.is_empty() {
                 return Err(ExecError::ArrayIndexInvalid(a.text.clone()));
             }
             return match core.db.is_assoc(param_name) {

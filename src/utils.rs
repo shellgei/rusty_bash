@@ -12,12 +12,14 @@ pub mod splitter;
 
 use crate::{Feeder, ShellCore};
 use crate::error::input::InputError;
+use faccess::PathExt;
 use io_streams::StreamReader;
 use std::io::Read;
+use std::path::Path;
 
 pub fn reserved(w: &str) -> bool {
     match w {
-        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" | "esac" => true,
+        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" | "esac" | "repeat" => true,
         _ => false,
     }
 }
@@ -157,4 +159,21 @@ pub fn to_ansi_c(s: &String) -> String {
         return "$'".to_owned() + &s.replace("\n", "\\n") + "'";
     }
     s.clone()
+}
+
+pub fn get_command_path(s: &String, core: &mut ShellCore) -> String {
+    for path in core.db.get_param("PATH").unwrap_or(String::new()).to_string().split(":") {
+        for command in directory::files(path).iter() {
+            let fullpath = path.to_owned() + "/" + command;
+            if ! Path::new(&fullpath).executable() {
+                continue;
+            }
+
+            if command == s {
+                return fullpath;
+            }
+        }
+    }
+
+    String::new()
 }

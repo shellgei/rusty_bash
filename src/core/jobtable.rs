@@ -9,14 +9,15 @@ use nix::sys::signal;
 use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct JobEntry {
     pub id: usize,
-    pids: Vec<Pid>,
+    pub pids: Vec<Pid>,
     proc_statuses: Vec<WaitStatus>,
     pub display_status: String,
     pub text: String,
     change: bool,
+    pub no_control: bool,
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) -> Result<(), ExecError> {
@@ -61,11 +62,11 @@ impl JobEntry {
             proc_statuses: statuses.to_vec(),
             display_status: status.to_string(),
             text: text.to_string(),
-            change: false,
+            ..Default::default()
         }
     }
 
-    pub fn update_status(&mut self, wait: bool) -> Result<i32, ExecError> {
+    pub fn update_status(&mut self, wait: bool, check_done: bool) -> Result<i32, ExecError> {
         let mut exit_status = 0;
         let before = self.proc_statuses[0];
         for (status, pid) in self.proc_statuses.iter_mut().zip(&self.pids) {
@@ -81,9 +82,18 @@ impl JobEntry {
         /* check stopped processes */
         let mut stopped = false;
         for s in &self.proc_statuses {
-            if let WaitStatus::Stopped(_, _) = s {
-                stopped = true;
-                break;
+            match s {
+                WaitStatus::Stopped(_, _) => {
+                    stopped = true;
+                    break;
+                },
+                WaitStatus::Exited(_, es) => {
+                    if check_done {
+                        exit_status = *es;
+                        break;
+                    }
+                },
+                _ => {},
             }
         }
 
@@ -99,14 +109,41 @@ impl JobEntry {
         Ok(exit_status)
     }
 
-    pub fn print(&self, priority: &Vec<usize>) {
-        if priority[0] == self.id {
-            println!("[{}]+  {}     {}", self.id, &self.display_status, &self.text);
-        }else if priority.len() > 1 && priority[1] == self.id {
-            println!("[{}]-  {}     {}", self.id, &self.display_status, &self.text);
-        }else {
-            println!("[{}]   {}     {}", self.id, &self.display_status, &self.text);
+    pub fn print_p(&self) {
+        println!("{}", self.pids[0]);
+    }
+
+    pub fn print(&self, priority: &Vec<usize>, l_opt: bool, r_opt: bool, s_opt: bool, add_amp: bool) 
+    -> bool {
+        if r_opt && self.display_status != "Running"
+        || s_opt && self.display_status != "Stopped" {
+            return false;
         }
+
+        let symbol = if priority[0] == self.id {"+"}
+                     else if priority.len() > 1 && priority[1] == self.id {"-"}
+                     else {" "};
+
+        let pid = match l_opt {
+            true => &self.pids[0].to_string(),
+            false => "",
+        };
+
+        let tmp = self.text.clone();
+        let text = tmp.trim_end();
+
+        if self.display_status == "Stopped" {
+            println!("[{}]{} {} {}                 {}", self.id, &symbol, &pid, 
+                &self.display_status, &text);
+        }else if add_amp && self.display_status != "Done" {
+            println!("[{}]{} {} {}                 {} &", self.id, &symbol, &pid, 
+                &self.display_status, &text);
+        }else{
+            println!("[{}]{} {} {}                    {}", self.id, &symbol, &pid, 
+                &self.display_status, &text);
+        }
+
+        self.display_status == "Done" || self.display_status == "Killed"
     }
 
     fn display_status_on_signal(signal: &signal::Signal, coredump: bool) -> String {
@@ -174,16 +211,34 @@ impl JobEntry {
 
 impl ShellCore {
     pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {
-        for e in self.job_table.iter_mut() {
-            e.update_status(false)?;
+        if self.is_subshell {
+            return Ok(());
         }
+
+        let mut stopped = vec![];
+        for i in 0..self.job_table.len() {
+            if self.job_table[i].update_status(false, false)? == 148 {
+                stopped.push(i);
+            }
+        }
+
+        for i in stopped {
+            let job_id = self.job_table[i].id;
+            self.job_table_priority.retain(|id| *id != job_id);
+            self.job_table_priority.insert(0, job_id);
+        }
+
         Ok(())
     }
 
     pub fn jobtable_print_status_change(&mut self) {
+        if self.is_subshell {
+            return;
+        }
+
         for e in self.job_table.iter_mut() {
             if e.change {
-                e.print(&self.job_table_priority);
+                e.print(&self.job_table_priority, false, false, false, false);
                 e.change = false;
             }
         }

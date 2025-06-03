@@ -9,6 +9,9 @@ use super::parameter;
 fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     if pm == '+' {
         core.db.flags.retain(|e| e != opt);
+        if opt == 'm' {
+            let _ = core.options.set("monitor", false);
+        }
     }else{
         if ! core.db.flags.contains(opt) {
             core.db.flags.push(opt);
@@ -16,17 +19,21 @@ fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     }
 }
 
-pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
+pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), ExecError> {
+    set_options2(core, args);
+
     for a in args {
         if a.len() != 2 {
-            return Err(ExecError::InvalidOption(a.to_string()));
+            return Err(ExecError::InvalidOption("set: ".to_owned() + &a.to_string()));
         }
 
         let pm = a.chars().nth(0).unwrap();
         let ch = a.chars().nth(1).unwrap();
 
-        if (pm != '-' && pm != '+') || "xveBH".find(ch).is_none() {
-            return Err(ExecError::InvalidOption(a.to_string()));
+        if (pm != '-' && pm != '+')
+        || (pm == '+' && ch == 'r')
+        || "rxveBH".find(ch).is_none() {
+            return Err(ExecError::InvalidOption("set: ".to_owned() + &a.to_string()));
         }
 
         set_option(core, ch, pm);
@@ -34,29 +41,61 @@ pub fn set_options(core: &mut ShellCore, args: &[String]) -> Result<(), ExecErro
     Ok(())
 }
 
+pub fn set_options2(core: &mut ShellCore, args: &mut Vec<String>) {
+    for (short, long) in [('t', "onecmd"), ('m', "monitor"),
+                          ('C', "noclobber"), ('a', "allexport"),
+                          ('B', "braceexpand"), ('u', "")] {
+        let minus_opt = format!("-{}", short);
+        let plus_opt = format!("+{}", short);
+
+        if arg::consume_option(&minus_opt, args) {
+            if ! core.db.flags.contains(short) {
+                core.db.flags += &minus_opt[1..];
+            }
+            if long != "" {
+                let _ = core.options.set(long, true);
+            }
+        }
+    
+        if arg::consume_option(&plus_opt, args) {
+            core.db.flags.retain(|f| f != short);
+            if long != "" {
+                let _ = core.options.set(long, false);
+            }
+        }
+    }
+}
+
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if args.len() <= 1 {
-        return parameter::print_all(core);
+    if core.db.flags.contains('r') {
+        if arg::consume_option("+r", &mut args) {
+            let _ = super::error_exit(1, &args[0], "+r: invalid option", core);
+            eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
+            return 1;
+        }
     }
 
-    if arg::consume_option("-m", &mut args) {
-        if ! core.db.flags.contains('m') {
-            core.db.flags += "m";
-        }
-        if args.len() <= 1 {
-            return 0;
-        }
+    if args.len() <= 1 {
+        core.db.get_keys().into_iter()
+            .for_each(|k| core.db.print(&k));
+        return 0;
+    }
+
+    set_options2(core, &mut args);
+
+    if args.len() < 2 {
+        return 0;
     }
 
     if args[1].starts_with("--") {
+        args[1] = core.db.position_parameters[0][0].clone();
         args.remove(0);
         return match parameter::set_positions(core, &args) {
             Ok(()) => 0,
             Err(e) => {
-                e.print(core);
-                return 1;
+                return super::error_exit(1, &args[0], &String::from(&e), core);
             },
         }
     }
@@ -68,15 +107,25 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             core.options.print_all(positive);
             return 0;
         }else{
+            if args[2] == "monitor" {
+                if positive && ! core.db.flags.contains('m') {
+                    core.db.flags.push('m');
+                }else if ! positive {
+                    core.db.flags.retain(|f| f != 'm');
+                }
+            }
+
             return match core.options.set(&args[2], positive) {
-                true  => 0,
-                false => 2,
+                Ok(())  => 0,
+                Err(e) => {
+                    return super::error_exit(2, &args[0], &String::from(&e), core);
+                },
             };
         }
     }
 
     match args[1].starts_with("-") || args[1].starts_with("+") {
-        true  => if let Err(e) = set_options(core, &args[1..]) {
+        true  => if let Err(e) = set_options(core, &mut args[1..].to_vec()) {
             e.print(core);
             return 2;
         },
@@ -186,10 +235,16 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return set(core, &mut args_for_set);
     }
 
-    let res = match args[1].as_str() { //TODO: args[3..] must to be set
+    match args[1].as_str() { //TODO: args[3..] must to be set
         "-s" => {
             if core.shopts.implemented.contains(&args[2]) {
-                core.shopts.set(&args[2], true)
+                match core.shopts.set(&args[2], true) {
+                    Ok(()) => return 0,
+                    Err(e) => {
+                        e.print(core);
+                        return 1;
+                    },
+                }
             }else{
                 let msg = format!("shopt: {}: not supported yet", &args[2]);
                 error::print(&msg, core);
@@ -209,16 +264,17 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             }
             return 0;
         },
-        "-u" => core.shopts.set(&args[2], false),
+        "-u" => match core.shopts.set(&args[2], false) {
+            Ok(()) => return 0,
+            Err(e) => {
+                e.print(core);
+                return 1;
+            },
+        },
         arg  => {
             eprintln!("sush: shopt: {}: invalid shell option name", arg);
             eprintln!("shopt: usage: shopt [-su] [optname ...]");
-            false
+            return 1;
         },
-    };
-
-    match res {
-        true  => 0,
-        false => 1,
     }
 }

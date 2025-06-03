@@ -16,6 +16,7 @@ pub struct IfCommand {
     pub else_script: Option<Script>,
     pub redirects: Vec<Redirect>,
     force_fork: bool,
+    lineno: usize,
 }
 
 impl Command for IfCommand {
@@ -39,6 +40,7 @@ impl Command for IfCommand {
 
     fn get_text(&self) -> String { self.text.clone() }
     fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
+    fn get_lineno(&mut self) -> usize { self.lineno }
     fn set_force_fork(&mut self) { self.force_fork = true; }
     fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
     fn force_fork(&self) -> bool { self.force_fork }
@@ -79,6 +81,7 @@ impl IfCommand {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
+        ans.lineno = feeder.lineno;
  
         let mut if_or_elif = "if";
         while Self::eat_word_and_script(if_or_elif, feeder, &mut ans, core)?

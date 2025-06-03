@@ -3,10 +3,10 @@
 
 use crate::{ShellCore, Feeder};
 use crate::elements::command;
-use crate::elements::subscript::Subscript;
+use super::subscript::Subscript;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use super::word::Word;
+use crate::elements::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct Array {
@@ -16,7 +16,7 @@ pub struct Array {
 }
 
 impl Array {
-    pub fn eval(&mut self, core: &mut ShellCore)
+    pub fn eval(&mut self, core: &mut ShellCore, as_int: bool)
     -> Result<Vec<(Option<Subscript>, String)>, ExecError> {
 
         if let Some(c) = self.error_strings.last() {
@@ -25,12 +25,17 @@ impl Array {
 
         let mut ans = vec![];
 
-        for (s, w) in &mut self.words {
-            for e in w.eval(core)? {
-                ans.push( (s.clone(), e) );
+        if as_int {
+            for (s, w) in &mut self.words {
+                ans.push( (s.clone(), w.eval_as_integer(core)?) );
+            }
+        }else{
+            for (s, w) in &mut self.words {
+                for e in w.eval(core)? {
+                    ans.push( (s.clone(), e) );
+                }
             }
         }
-
         Ok(ans)
     }
 

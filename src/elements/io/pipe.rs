@@ -16,6 +16,8 @@ pub struct Pipe {
     pub send: RawFd,
     pub prev: RawFd,
     pub pgid: Pid,
+    pub lastpipe: bool,
+    pub lastpipe_backup: RawFd,
 }
 
 impl Pipe {
@@ -26,14 +28,30 @@ impl Pipe {
             send: -1,
             prev: -1,
             pgid: Pid::from_raw(0),
+            lastpipe: false,
+            lastpipe_backup: -1,
         }
     }
 
-    pub fn end(prev: RawFd, pgid: Pid) -> Pipe {
-        let mut dummy = Pipe::new(String::new());
-        dummy.prev = prev;
-        dummy.pgid = pgid;
-        dummy
+    pub fn end(prev: RawFd, pgid: Pid, lastpipe: bool) -> Pipe {
+        let mut p = Pipe::new(String::new());
+        p.lastpipe = lastpipe;
+        p.prev = prev;
+        p.pgid = pgid;
+        p
+    }
+
+    pub fn connect_lastpipe(&mut self) {
+        if self.lastpipe && self.prev != 0 {
+            self.lastpipe_backup = io::backup(0);
+            io::replace(self.prev, 0);
+        }
+    }
+
+    pub fn restore_lastpipe(&mut self) {
+        if self.lastpipe && self.lastpipe_backup != -1 {
+            io::replace(self.lastpipe_backup, 0);
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipe> {
@@ -66,11 +84,14 @@ impl Pipe {
     }
 
     pub fn parent_close(&mut self) {
-        io::close(self.send, "Cannot close parent pipe out");
-        io::close(self.prev,"Cannot close parent prev pipe out");
+            io::close(self.send, "Cannot close parent pipe out");
+            io::close(self.prev,"Cannot close parent prev pipe out");
     }
 
     pub fn is_connected(&self) -> bool {
+        if self.lastpipe {
+            return false;
+        }
         self.recv != -1 || self.send != -1 || self.prev != -1
     }
 }

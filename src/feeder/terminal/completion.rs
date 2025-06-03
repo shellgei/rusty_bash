@@ -71,7 +71,7 @@ fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &Vec<Stri
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
-        let _ = core.db.set_array("COMPREPLY", vec![], None);
+        let _ = core.db.set_array("COMPREPLY", Some(vec![]), None);
         self.set_completion_info(core)?;
 
         if ! self.set_custom_compreply(core).is_ok()
@@ -80,7 +80,7 @@ impl Terminal {
             return Ok(());
         }
 
-        let mut cands = core.db.get_array_all("COMPREPLY");
+        let mut cands = core.db.get_vec("COMPREPLY", true)?;
         cands.retain(|c| c != "");
         let o_options = core.completion.current.o_options.clone();
         for cand in cands.iter_mut() {
@@ -96,8 +96,8 @@ impl Terminal {
 
     fn exec_complete_function(org_word: &str, prev_pos: i32, cur_pos: i32, 
                               core: &mut ShellCore)-> Result<(), ExecError> {
-        let prev_word = core.db.get_array_elem("COMP_WORDS", &prev_pos.to_string())?;
-        let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
+        let prev_word = core.db.get_elem("COMP_WORDS", &prev_pos.to_string())?;
+        let target_word = core.db.get_elem("COMP_WORDS", &cur_pos.to_string())?;
         let info = &core.completion.current;
 
         let command = format!("{} \"{}\" \"{}\" \"{}\"",
@@ -112,7 +112,7 @@ impl Terminal {
     }
 
     fn exec_action(cur_pos: i32, core: &mut ShellCore)-> Result<(), ExecError> {
-        let target_word = core.db.get_array_elem("COMP_WORDS", &cur_pos.to_string())?;
+        let target_word = core.db.get_elem("COMP_WORDS", &cur_pos.to_string())?;
         let info = &core.completion.current;
 
         let command = format!("COMPREPLY=($(compgen -A \"{}\" \"{}\"))",  &info.action, &target_word);
@@ -134,7 +134,7 @@ impl Terminal {
             return Err(ExecError::Other("pos error".to_string()));
         }
 
-        let org_word = core.db.get_array_elem("COMP_WORDS", "0")?;
+        let org_word = core.db.get_elem("COMP_WORDS", "0")?;
 
         let info = match core.completion.entries.get(&org_word) {
             Some(i) => i.clone(),
@@ -164,9 +164,9 @@ impl Terminal {
 
     pub fn set_default_compreply(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let pos = core.db.get_param("COMP_CWORD")?;
-        let last = core.db.get_array_elem("COMP_WORDS", &pos)?;
+        let last = core.db.get_elem("COMP_WORDS", &pos)?;
 
-        let com = core.db.get_array_elem("COMP_WORDS", "0")?;
+        let com = core.db.get_elem("COMP_WORDS", "0")?;
 
         let (tilde_prefix, tilde_path, last_tilde_expanded) = Self::set_tilde_transform(&last, core);
 
@@ -178,7 +178,7 @@ impl Terminal {
         }
 
         let tmp: Vec<String> = list.iter().map(|p| p.replacen(&tilde_path, &tilde_prefix, 1)).collect();
-        core.db.set_array("COMPREPLY", tmp, None)
+        core.db.set_array("COMPREPLY", Some(tmp), None)
     }
 
     fn make_default_compreply(&mut self, core: &mut ShellCore, args: &mut Vec<String>,
@@ -225,7 +225,7 @@ impl Terminal {
 
     pub fn try_completion(&mut self, cands: &mut Vec<String>, core: &mut ShellCore) -> Result<(), String> {
         let pos = core.db.get_param("COMP_CWORD")?;
-        let target = core.db.get_array_elem("COMP_WORDS", &pos)?;
+        let target = core.db.get_elem("COMP_WORDS", &pos)?;
 
         let common = common_string(&cands);
         if common.len() != target.len() && ! common.is_empty() {
@@ -372,7 +372,7 @@ impl Terminal {
 
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
-        let _ = core.db.set_array("COMP_WORDS", words_all, None);
+        let _ = core.db.set_array("COMP_WORDS", Some(words_all), None);
 
         let mut num = words_left.len();
         match left_string.chars().last() {

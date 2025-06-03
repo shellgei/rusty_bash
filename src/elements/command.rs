@@ -5,6 +5,7 @@ pub mod arithmetic;
 pub mod case;
 pub mod simple;
 pub mod paren;
+pub mod repeat;
 pub mod brace;
 pub mod r#for;
 pub mod test;
@@ -22,6 +23,7 @@ use self::simple::SimpleCommand;
 use self::paren::ParenCommand;
 use self::brace::BraceCommand;
 use self::function_def::FunctionDefinition;
+use self::repeat::RepeatCommand;
 use self::r#while::WhileCommand;
 use self::r#for::ForCommand;
 use self::r#if::IfCommand;
@@ -47,10 +49,11 @@ impl Clone for Box::<dyn Command> {
 
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        // TODO: set LINENO here (maybe each command must have the lineno field and get_lineno)
-        if self.force_fork() || pipe.is_connected() {
+        core.db.set_param("LINENO", &self.get_lineno().to_string(), None)?;
+        if self.force_fork() || ( ! pipe.lastpipe && pipe.is_connected() ) {
             self.fork_exec(core, pipe)
         }else{
+            pipe.connect_lastpipe();
             self.nofork_exec(core)
         }
     }
@@ -97,7 +100,9 @@ pub trait Command {
 
     fn run(&mut self, _: &mut ShellCore, fork: bool) -> Result<(), ExecError>;
     fn get_text(&self) -> String;
+    fn get_one_line_text(&self) -> String {self.get_text().replace("\n", " ")}
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
+    fn get_lineno(&mut self) -> usize {panic!("IMPLEMENT!!")}
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
     fn force_fork(&self) -> bool;
@@ -202,6 +207,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = BraceCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = ForCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = WhileCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
+    else if let Some(a) = RepeatCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = CaseCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = TestCommand::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else{ Ok(None) }

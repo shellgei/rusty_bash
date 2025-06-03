@@ -3,14 +3,15 @@
 
 pub mod int;
 pub mod float;
-pub mod trenary;
+pub mod ternary;
 pub mod variable;
 
 use super::ArithmeticExpr;
 use super::Word;
 use crate::{ShellCore, utils};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::elements::subscript::Subscript;
+use crate::elements::substitution::subscript::Subscript;
 
 #[derive(Debug, Clone)]
 pub enum ArithElem {
@@ -128,7 +129,7 @@ impl ArithElem {
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
             ArithElem::Variable(name, s, inc) => {
                 if add != 0 && *inc != 0 || ! utils::is_name(&name, core) {
-                    return Err(ExecError::OperandExpected(name.to_string()));
+                    return Err(ArithError::OperandExpected(name.to_string()).into());
                 }
 
                 let index = match s {
@@ -144,6 +145,15 @@ impl ArithElem {
             _ => return Ok(()),
         };
         Ok(())
+    }
+
+    pub fn is_operand(&self) -> bool {
+        match &self {
+            ArithElem::Float(_) | ArithElem::Integer(_) |
+            ArithElem::ArrayElem(_, _, _) | ArithElem::Word(_, _) |
+            ArithElem::Variable(_, _, _) | ArithElem::InParen(_) => true,
+            _ => false,
+        }
     }
 }
 

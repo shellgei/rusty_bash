@@ -3,6 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::exit;
@@ -11,7 +12,7 @@ use super::{float, int};
 
 fn to_num(w: &str, sub: &String, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if w.find('\'').is_some() {
-        return Err(ExecError::OperandExpected(w.to_string()));
+        return Err(ArithError::OperandExpected(w.to_string()).into());
     }
 
     let name = w.to_string();//w.eval_as_value(core)?;
@@ -27,9 +28,9 @@ pub fn str_to_num(name: &str, sub: &String,
     for i in 0..RESOLVE_LIMIT {
         if utils::is_name(&name, core) {
             if i == RESOLVE_LIMIT - 1 {
-                return Err(ExecError::Recursion(name.clone()));
+                return Err(ArithError::Recursion(name.clone()).into());
             }
-            name = core.db.get_param2(&name, sub)?;
+            name = core.db.get_elem_or_param(&name, sub)?;
             continue;
         }
         break;
@@ -46,7 +47,7 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
     let mut f = Feeder::new(&name);
     let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
         Ok(Some(p)) => p,
-        _    => return Err(ExecError::OperandExpected(name.to_string())),
+        _    => return Err(ArithError::OperandExpected(name.to_string()).into()),
     };
 
 
@@ -105,35 +106,31 @@ pub fn substitution(op: &str, stack: &mut Vec<ArithElem>, core: &mut ShellCore)
 -> Result<(), ExecError> {
     let mut right = match stack.pop() {
         Some(mut e) => {
-            e.change_to_value(0, core)?; e
+            e.change_to_value(0, core)?;
+            e
         },
-        _ => return Err(ExecError::OperandExpected(op.to_string())),
+        _ => return Err(ArithError::OperandExpected(op.to_string()).into()),
     };
 
-    let ans = match stack.pop() {
-        Some(ArithElem::Variable(w, s, 0)) => {
-            let index = match s {
-                Some(mut sub) => sub.eval(core, &w)?,
-                None => "".to_string(),
-            };
-            subs(op, &w, &index, &mut right, core)?
-        },
-        Some(ArithElem::Variable(_, _, _)) => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
-        _ => return Err(ExecError::AssignmentToNonVariable(op.to_string()) ),
-    };
+    if let Some(ArithElem::Variable(w, s, 0)) = stack.pop() {
+        let index = match s {
+            Some(mut sub) => sub.eval(core, &w)?,
+            None => "".to_string(),
+        };
+        stack.push(subs(op, &w, &index, &mut right, core)?);
+        return Ok(());
+    }
 
-    stack.push(ans);
-    Ok(())
+    Err(ArithError::AssignmentToNonVariable(op.to_string() + &right.to_string()).into() )
 }
 
 fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut ShellCore)
                                       -> Result<ArithElem, ExecError> {
     if w.find('\'').is_some() {
-        return Err(ExecError::OperandExpected(w.to_string()));
+        return Err(ArithError::OperandExpected(w.to_string()).into());
     }
 
     let name = w.to_string();//w.eval_as_value(core)?;
-    right_value.change_to_value(0, core)?; // InParen -> Value
     let right_str = right_value.to_string();
 
     match op {
@@ -142,7 +139,7 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
             return Ok(right_value.clone());
         },
         "+=" => {
-            let mut val_str = core.db.get_param2(&name, sub)?;
+            let mut val_str = core.db.get_elem_or_param(&name, sub)?;
             if val_str == "" {
                 val_str = "0".to_string();
             }

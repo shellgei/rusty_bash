@@ -42,7 +42,7 @@ impl Job {
 
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
             if core.return_flag {
-                continue;
+                break;
             }
             if core.sigint.load(Relaxed) {
                 core.db.exit_status = 130;
@@ -55,7 +55,7 @@ impl Job {
                 let (pids, exclamation, time, err) = pipeline.exec(core, pgid);
                 let waitstatuses = proc_ctrl::wait_pipeline(core, pids.clone(), exclamation, time);
 
-                Self::check_stop(core, &pipeline.text, &pids, &waitstatuses);
+                Self::check_stop(core, &pipeline.get_one_line_text(), &pids, &waitstatuses);
 
                 if err.is_some() {
                     return Err(err.unwrap());
@@ -112,8 +112,14 @@ impl Job {
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);
-        core.job_table.push(JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ],
-                &self.text, "Running", new_job_id));
+        let mut entry = JobEntry::new(pids, &vec![ WaitStatus::StillAlive; len ],
+                &self.get_one_line_text(), "Running", new_job_id);
+
+        if ! core.options.query("monitor") {
+            entry.no_control = true;
+        }
+
+        core.job_table.push(entry);
 
         core.tty_fd = backup;
     }
@@ -132,6 +138,15 @@ impl Job {
                 Ok(Some(child))
             },
         }
+    }
+
+    pub fn get_one_line_text(&self) -> String {
+        let mut ans = String::new();
+        for (i, p) in self.pipelines.iter().enumerate() {
+            ans += &p.get_one_line_text().trim_end();
+            ans += &self.pipeline_ends[i];
+        }
+        ans
     }
 
     fn eat_blank_line(feeder: &mut Feeder, ans: &mut Job, core: &mut ShellCore) -> bool {

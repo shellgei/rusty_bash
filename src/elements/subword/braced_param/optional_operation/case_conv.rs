@@ -7,12 +7,12 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
-use super::super::Param;
+use super::super::Variable;
 use super::OptionalOperation;
 
 impl OptionalOperation for CaseConv {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn exec(&mut self, _: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         self.get_text(text, core)
     }
 

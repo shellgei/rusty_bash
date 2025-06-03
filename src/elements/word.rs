@@ -9,16 +9,19 @@ mod split;
 
 use crate::{ShellCore, Feeder};
 use crate::elements::subword;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
+    Alias,
     Arithmetric,
     CompgenF,
     ReadCommand,
     Heredoc,
+    RightOfSubstitution,
     ParamOption(Vec<String>),
 }
 
@@ -27,6 +30,7 @@ pub struct Word {
     pub text: String,
     pub do_not_erase: bool,
     pub subwords: Vec<Box<dyn Subword>>,
+    pub mode: Option<WordMode>,
 }
 
 impl From<&String> for Word {
@@ -34,7 +38,7 @@ impl From<&String> for Word {
         Self {
             text: s.to_string(),
             subwords: vec![From::from(s)],
-            do_not_erase: false,
+            ..Default::default()
         }
     }
 }
@@ -44,7 +48,7 @@ impl From<Box::<dyn Subword>> for Word {
         Self {
             text: subword.get_text().to_string(),
             subwords: vec![subword],
-            do_not_erase: false,
+            ..Default::default()
         }
     }
 }
@@ -54,7 +58,7 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
         Self {
             text: subwords.iter().map(|s| s.get_text()).collect(),
             subwords: subwords,
-            do_not_erase: false,
+            ..Default::default()
         }
     }
 }
@@ -86,6 +90,17 @@ impl Word {
 
         let joint = core.db.get_ifs_head();
         Ok( Self::make_args(&mut ws).join(&joint) )
+    }
+
+    pub fn eval_as_integer(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let mut f = Feeder::new(&self.text);
+        if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
+            if f.is_empty() {
+                return a.eval(core);
+            }
+        }
+ 
+        Err(ExecError::SyntaxError(f.consume(f.len())))
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
@@ -265,6 +280,11 @@ impl Word {
         }
 
         let mut ans = Word::default();
+        if let Some(WordMode::Alias) = mode {
+            let len = feeder.scanner_blank(core);
+            ans.text = feeder.consume(len);
+        }
+
         while let Some(sw) = subword::parse(feeder, core, &mode)? {
             match sw.is_extglob() {
                 false => ans.push(&sw),
@@ -278,7 +298,7 @@ impl Word {
                 break;
             }
         }
-        
+
         match ans.subwords.len() {
             0 => Ok(None),
             _ => Ok(Some(ans)),

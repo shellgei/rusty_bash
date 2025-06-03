@@ -1,8 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{exit, Feeder, Script, ShellCore, signal};
-use crate::error;
+use crate::{exit, error, Feeder, Script, ShellCore, signal};
 use crate::error::exec::ExecError;
 use nix::unistd;
 use nix::errno::Errno;
@@ -29,20 +28,25 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         return vec![];
     }
 
+    let last_exit_status = core.db.exit_status;
     let mut pipestatus = vec![];
     let mut ans = vec![];
     for pid in &pids {
-        let ws = wait_process(core, pid.expect("SUSHI INTERNAL ERROR (no pid)"));
-        ans.push(ws);
-
-        pipestatus.push(core.db.exit_status);
+        if pid.is_some() { //None: lastpipe
+            let ws = wait_process(core, pid.unwrap());
+            ans.push(ws);
+            pipestatus.push(core.db.exit_status);
+        }else{
+            pipestatus.push(last_exit_status);
+            core.db.exit_status = last_exit_status;
+        }
     }
 
     if time {
         show_time(core);
     }
     set_foreground(core);
-    let _ = core.db.set_array("PIPESTATUS", pipestatus.iter().map(|e|e.to_string()).collect(), None);
+    let _ = core.db.set_array("PIPESTATUS", Some(pipestatus.iter().map(|e|e.to_string()).collect()), None);
 
     if core.options.query("pipefail") {
         pipestatus.retain(|e| *e != 0);
@@ -92,7 +96,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     ws.expect("SUSH INTERNAL ERROR: no wait status")
 }
 
-pub fn set_foreground(core: &ShellCore) {
+fn set_foreground(core: &ShellCore) {
     let fd = match core.tty_fd.as_ref() {
         Some(fd) => fd,
         _        => return,
@@ -113,7 +117,9 @@ pub fn set_foreground(core: &ShellCore) {
 
 pub fn set_pgid(core :&ShellCore, pid: Pid, pgid: Pid) {
     let _ = unistd::setpgid(pid, pgid);
-    if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
+    let lastpipe = ! core.db.flags.contains('m') && core.shopts.query("lastpipe");
+
+    if ! lastpipe && pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
         set_foreground(core);
     }
 }
@@ -135,10 +141,17 @@ fn show_time(core: &ShellCore) {
                sys_diff.tv_sec()%60, sys_diff.tv_usec());
 }
 
-pub fn exec_command(args: &Vec<String>, core: &mut ShellCore) -> ! {
+pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> ! {
     let cargs = to_cargs(args);
+    let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
-    match unistd::execvp(&cargs[0], &cargs) {
+    if ! fullpath.is_empty() {
+        let _ = unistd::execv(&cfullpath, &cargs);
+    
+    }
+    let result = unistd::execvp(&cargs[0], &cargs);
+
+    match result {
         Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),
         Err(Errno::EACCES) => exit::permission_denied(&args[0], core),
         Err(Errno::ENOENT) => run_command_not_found(&args[0], core),

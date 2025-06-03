@@ -12,15 +12,12 @@ pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() < 2 {
         return 0;
+    }else if let Ok(n) = args[1].parse::<i32>() {
+        return n%256;
     }
 
-    match args[1].parse::<i32>() {
-        Ok(n)  => n%256,
-        Err(_) => {
-            eprintln!("sush: return: {}: numeric argument required", args[1]);
-            2
-        },
-    }
+    eprintln!("sush: return: {}: numeric argument required", args[1]);
+    2
 }
 
 pub fn break_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {

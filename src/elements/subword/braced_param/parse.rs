@@ -2,19 +2,19 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
-use crate::elements::subscript::Subscript;
+use crate::elements::substitution::subscript::Subscript;
 use crate::error::parse::ParseError;
-use super::{BracedParam, Param};
+use super::{BracedParam, Variable};
 use super::optional_operation;
 
 impl BracedParam {
     fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text;
-            if s.text.contains('@') {
-                ans.is_array = true;
+            if s.text.contains('@') && ! ans.num {
+                ans.treat_as_array = true;
             }
-            ans.param.subscript = Some(s);
+            ans.param.index = Some(s);
             return Ok(true);
         }
 
@@ -24,7 +24,8 @@ impl BracedParam {
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
         if len != 0 {
-            ans.param = Param{ name: feeder.consume(len), subscript: None};
+            ans.param = Variable::default();
+            ans.param.name = feeder.consume(len);
             ans.text += &ans.param.name;
             return true;
         }
@@ -35,8 +36,9 @@ impl BracedParam {
         }
 
         if len != 0 {
-            ans.param = Param {name: feeder.consume(len), subscript: None};
-            ans.is_array = ans.param.name == "@";
+            ans.param = Variable::default();
+            ans.param.name = feeder.consume(len);
+            ans.treat_as_array = ans.param.name == "@" && ! ans.num;
             ans.text += &ans.param.name;
             return true;
         }

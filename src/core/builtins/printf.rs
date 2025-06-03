@@ -1,9 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use crate::error;
+use crate::{error, Feeder, ShellCore};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
+use crate::elements::substitution::Substitution;
 use std::io::{stdout, Write};
 
 #[derive(Debug, Clone)]
@@ -33,14 +34,14 @@ impl PrintfToken {
     fn to_int(s: &String) -> Result<isize, ExecError> {
         match s.parse::<isize>() {
             Ok(n) => Ok(n),
-            Err(_) => Err(ExecError::InvalidNumber(s.to_string())),
+            Err(_) => Err(ArithError::InvalidNumber(s.to_string()).into()),
         }
     }
 
     fn to_float(s: &String) -> Result<f64, ExecError> {
         match s.parse::<f64>() {
             Ok(n) => Ok(n),
-            Err(_) => Err(ExecError::InvalidNumber(s.to_string())),
+            Err(_) => Err(ArithError::InvalidNumber(s.to_string()).into()),
         }
     }
 
@@ -145,7 +146,7 @@ impl PrintfToken {
             Self::Q => {
                 let a = pop(args);
                 let q = a.replace("\\", "\\\\").replace("$", "\\$").replace("|", "\\|")
-                    .replace("\"", "\\\"").replace("'", "\\\'")
+                    .replace("\"", "\\\"").replace("'", "\\\'").replace("~", "\\~")
                     .replace("(", "\\(").replace(")", "\\)")
                     .replace("{", "\\{").replace("}", "\\}")
                     .replace("!", "\\!").replace("&", "\\&");
@@ -349,30 +350,26 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let s = match format(&args[3], &mut args[4..].to_vec()) {
         Ok(ans) => ans,
         Err(e) => {
-            let msg = format!("printf: {:?}", e);
-            error::print(&msg, core);
-            return 1;
+            let msg = String::from(&e);
+            return super::error_exit(1, "printf", &msg, core);
         },
     };
 
     if args[2].contains("[") {
-        let tokens = args[2].split('[').collect::<Vec<&str>>();
-        let name = tokens[0].to_string();
-        let subscript = tokens[1].split(']').nth(0).unwrap().to_string();
-
-        let result = match subscript.parse::<usize>() {
-            Ok(n) => core.db.set_array_elem(&name, &s, n, None),
-            _ => core.db.set_assoc_elem(&name, &subscript, &s, None),
-        };
-        if let Err(e) = result {
-            let msg = format!("printf: {:?}", e);
-            error::print(&msg, core);
-            return 2;
+        let mut f = Feeder::new(&(args[2].clone() + "=" + &s));
+        if let Ok(Some(mut a)) = Substitution::parse(&mut f, core, false) {
+            if let Err(e) = a.eval(core, None, false) {
+                let msg = String::from(&e);
+                return super::error_exit(2, "printf", &msg, core);
+            }
+        }else{
+            return 1;
         }
         return 0;
     }
-    if ! core.db.set_param(&args[2], &s, None).is_ok() {
-        return 2;
+    if let Err(e) = core.db.set_param(&args[2], &s, None) {
+        let msg = String::from(&e);
+        return super::error_exit(2, "printf", &msg, core);
     }
 
     return 0;

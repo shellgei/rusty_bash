@@ -2,95 +2,92 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::{signal, utils};
 use crate::core::JobEntry;
-use crate::signal;
-use crate::error;
+use crate::utils::arg;
 use nix::sys::signal::Signal;
 use nix::unistd;
 use nix::unistd::Pid;
+use std::{thread, time};
 
-fn id_to_job(id: usize, jobs: &mut Vec<JobEntry>) -> Option<&mut JobEntry> {
-    for job in jobs.iter_mut() {
-        if job.id == id {
-            return Some(job);
+fn pid_to_array_pos(pid: i32, jobs: &Vec<JobEntry>) -> Option<usize> {
+    for i in 0..jobs.len() {
+        if jobs[i].pids[0].as_raw() == pid {
+            return Some(i);
         }
     }
-
     None
 }
 
-fn arg_to_id(s: &str, priority: &Vec<usize>, table: &Vec<JobEntry>) -> Result<usize, String> {
-    if s == "%+" {
-        return match priority.len() {
-            0 => Err("%+: no such job".to_string()), 
-            _ => Ok(priority[0]),
-        };
-    }
-
-    if s == "%-" {
-        return match priority.len() {
-            0 => Err("%-: no such job".to_string()), 
-            1 => Err("%-: no such job".to_string()), 
-            _ => Ok(priority[1]),
-        };
-    }
-
-    let word = &s[1..];
-    let mut ans = 0;
-    for job in table {
-        let jobname = job.text.split(" ").nth(0).unwrap();
-        if jobname == word {
-            if ans != 0 {
-                return Err((s.to_owned() + ": ambiguous job spec").to_string());
-            }
-            ans = job.id;
+fn jobid_to_pos(id: usize, jobs: &mut Vec<JobEntry>) -> Option<usize> {
+    for (i, job) in jobs.iter_mut().enumerate() {
+        if job.id == id {
+            return Some(i);
         }
     }
-
-    if ans != 0 {
-        return Ok(ans);
-    }
-
-    if s.starts_with("%") {
-        return match word.parse::<usize>() {
-            Ok(n)  => Ok(n),
-            Err(_) => Err((s.to_owned() + ": no such job").to_string()),
-        };
-    }
-
-    Err((s.to_owned() + ": no such job").to_string())
+    None
 }
 
 pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let id = if args.len() == 1 {
-        if core.job_table_priority.is_empty() {
-            return 1;
-        }
-        core.job_table_priority[0]
-    }else if args.len() == 2 {
-        match arg_to_id(&args[1], &core.job_table_priority, &core.job_table) {
-            Ok(n) => n,
-            Err(s) => {
-                error::print(&("bg: ".to_owned() + &s), core);
-                return 1;
-            },
-        }
-    }else{
+    if core.job_table.is_empty() {
         return 1;
+    }
+
+    let mut args = arg::dissolve_options(args);
+    if ! core.db.flags.contains('m') {
+        return super::error_exit(1, &args[0], "no job control", core);
+    }
+
+    if arg::consume_option("-s", &mut args) {
+        return super::error_exit(1, &args[0], "-s: invalid option", core);
+    }
+
+    let pos = match args.len() {
+        1 => {
+            let id = core.job_table_priority[0];
+            jobid_to_pos(id, &mut core.job_table)
+        },
+        2 => jobspec_to_array_pos(core, &args[0], &args[1]),
+        _ => None,
     };
 
-    match id_to_job(id, &mut core.job_table) {
-        Some(job) => job.send_cont(),
-        _ => return 1, 
+    match pos {
+        Some(p) => {
+            let id = core.job_table[p].id; 
+
+            if core.job_table[p].no_control {
+                let msg = format!("job {} started without job control", &id);
+                return super::error_exit(1, &args[0], &msg, core);
+            }
+
+            if core.job_table[p].display_status == "Running" {
+                let msg = format!("job {} already in background", &id);
+                return super::error_exit(0, &args[0], &msg, core);
+            }
+
+            let priority = get_priority(core, p);
+            let symbol = match priority {
+                0 => "+",
+                1 => "-",
+                _ => " ",
+            };
+            println!("[{}]{} {} &", &id, &symbol, &core.job_table[p].text);
+            core.job_table[p].send_cont()
+        },
+        None    => return 1,
     }
     0
 }
 
 pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let fd = match core.tty_fd.as_ref() {
-        Some(fd) => fd,
-        _        => return 1,
-    };
+    let mut args = arg::dissolve_options(args);
+    if ! core.db.flags.contains('m') {
+        return super::error_exit(1, &args[0], "no job control", core);
+    }
+
+    if arg::consume_option("-s", &mut args) {
+        return super::error_exit(1, &args[0], "-s: invalid option", core);
+    }
 
     let id = if args.len() == 1 {
         if core.job_table_priority.is_empty() {
@@ -98,23 +95,26 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         core.job_table_priority[0]
     }else if args.len() == 2 {
-        match arg_to_id(&args[1], &core.job_table_priority, &core.job_table) {
-            Ok(n) => n,
-            Err(s) => {
-                error::print(&s, core);
-                return 1;
-            },
+        match jobspec_to_array_pos(core, &args[0], &args[1]) {
+            Some(pos) => core.job_table[pos].id,
+            None => return 1,
         }
     }else{
         return 1;
     };
 
-    let job = match id_to_job(id, &mut core.job_table) {
-        Some(job) => job,
+    let pos = match jobid_to_pos(id, &mut core.job_table) {
+        Some(i) => i,
         _ => return 1, 
     };
 
-    let pgid = job.solve_pgid();
+    if core.job_table[pos].no_control {
+        let id = core.job_table[pos].id; 
+        let msg = format!("job {} started without job control", &id);
+        return super::error_exit(1, &args[0], &msg, core);
+    }
+
+    let pgid = core.job_table[pos].solve_pgid();
     if pgid.as_raw() == 0 {
         return 1;
     }
@@ -122,51 +122,441 @@ pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     signal::ignore(Signal::SIGTTOU);
 
     let mut exit_status = 1;
-    if let Ok(_) =  unistd::tcsetpgrp(fd, pgid) {
-        eprintln!("{}", &job.text);
-        job.send_cont();
-        exit_status = job.update_status(true).unwrap_or(1);
-
-        if let Ok(mypgid) = unistd::getpgid(Some(Pid::from_raw(0))) {
-            let _ = unistd::tcsetpgrp(fd, mypgid);
+    if let Some(fd) = core.tty_fd.as_ref() {
+        if let Ok(_) = unistd::tcsetpgrp(fd, pgid) {
+            println!("{}", &core.job_table[pos].text);
+            core.job_table[pos].send_cont();
+            exit_status = core.job_table[pos].update_status(true, false).unwrap_or(1);
+    
+            if let Ok(mypgid) = unistd::getpgid(Some(Pid::from_raw(0))) {
+                let _ = unistd::tcsetpgrp(fd, mypgid);
+            }
         }
+    }else{
+        println!("{}", &core.job_table[pos].text);
+        core.job_table[pos].send_cont();
+        exit_status = core.job_table[pos].update_status(true, false).unwrap_or(1);
     }
-
+    
+    remove(core, pos);
     signal::restore(Signal::SIGTTOU);
     exit_status
 }
 
-pub fn jobs(core: &mut ShellCore, _: &mut Vec<String>) -> i32 {
-    for job in core.job_table.iter() {
-        job.print(&core.job_table_priority);
+fn jobspec_to_array_pos(core: &mut ShellCore, com: &str, jobspec: &str) -> Option<usize> {
+    let poss = jobspec_to_array_poss(core, jobspec);
+    if poss.is_empty() {
+        let msg = format!("{}: no such job", &jobspec);
+        super::error_exit(127, &com, &msg, core);
+        return None;
+    }else if poss.len() > 1 {
+        let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
+        super::error_exit(127, com, &msg, core);
+        return None;
     }
-    0
+
+    Some(poss[0])
 }
 
-pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() <= 1 {
-        for job in core.job_table.iter_mut() {
-            if let Err(e) = job.update_status(true) {
-                e.print(core);
-                return 1;
+fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
+    if jobspec == "" {
+        return (0..core.job_table.len()).collect();
+    }
+
+    if core.job_table.is_empty() {
+        return vec![];
+    }
+
+    let s = &jobspec[1..];
+    let mut ans = vec![];
+
+    if let Ok(n) = s.parse::<usize>() {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if n == job.id {
+                ans.push(i);
             }
+        }
+    }else if s == "%" || s == "+" {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if job.id == core.job_table_priority[0] {
+                ans.push(i);
+            }
+        }
+    }else if s == "-" {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if core.job_table_priority.len() < 2 {
+                if job.id == core.job_table_priority[0] {
+                    ans.push(i);
+                }
+            }else {
+                if job.id == core.job_table_priority[1] {
+                    ans.push(i);
+                }
+            }
+        }
+    }else if s.starts_with("?") {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if job.text.contains(&s[1..]) {
+                ans.push(i);
+            }
+        }
+    }else {
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if job.text.starts_with(s) {
+                ans.push(i);
+            }
+        }
+    }
+
+    ans
+}
+
+pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+    if arg::consume_option("-n", &mut args) {
+        core.jobtable_print_status_change();
+        return 0;
+    }
+
+    let jobspecs = arg::consume_starts_with("%", &mut args);
+    let jobspec = match jobspecs.last() {
+        Some(s) => s.clone(),
+        None => String::new(),
+    };
+
+    if core.job_table.is_empty() && jobspec == "" {
+        return 0;
+    }
+
+    let poss = jobspec_to_array_poss(core, &jobspec);
+
+    if poss.is_empty() {
+        let msg = format!("{}: no such job", &jobspec);
+        return super::error_exit(127, "jobs", &msg, core);
+    }
+    if poss.len() > 1 && ! jobspec.is_empty() {
+        let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
+        super::error_exit(127, "jobs", &msg, core);
+        let msg = format!("{}: no such job", &jobspec);
+        return super::error_exit(127, "jobs", &msg, core);
+    }
+
+    if arg::consume_option("-p", &mut args) {
+        for id in poss {
+            core.job_table[id].print_p();
         }
         return 0;
     }
 
-    let id = match arg_to_id(&args[1], &core.job_table_priority, &core.job_table) {
-        Ok(n)  => n,
-        Err(s) => {
-            error::print(&("wait: ".to_owned() + &s), core);
-            return 1;
-        },
-    };
-    match id_to_job(id, &mut core.job_table) {
-        Some(job) => if let Err(e) = job.update_status(true) {
-            e.print(core);
-            return 1;
+    if ! jobspec.is_empty() {
+        let l_opt = arg::consume_option("-l", &mut args);
+        let r_opt = arg::consume_option("-r", &mut args);
+        let s_opt = arg::consume_option("-s", &mut args);
+        if core.job_table[poss[0]].print(&core.job_table_priority,
+                                l_opt, r_opt, s_opt, true) {
+            remove(core, poss[0]);
         }
-        _ => return 1, 
+        return 0;
+    }
+
+    print(core, &mut args);
+    0
+}
+
+fn get_priority(core: &mut ShellCore, pos: usize) -> usize {
+    let id = core.job_table[pos].id;
+    for i in 0..core.job_table_priority.len() {
+        if core.job_table_priority[i] == id {
+            return i;
+        }
+    }
+
+    core.job_table.len()
+}
+
+fn print(core: &mut ShellCore, args: &mut Vec<String>) {
+    let l_opt = arg::consume_option("-l", args);
+    let r_opt = arg::consume_option("-r", args);
+    let s_opt = arg::consume_option("-s", args);
+
+    let mut rem = vec![];
+    for id in 0..core.job_table.len() {
+        if core.job_table[id].print(&core.job_table_priority,
+                                l_opt, r_opt, s_opt, true) {
+            rem.push(id);
+        }
+    }
+
+    for pos in rem.into_iter().rev() {
+        remove(core, pos);
+    }
+}
+                
+fn remove(core: &mut ShellCore, pos: usize) {
+    let job_id = core.job_table[pos].id;
+    core.job_table.remove(pos);
+    core.job_table_priority.retain(|id| *id != job_id);
+}
+
+fn wait_jobspec(core: &mut ShellCore, com: &str, jobspec: &str,
+                var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
+    match jobspec_to_array_pos(core, com, jobspec) {
+        Some(pos) => wait_a_job(core, pos, var_name, f_opt),
+        None => return (127, false),
+    }
+}
+
+fn wait_next(core: &mut ShellCore, ids: &Vec<usize>,
+             var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
+    if core.job_table_priority.is_empty() {
+        return (127, false);
+    }
+
+    let mut exit_status = 0;
+    let mut drop = 0;
+    let mut end = false;
+    let mut pid = String::new();
+    let mut remove_job = false;
+
+    loop {
+        thread::sleep(time::Duration::from_millis(10)); //0.1秒周期に変更
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if ! ids.contains(&i) && ! ids.is_empty() {
+                continue;
+            }
+
+            if let Ok(es) = job.update_status(false, true) {
+                if job.display_status == "Done"
+                || job.display_status == "Killed"
+                || (job.display_status == "Stopped" && ! f_opt) {
+                    exit_status = es;
+                    drop = i;
+                    end = true;
+                    remove_job = job.display_status == "Done" || job.display_status == "Killed";
+                    pid = job.pids[0].to_string();
+                    break;
+                }
+            }
+        }
+
+        if end {
+            break;
+        }
+    }
+
+    if let Some(var) = var_name {
+        core.db.unset(&var);
+        if let Err(e) = core.db.set_param(&var, &pid, None) {
+            e.print(core);
+        }
+    }
+
+    if remove_job { 
+        remove(core, drop);
+    }
+    (exit_status, true)
+}
+
+fn wait_pid(core: &mut ShellCore, pid: i32,
+            var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
+    match pid_to_array_pos(pid, &core.job_table) {
+        Some(i) => wait_a_job(core, i, var_name, f_opt),
+        None => (127, false),
+    }
+}
+
+fn wait_a_job(core: &mut ShellCore, pos: usize,
+              var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
+    if core.job_table.len() < pos {
+        return (super::error_exit(127, "wait", "invalpos jobpos", core), false);
+    }
+
+    let pid = core.job_table[pos].pids[0].to_string();
+
+    let ans = match core.job_table[pos].update_status(true, false) {
+        Ok(n) => {
+            if let Some(var) = var_name {
+                core.db.unset(&var);
+                if let Err(e) = core.db.set_param(&var, &pid, None) {
+                    e.print(core);
+                }
+            }
+            (n, true)
+        },
+        Err(e) => { e.print(core); return (1, false) },
+    };
+
+    if f_opt && core.job_table[pos].display_status == "Stopped" {
+        wait_a_job(core, pos, var_name, f_opt)
+    }else{
+        remove(core, pos);
+        ans
+    }
+}
+
+fn wait_arg_job(core: &mut ShellCore, com: &str, arg: &String,
+                var_name: &Option<String>, f_opt: bool) -> (i32, bool) {
+    if arg.starts_with("%") {
+        return wait_jobspec(core, com, &arg, &var_name, f_opt);
+    }
+
+    if let Ok(pid) = arg.parse::<i32>() {
+        return wait_pid(core, pid, &var_name, f_opt);
+    }
+
+    (127, false) 
+}
+
+fn wait_all(core: &mut ShellCore) -> i32 {
+    let mut exit_status = 0;
+    let mut remove_list = vec![];
+    for pos in 0..core.job_table.len() {
+        match core.job_table[pos].update_status(true, false) {
+            Ok(n) => {
+                if core.job_table[pos].display_status == "Done"
+                || core.job_table[pos].display_status == "Killed" {
+                    remove_list.push(pos);
+                }
+                exit_status = n;
+            },
+            Err(e) => {
+                e.print(core);
+                exit_status = 1;
+                break;
+            },
+        }
+    }
+
+    for pos in remove_list.into_iter().rev() {
+        remove(core, pos);
+    }
+
+    return exit_status;
+}
+
+fn wait_n(core: &mut ShellCore, args: &mut Vec<String>,
+          var_name: &Option<String>, f_opt: bool) -> i32 {
+    let mut jobs = arg::consume_with_subsequents("-n", args);
+    jobs.remove(0);
+    if jobs.is_empty() {
+        return wait_next(core, &vec![], &var_name, f_opt).0;
+    }
+
+    let mut ids = vec![];
+    for j in &jobs {
+        if j.starts_with("%") {
+            ids.append(&mut jobspec_to_array_poss(core, &j));
+        }else{
+            for (i, job) in core.job_table.iter_mut().enumerate() {
+                if job.pids[0].to_string() == *j {
+                    ids.push(i);
+                }
+            }
+        }
+    }
+    ids.sort();
+    ids.dedup();
+    let mut ans = -1;
+
+    for _ in 0..ids.len() {
+        let tmp = match ans {
+            -1 => wait_next(core, &ids, &var_name, f_opt),
+            _  => wait_next(core, &ids, &None, f_opt),
+        };
+
+        if tmp.1 == true && ans == -1 {
+            ans = tmp.0;
+        }
+    }
+    return ans;
+}
+
+pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if core.is_subshell {
+        super::error_exit(127, &args[0], "called from subshell", core);
+    }
+
+    if args.len() <= 1 {
+        return wait_all(core);
+    }
+
+    let mut args = arg::dissolve_options(args);
+    let var_name = arg::consume_with_next_arg("-p", &mut args);
+    let f_opt = arg::consume_option("-f", &mut args);
+
+    if args[1] == "-n" {
+        return wait_n(core, &mut args, &var_name, f_opt);
+    }
+
+    wait_arg_job(core, &args[0], &args[1], &var_name, f_opt).0
+}
+
+/* TODO: implement original kill */
+pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    //let mut args = arg::dissolve_options(args);
+    let path = utils::get_command_path(&args[0], core);
+
+    match path.is_empty() {
+        true  => return 1,
+        false => args[0] = path,
+    }
+
+    if args.len() >= 3 && args[2].starts_with("%") {
+        match jobspec_to_array_pos(core, &args[0], &args[2]) {
+            Some(id) => args[2] = core.job_table[id].pids[0].to_string(),
+            None => return 1,
+        }
+    }
+
+    let com = args[0].to_string();
+    for arg in args.iter_mut() {
+        if arg == "-n" {
+            *arg = "-s".to_string();
+        }
+        if arg.starts_with("%") {
+            if let Some(pos) = jobspec_to_array_pos(core, &com, &arg) {
+                *arg = core.job_table[pos].pids[0].to_string();
+            }else{
+                let msg = format!("{}: no such job", &arg);
+                return super::error_exit(127, "jobs", &msg, core);
+            }
+        }
+    }
+
+    args.insert(0, "eval".to_string());
+    super::eval(core, args)
+}
+
+pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+
+    if arg::consume_option("-h", &mut args) {
+        //TODO: implement
+        return 0;
+    }
+
+    if args.len() == 1 {
+        let ids = jobspec_to_array_poss(core, "%%");
+
+        if ids.len() == 1 {
+            core.job_table.remove(ids[0]);
+            core.job_table_priority.remove(0);
+            return 0;
+        }
+
+        return 1;
+    }
+
+    if args.len() == 2 && args[1] == "-a" {
+        core.job_table.clear();
+        core.job_table_priority.clear();
+        return 0;
+    }
+
+    for a in &args[1..] {
+        if let Some(pos) = jobspec_to_array_pos(core, &args[0], &a) {
+            remove(core, pos);
+        }
     }
 
     0

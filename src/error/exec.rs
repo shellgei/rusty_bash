@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use nix::errno::Errno;
 use nix::sys::wait::WaitStatus;
@@ -13,30 +14,27 @@ pub enum ExecError {
     Internal,
     AmbiguousRedirect(String),
     ArrayIndexInvalid(String),
-    AssignmentToNonVariable(String),
     BadSubstitution(String),
     BadFd(RawFd),
     Bug(String),
-    DivZero(String, String),
-    Exponent(i128),
-    InvalidBase(String),
-    InvalidArithmeticOperator(String, String),
+    CannotOverwriteExistingFile(String),
     InvalidName(String),
-    InvalidNumber(String),
     InvalidOption(String),
     Interrupted,
     ValidOnlyInFunction(String),
     VariableReadOnly(String),
     VariableInvalid(String),
-    OperandExpected(String),
-    ParseError(ParseError),
     ParseIntError(String),
     SyntaxError(String),
-    Recursion(String),
+    Restricted(String),
     SubstringMinus(i128),
     UnsupportedWaitStatus(WaitStatus),
+    UnboundVariable(String),
     Errno(Errno),
     Other(String),
+
+    ParseError(ParseError),
+    ArithError(String, ArithError),
 }
 
 impl From<Errno> for ExecError {
@@ -57,6 +55,12 @@ impl From<ParseError> for ExecError {
     }
 }
 
+impl From<ArithError> for ExecError {
+    fn from(e: ArithError) -> ExecError {
+        ExecError::ArithError(String::new(), e)
+    }
+}
+
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         Self::from(&e)
@@ -71,29 +75,25 @@ impl From<&ExecError> for String {
             ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
             ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
             ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
-            ExecError::DivZero(expr, token) => format!("{}: division by 0 (error token is \"{}\"", expr, token),
-            ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
+            ExecError::CannotOverwriteExistingFile(file) => format!("{}: cannot overwrite existing file", file),
             ExecError::InvalidName(name) => format!("`{}': invalid name", name),
-            ExecError::InvalidNumber(name) => format!("`{}': invalid number", name),
-            //ExecError::InvalidIdentifier(name) => format!("`{}': not a valid identifier", name),
-            ExecError::InvalidBase(b) => format!("{0}: invalid arithmetic base (error token is \"{0}\")", b),
-            ExecError::InvalidArithmeticOperator(s, tok) => format!("{}: syntax error: invalid arithmetic operator (error token is \"{}\")", s, tok),
             ExecError::InvalidOption(opt) => format!("{}: invalid option", opt),
             ExecError::Interrupted => "interrupted".to_string(),
-            ExecError::AssignmentToNonVariable(right) => format!("attempted assignment to non-variable (error token is \"{}\")", right),
             ExecError::ValidOnlyInFunction(com) => format!("{}: can only be used in a function", &com),
             ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
-            ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
-            ExecError::ParseError(p) => From::from(p),
             ExecError::ParseIntError(e) => e.to_string(),
             ExecError::SyntaxError(near) => format!("syntax error near {}", &near),
-            ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
+            ExecError::Restricted(com) => format!("{}: restricted", com), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
             ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {:?}", ws),
+            ExecError::UnboundVariable(name) => format!("{}: unbound variable", name),
             ExecError::Errno(e) => format!("system error {:?}", e),
             ExecError::Bug(msg) => format!("INTERNAL BUG: {}", msg),
             ExecError::Other(name) => name.to_string(),
+
+            ExecError::ArithError(s, a) =>  format!("{}: {}", s, String::from(a)),
+            ExecError::ParseError(p) => From::from(p),
         }
     }
 }

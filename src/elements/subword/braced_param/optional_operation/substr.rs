@@ -2,9 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use super::super::Param;
+use super::super::Variable;
 use super::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
@@ -16,14 +17,14 @@ pub struct Substr {
 
 impl OptionalOperation for Substr {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, _: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn exec(&mut self, _: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         self.get(text, core)
     }
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
     fn has_array_replace(&self) -> bool {true}
 
-    fn set_array(&mut self, param: &Param, array: &mut Vec<String>,
+    fn set_array(&mut self, param: &Variable, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         match param.name.as_str() {
             "@" | "*" => self.set_partial_position_params(array, text, core),
@@ -41,8 +42,20 @@ impl Substr {
             return Err(ExecError::BadSubstitution(String::new()));
         }
     
-        *array = core.db.get_array_all("@");
-        let n = offset.eval_as_int(core)?;
+        *array = core.db.get_vec("@", false)?;
+        let mut n = offset.eval_as_int(core)?;
+        let len = array.len();
+
+        if n < 0 {
+            n += len as i128;
+            if n < 0 {
+                *text = "".to_string();
+                *array = vec![];
+                return Ok(());
+            }
+        }
+
+
         let mut start = std::cmp::max(0, n) as usize;
         start = std::cmp::min(start, array.len()) as usize;
         *array = array.split_off(start);
@@ -81,12 +94,21 @@ impl Substr {
             return Err(ExecError::BadSubstitution(String::new()));
         }
     
-        *array = core.db.get_array_all(name);
-        let n = offset.eval_as_int(core)?;
-        let mut start = std::cmp::max(0, n) as usize;
-        start = std::cmp::min(start, array.len()) as usize;
-        *array = array.split_off(start);
-    
+        let mut n = offset.eval_as_int(core)?;
+        let len = core.db.index_based_len(name);
+        if n < 0 {
+            n += len as i128;
+            if n < 0 {
+                *text = "".to_string();
+                *array = vec![];
+                return Ok(());
+            }
+        }
+
+        //let start = std::cmp::max(0, n) as usize;
+        //*array = core.db.get_vec_from(name, start, true)?;
+        *array = core.db.get_vec_from(name, n as usize, true)?;
+
         if self.length.is_none() {
             *text = array.join(" ");
             return Ok(());
@@ -116,11 +138,21 @@ impl Substr {
         let offset = self.offset.as_mut().unwrap();
     
         if offset.text == "" {
-            return Err(ExecError::OperandExpected("".to_string()));
+            let err = ArithError::OperandExpected("".to_string());
+            return Err(ExecError::ArithError("".to_string(), err));
         }
     
         let mut ans;
-        let n = offset.eval_as_int(core)?;
+        let mut n = offset.eval_as_int(core)?;
+        let len = text.chars().count();
+
+        if n < 0 {
+            n += len as i128;
+            if n < 0 {
+                return Ok("".to_string());
+            }
+        }
+
         ans = text.chars().enumerate()
             .filter(|(i, _)| (*i as i128) >= n)
             .map(|(_, c)| c).collect();

@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::error::exec::ExecError;
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
@@ -13,8 +14,11 @@ impl Options {
     pub fn new_as_basic_opts() -> Options {
         let mut options = Options::default();
         options.opts.insert("pipefail".to_string(), false);
+        options.opts.insert("monitor".to_string(), true);
+        options.opts.insert("noclobber".to_string(), false);
         options.opts.insert("noglob".to_string(), false);
-        options.opts.insert("posix".to_string(), false); //TODO: still dummy
+        options.opts.insert("onecmd".to_string(), false);
+        options.opts.insert("posix".to_string(), false);
         options.opts.insert("history".to_string(), false); //TODO: still dummy
         options
     }
@@ -43,7 +47,8 @@ impl Options {
         }
 
         options.implemented = ["extglob", "progcomp", "nullglob", "dotglob", "globstar",
-                               "globskipdots", "nocasematch", "expand_aliases", "xpg_echo"]
+                               "globskipdots", "nocasematch", "expand_aliases", "xpg_echo",
+                               "lastpipe", "execfail"]
                                    .iter().map(|s| s.to_string()).collect();
         //TODO: nocasematch and xpg_echo are dummy
 
@@ -119,14 +124,15 @@ impl Options {
         self.exist(opt) && self.opts[opt]
     }
 
-    pub fn set(&mut self, opt: &str, onoff: bool) -> bool {
+    pub fn set(&mut self, opt: &str, onoff: bool) -> Result<(), ExecError> {
         if ! self.opts.contains_key(opt) {
-            eprintln!("sush: shopt: {}: invalid shell option name", opt);
-            return false;
+            let msg = format!("{}: invalid option name", opt);
+            return Err(ExecError::Other(msg));
         }
 
         self.opts.insert(opt.to_string(), onoff);
-        true
+
+        Ok(())
     }
 
     pub fn get_keys(&self) -> Vec<String> {

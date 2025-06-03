@@ -27,6 +27,7 @@ pub fn run_signal_check(core: &mut ShellCore) {
         nix::unistd::dup2(2, fd).expect("sush(fatal): init error");
     }
 
+    core.sigint.store(true, Relaxed);
     let sigint = Arc::clone(&core.sigint);
  
     thread::spawn(move || {
@@ -36,6 +37,7 @@ pub fn run_signal_check(core: &mut ShellCore) {
         for fd in 3..10 { // release FD 3~9
             nix::unistd::close(fd).expect("sush(fatal): init error");
         }
+        sigint.store(false, Relaxed);
 
         loop {
             thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
@@ -47,6 +49,11 @@ pub fn run_signal_check(core: &mut ShellCore) {
             }
         }
     });
+
+    while core.sigint.load(Relaxed) {
+        thread::sleep(time::Duration::from_millis(1));
+    }
+
 } //thanks: https://dev.to/talzvon/handling-unix-kill-signals-in-rust-55g6
 
 pub fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool {

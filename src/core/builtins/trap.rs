@@ -14,6 +14,17 @@ use std::{thread, time};
 use signal_hook::iterator::Signals;
 
 pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    if args.len() == 1 {
+        for e in &core.traplist {
+            if e.0 == 0 {
+                println!("trap -- '{}' EXIT", &e.1);
+            }else if let Ok(s) = Signal::try_from(e.0) {
+                println!("trap -- '{}' {}", &e.1, &s);
+            }
+        }
+        return 0;
+    }
+
     if args.len() < 3 { // TODO: print the list of trap entries if args.len() == 1
         eprintln!("trap: usage: trap arg signal_spec ...");
         return 2;
@@ -42,15 +53,19 @@ pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             continue;
         };
 
-        ExecError::Other(format!("trap: {}: invalid signal specification", n)).print(core);
-        return 1;
+        let msg = format!("trap: {}: invalid signal specification", n);
+        return super::error_exit(1, &args[0], &msg, core);
     }
 
     if ! valid_signals.is_empty() {
+        for n in &valid_signals {
+            core.traplist.push( (*n, args[1].to_string() ) );
+        }
         run_thread(valid_signals, &args[1], core);
     }
 
     if exit {
+        core.traplist.push( (0, args[1].to_string() ) );
         core.exit_script = args[1].clone();
     }
 
@@ -67,7 +82,7 @@ fn run_thread(signal_nums: Vec<i32>, script: &String, core: &mut ShellCore) {
                           .expect("sush(fatal): cannot prepare signal data");
 
         loop {
-            thread::sleep(time::Duration::from_millis(100));
+            thread::sleep(time::Duration::from_millis(5));
             for signal in signals.pending() {
                 if signal_nums.contains(&signal) {
                     trap.store(true, Relaxed);

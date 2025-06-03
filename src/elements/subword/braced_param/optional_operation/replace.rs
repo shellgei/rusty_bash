@@ -7,7 +7,7 @@ use crate::elements::word::{Word, WordMode};
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::error::parse::ParseError;
-use super::super::Param;
+use super::super::Variable;
 use super::super::optional_operation::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
@@ -23,7 +23,7 @@ pub struct Replace {
 
 impl OptionalOperation for Replace {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, param: &Param, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         match core.db.has_value(&param.name) {
             true  => self.get_text(text, core),
             false => Ok("".to_string()),
@@ -32,11 +32,11 @@ impl OptionalOperation for Replace {
 
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
 
-    fn set_array(&mut self, param: &Param, array: &mut Vec<String>,
+    fn set_array(&mut self, param: &Variable, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         *array = match param.name.as_str() {
             "@" | "*" => core.db.get_position_params(),
-            _ => core.db.get_array_all(&param.name),
+            _ => core.db.get_vec(&param.name, true)?,
         };
 
         for i in 0..array.len() {
