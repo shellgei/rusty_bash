@@ -2,12 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, utils};
-use super::SimpleCommand;
+use super::{alias, SimpleCommand};
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use crate::error::parse::ParseError;
-use super::replace_alias;
 
 impl SimpleCommand {
     pub fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
@@ -50,7 +49,7 @@ impl SimpleCommand {
         }
 
         if ans.words.is_empty() || ans.continue_alias_check {
-            if replace_alias::set_alias(ans, &w, core, feeder)? {
+            if alias::set(ans, &w, core, feeder)? {
                 return Ok(true);
             }
         }

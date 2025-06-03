@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::error::parse::ParseError;
 use crate::elements::word::{WordMode, Word};
 
-pub fn set_alias(com: &mut SimpleCommand, word: &Word,
+pub fn set(com: &mut SimpleCommand, word: &Word,
              core: &mut ShellCore, feeder: &mut Feeder) -> Result<bool, ParseError> {
     com.continue_alias_check = false;
     let mut w = word.text.clone();

@@ -5,7 +5,7 @@ use crate::{ShellCore, utils};
 use super::SimpleCommand;
 use crate::elements::command::ExecError;
 
-pub fn hash_control(com: &mut SimpleCommand, core: &mut ShellCore)
+pub fn get_and_regist(com: &mut SimpleCommand, core: &mut ShellCore)
 -> Result<String, ExecError> {
     if com.args[0].starts_with("/")
     || com.args[0].starts_with("./")

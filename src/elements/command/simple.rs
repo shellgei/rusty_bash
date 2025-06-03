@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod alias;
 pub mod parser;
 pub mod hash;
 pub mod run_internal;
-pub mod replace_alias;
 
 use crate::{proc_ctrl, ShellCore};
 
@@ -110,7 +110,7 @@ impl SimpleCommand {
         || ( ! core.builtins.contains_key(&self.args[0]) 
            && ! core.substitution_builtins.contains_key(&self.args[0]) 
            && ! core.db.functions.contains_key(&self.args[0]) ) {
-            self.command_path = hash::hash_control(self, core)?;
+            self.command_path = hash::get_and_regist(self, core)?;
             self.fork_exec(core, pipe)
         }else if self.args.len() == 1 && self.args[0] == "exec" {
             for r in self.get_redirects().iter_mut() {
