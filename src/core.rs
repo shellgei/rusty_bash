@@ -10,7 +10,6 @@ pub mod jobtable;
 pub mod options;
 
 use crate::{error, proc_ctrl, signal};
-use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
 use self::database::DataBase;
 use self::options::Options;
@@ -165,47 +164,6 @@ impl ShellCore {
 
     pub fn flip_exit_status(&mut self) {
         self.db.exit_status = if self.db.exit_status == 0 { 1 } else { 0 };
-    }
-
-    pub fn run_builtin(&mut self, args: &mut Vec<String>, substitutions: &Vec<Substitution>)
-    -> Result<bool, ExecError> {
-        if args.is_empty() {
-            eprintln!("ShellCore::run_builtin");
-            return Ok(false);
-        }
-
-        if ! self.builtins.contains_key(&args[0]) {
-            return Ok(false);
-        }
-
-        let mut special_args = vec![];
-        for sub in substitutions {
-            match args[0].as_ref() {
-                "eval" | "declare" => special_args.push(sub.get_string_for_eval(self)?),
-                _ => special_args.push(sub.text.clone()),
-            }
-        }
-
-        let func = self.builtins[&args[0]];
-        args.append(&mut special_args);
-        self.db.exit_status = func(self, args);
-        Ok(true)
-    }
-
-    pub fn run_substitution_builtin(&mut self, args: &mut Vec<String>,
-            substitutions: &mut Vec<Substitution>) -> Result<bool, ExecError> {
-        if args.is_empty() {
-            eprintln!("ShellCore::run_builtin");
-            return Ok(false);
-        }
-
-        if ! self.substitution_builtins.contains_key(&args[0]) {
-            return Ok(false);
-        }
-
-        let func = self.substitution_builtins[&args[0]];
-        self.db.exit_status = func(self, args, substitutions);
-        Ok(true)
     }
 
     fn set_subshell_parameters(&mut self) -> Result<(), String> {

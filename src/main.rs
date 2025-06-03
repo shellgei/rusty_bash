@@ -17,6 +17,7 @@ use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use utils::{exit, file_check, arg};
 use error::input::InputError;
+use crate::core::builtins::source;
 
 fn show_version() {
     const V: &'static str = env!("CARGO_PKG_VERSION");
@@ -44,7 +45,7 @@ fn read_rc_file(core: &mut ShellCore) {
     let rc_file = dir + "/.sushrc";
 
     if file_check::is_regular_file(&rc_file) {
-        let _ = core.run_builtin(&mut vec![".".to_string(), rc_file], &mut vec![]);
+        core.db.exit_status = source::source(core, &mut vec![".".to_string(), rc_file]);
     }
 }
 
