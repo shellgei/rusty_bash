@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder, utils};
 use super::{alias, SimpleCommand};
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
 
 impl SimpleCommand {
@@ -16,8 +16,8 @@ impl SimpleCommand {
         if let Some(s) = Substitution::parse(feeder, core, read_var)? {
             ans.text += &s.text;
 
-            if core.substitution_builtins.contains_key(&ans.command_name) 
-            || ans.command_name == "eval" {
+            if core.substitution_builtins.contains_key(&ans.command_name) {
+            //|| ans.command_name == "eval" {
                 ans.substitutions_as_args.push(s);
             }else{
                 ans.substitutions.push(s);
@@ -30,7 +30,12 @@ impl SimpleCommand {
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore)
         -> Result<bool, ParseError> {
-        let w = match Word::parse(feeder, core, None) {
+        let mut mode = None;
+        if ans.command_name == "eval" || ans.command_name == "let" {
+            mode = Some(WordMode::EvalLet);
+        }
+
+        let w = match Word::parse(feeder, core, mode) {
             Ok(Some(w)) => w,
             Err(e) => {
                 feeder.rewind();
@@ -73,8 +78,8 @@ impl SimpleCommand {
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
 
-            if core.substitution_builtins.contains_key(&ans.command_name) 
-            || ans.command_name == "eval" {
+            if core.substitution_builtins.contains_key(&ans.command_name) {
+            //|| ans.command_name == "eval" {
                 if Self::eat_substitution(feeder, &mut ans, core)? {
                     continue;
                 }
@@ -94,6 +99,7 @@ impl SimpleCommand {
 
         if ans.substitutions.len() + ans.words.len() + ans.redirects.len() > 0 {
             feeder.pop_backup();
+//            dbg!("{:?}", &ans);
             Ok(Some(ans))
         }else{
             feeder.rewind();

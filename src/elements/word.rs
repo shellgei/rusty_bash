@@ -18,6 +18,7 @@ use super::subword::Subword;
 pub enum WordMode {
     Alias,
     Arithmetric,
+    EvalLet,
     CompgenF,
     ReadCommand,
     Heredoc,
