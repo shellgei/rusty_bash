@@ -7,13 +7,12 @@ use crate::elements::word::{Word, WordMode};
 use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use super::super::{Subscript, Variable};
+use super::super::Variable;
 use super::OptionalOperation;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
     pub text: String,
-    pub subscript: Option<Subscript>,
     pub symbol: Option<String>,
     pub alternative_value: Option<Word>,
 }
@@ -22,14 +21,10 @@ impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {self.text.clone()}
     fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        self.subscript = param.index.clone();
-        let name = &param.name;
-
         let sym = self.symbol.clone().unwrap();
-
         let mut check_ok = match sym.starts_with(":") {
             true  => text != "",
-            false => self.exist(name, core)?,
+            false => self.exist(&mut param.clone(), core)?,
         };
 
         if sym.ends_with("+") {
@@ -42,8 +37,8 @@ impl OptionalOperation for ValueCheck {
         }
 
         match sym.as_ref() {
-            "?" | ":?" => self.show_error(name, core),
-            "=" | ":=" => self.set_value(name, core),
+            "?" | ":?" => self.show_error(&param.name, core),
+            "=" | ":=" => self.set_value(&param.name, core),
             _  => self.replace(text, core),
         }
     }
@@ -66,49 +61,21 @@ impl OptionalOperation for ValueCheck {
 }
 
 impl ValueCheck {
-    /*
-    fn set(&mut self, var: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.subscript = var.index.clone();
-        let name = &var.name;
-
-        let sym = self.symbol.clone().unwrap();
-
-        let mut check_ok = match sym.starts_with(":") {
-            true  => text != "",
-            false => self.exist(name, core)?,
-        };
-
-        if sym.ends_with("+") {
-            check_ok = !check_ok;
-        }
-
-        if check_ok {
-            self.alternative_value = None;
-            return Ok(text.clone());
-        }
-
-        match sym.as_ref() {
-            "?" | ":?" => self.show_error(name, core),
-            "=" | ":=" => self.set_value(name, core),
-            _  => self.replace(text, core),
-        }
-    }*/
-
-    fn exist(&mut self, name: &String, core: &mut ShellCore)
+    fn exist(&mut self, var: &mut Variable, core: &mut ShellCore)
     -> Result<bool, ExecError> {
-        if core.db.is_array(&name) 
-        && core.db.get_vec(&name, false)?.is_empty() {
+        if core.db.is_array(&var.name) 
+        && core.db.get_vec(&var.name, false)?.is_empty() {
             return Ok(false);
         }
         
-        if let Some(sub) = self.subscript.as_mut() {
-            if sub.eval(core, &name).is_ok()
-            && core.db.has_array_value(&name, &sub.text) {
+        if let Some(sub) = var.index.as_mut() {
+            if sub.eval(core, &var.name).is_ok()
+            && core.db.has_array_value(&var.name, &sub.text) {
                 return Ok(true);
             }
         }
 
-        Ok(core.db.has_value(name))
+        Ok(core.db.has_value(&var.name))
     }
 
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {

@@ -6,7 +6,6 @@ mod parse;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
-use crate::elements::substitution::subscript::Subscript;
 use crate::elements::substitution::variable::Variable;
 use crate::utils;
 use crate::utils::splitter;
