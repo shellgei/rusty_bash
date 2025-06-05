@@ -24,7 +24,8 @@ impl OptionalOperation for ValueCheck {
         let sym = self.symbol.clone().unwrap();
         let mut check_ok = match sym.starts_with(":") {
             true  => text != "",
-            false => self.exist(&mut param.clone(), core)?,
+            //false => self.exist(&mut param.clone(), core)?,
+            false => param.exist(core)?,
         };
 
         if sym.ends_with("+") {
@@ -61,6 +62,7 @@ impl OptionalOperation for ValueCheck {
 }
 
 impl ValueCheck {
+    /*
     fn exist(&mut self, var: &mut Variable, core: &mut ShellCore)
     -> Result<bool, ExecError> {
         if core.db.is_array(&var.name) 
@@ -76,7 +78,7 @@ impl ValueCheck {
         }
 
         Ok(core.db.has_value(&var.name))
-    }
+    }*/
 
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         let v = match &self.alternative_value {

@@ -109,6 +109,22 @@ impl Variable {
         }
     }
 
+    pub fn exist(&self, core: &mut ShellCore) -> Result<bool, ExecError> {//used in value_check.rs
+        if core.db.is_array(&self.name) 
+        && core.db.get_vec(&self.name, false)?.is_empty() {
+            return Ok(false);
+        }
+        
+        if let Some(sub) = self.index.clone().as_mut() {
+            if sub.eval(core, &self.name).is_ok()
+            && core.db.has_array_value(&self.name, &sub.text) {
+                return Ok(true);
+            }
+        }
+
+        Ok(core.db.has_value(&self.name))
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {
