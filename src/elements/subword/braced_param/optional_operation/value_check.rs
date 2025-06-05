@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{exit, Feeder, ShellCore};
+use crate::{Feeder, ShellCore};
 use crate::elements::subword::Subword;
 use crate::elements::word::{Word, WordMode};
 use crate::error::arith::ArithError;
@@ -47,33 +47,38 @@ impl ValueCheck {
 
         let sym = self.symbol.clone().unwrap();
 
-        let exist = match sym.starts_with(":") {
+        let mut check_ok = match sym.starts_with(":") {
             true  => text != "",
             false => self.exist(name, core)?,
         };
 
+        if sym.ends_with("+") {
+            check_ok = !check_ok;
+        }
+
+        if check_ok {
+            self.alternative_value = None;
+            return Ok(text.clone());
+        }
+
         match sym.as_ref() {
-            "?" | ":?" => self.colon_question(name, text, core),
-            "=" | ":=" => self.colon_equal(name, text, core),
-            "-" | ":-" => self.replace(text, core, !exist),
-            "+" | ":+"  => self.replace(text, core, exist),
-            _    => exit::internal("no operation"),
+            "?" | ":?" => self.show_error(name, core),
+            "=" | ":=" => self.set_value(name, core),
+            _  => self.replace(text, core),
         }
     }
 
     fn exist(&mut self, name: &String, core: &mut ShellCore)
     -> Result<bool, ExecError> {
-        if core.db.is_array(&name) {
-            if core.db.get_vec(&name, false)?.is_empty() {
-                return Ok(false);
-            }
+        if core.db.is_array(&name) 
+        && core.db.get_vec(&name, false)?.is_empty() {
+            return Ok(false);
         }
         
         if let Some(sub) = self.subscript.as_mut() {
-            if sub.eval(core, &name).is_ok() {
-                if core.db.has_array_value(&name, &sub.text) {
-                    return Ok(true);
-                }
+            if sub.eval(core, &name).is_ok()
+            && core.db.has_array_value(&name, &sub.text) {
+                return Ok(true);
             }
         }
 
@@ -90,32 +95,22 @@ impl ValueCheck {
         Ok(value.clone())
     }
 
-    fn replace(&mut self, text: &String, core: &mut ShellCore, exist: bool)
+    fn replace(&mut self, text: &String, core: &mut ShellCore)
     -> Result<String, ExecError> { 
-        match exist {
-            true  => {self.set_alter_word(core)?;},
-            false => self.alternative_value = None,
-        }
+        self.set_alter_word(core)?;
         Ok(text.clone())
     }
 
-    fn colon_equal(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        if text != "" {
-            self.alternative_value = None;
-            return Ok(text.clone());
-        }
-
+    fn set_value(&mut self, name: &String, core: &mut ShellCore)
+    -> Result<String, ExecError> {
         let value = self.set_alter_word(core)?;
         core.db.set_param(&name, &value, None)?;
         self.alternative_value = None;
         Ok(value)
     }
 
-    fn colon_question(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        if core.db.has_value(&name) {
-            self.alternative_value = None;
-            return Ok(text.clone());
-        }
+    fn show_error(&mut self, name: &String, core: &mut ShellCore)
+    -> Result<String, ExecError> {
         let value = self.set_alter_word(core)?;
         let msg = format!("{}: {}", &name, &value);
         Err(ExecError::Other(msg))
