@@ -82,7 +82,8 @@ impl Variable {
         }
 
         let i_opt = arg::consume_option("-i", args);
-        if arg::consume_option("-a", args) {
+        if arg::consume_option("-a", args)
+        || self.index.is_some() {
             return match i_opt { 
                 true  => core.db.set_int_array(&self.name, prev, layer),
                 false => core.db.set_array(&self.name, prev, layer),

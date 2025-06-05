@@ -62,16 +62,15 @@ fn reparse(core: &mut ShellCore, sub: &mut Substitution) {
 
 fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec<String>,
                     layer: usize) -> Result<(), ExecError> {
+    if core.db.is_readonly(&sub.left_hand.name) {
+        return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
+    }
+
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
 
     if sub.has_right {
         reparse(core, sub);
-    }
-
-    if read_only {
-        core.db.set_flag(&sub.left_hand.name, 'r');
-        return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
     }
 
     if export_opt {
@@ -82,10 +81,24 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         core.db.set_flag(&sub.left_hand.name, 'i');
     }
 
+    let mut res = Ok(());
+
     match sub.has_right {
-        true  => sub.eval(core, Some(layer), true),
-        false => sub.left_hand.init_variable(core, Some(layer), args),
+        true  => res = sub.eval(core, Some(layer), true),
+        false => {
+            if ! core.db.params[layer].contains_key(&sub.left_hand.name)
+            || ( ! core.db.is_array(&sub.left_hand.name) && args.contains(&"-a".to_string()) )
+            || ( ! core.db.is_assoc(&sub.left_hand.name) && args.contains(&"-A".to_string()) ) {
+                res = sub.left_hand.init_variable(core, Some(layer), args);
+            }
+        },
     }
+
+    if read_only {
+        core.db.set_flag(&sub.left_hand.name, 'r');
+    }
+
+    res
 }
 
 fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {

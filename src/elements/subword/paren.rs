@@ -26,6 +26,8 @@ impl Subword for EvalLetParen {
         Ok(())
     }
 
+    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {vec![]}
+
     /*
     fn make_glob_string(&mut self) -> String {
         return self.text.replace("\\", "\\\\")
