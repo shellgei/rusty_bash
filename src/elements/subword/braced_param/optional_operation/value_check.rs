@@ -20,30 +20,10 @@ pub struct ValueCheck {
 
 impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.set(&param.name, &param.index, text, core)
-    }
-
-    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
-    fn is_value_check(&self) -> bool {true}
-
-    fn get_alternative(&self) -> Vec<Box<dyn Subword>> {
-        match &self.alternative_value {
-            Some(w) => w.subwords.to_vec(),
-            None    => vec![],
-        }
-    }
-
-    fn set_heredoc_flag(&mut self) { 
-        self.alternative_value
-            .iter_mut()
-            .for_each(|e| e.set_heredoc_flag());
-    }
-}
-
-impl ValueCheck {
-    pub fn set(&mut self, name: &String, sub: &Option<Subscript>, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.subscript = sub.clone();
+    fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore)
+    -> Result<String, ExecError> {
+        self.subscript = param.index.clone();
+        let name = &param.name;
 
         let sym = self.symbol.clone().unwrap();
 
@@ -67,6 +47,52 @@ impl ValueCheck {
             _  => self.replace(text, core),
         }
     }
+
+    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+    fn is_value_check(&self) -> bool {true}
+
+    fn get_alternative(&self) -> Vec<Box<dyn Subword>> {
+        match &self.alternative_value {
+            Some(w) => w.subwords.to_vec(),
+            None    => vec![],
+        }
+    }
+
+    fn set_heredoc_flag(&mut self) { 
+        self.alternative_value
+            .iter_mut()
+            .for_each(|e| e.set_heredoc_flag());
+    }
+}
+
+impl ValueCheck {
+    /*
+    fn set(&mut self, var: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+        self.subscript = var.index.clone();
+        let name = &var.name;
+
+        let sym = self.symbol.clone().unwrap();
+
+        let mut check_ok = match sym.starts_with(":") {
+            true  => text != "",
+            false => self.exist(name, core)?,
+        };
+
+        if sym.ends_with("+") {
+            check_ok = !check_ok;
+        }
+
+        if check_ok {
+            self.alternative_value = None;
+            return Ok(text.clone());
+        }
+
+        match sym.as_ref() {
+            "?" | ":?" => self.show_error(name, core),
+            "=" | ":=" => self.set_value(name, core),
+            _  => self.replace(text, core),
+        }
+    }*/
 
     fn exist(&mut self, name: &String, core: &mut ShellCore)
     -> Result<bool, ExecError> {
