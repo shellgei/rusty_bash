@@ -53,10 +53,10 @@ impl ValueCheck {
         };
 
         match sym.as_ref() {
-            ":?" => self.colon_question(name, text, core),
-            ":=" => self.colon_equal(name, text, core),
-            "-" | ":-" => self.minus(text, core, exist),
-            "+" | ":+"  => self.plus(text, core, exist),
+            "?" | ":?" => self.colon_question(name, text, core),
+            "=" | ":=" => self.colon_equal(name, text, core),
+            "-" | ":-" => self.replace(text, core, !exist),
+            "+" | ":+"  => self.replace(text, core, exist),
             _    => exit::internal("no operation"),
         }
     }
@@ -90,15 +90,7 @@ impl ValueCheck {
         Ok(value.clone())
     }
 
-    fn minus(&mut self, text: &String, core: &mut ShellCore, exist: bool) -> Result<String, ExecError> {
-        match exist {
-            false => {self.set_alter_word(core)?;},
-            true  => self.alternative_value = None,
-        }
-        Ok(text.clone())
-    }
-
-    fn plus(&mut self, text: &String, core: &mut ShellCore, exist: bool)
+    fn replace(&mut self, text: &String, core: &mut ShellCore, exist: bool)
     -> Result<String, ExecError> { 
         match exist {
             true  => {self.set_alter_word(core)?;},
@@ -118,17 +110,6 @@ impl ValueCheck {
         self.alternative_value = None;
         Ok(value)
     }
-
-    /*
-    fn colon_minus(&mut self, text: &String, core: &mut ShellCore, exist: bool) -> Result<String, ExecError> {
-        if exist {
-            self.alternative_value = None;
-            return Ok(text.clone());
-        }
-
-        self.set_alter_word(core)?;
-        Ok(text.clone())
-    }*/
 
     fn colon_question(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         if core.db.has_value(&name) {
