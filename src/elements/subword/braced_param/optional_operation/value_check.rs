@@ -44,15 +44,40 @@ impl OptionalOperation for ValueCheck {
 impl ValueCheck {
     pub fn set(&mut self, name: &String, sub: &Option<Subscript>, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         self.subscript = sub.clone();
-        match self.symbol.as_deref() {
-            Some(":-")   => self.colon_minus(text, core),
-            Some(":?") => self.colon_question(name, text, core),
-            Some(":=") => self.colon_equal(name, text, core),
-            Some("-")  => self.minus(name, text, core),
-            Some(":+") => self.colon_plus(text, core),
-            Some("+")  => self.plus(name, text, core),
-            _          => exit::internal("no operation"),
+
+        let sym = self.symbol.clone().unwrap();
+
+        let exist = match sym.starts_with(":") {
+            true  => text != "",
+            false => self.exist(name, core)?,
+        };
+
+        match sym.as_ref() {
+            ":?" => self.colon_question(name, text, core),
+            ":=" => self.colon_equal(name, text, core),
+            "-" | ":-" => self.minus(text, core, exist),
+            "+" | ":+"  => self.plus(text, core, exist),
+            _    => exit::internal("no operation"),
         }
+    }
+
+    fn exist(&mut self, name: &String, core: &mut ShellCore)
+    -> Result<bool, ExecError> {
+        if core.db.is_array(&name) {
+            if core.db.get_vec(&name, false)?.is_empty() {
+                return Ok(false);
+            }
+        }
+        
+        if let Some(sub) = self.subscript.as_mut() {
+            if sub.eval(core, &name).is_ok() {
+                if core.db.has_array_value(&name, &sub.text) {
+                    return Ok(true);
+                }
+            }
+        }
+
+        Ok(core.db.has_value(name))
     }
 
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -61,46 +86,23 @@ impl ValueCheck {
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
         self.alternative_value = Some(v.tilde_and_dollar_expansion(core)? );
-        let value = v.eval_as_value(core)?;//.ok_or(ExecError::OperandExpected("".to_string()))?;
+        let value = v.eval_as_value(core)?;
         Ok(value.clone())
     }
 
-    fn minus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        match core.db.has_value(&name) {
+    fn minus(&mut self, text: &String, core: &mut ShellCore, exist: bool) -> Result<String, ExecError> {
+        match exist {
             false => {self.set_alter_word(core)?;},
             true  => self.alternative_value = None,
         }
         Ok(text.clone())
     }
 
-    fn plus(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> { 
-        if core.db.is_array(&name) {
-            if core.db.get_vec(&name, false)?.is_empty() {
-                self.alternative_value = None;
-                return Ok(text.clone());
-            }
-        }
-        
-        if let Some(sub) = self.subscript.as_mut() {
-            if sub.eval(core, &name).is_ok() {
-                if core.db.has_array_value(&name, &sub.text) {
-                    self.set_alter_word(core)?;
-                    return Ok(text.clone());
-                }
-            }
-        }
-
-        match core.db.has_value(&name) {
+    fn plus(&mut self, text: &String, core: &mut ShellCore, exist: bool)
+    -> Result<String, ExecError> { 
+        match exist {
             true  => {self.set_alter_word(core)?;},
             false => self.alternative_value = None,
-        }
-        Ok(text.clone())
-    }
-
-    fn colon_plus(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        match text.is_empty() {
-            true  => self.alternative_value = None,
-            false => {self.set_alter_word(core)?;},
         }
         Ok(text.clone())
     }
@@ -117,15 +119,16 @@ impl ValueCheck {
         Ok(value)
     }
 
-    fn colon_minus(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        if text != "" {
+    /*
+    fn colon_minus(&mut self, text: &String, core: &mut ShellCore, exist: bool) -> Result<String, ExecError> {
+        if exist {
             self.alternative_value = None;
             return Ok(text.clone());
         }
 
         self.set_alter_word(core)?;
         Ok(text.clone())
-    }
+    }*/
 
     fn colon_question(&mut self, name: &String, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         if core.db.has_value(&name) {
@@ -151,7 +154,8 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        if let Some(w) = Word::parse(feeder, core, Some(WordMode::ParamOption(vec!["}".to_string()])))? {
+        let mode = WordMode::ParamOption(vec!["}".to_string()]);
+        if let Some(w) = Word::parse(feeder, core, Some(mode))? {
             ans.text += &w.text.clone();
             ans.alternative_value = Some(w);
         }else{
