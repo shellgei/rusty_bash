@@ -91,8 +91,7 @@ impl ValueCheck {
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
         self.alternative_value = Some(v.tilde_and_dollar_expansion(core)? );
-        let value = v.eval_as_value(core)?;
-        Ok(value.clone())
+        Ok(v.eval_as_value(core)?)
     }
 
     fn replace(&mut self, text: &String, core: &mut ShellCore)
