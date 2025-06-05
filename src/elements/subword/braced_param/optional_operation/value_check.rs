@@ -123,11 +123,11 @@ impl ValueCheck {
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
         let mode = WordMode::ParamOption(vec!["}".to_string()]);
+        ans.alternative_value = Some(Word::default());
+
         if let Some(w) = Word::parse(feeder, core, Some(mode))? {
             ans.text += &w.text.clone();
             ans.alternative_value = Some(w);
-        }else{
-            ans.alternative_value = Some(Word::default());
         }
 
         Ok(Some(ans))
