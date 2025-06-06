@@ -182,6 +182,7 @@ impl DoubleQuoted {
         }
 
         let mut ans = Self::default();
+        feeder.nest.push(("\"".to_string(), vec!["\"".to_string()]));
 
         let len = if feeder.starts_with("\""){1}else{2};
 
@@ -190,6 +191,7 @@ impl DoubleQuoted {
         while Self::eat_element(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}
 
+        feeder.nest.pop();
         Ok(Some(ans))
     }
 }

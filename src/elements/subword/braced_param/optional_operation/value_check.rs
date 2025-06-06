@@ -15,6 +15,7 @@ pub struct ValueCheck {
     pub text: String,
     pub symbol: Option<String>,
     pub alternative_value: Option<Word>,
+    in_double_quoted: bool,
 }
 
 impl OptionalOperation for ValueCheck {
@@ -62,6 +63,9 @@ impl OptionalOperation for ValueCheck {
 
 impl ValueCheck {
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        if self.in_double_quoted {
+        }
+
         let v = match &self.alternative_value {
             Some(av) => av.clone(), 
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
@@ -111,6 +115,10 @@ impl ValueCheck {
         if let Some(w) = Word::parse(feeder, core, Some(mode))? {
             ans.text += &w.text.clone();
             ans.alternative_value = Some(w);
+        }
+
+        if let Some(e) = feeder.nest.last() {
+            ans.in_double_quoted = e.0 == "\"";
         }
 
         Ok(Some(ans))
