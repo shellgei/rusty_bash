@@ -19,3 +19,9 @@
 ./test_builtins.bash
 ./test_builtins.bash
 ./test_builtins.bash
+./test_options.bash
+./test_options.bash
+./test_options.bash
+./test_options.bash
+./test_options.bash
+./test_options.bash

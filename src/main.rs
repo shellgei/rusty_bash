@@ -49,50 +49,84 @@ fn read_rc_file(core: &mut ShellCore) {
     }
 }
 
-fn configure(args: &Vec<String>, core: &mut ShellCore) {
-    let mut parameters = vec![args[0].clone()];
-    let mut options = vec![];
+fn consume_file_and_subsequents(args: &mut Vec<String>) -> Vec<String> {
+    let len = args.len();
+    let mut skip = false;
+    let mut pos = None;
 
-    for i in 1..args.len() {
-        if args[i].starts_with("-") {
-            options.push(args[i].clone());
-        }else{
-            core.script_name = args[i].clone();
-            parameters = args[i..].to_vec();
-            break;
+    for i in 1..len {
+        if skip {
+            skip = false;
+            continue;
+        }
+
+        if args[i].starts_with("-o") || args[i].starts_with("+o") {
+            skip = true;
+            continue;
+        }
+
+        if args[i].starts_with("-") || args[i].starts_with("+") {
+            continue;
+        }
+
+        pos = Some(i);
+        break;
+    }
+
+    if pos.is_none() {
+        return vec![];
+    }
+
+    args.split_off(pos.unwrap())
+}
+
+fn set_long_options(args: &mut Vec<String>, core: &mut ShellCore) {
+    let mut options = vec![];
+    loop {
+        if let Some(opt) = arg::consume_with_next_arg("-o", args) {
+            options.push((opt, true));
+            continue;
+        }
+        if let Some(opt) = arg::consume_with_next_arg("+o", args) {
+            options.push((opt, false));
+            continue;
+        }
+
+        break;
+    }
+
+    for opt in options {
+        if let Err(e) = core.options.set(&opt.0, opt.1) {
+            e.print(core);
+            process::exit(2);
         }
     }
-
-    if let Err(e) = option::set_positions(core, &parameters) {
-        e.print(core);
-        core.db.exit_status = 2;
-        exit::normal(core);
-    }
-    if let Err(e) = option::set_options(core, &mut options) {
-        e.print(core);
-        core.db.exit_status = 2;
-        exit::normal(core);
-    }
-    core.configure();
 }
 
 fn main() {
     let mut args = arg::dissolve_options(&env::args().collect());
+
     let command = args[0].clone();
     if args.len() > 1 && args[1] == "--version" {
         show_version();
     }
 
-    let mut options = vec![];
-    loop {
-        if let Some(opt) = arg::consume_with_next_arg("-o", &mut args) {
-            options.push(opt);
-        }else{
-            break;
+    let mut c_parts = vec![];
+    let mut script_parts = match c_parts.is_empty() {
+        true => consume_file_and_subsequents(&mut args),
+        false => vec![],
+    };
+
+    if let Some(opt) = args.last() {
+        if opt == "-c" {
+            c_parts = script_parts.clone();
+            script_parts.clear();
+            c_parts.insert(0, args.pop().unwrap());
         }
     }
 
     let mut core = ShellCore::new();
+    set_long_options(&mut args, &mut core);
 
     let compat_bash = arg::consume_option("-b", &mut args);
     if compat_bash {
@@ -100,21 +134,28 @@ fn main() {
         core.db.flags += "b";
     }
 
-    for opt in options {
-        if let Err(e) = core.options.set(&opt, true) {
-            e.print(&mut core);
-            process::exit(2);
-        }
-    }
-
-    let c_parts = arg::consume_with_subsequents("-c", &mut args);
     if c_parts.len() != 0 {
         core.configure_c_mode();
-
         run_and_exit_c_option(&args, &c_parts, &mut core);
     }
 
-    configure(&args, &mut core);
+    match script_parts.is_empty() {
+        true  => {
+            core.db.position_parameters[0] = vec![command.clone()];
+            core.script_name = "-".to_string();
+        },
+        false => {
+            core.db.position_parameters[0] = script_parts;
+            core.script_name = core.db.position_parameters[0][0].clone();
+        },
+    }
+
+    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
+        e.print(&mut core);
+        core.db.exit_status = 2;
+        exit::normal(&mut core);
+    }
+    core.configure();
     signal::run_signal_check(&mut core);
 
     if core.script_name == "-" {
