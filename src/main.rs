@@ -5,6 +5,7 @@ mod core;
 mod error;
 mod feeder;
 mod elements;
+mod main_c_option;
 mod signal;
 mod proc_ctrl;
 mod utils;
@@ -116,6 +117,19 @@ fn set_short_options(args: &mut Vec<String>, core: &mut ShellCore) {
     }
 }
 
+fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str) {
+    match script_parts.is_empty() {
+        true  => {
+            core.db.position_parameters[0] = vec![command.to_string()];
+            core.script_name = "-".to_string();
+        },
+        false => {
+            core.db.position_parameters[0] = script_parts;
+            core.script_name = core.db.position_parameters[0][0].clone();
+        },
+    }
+}
+
 fn main() {
     let mut args = arg::dissolve_options(&env::args().collect());
 
@@ -124,17 +138,13 @@ fn main() {
         show_version();
     }
 
-    let mut c_parts = vec![];
-    let mut script_parts = match c_parts.is_empty() {
-        true => consume_file_and_subsequents(&mut args),
-        false => vec![],
-    };
+    let script_parts = consume_file_and_subsequents(&mut args);
 
+    let mut c_opt = false;
     if let Some(opt) = args.last() {
         if opt == "-c" {
-            c_parts = script_parts.clone();
-            script_parts.clear();
-            c_parts.insert(0, args.pop().unwrap());
+            c_opt = true;
+            args.pop();
         }
     }
 
@@ -142,19 +152,11 @@ fn main() {
     set_long_options(&mut args, &mut core);
     set_short_options(&mut args, &mut core);
 
-    if c_parts.len() != 0 {
-        run_and_exit_c_option(&args, &c_parts, &mut core);
-    }
-
-    match script_parts.is_empty() {
-        true  => {
-            core.db.position_parameters[0] = vec![command.clone()];
-            core.script_name = "-".to_string();
-        },
-        false => {
-            core.db.position_parameters[0] = script_parts;
-            core.script_name = core.db.position_parameters[0][0].clone();
-        },
+    if ! c_opt {
+        set_parameters(script_parts, &mut core, &command);
+    }else{
+        main_c_option::set_parameters(&script_parts, &mut core, &args[0]);
+        main_c_option::run_and_exit(&args, &script_parts, &mut core); //exit here
     }
 
     core.configure();
@@ -212,46 +214,6 @@ fn main_loop(core: &mut ShellCore, command: &String) {
         }
     }
     core.write_history_to_file();
-    exit::normal(core);
-}
-
-fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut ShellCore) {
-    core.configure_c_mode();
-    if c_parts.len() < 2 {
-        println!("{}: -c: option requires an argument", &args[0]);
-        process::exit(2);                
-    }
-
-    let parameters = if c_parts.len() > 2 {
-        c_parts[2..].to_vec()
-    }else{
-        vec![args[0].clone()]
-    };
-
-    if let Err(e) = option::set_positions(core, &parameters) {
-        e.print(core);
-        core.db.exit_status = 2;
-        exit::normal(core);
-    }
-
-    signal::run_signal_check(core);
-    core.db.flags.retain(|f| f != 'i');
-
-    core.db.flags += "c";
-    if core.db.flags.contains('v') {
-        eprintln!("{}", &c_parts[1]);
-    }
-
-    let mut feeder = Feeder::new_c_mode(c_parts[1].clone());
-    feeder.main_feeder = true;
-
-    loop {
-        match feed_script(&mut feeder, core) {
-            (true, false) => {},
-            (false, true) => break,
-            _ => parse_and_exec(&mut feeder, core, false),
-        }
-    }
     exit::normal(core);
 }
 
