@@ -255,8 +255,9 @@ pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>,
         return readonly_print(core, &mut args);
     }
 
-    let layer = core.db.get_layer_num() - 2;
     for sub in subs {
+        let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
+
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
             e.print(core);
             return 1;
