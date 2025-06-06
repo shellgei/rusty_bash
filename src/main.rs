@@ -128,14 +128,18 @@ fn main() {
     let mut core = ShellCore::new();
     set_long_options(&mut args, &mut core);
 
-    let compat_bash = arg::consume_option("-b", &mut args);
-    if compat_bash {
+    if arg::consume_option("-b", &mut args) {
         core.compat_bash = true;
         core.db.flags += "b";
     }
 
+    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
+        e.print(&mut core);
+        core.db.exit_status = 2;
+        exit::normal(&mut core);
+    }
+
     if c_parts.len() != 0 {
-        core.configure_c_mode();
         run_and_exit_c_option(&args, &c_parts, &mut core);
     }
 
@@ -150,11 +154,6 @@ fn main() {
         },
     }
 
-    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
-        e.print(&mut core);
-        core.db.exit_status = 2;
-        exit::normal(&mut core);
-    }
     core.configure();
     signal::run_signal_check(&mut core);
 
@@ -214,6 +213,7 @@ fn main_loop(core: &mut ShellCore, command: &String) {
 }
 
 fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut ShellCore) {
+    core.configure_c_mode();
     if c_parts.len() < 2 {
         println!("{}: -c: option requires an argument", &args[0]);
         process::exit(2);                
@@ -226,11 +226,6 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut S
     };
 
     if let Err(e) = option::set_positions(core, &parameters) {
-        e.print(core);
-        core.db.exit_status = 2;
-        exit::normal(core);
-    }
-    if let Err(e) = option::set_options(core, &mut args[1..].to_vec()) {
         e.print(core);
         core.db.exit_status = 2;
         exit::normal(core);
