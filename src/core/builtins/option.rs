@@ -4,7 +4,14 @@
 use crate::{error, ShellCore};
 use crate::error::exec::ExecError;
 use crate::utils::arg;
-use super::parameter;
+
+pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
+    if core.db.position_parameters.pop().is_none() {
+        return Err(ExecError::Other("empty param stack".to_string()));
+    }
+    core.db.position_parameters.push(args.to_vec());
+    Ok(())
+}
 
 fn set_option(core: &mut ShellCore, opt: char, pm: char) {
     if pm == '+' {
@@ -92,7 +99,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args[1].starts_with("--") {
         args[1] = core.db.position_parameters[0][0].clone();
         args.remove(0);
-        return match parameter::set_positions(core, &args) {
+        return match set_positions(core, &args) {
             Ok(()) => 0,
             Err(e) => {
                 return super::error_exit(1, &args[0], &String::from(&e), core);
@@ -129,7 +136,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             e.print(core);
             return 2;
         },
-        false => if let Err(e) = parameter::set_positions(core, &args) {
+        false => if let Err(e) = set_positions(core, &args) {
             e.print(core);
             return 2;
         },

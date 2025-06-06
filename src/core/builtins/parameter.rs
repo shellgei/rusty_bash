@@ -8,14 +8,6 @@ use crate::elements::word::Word;
 use crate::utils::arg;
 use super::error_exit;
 
-pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
-    if core.db.position_parameters.pop().is_none() {
-        return Err(ExecError::Other("empty param stack".to_string()));
-    }
-    core.db.position_parameters.push(args.to_vec());
-    Ok(())
-}
-
 pub fn local(core: &mut ShellCore,
              args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
     let layer = if core.db.get_layer_num() > 2 {

@@ -9,7 +9,7 @@ mod signal;
 mod proc_ctrl;
 mod utils;
 
-use builtins::{option, parameter};
+use builtins::option;
 use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 use crate::core::{builtins, ShellCore};
@@ -63,7 +63,7 @@ fn configure(args: &Vec<String>, core: &mut ShellCore) {
         }
     }
 
-    if let Err(e) = parameter::set_positions(core, &parameters) {
+    if let Err(e) = option::set_positions(core, &parameters) {
         e.print(core);
         core.db.exit_status = 2;
         exit::normal(core);
@@ -185,7 +185,7 @@ fn run_and_exit_c_option(args: &Vec<String>, c_parts: &Vec<String>, core: &mut S
         vec![args[0].clone()]
     };
 
-    if let Err(e) = parameter::set_positions(core, &parameters) {
+    if let Err(e) = option::set_positions(core, &parameters) {
         e.print(core);
         core.db.exit_status = 2;
         exit::normal(core);
