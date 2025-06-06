@@ -103,6 +103,19 @@ fn set_long_options(args: &mut Vec<String>, core: &mut ShellCore) {
     }
 }
 
+fn set_short_options(args: &mut Vec<String>, core: &mut ShellCore) {
+    if arg::consume_option("-b", args) {
+        core.compat_bash = true;
+        core.db.flags += "b";
+    }
+
+    if let Err(e) = option::set_options(core, &mut args[1..].to_vec()) {
+        e.print(core);
+        core.db.exit_status = 2;
+        exit::normal(core);
+    }
+}
+
 fn main() {
     let mut args = arg::dissolve_options(&env::args().collect());
 
@@ -127,17 +140,7 @@ fn main() {
 
     let mut core = ShellCore::new();
     set_long_options(&mut args, &mut core);
-
-    if arg::consume_option("-b", &mut args) {
-        core.compat_bash = true;
-        core.db.flags += "b";
-    }
-
-    if let Err(e) = option::set_options(&mut core, &mut args[1..].to_vec()) {
-        e.print(&mut core);
-        core.db.exit_status = 2;
-        exit::normal(&mut core);
-    }
+    set_short_options(&mut args, &mut core);
 
     if c_parts.len() != 0 {
         run_and_exit_c_option(&args, &c_parts, &mut core);
