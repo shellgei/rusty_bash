@@ -64,15 +64,32 @@ pub fn dissolve_option(opt: &str) -> Vec<String> {
 
 pub fn dissolve_options(args: &Vec<String>) -> Vec<String> {
     let mut ans = vec![];
-    let mut after_double_hyphen = false;
+    let mut stop = false;
     for a in args {
         if a == "--" {
-            after_double_hyphen = true;
+            stop = true;
         }
 
-        match after_double_hyphen {
+        match stop {
             true => ans.push(a.to_string()),
             false => ans.append(&mut dissolve_option(a)),
+        }
+    }
+
+    ans
+}
+
+pub fn dissolve_options_main() -> Vec<String> {
+    let mut ans = vec![];
+    let mut stop = false;
+    for (i, a) in std::env::args().enumerate() { 
+        if i != 0 && ! a.starts_with("-") {
+            stop = true;
+        }
+
+        match stop {
+            true => ans.push(a),
+            false => ans.append(&mut dissolve_option(&a)),
         }
     }
 

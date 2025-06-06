@@ -131,7 +131,7 @@ fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str
 }
 
 fn main() {
-    let mut args = arg::dissolve_options(&env::args().collect());
+    let mut args = arg::dissolve_options_main();
 
     let command = args[0].clone();
     if args.len() > 1 && args[1] == "--version" {
