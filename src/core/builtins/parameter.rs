@@ -202,7 +202,7 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Subs
     }
 
     for sub in subs {
-        let layer = core.db.get_layer_num() - 2;
+        let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
             e.print(core);
             return 1;
@@ -213,9 +213,8 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Subs
 
 pub fn export(core: &mut ShellCore, args: &mut Vec<String>,
               subs: &mut Vec<Substitution>) -> i32 {
-
-    let layer = core.db.get_layer_num() - 2;//TODO: it is not tested
     for sub in subs.iter_mut() {
+        let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
             e.print(core);
             return 1;
