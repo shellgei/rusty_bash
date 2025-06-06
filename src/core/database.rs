@@ -7,13 +7,13 @@ use std::collections::HashMap;
 use std::env;
 
 #[derive(Debug, Default)]
-pub struct Data {
+pub struct DataBase {
     pub position_parameters: Vec<Vec<String>>,
     pub parameters: HashMap<String, String>,
     pub functions: HashMap<String, FunctionDefinition>,
 }
 
-impl Data {
+impl DataBase {
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
         if let Ok(n) = name.parse::<usize>() {
             let layer = &self.position_parameters.last().unwrap();

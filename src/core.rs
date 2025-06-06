@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod builtins;
-pub mod data;
+pub mod database;
 pub mod history;
 pub mod jobtable;
 
-use self::data::Data;
+use self::database::DataBase;
 use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
@@ -26,7 +26,7 @@ type BuiltinFunc = fn(&mut ShellCore, &mut [String]) -> i32;
 #[derive(Default)]
 pub struct ShellCore {
     pub flags: String,
-    pub db: Data,
+    pub db: DataBase,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, BuiltinFunc>,
