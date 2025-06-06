@@ -124,7 +124,6 @@ fn main() {
 }
 
 fn set_history(core: &mut ShellCore, s: &str) {
-    //if core.read_stdin || core.history.is_empty() {
     if core.db.flags.contains('i') || core.history.is_empty() {
         return;
     }
