@@ -75,9 +75,8 @@ impl Subword for BracedParam {
             return vec![];
         }
 
-        if (self.param.name != "@" && self.param.name != "*")
-        || ifs.starts_with(" ") || self.array.is_none() {
-            return splitter::split(&self.get_text(), ifs, prev_char).iter()
+        if ! self.treat_as_array || ifs.starts_with(" ") || self.array.is_none() {
+            return splitter::split(&self.text, ifs, prev_char).iter()
                 .map(|s| ( From::from(&s.0), s.1)).collect();
         }
 
