@@ -90,7 +90,7 @@ impl CaseConv {
 
             let new_ch = self.conv(ch);
             ans += &new_ch;
-            if ! self.replace_symbol.len() == 2 {
+            if self.replace_symbol.len() != 2 {
                 return Ok(ans + &text[start+len..]);
             }
 
