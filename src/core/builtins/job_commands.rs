@@ -484,7 +484,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let var_name = arg::consume_with_next_arg("-p", &mut args);
     let f_opt = arg::consume_option("-f", &mut args);
 
-    if args[1] == "-n" {
+    if args.len() > 1 && args[1] == "-n" {
         return wait_n(core, &mut args, &var_name, f_opt);
     }
 
