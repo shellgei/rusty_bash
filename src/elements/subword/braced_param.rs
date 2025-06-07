@@ -75,6 +75,15 @@ impl Subword for BracedParam {
             return vec![];
         }
 
+        if ifs == "" 
+        && ( self.param.name == "*" || (self.param.index.is_some() && self.param.index.as_ref().unwrap().text == "[*]" ) ) {
+            let mut ans = vec![];
+            for p in self.array.clone().unwrap() {
+                ans.push( (From::from(&p), true) );
+            }
+            return ans;
+        }
+
         if ! self.treat_as_array || ifs.starts_with(" ") || self.array.is_none() {
             return splitter::split(&self.text, ifs, prev_char).iter()
                 .map(|s| ( From::from(&s.0), s.1)).collect();
@@ -193,8 +202,12 @@ impl BracedParam {
             return Ok(());
         }
 
+        let ifs = core.db.get_param("IFS").unwrap_or(" \t\n".to_string());
+
         if index.as_str() == "@" {
-            self.atmark_operation(core)
+            self.atmark_operation(core, " ")
+        }else if ifs == "" && index.as_str() == "*" {
+            self.atmark_operation(core, "")
         }else{
             let tmp = core.db.get_elem(&self.param.name, &index)?;
             self.text = self.optional_operation(tmp, core)?;
@@ -202,7 +215,7 @@ impl BracedParam {
         }
     }
 
-    fn atmark_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn atmark_operation(&mut self, core: &mut ShellCore, ifs: &str) -> Result<(), ExecError> {
         let mut arr = core.db.get_vec(&self.param.name, true)?;
         self.array = Some(arr.clone());
         if self.num {
@@ -221,7 +234,7 @@ impl BracedParam {
             for i in 0..arr.len() {
                 arr[i] = self.optional_operation(arr[i].clone(), core)?;
             }
-            self.text = arr.join(" ");
+            self.text = arr.join(ifs);
             self.array = Some(arr);
         }
         Ok(())
