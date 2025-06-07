@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use crate::elements::word::{Word, WordMode};
-use crate::elements::subword::{Arithmetic, CommandSubstitution};
+use crate::elements::subword::{Arithmetic, CommandSubstitution, DoubleQuoted};
 use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 
 #[derive(Debug, Clone, Default)]
@@ -89,6 +89,7 @@ impl EvalLetParen {
     fn eat_element(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
         let sw: Box<dyn Subword> 
             = if let Some(a) = BracedParam::parse(feeder, core)? {Box::new(a)}
+            else if let Some(a) = DoubleQuoted::parse(feeder, core, &None)? {Box::new(a)}
             else if let Some(a) = Arithmetic::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
