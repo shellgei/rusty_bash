@@ -43,7 +43,9 @@ impl OptionalOperation for Replace {
             array[i] = self.get_text(&array[i], core)?;
         }
 
-        *text = array.join(" ");
+        let ifs = core.db.get_ifs_head();
+
+        *text = array.join(&ifs);
         Ok(())
     }
 

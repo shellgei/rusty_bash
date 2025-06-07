@@ -47,6 +47,12 @@ impl Subword for BracedParam {
                     let mut arr = vec![];
                     s.set_array(&self.param, &mut arr, &mut self.text, core)?;
                     self.array = Some(arr);
+                    if self.param.index.is_some()
+                    && self.param.index.as_ref().unwrap().text == "[*]" {
+                        self.text = self.array.clone().unwrap().join(&core.db.get_ifs_head());
+                        self.array = None;
+                    }
+
                     return Ok(());
                 }
             }
@@ -205,12 +211,14 @@ impl BracedParam {
             return Ok(());
         }
 
-        let ifs = core.db.get_param("IFS").unwrap_or(" \t\n".to_string());
+        //let ifs = core.db.get_param("IFS").unwrap_or(" \t\n".to_string());
+        let ifs = core.db.get_ifs_head();
 
         if index.as_str() == "@" {
             self.atmark_operation(core, " ")
-        }else if ifs == "" && index.as_str() == "*" {
-            self.atmark_operation(core, "")
+        }else if/* ifs == "" &&*/ index.as_str() == "*" {
+            self.atmark_operation(core, &ifs)
+            //self.atmark_operation(core, "")
         }else{
             let tmp = core.db.get_elem(&self.param.name, &index)?;
             self.text = self.optional_operation(tmp, core)?;
