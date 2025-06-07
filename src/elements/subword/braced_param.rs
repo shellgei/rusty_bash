@@ -197,10 +197,11 @@ impl BracedParam {
 
         if core.db.is_single(&self.param.name) {
             let param = core.db.get_param(&self.param.name)?;
-            self.text = match index.as_str() { //case: a=aaa; echo ${a[@]}; (output: aaa)
+            let tmp = match index.as_str() { //case: a=aaa; echo ${a[@]}; (output: aaa)
                 "@" | "*" | "0" => param,//.unwrap_or("".to_string()),
                  _ => "".to_string(),
             };
+            self.text = self.optional_operation(tmp, core)?;
             return Ok(());
         }
 
