@@ -83,7 +83,7 @@ pub fn dissolve_options_main() -> Vec<String> {
     let mut ans = vec![];
     let mut stop = false;
     for (i, a) in std::env::args().enumerate() { 
-        if i != 0 && ! a.starts_with("-") {
+        if i != 0 && ! a.starts_with("-") || a == "--" {
             stop = true;
         }
 

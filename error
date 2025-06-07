@@ -25,3 +25,6 @@
 ./test_options.bash
 ./test_options.bash
 ./test_options.bash
+./test_others.bash
+./test_others.bash
+./test_fixed.bash

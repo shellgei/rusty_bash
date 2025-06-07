@@ -9,12 +9,13 @@ use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::super::Variable;
 use super::OptionalOperation;
+use crate::elements::subword::SingleQuoted;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
     pub text: String,
     pub symbol: Option<String>,
-    pub alternative_value: Option<Word>,
+    alternative_value: Option<Word>,
     in_double_quoted: bool,
 }
 
@@ -63,14 +64,43 @@ impl OptionalOperation for ValueCheck {
 
 impl ValueCheck {
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        if self.in_double_quoted {
-        }
-
         let v = match &self.alternative_value {
-            Some(av) => av.clone(), 
+            Some(av) => av.clone(),
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
+
         self.alternative_value = Some(v.tilde_and_dollar_expansion(core)? );
+        if self.in_double_quoted {
+            for sw in self.alternative_value.as_mut().unwrap().subwords.iter_mut() {
+                if sw.get_text().starts_with("'") {
+                    let mut escaped = false;
+                    let mut ans = String::new();
+                    for c in sw.get_text().chars() {
+                        if escaped {
+                            escaped = false;
+                            if c == '"' {
+                                ans.pop();
+                            }
+                            ans.push(c);
+                            continue;
+                        }
+                        if c == '\\' {
+                            escaped = true;
+                            ans.push(c);
+                            continue;
+                        }
+
+                        if c != '"' {
+                            ans.push(c);
+                        }
+                    }
+
+                    ans.insert(0, '\'');
+                    ans.push('\'');
+                    *sw = Box::new(SingleQuoted{text: ans.to_string()});
+                }
+            }
+        }
         Ok(v.eval_as_value(core)?)
     }
 
@@ -117,8 +147,8 @@ impl ValueCheck {
             ans.alternative_value = Some(w);
         }
 
-        if let Some(e) = feeder.nest.last() {
-            ans.in_double_quoted = e.0 == "\"";
+        if feeder.nest.iter().any(|e| e.0 == "\"") {
+            ans.in_double_quoted = true;
         }
 
         Ok(Some(ans))

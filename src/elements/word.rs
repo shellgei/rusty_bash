@@ -84,11 +84,8 @@ impl Word {
     }
 
     pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let mut ws = match self.tilde_and_dollar_expansion(core) {
-            Ok(w)  => w.path_expansion(core),
-            Err(e) => return Err(e),
-        };
-
+        let w = self.tilde_and_dollar_expansion(core)?;
+        let mut ws = w.path_expansion(core);
         let joint = core.db.get_ifs_head();
         Ok( Self::make_args(&mut ws).join(&joint) )
     }

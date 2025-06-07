@@ -81,7 +81,7 @@ fn consume_file_and_subsequents(args: &mut Vec<String>) -> Vec<String> {
     args.split_off(pos.unwrap())
 }
 
-fn set_long_options(args: &mut Vec<String>, core: &mut ShellCore) {
+fn set_o_options(args: &mut Vec<String>, core: &mut ShellCore) {
     let mut options = vec![];
     loop {
         if let Some(opt) = arg::consume_with_next_arg("-o", args) {
@@ -149,7 +149,7 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
-    set_long_options(&mut args, &mut core);
+    set_o_options(&mut args, &mut core);
     set_short_options(&mut args, &mut core);
 
     if ! c_opt {
