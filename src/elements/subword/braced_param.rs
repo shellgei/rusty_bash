@@ -75,13 +75,11 @@ impl Subword for BracedParam {
             return vec![];
         }
 
-        if ifs == "" 
-        && ( self.param.name == "*" || (self.param.index.is_some() && self.param.index.as_ref().unwrap().text == "[*]" ) ) {
-            let mut ans = vec![];
-            for p in self.array.clone().unwrap() {
-                ans.push( (From::from(&p), true) );
-            }
-            return ans;
+        let index_is_asterisk = self.param.index.is_some()
+                                && self.param.index.as_ref().unwrap().text == "[*]";
+
+        if ifs == "" && ( self.param.name == "*" || index_is_asterisk ) {
+            return self.make_split();
         }
 
         if ! self.treat_as_array || ifs.starts_with(" ") || self.array.is_none() {
@@ -89,11 +87,7 @@ impl Subword for BracedParam {
                 .map(|s| ( From::from(&s.0), s.1)).collect();
         }
 
-        let mut ans = vec![];
-        for p in self.array.clone().unwrap() {
-            ans.push( (From::from(&p), true) );
-        }
-        ans
+        self.make_split()
     }
 
     fn set_heredoc_flag(&mut self) {
@@ -116,6 +110,14 @@ impl BracedParam {
             return Err(ExecError::BadSubstitution(self.param.name.clone()));
         }
         Ok(())
+    }
+
+    fn make_split(&self)-> Vec<(Box<dyn Subword>, bool)>{ 
+        let mut ans = vec![];
+        for p in self.array.clone().unwrap() {
+            ans.push( (From::from(&p), true) );
+        }
+        ans
     }
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
