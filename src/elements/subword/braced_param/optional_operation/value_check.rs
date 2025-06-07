@@ -73,35 +73,31 @@ impl ValueCheck {
         if self.in_double_quoted {
             for sw in self.alternative_value.as_mut().unwrap().subwords.iter_mut() {
                 if sw.get_text().starts_with("'") {
-                    let mut escaped = false;
-                    let mut ans = String::new();
-                    for c in sw.get_text().chars() {
-                        if escaped {
-                            escaped = false;
-                            if c == '"' {
-                                ans.pop();
-                            }
-                            ans.push(c);
-                            continue;
-                        }
-                        if c == '\\' {
-                            escaped = true;
-                            ans.push(c);
-                            continue;
-                        }
-
-                        if c != '"' {
-                            ans.push(c);
-                        }
-                    }
-
-                    ans.insert(0, '\'');
-                    ans.push('\'');
-                    *sw = Box::new(SingleQuoted{text: ans.to_string()});
+                    Self::apply_single_quote_rule(sw);
                 }
             }
         }
         Ok(v.eval_as_value(core)?)
+    }
+
+    fn apply_single_quote_rule(sw: &mut Box<dyn Subword>) {
+        let mut escaped = false;
+        let mut ans = String::new();
+        for c in sw.get_text().chars() {
+            if escaped || c == '\\' {
+                escaped = !escaped;
+                if c == '"' {
+                    ans.pop();
+                }
+            }else if c == '"' {
+                continue;
+            }
+            ans.push(c);
+        }
+
+        ans.insert(0, '\'');
+        ans.push('\'');
+        *sw = Box::new(SingleQuoted{text: ans.to_string()});
     }
 
     fn replace(&mut self, text: &String, core: &mut ShellCore)
