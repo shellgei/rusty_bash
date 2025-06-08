@@ -16,6 +16,7 @@ use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use std::sync::atomic::Ordering::Relaxed;
 use nix::unistd::Pid;
+use std::ffi::OsString;
 
 #[derive(Debug, Clone, Default)]
 pub struct SimpleCommand {
@@ -23,6 +24,7 @@ pub struct SimpleCommand {
     substitutions: Vec<Substitution>,
     words: Vec<Word>,
     pub args: Vec<String>,
+    pub os_args: Vec<OsString>,
     redirects: Vec<Redirect>,
     force_fork: bool, 
     substitutions_as_args: Vec<Substitution>,
@@ -45,6 +47,7 @@ impl Command for SimpleCommand {
         core.db.set_param("BASH_COMMAND", &self.text, None)?;
 
         self.args.clear();
+        self.os_args.clear();
         let mut words = self.words.to_vec();
         for w in words.iter_mut() {
             self.set_arg(w, core)?;
@@ -68,7 +71,7 @@ impl Command for SimpleCommand {
 
         if ! run_internal::run(self, core)? {
             self.set_environment_variables(core)?;
-            proc_ctrl::exec_command(&self.args, core, &self.command_path);
+            proc_ctrl::exec_command2(&self.os_args, core, &self.command_path);
         };
 
         core.db.pop_local();
@@ -168,10 +171,10 @@ impl SimpleCommand {
         match word.eval(core) {
             Ok(ws) => {
                 self.args.extend(ws);
+                self.os_args.append(&mut word.os_args);
                 Ok(())
             },
             Err(e) => {
-             //   e.print(core);
                 if ! core.sigint.load(Relaxed) {
                     core.db.exit_status = 1;
                 }

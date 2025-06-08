@@ -12,6 +12,7 @@ use crate::elements::subword;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
+use std::ffi::OsString;
 use super::subword::Subword;
 
 #[derive(Debug, Clone)]
@@ -32,6 +33,7 @@ pub struct Word {
     pub do_not_erase: bool,
     pub subwords: Vec<Box<dyn Subword>>,
     pub mode: Option<WordMode>,
+    pub os_args: Vec<OsString>,
 }
 
 impl From<&String> for Word {
@@ -76,6 +78,8 @@ impl Word {
             let expanded = w.tilde_and_dollar_expansion(core)?;
             ws.append( &mut expanded.split_and_path_expansion(core) );
         }
+
+        self.os_args = Self::make_args_os_str(&mut ws.clone());
         Ok( Self::make_args(&mut ws) )
     }
 
@@ -176,6 +180,12 @@ impl Word {
               .collect()
     }
 
+    fn make_args_os_str(words: &mut Vec<Word>) -> Vec<OsString> {
+        words.iter_mut()
+              .filter_map(|w| w.make_unquoted_os_string())
+              .collect()
+    }
+
     pub fn make_unquoted_word(&mut self) -> Option<String> {
         let sw: Vec<Option<String>> = self.subwords.iter_mut()
             .map(|s| s.make_unquoted_string())
@@ -187,6 +197,19 @@ impl Word {
         }
 
         Some(sw.into_iter().map(|s| s.unwrap()).collect::<String>())
+    }
+
+    pub fn make_unquoted_os_string(&mut self) -> Option<OsString> {
+        let sw: Vec<Option<OsString>> = self.subwords.iter_mut()
+            .map(|s| s.make_unquoted_os_string())
+            .filter(|s| *s != None)
+            .collect();
+
+        if sw.is_empty() && ! self.do_not_erase {
+            return None;
+        }
+
+        Some(sw.into_iter().map(|s| s.unwrap()).collect::<OsString>())
     }
 
     pub fn make_regex(&mut self) -> Option<String> {

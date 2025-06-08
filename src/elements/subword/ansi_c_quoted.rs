@@ -4,6 +4,7 @@
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use super::{Subword, SimpleSubword, EscapedChar};
+use std::ffi::OsString;
 
 #[derive(Clone, Debug)]
 enum Token {
@@ -18,7 +19,7 @@ enum Token {
 }
 
 impl Token {
-    fn to_string(&mut self) -> String {
+    fn to_string(&mut self, safe: bool) -> String {
         match &self {
             Token::EmptyHex => String::new(),
             Token::Normal(s) => s.clone(), 
@@ -27,10 +28,10 @@ impl Token {
                 if num >= 256 {
                     num -= 256;
                 }
-                //unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) }
-                char::from(num as u8).to_string() //MEMO (differece from Bash)
-                                                  //128-255 are never straightly converted 
-                                                  //because a binary 1.... is a reserved number in UTF-8
+                match safe {
+                    true => char::from(num as u8).to_string(),
+                    false => unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) },
+                }
             },
             Token::Hex(s) => {
                 let hex = match s.len() > 2 {
@@ -45,8 +46,11 @@ impl Token {
                 if num >= 256 {
                     num -= 256;
                 }
-                //unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) }
-                char::from(num as u8).to_string()
+                match safe {
+                    true => char::from(num as u8).to_string(),
+                    false => unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) },
+
+                }
             },
             Token::Unicode4(s) => {
                 let num = u32::from_str_radix(&s, 16).unwrap();
@@ -57,7 +61,11 @@ impl Token {
             },
             Token::Unicode8(s) => {
                 let num = u64::from_str_radix(&s, 16).unwrap();
-                unsafe { char::from_u32_unchecked(num as u32) }.to_string()
+                //unsafe { char::from_u32_unchecked(num as u32) }.to_string()
+                match safe {
+                    true => char::from(num as u8).to_string(),
+                    false => unsafe { char::from_u32_unchecked(num as u32) }.to_string(),
+                }                    //this unsafe behavior works only on the release mode
             },
             Token::Control(c) => {
                 let num = if *c == '@' { 0 }
@@ -106,6 +114,22 @@ impl Subword for AnsiCQuoted {
 
     fn make_unquoted_string(&mut self) -> Option<String> { Some(self.make_glob_string()) }
 
+    fn make_unquoted_os_string(&mut self) -> Option<OsString> {
+        if self.in_heredoc {
+            return Some(self.text.clone().into());
+        }
+
+        let mut ans = String::new();
+        for t in &mut self.tokens {
+            if let Token::EmptyHex = t {
+                break;
+            }
+            ans += &t.to_string(false);
+        }
+
+        Some(ans.into())
+    }
+
     fn make_glob_string(&mut self) -> String {
         if self.in_heredoc {
             return self.text.clone();
@@ -116,7 +140,7 @@ impl Subword for AnsiCQuoted {
             if let Token::EmptyHex = t {
                 break;
             }
-            ans += &t.to_string();
+            ans += &t.to_string(true);
         }
 
         ans

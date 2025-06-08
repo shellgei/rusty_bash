@@ -40,6 +40,7 @@ use self::parameter::Parameter;
 use self::varname::VarName;
 use std::fmt;
 use std::fmt::Debug;
+use std::ffi::OsString;
 
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -89,6 +90,13 @@ pub trait Subword {
         match self.get_text() {
             "" => None,
             s  => Some(s.to_string()),
+        }
+    }
+
+    fn make_unquoted_os_string(&mut self) -> Option<OsString> {
+        match self.make_unquoted_string() {
+            None => None,
+            Some(s) => Some(s.into()),
         }
     }
 

@@ -54,3 +54,5 @@
 ./test_fixed.bash
 ./test_fixed.bash
 ./test_fixed.bash
+./test_ansi_c_quoting.bash
+./test_ansi_c_quoting.bash

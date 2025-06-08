@@ -14,6 +14,7 @@ use nix::unistd::Pid;
 use std::process;
 use std::ffi::CString;
 use std::sync::atomic::Ordering::Relaxed;
+use std::ffi::OsString;
 
 pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
                      exclamation: bool, time: bool) -> Vec<WaitStatus> {
@@ -152,9 +153,9 @@ pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String)
     let result = unistd::execvp(&cargs[0], &cargs);
 
     match result {
-        Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),
-        Err(Errno::EACCES) => exit::permission_denied(&args[0], core),
-        Err(Errno::ENOENT) => run_command_not_found(&args[0], core),
+        Err(Errno::E2BIG) => exit::arg_list_too_long(&cargs[0], core),
+        Err(Errno::EACCES) => exit::permission_denied(&cargs[0], core),
+        Err(Errno::ENOENT) => run_command_not_found(&cargs[0], core),
         Err(err) => {
             eprintln!("Failed to execute. {:?}", err);
             process::exit(127)
@@ -163,9 +164,32 @@ pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String)
     }
 }
 
-fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
+pub fn exec_command2(args: &Vec<OsString>, core: &mut ShellCore, fullpath: &String) -> ! {
+    let cargs = to_cargs2(args);
+    let cfullpath = CString::new(fullpath.to_string()).unwrap();
+
+    if ! fullpath.is_empty() {
+        let _ = unistd::execv(&cfullpath, &cargs);
+    
+    }
+    let result = unistd::execvp(&cargs[0], &cargs);
+
+    match result {
+        Err(Errno::E2BIG) => exit::arg_list_too_long(&cargs[0], core),
+        Err(Errno::EACCES) => exit::permission_denied(&cargs[0], core),
+        Err(Errno::ENOENT) => run_command_not_found(&cargs[0], core),
+        Err(err) => {
+            eprintln!("Failed to execute. {:?}", err);
+            process::exit(127)
+        }
+        _ => exit::internal("never come here")
+    }
+}
+
+fn run_command_not_found(arg: &CString, core: &mut ShellCore) -> ! {
+
     if core.db.functions.contains_key("command_not_found_handle") {
-        let s = "command_not_found_handle ".to_owned() + &arg.clone();
+        let s = "command_not_found_handle ".to_owned() + &arg.to_str().unwrap();
         let mut f = Feeder::new(&s);
         match Script::parse(&mut f, core, false) {
             Ok(Some(mut script)) => {let _ = script.exec(core);},
@@ -173,11 +197,17 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
             _ => {},
         }
     }
-    exit::not_found(&arg, core)
+    exit::not_found(arg, core)
 }
 
 fn to_cargs(args: &Vec<String>) -> Vec<CString> {
     args.iter()
         .map(|a| CString::new(a.to_string()).unwrap())
+        .collect()
+}
+
+fn to_cargs2(args: &Vec<OsString>) -> Vec<CString> {
+    args.iter()
+        .map(|a| CString::new(a.as_encoded_bytes()).unwrap())
         .collect()
 }
