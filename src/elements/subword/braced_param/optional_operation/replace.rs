@@ -43,7 +43,9 @@ impl OptionalOperation for Replace {
             array[i] = self.get_text(&array[i], core)?;
         }
 
-        *text = array.join(" ");
+        let ifs = core.db.get_ifs_head();
+
+        *text = array.join(&ifs);
         Ok(())
     }
 
@@ -142,41 +144,6 @@ impl Replace {
     
         Ok(ans)
     }
-
-    /*
-    pub fn eat(feeder: &mut Feeder, ans: &mut BracedParam, core: &mut ShellCore)
-           -> Result<bool, ParseError> {
-        if ! feeder.starts_with("/") {
-            return Ok(false);
-        }
-
-        let mut info = Replace::default();
-
-        ans.text += &feeder.consume(1);
-        if feeder.starts_with("/") {
-            ans.text += &feeder.consume(1);
-            info.all_replace = true;
-        }else if feeder.starts_with("#") {
-            ans.text += &feeder.consume(1);
-            info.head_only_replace = true;
-        }else if feeder.starts_with("%") {
-            ans.text += &feeder.consume(1);
-            info.tail_only_replace = true;
-        }
-
-        info.replace_from = Some(BracedParam::eat_subwords(feeder, ans, vec!["}", "/"], core)? );
-
-        if ! feeder.starts_with("/") {
-            ans.optional_operation = Some(Box::new(info));
-            return Ok(true);
-        }
-        ans.text += &feeder.consume(1);
-        info.has_replace_to = true;
-        info.replace_to = Some(BracedParam::eat_subwords(feeder, ans, vec!["}"], core)? );
-
-        ans.optional_operation = Some(Box::new(info));
-        Ok(true)
-    }*/
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("/") {

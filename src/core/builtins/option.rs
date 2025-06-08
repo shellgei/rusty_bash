@@ -4,47 +4,34 @@
 use crate::{error, ShellCore};
 use crate::error::exec::ExecError;
 use crate::utils::arg;
-use super::parameter;
 
-fn set_option(core: &mut ShellCore, opt: char, pm: char) {
-    if pm == '+' {
-        core.db.flags.retain(|e| e != opt);
-        if opt == 'm' {
-            let _ = core.options.set("monitor", false);
-        }
-    }else{
-        if ! core.db.flags.contains(opt) {
-            core.db.flags.push(opt);
-        }
+pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
+    if core.db.position_parameters.pop().is_none() {
+        return Err(ExecError::Other("empty param stack".to_string()));
     }
+    core.db.position_parameters.push(args.to_vec());
+    Ok(())
 }
 
-pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), ExecError> {
-    set_options2(core, args);
-
+fn check_invalid_options(args: &mut Vec<String>) -> Result<(), ExecError> {
     for a in args {
-        if a.len() != 2 {
+        if a.starts_with("-") {
             return Err(ExecError::InvalidOption("set: ".to_owned() + &a.to_string()));
         }
-
-        let pm = a.chars().nth(0).unwrap();
-        let ch = a.chars().nth(1).unwrap();
-
-        if (pm != '-' && pm != '+')
-        || (pm == '+' && ch == 'r')
-        || "rxveBH".find(ch).is_none() {
-            return Err(ExecError::InvalidOption("set: ".to_owned() + &a.to_string()));
-        }
-
-        set_option(core, ch, pm);
     }
     Ok(())
 }
 
-pub fn set_options2(core: &mut ShellCore, args: &mut Vec<String>) {
+pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), ExecError> {
+    set_short_options(core, args);
+    check_invalid_options(args)
+}
+
+pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
     for (short, long) in [('t', "onecmd"), ('m', "monitor"),
                           ('C', "noclobber"), ('a', "allexport"),
-                          ('B', "braceexpand"), ('u', "")] {
+                          ('B', "braceexpand"), ('u', ""),
+                          ('e', ""), ('r', ""), ('H', "")] {
         let minus_opt = format!("-{}", short);
         let plus_opt = format!("+{}", short);
 
@@ -77,13 +64,13 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    if args.len() <= 1 {
+    if args.len() <= 1 { /* print */
         core.db.get_keys().into_iter()
             .for_each(|k| core.db.print(&k));
         return 0;
     }
 
-    set_options2(core, &mut args);
+    set_short_options(core, &mut args);
 
     if args.len() < 2 {
         return 0;
@@ -92,7 +79,7 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args[1].starts_with("--") {
         args[1] = core.db.position_parameters[0][0].clone();
         args.remove(0);
-        return match parameter::set_positions(core, &args) {
+        return match set_positions(core, &args) {
             Ok(()) => 0,
             Err(e) => {
                 return super::error_exit(1, &args[0], &String::from(&e), core);
@@ -124,15 +111,16 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    match args[1].starts_with("-") || args[1].starts_with("+") {
-        true  => if let Err(e) = set_options(core, &mut args[1..].to_vec()) {
+    if ! args[1].starts_with("-") && ! args[1].starts_with("+") {
+        if let Err(e) = set_positions(core, &args) {
             e.print(core);
             return 2;
-        },
-        false => if let Err(e) = parameter::set_positions(core, &args) {
-            e.print(core);
-            return 2;
-        },
+        }
+    }
+
+    if let Err(e) = check_invalid_options(&mut args) {
+        e.print(core);
+        return 2;
     }
     0
 }

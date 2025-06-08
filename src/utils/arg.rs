@@ -52,7 +52,7 @@ pub fn consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<S
     }
 }
 
-fn dissolve_option(opt: &str) -> Vec<String> {
+pub fn dissolve_option(opt: &str) -> Vec<String> {
     if opt.starts_with("-") {
         opt[1..].chars().map(|c| ("-".to_owned() + &c.to_string()).to_string()).collect()
     }else if opt.starts_with("+") {
@@ -63,18 +63,33 @@ fn dissolve_option(opt: &str) -> Vec<String> {
 }
 
 pub fn dissolve_options(args: &Vec<String>) -> Vec<String> {
-    //args.iter().map(|a| dissolve_option(a)).collect::<Vec<Vec<String>>>().concat()
-
     let mut ans = vec![];
-    let mut after_double_hyphen = false;
+    let mut stop = false;
     for a in args {
         if a == "--" {
-            after_double_hyphen = true;
+            stop = true;
         }
 
-        match after_double_hyphen {
+        match stop {
             true => ans.push(a.to_string()),
             false => ans.append(&mut dissolve_option(a)),
+        }
+    }
+
+    ans
+}
+
+pub fn dissolve_options_main() -> Vec<String> {
+    let mut ans = vec![];
+    let mut stop = false;
+    for (i, a) in std::env::args().enumerate() { 
+        if i != 0 && ! a.starts_with("-") || a == "--" {
+            stop = true;
+        }
+
+        match stop {
+            true => ans.push(a),
+            false => ans.append(&mut dissolve_option(&a)),
         }
     }
 

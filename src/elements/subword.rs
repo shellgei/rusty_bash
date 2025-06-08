@@ -15,6 +15,7 @@ pub mod parameter;
 mod varname;
 mod arithmetic;
 pub mod filler;
+mod paren;
 mod process_sub;
 
 use crate::{ShellCore, Feeder};
@@ -28,6 +29,7 @@ use self::braced_param::BracedParam;
 use self::command_sub::CommandSubstitution;
 //use self::command_sub_old::CommandSubstitutionOld;
 use self::escaped_char::EscapedChar;
+use self::paren::EvalLetParen;
 use self::ext_glob::ExtGlob;
 use self::filler::FillerSubword;
 use self::double_quoted::DoubleQuoted;
@@ -186,5 +188,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = EvalLetParen::parse(feeder, core, mode)?{ Ok(Some(Box::new(a))) }
     else{ parse_special_subword(feeder, core, mode) }
 }

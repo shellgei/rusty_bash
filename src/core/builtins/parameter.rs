@@ -8,14 +8,6 @@ use crate::elements::word::Word;
 use crate::utils::arg;
 use super::error_exit;
 
-pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
-    if core.db.position_parameters.pop().is_none() {
-        return Err(ExecError::Other("empty param stack".to_string()));
-    }
-    core.db.position_parameters.push(args.to_vec());
-    Ok(())
-}
-
 pub fn local(core: &mut ShellCore,
              args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
     let layer = if core.db.get_layer_num() > 2 {
@@ -62,16 +54,15 @@ fn reparse(core: &mut ShellCore, sub: &mut Substitution) {
 
 fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec<String>,
                     layer: usize) -> Result<(), ExecError> {
+    if core.db.is_readonly(&sub.left_hand.name) {
+        return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
+    }
+
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
 
     if sub.has_right {
         reparse(core, sub);
-    }
-
-    if read_only {
-        core.db.set_flag(&sub.left_hand.name, 'r');
-        return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
     }
 
     if export_opt {
@@ -82,10 +73,24 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         core.db.set_flag(&sub.left_hand.name, 'i');
     }
 
+    let mut res = Ok(());
+
     match sub.has_right {
-        true  => sub.eval(core, Some(layer), true),
-        false => sub.left_hand.init_variable(core, Some(layer), args),
+        true  => res = sub.eval(core, Some(layer), true),
+        false => {
+            if ! core.db.params[layer].contains_key(&sub.left_hand.name)
+            || ( ! core.db.is_array(&sub.left_hand.name) && args.contains(&"-a".to_string()) )
+            || ( ! core.db.is_assoc(&sub.left_hand.name) && args.contains(&"-A".to_string()) ) {
+                res = sub.left_hand.init_variable(core, Some(layer), args);
+            }
+        },
     }
+
+    if read_only {
+        core.db.set_flag(&sub.left_hand.name, 'r');
+    }
+
+    res
 }
 
 fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
@@ -188,8 +193,8 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Subs
         return declare_print(core, &args[1..], &args[0]);
     }
 
+    let layer = core.db.get_layer_num() - 2;
     for sub in subs {
-        let layer = core.db.get_layer_num() - 2;
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
             e.print(core);
             return 1;
@@ -200,9 +205,8 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Subs
 
 pub fn export(core: &mut ShellCore, args: &mut Vec<String>,
               subs: &mut Vec<Substitution>) -> i32 {
-
-    let layer = core.db.get_layer_num() - 2;//TODO: it is not tested
     for sub in subs.iter_mut() {
+        let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
             e.print(core);
             return 1;
@@ -242,8 +246,9 @@ pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>,
         return readonly_print(core, &mut args);
     }
 
-    let layer = core.db.get_layer_num() - 2;
     for sub in subs {
+        let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
+
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
             e.print(core);
             return 1;

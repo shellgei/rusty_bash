@@ -18,7 +18,7 @@ enum Token {
 }
 
 impl Token {
-    fn to_string(&mut self) -> String {
+    fn to_string(&mut self, compat_bash: bool) -> String {
         match &self {
             Token::EmptyHex => String::new(),
             Token::Normal(s) => s.clone(), 
@@ -27,9 +27,12 @@ impl Token {
                 if num >= 256 {
                     num -= 256;
                 }
-                char::from(num as u8).to_string() //MEMO (differece from Bash)
-                                                  //128-255 are never straightly converted 
-                                                  //because a binary 1.... is a reserved number in UTF-8
+
+                if compat_bash {
+                    unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) }
+                }else{
+                    char::from(num as u8).to_string()
+                }
             },
             Token::Hex(s) => {
                 let hex = match s.len() > 2 {
@@ -44,7 +47,12 @@ impl Token {
                 if num >= 256 {
                     num -= 256;
                 }
-                char::from(num as u8).to_string()
+
+                if compat_bash {
+                    unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) }
+                }else{
+                    char::from(num as u8).to_string()
+                }
             },
             Token::Unicode4(s) => {
                 let num = u32::from_str_radix(&s, 16).unwrap();
@@ -96,6 +104,7 @@ pub struct AnsiCQuoted {
     text: String,
     tokens: Vec<Token>,
     in_heredoc: bool, 
+    compat_bash: bool,
 }
 
 impl Subword for AnsiCQuoted {
@@ -114,7 +123,7 @@ impl Subword for AnsiCQuoted {
             if let Token::EmptyHex = t {
                 break;
             }
-            ans += &t.to_string();
+            ans += &t.to_string(self.compat_bash);
         }
 
         ans
@@ -259,6 +268,7 @@ impl AnsiCQuoted {
             return Ok(None);
         }
         let mut ans = Self::default();
+        ans.compat_bash = core.compat_bash;
         ans.text += &feeder.consume(2);
 
         while ! feeder.starts_with("'") {

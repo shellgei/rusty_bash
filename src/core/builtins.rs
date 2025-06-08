@@ -18,7 +18,7 @@ pub mod option;
 mod printf;
 mod pwd;
 mod read;
-mod source;
+pub mod source;
 mod trap;
 mod type_;
 mod loop_control;

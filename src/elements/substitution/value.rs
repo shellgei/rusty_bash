@@ -17,28 +17,6 @@ pub enum ParsedDataType {
     Array(Array),
 }
 
-impl ParsedDataType {
-    pub fn get_evaluated_text(&self, core: &mut ShellCore) -> Result<String, ExecError> {
-        match self {
-            Self::None      => Ok("".to_string()),
-            Self::Single(s) => Ok(s.eval_as_value(core)?),
-            Self::Array(a) => {
-                let mut ans = "(".to_string();
-                let mut ws = vec![];
-                for (_, w) in &a.words {
-                    let tmp = w.eval_as_value(core)?;
-                    let escaped = tmp.replace("(", "'('")
-                                     .replace("'", "\\'").replace(")", "')'");
-                    ws.push( escaped );
-                }
-                ans += &ws.join(" ");
-                ans += ")";
-                Ok(ans)
-            },
-        }
-    }
-}
-
 #[derive(Debug, Clone, Default)]
 pub struct Value {
     pub text: String,

@@ -484,11 +484,14 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let var_name = arg::consume_with_next_arg("-p", &mut args);
     let f_opt = arg::consume_option("-f", &mut args);
 
-    if args[1] == "-n" {
+    if args.len() > 1 && args[1] == "-n" {
         return wait_n(core, &mut args, &var_name, f_opt);
     }
 
-    wait_arg_job(core, &args[0], &args[1], &var_name, f_opt).0
+    if args.len() > 1 {
+        return wait_arg_job(core, &args[0], &args[1], &var_name, f_opt).0;
+    }
+    1
 }
 
 /* TODO: implement original kill */
@@ -529,11 +532,8 @@ pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
-
-    if arg::consume_option("-h", &mut args) {
-        //TODO: implement
-        return 0;
-    }
+    let h_opt = arg::consume_option("-h", &mut args);
+    let _r_opt = arg::consume_option("-r", &mut args); //TODO: implement
 
     if args.len() == 1 {
         let ids = jobspec_to_array_poss(core, "%%");
@@ -554,8 +554,21 @@ pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     for a in &args[1..] {
+        if a.starts_with("-") {
+            let msg = format!("{}: invalid option", &a);
+            super::error_exit(127, &args[0], &msg, core);
+            eprintln!("disown: usage: disown [-h] [-ar] [jobspec ... | pid ...]");
+            return 127;
+        }
+    }
+
+    for a in &args[1..] {
         if let Some(pos) = jobspec_to_array_pos(core, &args[0], &a) {
-            remove(core, pos);
+            if h_opt {
+                //TODO: to make each job doesn't stop by SIGHUP
+            }else{
+                remove(core, pos);
+            }
         }
     }
 

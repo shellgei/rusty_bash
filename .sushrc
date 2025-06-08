@@ -65,6 +65,7 @@ command_not_found_handle() { #command_not_found should be loaded before bash-com
 }
 
 
+export BASH_COMPLETION=/opt/homebrew/Cellar/bash-completion/1.3_3/etc/bash_completion
 if [ "$(uname)" = "Darwin" -a -f /opt/homebrew/Cellar/bash-completion/1.3_3/etc/bash_completion ]; then
 	source /opt/homebrew/Cellar/bash-completion/1.3_3/etc/bash_completion
 	complete -d cd

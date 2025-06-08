@@ -34,14 +34,6 @@ impl Substitution {
         self.set_to_shell(core, layer)
     }
 
-    pub fn get_string_for_eval(&self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let mut splits = self.text.split("=");
-        let front = splits.nth(0).unwrap().to_owned() + "=";
-        let rear = self.right_hand.value.get_evaluated_text(core)?;
-
-        Ok(front + &rear)
-    }
-
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         if self.right_hand.evaluated_array.is_none() {
             return Err(ExecError::Other("no array and no index".to_string()));

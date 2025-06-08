@@ -82,7 +82,8 @@ impl Variable {
         }
 
         let i_opt = arg::consume_option("-i", args);
-        if arg::consume_option("-a", args) {
+        if arg::consume_option("-a", args)
+        || self.index.is_some() {
             return match i_opt { 
                 true  => core.db.set_int_array(&self.name, prev, layer),
                 false => core.db.set_array(&self.name, prev, layer),
@@ -106,6 +107,22 @@ impl Variable {
             true  => core.db.init_as_num(&self.name, &value, layer),
             false => core.db.set_param(&self.name, &value, layer),
         }
+    }
+
+    pub fn exist(&self, core: &mut ShellCore) -> Result<bool, ExecError> {//used in value_check.rs
+        if core.db.is_array(&self.name) 
+        && core.db.get_vec(&self.name, false)?.is_empty() {
+            return Ok(false);
+        }
+        
+        if let Some(sub) = self.index.clone().as_mut() {
+            if sub.eval(core, &self.name).is_ok()
+            && core.db.has_array_value(&self.name, &sub.text) {
+                return Ok(true);
+            }
+        }
+
+        Ok(core.db.has_value(&self.name))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
