@@ -159,7 +159,9 @@ impl AssocData {
     }
 
     pub fn keys(&self) -> Vec<String> {
-        self.body.iter().map(|e| e.0.clone()).collect()
+        let mut keys: Vec<String> = self.body.iter().map(|e| e.0.clone()).collect();
+        keys.sort();
+        keys
     }
 
     pub fn values(&self) -> Vec<String> {
