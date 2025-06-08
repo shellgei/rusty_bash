@@ -27,6 +27,7 @@ impl Token {
                 if num >= 256 {
                     num -= 256;
                 }
+                //unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) }
                 char::from(num as u8).to_string() //MEMO (differece from Bash)
                                                   //128-255 are never straightly converted 
                                                   //because a binary 1.... is a reserved number in UTF-8
@@ -44,6 +45,7 @@ impl Token {
                 if num >= 256 {
                     num -= 256;
                 }
+                //unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) }
                 char::from(num as u8).to_string()
             },
             Token::Unicode4(s) => {
