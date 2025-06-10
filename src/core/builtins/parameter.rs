@@ -61,6 +61,12 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
 
+    let mut layer = layer;
+    if arg::consume_option("-g", args) && layer != 0 {
+        core.db.unset(&sub.left_hand.name);
+        layer = 0;
+    }
+
     if sub.has_right {
         reparse(core, sub);
     }
