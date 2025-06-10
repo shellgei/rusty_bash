@@ -5,6 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::elements::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
@@ -26,7 +27,14 @@ impl Subscript {
             return match core.db.is_assoc(param_name) {
                 true  => {
                     match self.inner.as_mut() {
-                        Some(sub) => sub.eval_as_assoc_index(core),
+                        Some(sub) => {
+                            let mut f = Feeder::new(&sub.text);
+                            if let Some(w) = Word::parse(&mut f, core, None)? {
+                                w.eval_as_value(core)
+                            }else{
+                                Ok(sub.text.clone())
+                            }
+                        },
                         None => Err(ExecError::ArrayIndexInvalid("".to_string())),
                     }
                 },

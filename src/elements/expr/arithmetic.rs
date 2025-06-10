@@ -81,6 +81,7 @@ impl ArithmeticExpr {
         }
     }
 
+    /*
     pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
         self.eval_doller(core)?;
@@ -106,7 +107,7 @@ impl ArithmeticExpr {
         }
 
         Ok(ans)
-    }
+    }*/
 
     pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Result<i128, ExecError> {
         let _ = self.eval_doller(core);
