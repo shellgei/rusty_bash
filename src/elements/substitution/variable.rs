@@ -76,22 +76,22 @@ impl Variable {
     -> Result<(), ExecError> {
         let mut prev = None;
 
-        if (layer.is_none() && core.db.has_value(&self.name) )
+        if (layer.is_none() && core.db.exist(&self.name) )
         || core.db.params[layer.unwrap()].get(&self.name).is_some() {
             prev = Some(vec![core.db.get_param(&self.name)?]);
         }
 
         let i_opt = arg::consume_option("-i", args);
-        if arg::consume_option("-a", args)
-        || self.index.is_some() {
+        if arg::consume_option("-a", args) {
             return match i_opt { 
                 true  => core.db.set_int_array(&self.name, prev, layer),
                 false => core.db.set_array(&self.name, prev, layer),
             };
-        }
-        if arg::consume_option("-A", args) {
-            core.db.set_assoc(&self.name, layer)?;
-
+        }else if arg::consume_option("-A", args) {
+            match i_opt { 
+                true  => core.db.set_int_assoc(&self.name, layer)?,
+                false => core.db.set_assoc(&self.name, layer)?,
+            }
             if prev.is_some() {
                 core.db.set_assoc_elem(&self.name, &"0".to_string(), &prev.unwrap()[0], layer)?;
             }
@@ -122,7 +122,7 @@ impl Variable {
             }
         }
 
-        Ok(core.db.has_value(&self.name))
+        Ok(core.db.exist(&self.name))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

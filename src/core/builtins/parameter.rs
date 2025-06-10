@@ -75,7 +75,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
 
     let mut res = Ok(());
 
-    if args.contains(&"-A".to_string()) && ! core.db.has_value(&sub.left_hand.name) {
+    if args.contains(&"-A".to_string()) && ! core.db.exist(&sub.left_hand.name) {
         sub.left_hand.init_variable(core, Some(layer), args)?;
     }
 
@@ -101,7 +101,7 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
     for n in names {
         let mut opt = if core.db.is_assoc(&n) { "A" }
         else if core.db.is_array(&n) { "a" }
-        else if core.db.has_value(&n) { "" }
+        else if core.db.exist(&n) { "" }
         else{
             return error_exit(1, &n, "not found", core);
         }.to_string();

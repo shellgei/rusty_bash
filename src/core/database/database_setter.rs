@@ -310,6 +310,25 @@ impl DataBase {
         Ok(())
     }
 
+    pub fn set_int_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
+        Self::name_check(name)?;
+        self.write_check(name)?;
+        if self.flags.contains('r') {
+            self.rsh_check(name)?;
+        }
+
+        let layer = self.get_target_layer(name, layer);
+
+        match self.param_options[layer].get_mut(name) {
+            Some(e) => *e += "i",
+            None => {self.param_options[layer].insert(name.to_string(), "i".to_string());},
+        }
+
+        let db_layer = &mut self.params[layer];
+        db_layer.insert(name.to_string(), IntAssocData::default().boxed_clone());
+        Ok(())
+    }
+
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;

@@ -26,7 +26,7 @@ impl DataBase {
         }
     }
 
-    pub fn has_value(&mut self, name: &str) -> bool {
+    pub fn exist(&mut self, name: &str) -> bool {
         if let Ok(n) = name.parse::<usize>() {
             let layer = self.position_parameters.len() - 1;
             return n < self.position_parameters[layer].len();

@@ -132,7 +132,7 @@ impl BracedParam {
             return Err(ExecError::InvalidName(msg));
         }
 
-        if ! core.db.has_value(&self.param.name) {
+        if ! core.db.exist(&self.param.name) {
             self.text = "".to_string();
             return Ok(());
         }

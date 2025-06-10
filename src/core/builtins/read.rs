@@ -27,7 +27,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
         return 1;
     }
 
-    let ifs = match core.db.has_value("IFS") {
+    let ifs = match core.db.exist("IFS") {
         true  => core.db.get_param("IFS").unwrap(),
         false => " \t\n".to_string(),
     };
@@ -82,7 +82,7 @@ pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool,
         return 1;
     }
 
-    let ifs = match core.db.has_value("IFS") {
+    let ifs = match core.db.exist("IFS") {
         true  => core.db.get_param("IFS").unwrap(),
         false => " \t\n".to_string(),
     };
