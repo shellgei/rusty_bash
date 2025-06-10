@@ -67,20 +67,6 @@ impl Data for ArrayData {
         Err(ExecError::Other("invalid index".to_string()))
     }
 
-    /*
-    fn push_elems(&mut self, values: Vec<String>) -> Result<(), ExecError> {
-        let mut index = match self.body.is_empty() {
-            true  => 0,
-            false => *self.keys().iter().max().unwrap(),
-        };
-
-        for v in values {
-            self.body.insert(index, v);
-            index += 1;
-        }
-        Ok(())
-    }*/
-
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         if let Ok(n) = key.parse::<usize>() {
             if let Some(v) = self.body.get(&n) {
@@ -101,32 +87,9 @@ impl Data for ArrayData {
             return Ok(self.values().join(ifs));
         }
 
-        let n = key.parse::<usize>().map_err(|_| ExecError::ArrayIndexInvalid(key.to_string()))?;
+        let n = self.to_index(key)?;
         Ok( self.body.get(&n).unwrap_or(&"".to_string()).clone() )
     }
-
-    /*
-    fn get_all_as_array(&mut self, skip_non: bool) -> Result<Vec<String>, ExecError> {
-        if self.body.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let keys = self.keys();
-        let max = *keys.iter().max().unwrap() as usize;
-        let mut ans = vec![];
-        for i in 0..(max+1) {
-            match self.body.get(&i) {
-                Some(s) => ans.push(s.clone()),
-                None => {
-                    if ! skip_non {
-                        ans.push("".to_string());
-                    }
-                },
-            }
-        }
-        Ok(ans)
-    }
-    */
 
     fn get_vec_from(&mut self, pos: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
         if self.body.is_empty() {
@@ -184,11 +147,9 @@ impl Data for ArrayData {
             return Ok(());
         }
 
-        if let Ok(n) = key.parse::<usize>() {
-            self.body.remove(&n);
-            return Ok(());
-        }
-        Err(ExecError::Other("invalid index".to_string()))
+        let index = self.to_index(key)?;
+        self.body.remove(&index);
+        Ok(())
     }
 }
 
@@ -265,5 +226,26 @@ impl ArrayData {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
         keys.sort();
         keys
+    }
+
+    fn to_index(&mut self, key: &str) -> Result<usize, ExecError> {
+        let mut index = match key.parse::<isize>() {
+            Ok(i) => i,
+            _ => return Err(ExecError::ArrayIndexInvalid(key.to_string())),
+        };
+
+        if index >= 0 {
+            return Ok(index as usize);
+        }
+
+        let keys = self.keys();
+        let max = *keys.iter().max().unwrap() as isize;
+        index += max + 1;
+
+        if index < 0 {
+            return Ok(0);
+        }
+
+        Ok(index  as usize)
     }
 }
