@@ -75,6 +75,10 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
 
     let mut res = Ok(());
 
+    if args.contains(&"-A".to_string()) && ! core.db.has_value(&sub.left_hand.name) {
+        sub.left_hand.init_variable(core, Some(layer), args)?;
+    }
+
     match sub.has_right {
         true  => res = sub.eval(core, Some(layer), true),
         false => {
