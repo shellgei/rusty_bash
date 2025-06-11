@@ -49,17 +49,21 @@ impl Value {
 
     fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore,
                      name: &str, append: bool) -> Result<(), ExecError> {
-        let prev = match append { //TOOD: inefficient!!!
+       /* let prev = match append { //TOOD: inefficient!!!
             true  => core.db.get_vec(&name, true)?,
             false => vec![],
-        };
+        };*/
 
-        let mut i = 0;
+        let mut i = match append {
+            false => 0,
+            true  => core.db.index_based_len(&name) as isize,
+        };
         let mut hash = vec![];
+        /*
         for e in prev {
             hash.push((i.to_string(), e));
             i += 1;
-        }
+        }*/
 
         let i_flag = core.db.has_flag(&name, 'i');
         let values = a.eval(core, i_flag)?;

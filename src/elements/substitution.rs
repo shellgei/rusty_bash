@@ -46,7 +46,9 @@ impl Substitution {
             return Ok(());
         }
 
-        core.db.init(&self.left_hand.name, layer);
+        if ! self.append {
+            core.db.init(&self.left_hand.name, layer);
+        }
         for e in a {
             core.db.set_param2(&self.left_hand.name, &e.0, &e.1, Some(layer))?;
         }
