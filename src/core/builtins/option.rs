@@ -31,7 +31,8 @@ pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
     for (short, long) in [('t', "onecmd"), ('m', "monitor"),
                           ('C', "noclobber"), ('a', "allexport"),
                           ('B', "braceexpand"), ('u', ""),
-                          ('e', ""), ('r', ""), ('H', "")] {
+                          ('e', ""), ('r', ""), ('H', ""),
+                          ('x', ""), ('v', "") ] {
         let minus_opt = format!("-{}", short);
         let plus_opt = format!("+{}", short);
 

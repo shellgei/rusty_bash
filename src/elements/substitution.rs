@@ -41,14 +41,13 @@ impl Substitution {
 
         let a = self.right_hand.evaluated_array.as_ref().unwrap();
 
-        if a.is_empty() {
+        if a.is_empty() && ! self.append {
             core.db.set_array(&self.left_hand.name, None, Some(layer))?;
             return Ok(());
-        }
-
-        if ! self.append {
+        }else if ! self.append {
             core.db.init(&self.left_hand.name, layer);
         }
+
         for e in a {
             core.db.set_param2(&self.left_hand.name, &e.0, &e.1, Some(layer))?;
         }
@@ -61,7 +60,11 @@ impl Substitution {
             return Err(ExecError::ArrayIndexInvalid(self.left_hand.name.clone()));
         }
         if let Some(v) = &self.right_hand.evaluated_string {
-            return core.db.set_param2(&self.left_hand.name, index, &v, Some(layer));
+            if self.append {
+                return core.db.append_param2(&self.left_hand.name, index, &v, Some(layer));
+            }else {
+                return core.db.set_param2(&self.left_hand.name, index, &v, Some(layer));
+            }
         }
 
         let msg = format!("{}: cannot assign list to array member", &self.left_hand.text);

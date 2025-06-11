@@ -49,52 +49,44 @@ impl Value {
 
     fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore,
                      name: &str, append: bool) -> Result<(), ExecError> {
-       /* let prev = match append { //TOOD: inefficient!!!
-            true  => core.db.get_vec(&name, true)?,
-            false => vec![],
-        };*/
-
         let mut i = match append {
             false => 0,
             true  => core.db.index_based_len(&name) as isize,
         };
+
         let mut hash = vec![];
-        /*
-        for e in prev {
-            hash.push((i.to_string(), e));
-            i += 1;
-        }*/
-
         let i_flag = core.db.has_flag(&name, 'i');
-        let values = a.eval(core, i_flag)?;
 
-        for (s, v) in values {
-            match s {
-                Some(mut sub) => {
-                    let index = match sub.eval(core, &name) {
-                        Ok(i) => i,
-                        Err(e) => {
-                            e.print(core);
-                            continue;
-                        },
-                    };
-                    if core.db.is_assoc(&name) {
-                        hash.push((index, v));
-                    }else{
-                        match index.parse::<isize>() {
-                            Ok(j) => i = j,
-                            Err(e) => {
-                                eprintln!("{:?}", &e);
-                                continue;
-                            },
-                        }
-                        hash.push((index, v));
-                    }
+        for (s, v) in a.eval(core, i_flag)? { 
+            if s.is_none() {
+                hash.push((i.to_string(), v));
+                i += 1;
+                continue;
+            }
+
+            let index = match s.unwrap().eval(core, &name) {
+                Ok(i) => i,
+                Err(e) => {
+                    e.print(core);
+                    continue;
                 },
-                None => {hash.push((i.to_string(), v));},
+            };
+
+            if core.db.is_assoc(&name) {
+                hash.push((index, v));
+            }else{
+                match index.parse::<isize>() {
+                    Ok(j) => i = j,
+                    Err(e) => {
+                        eprintln!("{:?}", &e);
+                        continue;
+                    },
+                }
+                hash.push((index, v));
             }
             i += 1;
         }
+
         self.evaluated_array = Some(hash);
         Ok(())
     }
