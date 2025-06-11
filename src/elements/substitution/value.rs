@@ -49,7 +49,7 @@ impl Value {
 
     fn eval_as_array(&mut self, a: &mut Array, core: &mut ShellCore,
                      name: &str, append: bool) -> Result<(), ExecError> {
-        let prev = match append {
+        let prev = match append { //TOOD: inefficient!!!
             true  => core.db.get_vec(&name, true)?,
             false => vec![],
         };
