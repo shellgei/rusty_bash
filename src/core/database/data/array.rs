@@ -63,25 +63,16 @@ impl Data for ArrayData {
         let n = self.to_index(key)?;
         self.body.insert(n, value.to_string());
         return Ok(());
-        /*
-        if let Ok(n) = key.parse::<usize>() {
-            self.body.insert(n, value.to_string());
-            return Ok(());
-        }
-        Err(ExecError::Other("invalid index".to_string()))*/
     }
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let n = self.to_index(key)?;
-        //if let Ok(n) = key.parse::<usize>() {
-            if let Some(v) = self.body.get(&n) {
-                self.body.insert(n, v.to_owned() + value);
-            }else{
-                self.body.insert(n, value.to_string());
-            }
-            return Ok(());
-     //   }
-      //  Err(ExecError::Other("invalid index".to_string()))
+        if let Some(v) = self.body.get(&n) {
+            self.body.insert(n, v.to_owned() + value);
+        }else{
+            self.body.insert(n, value.to_string());
+        }
+        return Ok(());
     }
 
     fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
@@ -244,7 +235,10 @@ impl ArrayData {
         }
 
         let keys = self.keys();
-        let max = *keys.iter().max().unwrap() as isize;
+        let max = match keys.iter().max() {
+            Some(n) => *n as isize,
+            None => -1,
+        };
         index += max + 1;
 
         if index < 0 {

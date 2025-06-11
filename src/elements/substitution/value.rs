@@ -5,7 +5,6 @@ use crate::{ShellCore, Feeder};
 use crate::elements::word::WordMode;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use std::collections::HashMap;
 use super::array::Array;
 use crate::elements::word::Word;
 
@@ -22,7 +21,8 @@ pub struct Value {
     pub text: String,
     pub value: ParsedDataType,
     pub evaluated_string: Option<String>,
-    pub evaluated_array: Option<HashMap<String, String>>,
+    //pub evaluated_array: Option<HashMap<String, String>>,
+    pub evaluated_array: Option<Vec<(String, String)>>,
 }
 
 impl Value {
@@ -55,9 +55,9 @@ impl Value {
         };
 
         let mut i = 0;
-        let mut hash = HashMap::new();
+        let mut hash = vec![];
         for e in prev {
-            hash.insert(i.to_string(), e);
+            hash.push((i.to_string(), e));
             i += 1;
         }
 
@@ -75,19 +75,19 @@ impl Value {
                         },
                     };
                     if core.db.is_assoc(&name) {
-                        hash.insert(index, v);
+                        hash.push((index, v));
                     }else{
-                        match index.parse::<usize>() {
+                        match index.parse::<isize>() {
                             Ok(j) => i = j,
                             Err(e) => {
                                 eprintln!("{:?}", &e);
                                 continue;
                             },
                         }
-                        hash.insert(index, v);
+                        hash.push((index, v));
                     }
                 },
-                None => {hash.insert(i.to_string(), v);},
+                None => {hash.push((i.to_string(), v));},
             }
             i += 1;
         }
