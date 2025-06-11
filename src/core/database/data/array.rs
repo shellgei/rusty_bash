@@ -248,7 +248,7 @@ impl ArrayData {
         index += max + 1;
 
         if index < 0 {
-            return Ok(0);
+            return Err(ExecError::ArrayIndexInvalid(key.to_string()));
         }
 
         Ok(index  as usize)

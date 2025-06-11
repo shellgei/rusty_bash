@@ -44,7 +44,10 @@ pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             if let Ok(Some(mut sub)) = Variable::parse(&mut f, core) {
                 if let Ok(Some(key)) = sub.get_index(core, false, false) {
                     let nm = sub.name.clone();
-                    core.db.unset_array_elem(&nm, &key);
+                    if let Err(e) = core.db.unset_array_elem(&nm, &key) {
+                        e.print(core);
+                        return 1;
+                    }
                     return 0;
                 }
             }

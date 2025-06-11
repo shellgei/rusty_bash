@@ -7,6 +7,7 @@ mod database_getter;
 mod database_setter;
 
 use crate::{env, exit};
+use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::HashMap;
 use self::data::Data;
@@ -97,12 +98,13 @@ impl DataBase {
         self.unset_function(name);
     }
 
-    pub fn unset_array_elem(&mut self, name: &str, key: &str) {
+    pub fn unset_array_elem(&mut self, name: &str, key: &str) -> Result<(), ExecError> {
         for layer in &mut self.params {
             if let Some(d) = layer.get_mut(name) {
-                let _ = d.remove_elem(key);
+                let _ = d.remove_elem(key)?;
             }
         }
+        Ok(())
     }
 
     pub fn set_flag(&mut self, name: &str, flag: char) {
