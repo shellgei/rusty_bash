@@ -49,7 +49,7 @@ impl Data for IntArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let key = super::to_key(key)?;
+        let key = self.to_index(key)?;
         let n = super::to_int(value)?;
         self.body.insert(key, n);
         Ok(())
@@ -70,7 +70,7 @@ impl Data for IntArrayData {
     }*/
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let key = super::to_key(key)?;
+        let key = self.to_index(key)?;
         let n = super::to_int(value)?;
 
         if let Some(prev) = self.body.get(&key) {
@@ -164,5 +164,26 @@ impl IntArrayData {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
         keys.sort();
         keys
+    }
+
+    fn to_index(&mut self, key: &str) -> Result<usize, ExecError> {
+        let mut index = match key.parse::<isize>() {
+            Ok(i) => i,
+            _ => return Err(ExecError::ArrayIndexInvalid(key.to_string())),
+        };
+
+        if index >= 0 {
+            return Ok(index as usize);
+        }
+
+        let keys = self.keys();
+        let max = *keys.iter().max().unwrap() as isize;
+        index += max + 1;
+
+        if index < 0 {
+            return Ok(0);
+        }
+
+        Ok(index  as usize)
     }
 }

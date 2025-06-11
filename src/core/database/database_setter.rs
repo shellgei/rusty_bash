@@ -140,13 +140,13 @@ impl DataBase {
         }
 
         if self.is_array(name) {
-            if let Ok(n) = index.parse::<usize>() {
+            if let Ok(n) = index.parse::<isize>() {
                 self.set_array_elem(&name, val, n, layer)?;
             }
         }else if self.is_assoc(name) {
             self.set_assoc_elem(&name, &index, val, layer)?;
         }else{
-            match index.parse::<usize>() {
+            match index.parse::<isize>() {
                 Ok(n) => {self.set_array_elem(&name, val, n, layer)?;},
                 _ => {self.set_assoc_elem(&name, &index, val, layer)?;},
             }
@@ -161,13 +161,13 @@ impl DataBase {
         }
 
         if self.is_array(name) {
-            if let Ok(n) = index.parse::<usize>() {
+            if let Ok(n) = index.parse::<isize>() {
                 self.append_to_array_elem(&name, val, n, layer)?;
             }
         }else if self.is_assoc(name) {
             self.append_to_assoc_elem(&name, &index, val, layer)?;
         }else{
-            match index.parse::<usize>() {
+            match index.parse::<isize>() {
                 Ok(n) => {self.append_to_array_elem(&name, val, n, layer)?;},
                 _ => {self.append_to_assoc_elem(&name, &index, val, layer)?;},
             }
@@ -175,7 +175,7 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: usize, layer: Option<usize>)
+    pub fn set_array_elem(&mut self, name: &str, val: &String, pos: isize, layer: Option<usize>)
     -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
@@ -191,7 +191,7 @@ impl DataBase {
     }
 
     pub fn append_to_array_elem(&mut self, name: &str, val: &String,
-            pos: usize, layer: Option<usize>) -> Result<(), ExecError> {
+            pos: isize, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
@@ -303,7 +303,7 @@ impl DataBase {
         
         if v.is_some() {
             for (i, e) in v.unwrap().into_iter().enumerate() {
-                self.set_array_elem(&name, &e, i, Some(layer))?;
+                self.set_array_elem(&name, &e, i as isize, Some(layer))?;
             }
         }
 

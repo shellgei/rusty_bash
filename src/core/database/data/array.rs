@@ -60,23 +60,28 @@ impl Data for ArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+        let n = self.to_index(key)?;
+        self.body.insert(n, value.to_string());
+        return Ok(());
+        /*
         if let Ok(n) = key.parse::<usize>() {
             self.body.insert(n, value.to_string());
             return Ok(());
         }
-        Err(ExecError::Other("invalid index".to_string()))
+        Err(ExecError::Other("invalid index".to_string()))*/
     }
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        if let Ok(n) = key.parse::<usize>() {
+        let n = self.to_index(key)?;
+        //if let Ok(n) = key.parse::<usize>() {
             if let Some(v) = self.body.get(&n) {
                 self.body.insert(n, v.to_owned() + value);
             }else{
                 self.body.insert(n, value.to_string());
             }
             return Ok(());
-        }
-        Err(ExecError::Other("invalid index".to_string()))
+     //   }
+      //  Err(ExecError::Other("invalid index".to_string()))
     }
 
     fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
@@ -165,7 +170,7 @@ impl ArrayData {
     }
 
     pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
-                        name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
+                        name: &str, pos: isize, val: &String) -> Result<(), ExecError> {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if ! d.is_initialized() {
@@ -194,7 +199,7 @@ impl ArrayData {
     }
 
     pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
-                        name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
+                        name: &str, pos: isize, val: &String) -> Result<(), ExecError> {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if ! d.is_initialized() {

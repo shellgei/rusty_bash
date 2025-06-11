@@ -28,12 +28,13 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
     }
 }
 
+/*
 fn to_key(s: &str) -> Result<usize, ExecError> {
     match s.parse::<usize>() {
         Ok(n) => Ok(n),
         Err(_) => return Err(ExecError::ArrayIndexInvalid(s.to_string())),
     }
-}
+}*/
 
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
