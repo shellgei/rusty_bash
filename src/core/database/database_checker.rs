@@ -19,11 +19,13 @@ impl DataBase {
     }
 
     pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
-        let layer = self.param_options.len() - 1;
-        match self.param_options[layer].get(name) {
-            None => false,
-            Some(e) => e.contains(flag),
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(e) = self.param_options[layer].get(name) {
+                return e.contains(flag);
+            }
         }
+        false
     }
 
     pub fn exist(&mut self, name: &str) -> bool {
