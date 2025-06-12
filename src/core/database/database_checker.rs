@@ -61,6 +61,10 @@ impl DataBase {
         self.has_flag(name, 'r')
     }
 
+    pub fn is_int(&mut self, name: &str) -> bool {
+        self.has_flag(name, 'i')
+    }
+
     pub fn rsh_cmd_check(&mut self, cmds: &Vec<String>) -> Result<(), ExecError> {
         for c in cmds {
             if c.contains('/') {

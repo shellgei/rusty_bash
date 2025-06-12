@@ -113,6 +113,10 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
             return error_exit(1, &n, "not found", core);
         }.to_string();
 
+        if core.db.is_int(&n) {
+                opt += "i";
+        }
+
         if core.db.is_readonly(&n) {
             if ! opt.contains('r') 
             && ! core.options.query("posix") {
