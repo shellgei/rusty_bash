@@ -131,7 +131,7 @@ impl Data for ArrayData {
             return Ok(self.len());
         }
 
-        let n = key.parse::<usize>().map_err(|_| ExecError::ArrayIndexInvalid(key.to_string()))?;
+        let n = self.to_index(key)?;
         let s = self.body.get(&n).unwrap_or(&"".to_string()).clone();
 
         Ok(s.chars().count())
