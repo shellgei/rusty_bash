@@ -122,4 +122,21 @@ impl DataBase {
             println!("{}", &f.text);
         }
     }
+
+    pub fn int_to_str_type(&mut self, name: &str, layer: usize)
+    -> Result<(), ExecError> {
+        let layer_len = self.param_options.len();
+        for ly in layer..layer_len {
+            if let Some(opt) = self.param_options[ly].get_mut(name) {
+                opt.retain(|c| c != 'i');
+            }
+        }
+
+        if let Some(d) = self.params[layer].get_mut(name) {
+            let new_d = d.get_str_type();
+            self.params[layer].insert(name.to_string(), new_d);
+        }
+
+        Ok(())
+    }
 }

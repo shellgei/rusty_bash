@@ -67,6 +67,12 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         layer = 0;
     }
 
+    if arg::consume_option("+i", args) {
+        if core.db.has_flag_layer(&sub.left_hand.name, 'i', layer) {
+            core.db.int_to_str_type(&sub.left_hand.name, layer)?;
+        }
+    }
+
     if sub.has_right {
         reparse(core, sub);
     }

@@ -28,14 +28,6 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
     }
 }
 
-/*
-fn to_key(s: &str) -> Result<usize, ExecError> {
-    match s.parse::<usize>() {
-        Ok(n) => Ok(n),
-        Err(_) => return Err(ExecError::ArrayIndexInvalid(s.to_string())),
-    }
-}*/
-
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.print_body()).finish()
@@ -51,6 +43,8 @@ impl Clone for Box::<dyn Data> {
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
     fn print_body(&self) -> String;
+
+    fn get_str_type(&self) -> Box<dyn Data> { self.boxed_clone() }
 
     fn print_with_name(&self, name: &str, declare_print: bool) {
         if self.is_special() {
@@ -123,8 +117,6 @@ pub trait Data {
         }else{
             return Ok("".to_string());
         }
-
-        //Err(ExecError::ArrayIndexInvalid(pos.to_string()))
     }
 
     fn get_all_as_array(&mut self, flatten: bool) -> Result<Vec<String>, ExecError> {

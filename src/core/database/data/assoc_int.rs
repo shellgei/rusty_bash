@@ -4,6 +4,7 @@
 use crate::utils;
 use crate::error::exec::ExecError;
 use super::Data;
+use super::assoc::AssocData;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
@@ -79,6 +80,15 @@ impl Data for IntAssocData {
         }
 
         self.last.clone().ok_or(ExecError::Other("No last input".to_string()))
+    }
+
+    fn get_str_type(&self) -> Box<dyn Data> {
+        let mut hash = HashMap::new();
+        for d in &self.body {
+            hash.insert(d.0.to_string(), d.1.to_string());
+        }
+
+        Box::new(AssocData::from(hash))
     }
 
     fn is_assoc(&self) -> bool {true}

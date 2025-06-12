@@ -12,6 +12,14 @@ pub struct ArrayData {
     body: HashMap<usize, String>,
 }
 
+impl From<HashMap<usize, String>> for ArrayData {
+    fn from(h: HashMap<usize, String>) -> Self {
+        let mut ans = Self::default();
+        ans.body = h;
+        ans
+    }
+}
+
 impl From<Option<Vec<String>>> for ArrayData {
     fn from(v: Option<Vec<String>>) -> Self {
         let mut ans = Self::default();

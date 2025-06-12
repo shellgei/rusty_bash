@@ -5,6 +5,7 @@ use crate::error::exec::ExecError;
 use std::collections::HashMap;
 use super::Data;
 use super::array_uninit::UninitArray;
+use super::array::ArrayData;
 
 #[derive(Debug, Clone, Default)]
 pub struct IntArrayData {
@@ -144,6 +145,15 @@ impl Data for IntArrayData {
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         self.body.get(&0).map(|v| Ok(v.to_string())).ok_or(ExecError::Other("No entry".to_string()))?
+    }
+
+    fn get_str_type(&self) -> Box<dyn Data> {
+        let mut hash = HashMap::new();
+        for d in &self.body {
+            hash.insert(*d.0, d.1.to_string());
+        }
+
+        Box::new(ArrayData::from(hash))
     }
 
     fn is_array(&self) -> bool {true}
