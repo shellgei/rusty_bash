@@ -107,10 +107,6 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn set_flag(&mut self, name: &str, flag: char) {
-        database_setter::flag(self, name, flag)
-    }
-
     pub fn print(&mut self, name: &str) {
         if let Some(d) = self.get_ref(name) {
             d.print_with_name(name, false);

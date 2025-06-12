@@ -18,6 +18,13 @@ impl DataBase {
         false
     }
 
+    pub fn has_flag_layer(&mut self, name: &str, flag: char, layer: usize) -> bool {
+        if let Some(e) = self.param_options[layer].get(name) {
+            return e.contains(flag);
+        }
+        false
+    }
+
     pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
         let num = self.params.len();
         for layer in (0..num).rev()  {

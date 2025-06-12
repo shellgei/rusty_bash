@@ -72,19 +72,20 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     }
 
     if export_opt {
-        core.db.set_flag(&sub.left_hand.name, 'x');
+        core.db.set_flag(&sub.left_hand.name, 'x', Some(layer));
     }
 
     if args.contains(&"-i".to_string()) {
-        core.db.set_flag(&sub.left_hand.name, 'i');
+        core.db.set_flag(&sub.left_hand.name, 'i', Some(layer));
     }
 
     let mut res = Ok(());
 
-    if args.contains(&"-A".to_string()) && ! core.db.exist(&sub.left_hand.name) {
+    if args.contains(&"-A".to_string())
+    && ! core.db.exist(&sub.left_hand.name) {
         sub.left_hand.init_variable(core, Some(layer), args)?;
     }
-
+ 
     match sub.has_right {
         true  => res = sub.eval(core, Some(layer), true),
         false => {
@@ -97,7 +98,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     }
 
     if read_only {
-        core.db.set_flag(&sub.left_hand.name, 'r');
+        core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
     }
 
     res
@@ -263,7 +264,7 @@ pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>,
             e.print(core);
             return 1;
         }
-        core.db.set_flag(&sub.left_hand.name, 'r');
+        core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
     }
     0
 }

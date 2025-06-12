@@ -159,7 +159,7 @@ impl ShellCore {
         let _ = self.db.set_param("HOSTTYPE", &t_arch, None);
         let _ = self.db.set_param("OSTYPE", &t_os, None);
         let _ = self.db.set_array("BASH_VERSINFO", Some(versinfo), None);
-        let _ = self.db.set_flag("BASH_VERSINFO", 'r');
+        let _ = self.db.set_flag("BASH_VERSINFO", 'r', None);
     }
 
     pub fn flip_exit_status(&mut self) {

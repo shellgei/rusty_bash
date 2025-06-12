@@ -4,6 +4,7 @@
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
 use super::Data;
+use super::array_uninit::UninitArray;
 
 #[derive(Debug, Clone, Default)]
 pub struct IntArrayData {
@@ -16,7 +17,7 @@ impl Data for IntArrayData {
     fn print_body(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
-            formatted += &format!("[{}]={} ", i, &self.body[&i]);
+            formatted += &format!("[{}]=\"{}\" ", i, &self.body[&i]);
         };
         if formatted.ends_with(" ") {
             formatted.pop();
@@ -116,6 +117,27 @@ impl Data for IntArrayData {
         Ok(ans)
     }
 
+    fn get_vec_from(&mut self, pos: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
+        if self.body.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let keys = self.keys();
+        let max = *keys.iter().max().unwrap() as usize;
+        let mut ans = vec![];
+        for i in pos..(max+1) {
+            match self.body.get(&i) {
+                Some(s) => ans.push(s.to_string()),
+                None => {
+                    if ! skip_non {
+                        ans.push("".to_string());
+                    }
+                },
+            }
+        }
+        Ok(ans)
+    }
+
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
         Ok(self.keys().iter().map(|k| k.to_string()).collect())
     }
@@ -153,6 +175,40 @@ impl Data for IntArrayData {
 }
 
 impl IntArrayData {
+    pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
+                        name: &str, pos: isize, val: &String) -> Result<(), ExecError> {
+        if let Some(d) = db_layer.get_mut(name) {
+            if d.is_array() {
+                if ! d.is_initialized() {
+                    *d = IntArrayData::default().boxed_clone();
+                }
+                
+                return d.set_as_array(&pos.to_string(), val);
+            }else if d.is_assoc() {
+                return d.set_as_assoc(&pos.to_string(), val);
+            }else if d.is_single() {
+                let data = d.get_as_single()?;
+                IntArrayData::set_new_entry(db_layer, name)?;
+                
+                if data != "" {
+                    Self::set_elem(db_layer, name, 0, &data)?;
+                }
+                Self::set_elem(db_layer, name, pos, val)
+            }else {
+                IntArrayData::set_new_entry(db_layer, name)?;
+                Self::set_elem(db_layer, name, pos, val)
+            }
+        }else{
+            IntArrayData::set_new_entry(db_layer, name)?;
+            Self::set_elem(db_layer, name, pos, val)
+        }
+    }
+
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str)
+    -> Result<(), ExecError> {
+        db_layer.insert(name.to_string(), UninitArray{}.boxed_clone());
+        Ok(())
+    }
 
     pub fn values(&self) -> Vec<String> {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();

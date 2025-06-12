@@ -187,7 +187,12 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
-        ArrayData::set_elem(&mut self.params[layer], name, pos, val)
+
+        if self.has_flag(name, 'i') {
+            IntArrayData::set_elem(&mut self.params[layer], name, pos, val)
+        } else {
+            ArrayData::set_elem(&mut self.params[layer], name, pos, val)
+        }
     }
 
     pub fn append_to_array_elem(&mut self, name: &str, val: &String,
@@ -342,6 +347,19 @@ impl DataBase {
         db_layer.insert(name.to_string(), UninitAssoc{}.boxed_clone());
         Ok(())
     }
+
+    pub fn set_flag(&mut self, name: &str, flag: char, layer: Option<usize>) {
+        let layer = match layer {
+            None => self.position_parameters.len() - 1,
+            Some(lay) => lay,
+        };
+
+        let rf = &mut self.param_options[layer];
+        match rf.get_mut(name) {
+            Some(d) => d.push(flag),
+            None => {rf.insert(name.to_string(), flag.to_string()); },
+        }
+    }
 }
 
 pub fn initialize(db: &mut DataBase) -> Result<(), String> {
@@ -377,6 +395,7 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     Ok(())
 }
 
+/*
 pub fn flag(db: &mut DataBase, name: &str, flag: char) {
     let layer = db.position_parameters.len() - 1;
     let rf = &mut db.param_options[layer];
@@ -385,3 +404,4 @@ pub fn flag(db: &mut DataBase, name: &str, flag: char) {
         None => {rf.insert(name.to_string(), flag.to_string()); },
     }
 }
+*/
