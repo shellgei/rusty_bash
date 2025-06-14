@@ -18,6 +18,7 @@ rand = "0.9"
 rand_chacha = { version = "0.9.0", features = [ "os_rng" ]}
 time = "0.3"
 sprintf = "0.4"
+widestring = "1.2.0"
 
 [profile.release]
 opt-level = 3

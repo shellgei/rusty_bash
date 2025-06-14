@@ -14,6 +14,7 @@ use nix::unistd::Pid;
 use std::process;
 use std::ffi::CString;
 use std::sync::atomic::Ordering::Relaxed;
+use widestring::Utf32String;
 
 pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
                      exclamation: bool, time: bool) -> Vec<WaitStatus> {
@@ -178,10 +179,22 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
 
 fn to_carg(arg: &String) -> CString {
     let mut tmp = String::new();
+    let mut unicode8num = 0;
+
     for c in arg.chars() {
         if c as u32 >= 0xE080 && c as u32 <= 0xE0FF {
             let num: u8 = (c as u32 - 0xE000) as u8;
             let ch = unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) };
+            tmp.push_str(&ch);
+        }else if c as u32 >= 0xE200 && c as u32 <= 0xE4FF {
+            unicode8num <<= 8;
+            unicode8num += c as u32 & 0xFF;
+        }else if c as u32 >= 0xE100 && c as u32 <= 0xE1FF {
+            unicode8num <<= 8;
+            unicode8num += c as u32 & 0xFF;
+            //let ch = Utf32String::from_vec(vec![unicode8num]);
+            let ch = unsafe { char::from_u32_unchecked(unicode8num) }.to_string();
+            unicode8num = 0;
             tmp.push_str(&ch);
         }else{
             tmp.push(c);

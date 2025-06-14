@@ -65,7 +65,13 @@ impl Token {
             },
             Token::Unicode8(s) => {
                 let num = u64::from_str_radix(&s, 16).unwrap();
-                unsafe { char::from_u32_unchecked(num as u32) }.to_string()
+                let mut ans = String::new();
+                for i in (0..4).rev() {
+                    let n = (((num >> i*8) & 0xFF) + 0xE000 + ((i+1) << 8)) as u32;
+                    ans.push( char::from_u32(n).unwrap() );
+                }
+                //unsafe { char::from_u32_unchecked(num as u32) }.to_string()
+                ans
             },
             Token::Control(c) => {
                 let num = if *c == '@' { 0 }
