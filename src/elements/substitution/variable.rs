@@ -110,11 +110,16 @@ impl Variable {
     }
 
     pub fn exist(&self, core: &mut ShellCore) -> Result<bool, ExecError> {//used in value_check.rs
-        if core.db.is_array(&self.name) 
-        && core.db.get_vec(&self.name, false)?.is_empty() {
-            return Ok(false);
+        if core.db.is_array(&self.name) || core.db.is_assoc(&self.name) {
+            if core.db.get_vec(&self.name, false)?.is_empty() {
+                return Ok(false);
+            }
+
+            if self.index.is_none() {
+                return Ok(core.db.has_key(&self.name, "0")?);
+            }
         }
-        
+
         if let Some(sub) = self.index.clone().as_mut() {
             let index = sub.eval(core, &self.name)?;
             return Ok(core.db.has_key(&self.name, &index)?);
