@@ -94,6 +94,13 @@ impl Data for IntAssocData {
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        Ok(self.body.contains_key(key))
+    }
+
     fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
         if key == "@" || key == "*" {
             return Ok(self.len());

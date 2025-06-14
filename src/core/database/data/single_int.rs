@@ -54,4 +54,11 @@ impl Data for IntData {
     fn len(&mut self) -> usize { self.body.to_string().len() }
     fn is_single(&self) -> bool {true}
     fn is_single_num(&self) -> bool {true}
+
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        Ok(key == "0")
+    }
 }

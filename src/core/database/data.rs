@@ -64,7 +64,7 @@ pub trait Data {
 
     fn is_initialized(&self) -> bool {true}
 
-    //fn push_elems(&mut self, _: Vec<String>) -> Result<(), ExecError> { Err(ExecError::Other("Undefined call push_elems".to_string())) }
+    fn has_key(&mut self, _: &str) -> Result<bool, ExecError> { Ok(false) }
 
     fn clear(&mut self) {}
     fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call set_as_single".to_string()))}

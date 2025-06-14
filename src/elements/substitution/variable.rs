@@ -116,10 +116,8 @@ impl Variable {
         }
         
         if let Some(sub) = self.index.clone().as_mut() {
-            if sub.eval(core, &self.name).is_ok()
-            && core.db.has_array_value(&self.name, &sub.text) {
-                return Ok(true);
-            }
+            let index = sub.eval(core, &self.name)?;
+            return Ok(core.db.has_key(&self.name, &index)?);
         }
 
         Ok(core.db.exist(&self.name))

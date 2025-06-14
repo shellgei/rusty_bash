@@ -37,6 +37,13 @@ impl Data for SingleData {
     fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.body.to_string()) }
     fn len(&mut self) -> usize { self.body.chars().count() }
     fn is_single(&self) -> bool {true}
+
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        Ok(key == "0")
+    }
 }
 
     /*

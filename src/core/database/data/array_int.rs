@@ -30,6 +30,14 @@ impl Data for IntArrayData {
     fn clear(&mut self) { self.body.clear(); }
     fn is_initialized(&self) -> bool { true }
 
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        let n = self.to_index(key)?;
+        Ok(self.body.contains_key(&n))
+    }
+
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         let n = super::to_int(value)?;
         self.body.insert(0, n);

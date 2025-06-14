@@ -127,6 +127,14 @@ impl Data for ArrayData {
     fn is_array(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        let n = self.to_index(key)?;
+        Ok(self.body.contains_key(&n))
+    }
+
     fn index_based_len(&mut self) -> usize {
         match self.body.iter().map(|e| e.0).max() {
             Some(n) => *n+1,

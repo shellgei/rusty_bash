@@ -195,7 +195,6 @@ impl ConditionalExpr {
                             false
                         }
                     }
-                    //core.db.exist(&operand) || env::var(&operand).is_ok()
                 },
                 "-z" => operand.is_empty(),
                 "-n" => operand.len() > 0,

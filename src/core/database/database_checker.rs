@@ -50,6 +50,16 @@ impl DataBase {
         false
     }
 
+    pub fn has_key(&mut self, name: &str, key: &str) -> Result<bool, ExecError> {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(e) = self.params[layer].get_mut(name) {
+                return Ok(e.has_key(key)?);
+            }
+        }
+        Ok(false)
+    }
+
     pub fn name_check(name: &str) -> Result<(), ExecError> {
         if ! utils::is_param(name) {
             return Err(ExecError::VariableInvalid(name.to_string()));
