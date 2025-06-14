@@ -176,8 +176,25 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
     exit::not_found(&arg, core)
 }
 
+fn to_carg(arg: &String) -> CString {
+    let mut tmp = String::new();
+    for c in arg.chars() {
+        if c as u32 >= 0xE080 && c as u32 <= 0xE0FF {
+            let num: u8 = (c as u32 - 0xE000) as u8;
+            let ch = unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) };
+            tmp.push_str(&ch);
+        }else{
+            tmp.push(c);
+        }
+    }
+    CString::new(tmp.to_string()).unwrap()
+}
+
 fn to_cargs(args: &Vec<String>) -> Vec<CString> {
+    args.iter().map(|a| to_carg(a)).collect()
+        /*
     args.iter()
         .map(|a| CString::new(a.to_string()).unwrap())
         .collect()
+        */
 }

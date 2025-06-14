@@ -48,8 +48,9 @@ impl Token {
                     num -= 256;
                 }
 
-                if compat_bash {
-                    unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) }
+                if num >= 128 {
+                    num += 0xE000;
+                    char::from_u32(num).unwrap().to_string()
                 }else{
                     char::from(num as u8).to_string()
                 }
