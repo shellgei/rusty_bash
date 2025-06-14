@@ -74,7 +74,10 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     }
 
     if sub.has_right {
-        reparse(core, sub);
+        if (args.contains(&"-a".to_string()) || args.contains(&"-A".to_string())) 
+        || (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) ) {
+            reparse(core, sub);
+        }
     }
 
     if export_opt {
@@ -139,7 +142,7 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
             true  => format!("{} -{} ", com, opt),
         };
         print!("{}", prefix);
-        core.db.print(&n);
+        core.db.declare_print(&n);
     }
     0
 }
