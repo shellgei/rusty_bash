@@ -18,7 +18,7 @@ enum Token {
 }
 
 impl Token {
-    fn to_string(&mut self, compat_bash: bool) -> String {
+    fn to_string(&mut self) -> String {
         match &self {
             Token::EmptyHex => String::new(),
             Token::Normal(s) => s.clone(), 
@@ -28,8 +28,9 @@ impl Token {
                     num -= 256;
                 }
 
-                if compat_bash {
-                    unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) }
+                if num >= 128 {
+                    num += 0xE000;
+                    char::from_u32(num).unwrap().to_string()
                 }else{
                     char::from(num as u8).to_string()
                 }
@@ -65,6 +66,23 @@ impl Token {
             Token::Unicode8(s) => {
                 let num = u64::from_str_radix(&s, 16).unwrap();
                 unsafe { char::from_u32_unchecked(num as u32) }.to_string()
+                /*
+                let mut nonzero = false;
+                let mut ans = String::new();
+                for i in (0..8).rev() {
+                    let n = ((num >> 8*i) & 0xFF) as u32;
+                    if n != 0 {
+                        nonzero = true;
+                    }
+
+                    if nonzero {
+                        ans.push(char::from_u32(n + 0xE000).unwrap());
+                    }
+                }
+                ans
+                */
+                //unsafe{ String::from_utf8_unchecked(ans) };
+            //let ch = unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) };
             },
             Token::Control(c) => {
                 let num = if *c == '@' { 0 }
@@ -105,7 +123,6 @@ pub struct AnsiCQuoted {
     text: String,
     tokens: Vec<Token>,
     in_heredoc: bool, 
-    compat_bash: bool,
 }
 
 impl Subword for AnsiCQuoted {
@@ -124,7 +141,7 @@ impl Subword for AnsiCQuoted {
             if let Token::EmptyHex = t {
                 break;
             }
-            ans += &t.to_string(self.compat_bash);
+            ans += &t.to_string();
         }
 
         ans
@@ -269,7 +286,6 @@ impl AnsiCQuoted {
             return Ok(None);
         }
         let mut ans = Self::default();
-        ans.compat_bash = core.compat_bash;
         ans.text += &feeder.consume(2);
 
         while ! feeder.starts_with("'") {
