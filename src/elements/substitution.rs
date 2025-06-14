@@ -16,7 +16,7 @@ use self::variable::Variable;
 pub struct Substitution {
     pub text: String,
     pub left_hand: Variable,
-    right_hand: Value,
+    pub right_hand: Value,
     append: bool,
     lineno: usize,
     pub has_right: bool,
