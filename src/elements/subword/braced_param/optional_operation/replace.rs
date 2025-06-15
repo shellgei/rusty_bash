@@ -43,8 +43,13 @@ impl OptionalOperation for Replace {
             array[i] = self.get_text(&array[i], core)?;
         }
 
-        let ifs = core.db.get_ifs_head();
+        if param.name == "@"
+        || (param.index.is_some() && param.index.as_ref().unwrap().text == "[@]") {
+            *text = array.join(" ");
+            return Ok(());
+        }
 
+        let ifs = core.db.get_ifs_head();
         *text = array.join(&ifs);
         Ok(())
     }
