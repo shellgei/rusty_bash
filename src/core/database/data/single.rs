@@ -50,12 +50,3 @@ impl Data for SingleData {
         Ok(key == "0")
     }
 }
-
-    /*
-impl SingleData {
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, value: &str)-> Result<(), ExecError> {
-        db_layer.insert( name.to_string(), Box::new(SingleData::from(value)) );
-        Ok(())
-    }
-}
-    */

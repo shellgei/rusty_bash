@@ -99,6 +99,13 @@ impl DataBase {
     }
 
     pub fn unset_array_elem(&mut self, name: &str, key: &str) -> Result<(), ExecError> {
+        if self.is_single(name) {
+            if key == "0" || key == "@" || key == "*" {
+                self.unset_var(name);
+                return Ok(());
+            }
+        }
+
         for layer in &mut self.params {
             if let Some(d) = layer.get_mut(name) {
                 let _ = d.remove_elem(key)?;
