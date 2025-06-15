@@ -373,7 +373,7 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn set_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
+    pub fn set_assoc(&mut self, name: &str, layer: Option<usize>, set_array: bool) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         if self.flags.contains('r') {
@@ -383,7 +383,11 @@ impl DataBase {
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
-        db_layer.insert(name.to_string(), UninitAssoc{}.boxed_clone());
+        if set_array { 
+            db_layer.insert(name.to_string(), Box::new(AssocData::default()));
+        }else{
+            db_layer.insert(name.to_string(), UninitAssoc{}.boxed_clone());
+        }
         Ok(())
     }
 
@@ -430,6 +434,6 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_array("BASH_ARGV", Some(vec![]), None)?;
     db.set_array("BASH_LINENO", Some(vec![]), None)?;
     db.set_array("DIRSTACK", Some(vec![]), None)?;
-    db.set_assoc("BASH_CMDS", None)?;
+    db.set_assoc("BASH_CMDS", None, false)?;
     Ok(())
 }

@@ -91,7 +91,7 @@ impl Variable {
         }else if arg::consume_option("-A", args) {
             match i_opt { 
                 true  => core.db.set_int_assoc(&self.name, layer)?,
-                false => core.db.set_assoc(&self.name, layer)?,
+                false => core.db.set_assoc(&self.name, layer, false)?,
             }
             if ! prev.is_empty() {
                 core.db.set_assoc_elem(&self.name, &"0".to_string(), &prev[0], layer)?;

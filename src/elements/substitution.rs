@@ -42,7 +42,12 @@ impl Substitution {
         let a = self.right_hand.evaluated_array.as_ref().unwrap();
 
         if a.is_empty() && ! self.append {
-            core.db.set_array(&self.left_hand.name, None, Some(layer))?;
+            //core.db.set_array(&self.left_hand.name, None, Some(layer))?;
+            if core.db.is_assoc(&self.left_hand.name) {
+                core.db.set_assoc(&self.left_hand.name, Some(layer), true)?;
+            }else{
+                core.db.set_array(&self.left_hand.name, Some(vec![]), Some(layer))?;
+            }
             return Ok(());
         }else if ! self.append {
             core.db.init(&self.left_hand.name, layer);
