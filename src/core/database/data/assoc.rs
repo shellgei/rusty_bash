@@ -45,6 +45,11 @@ impl Data for AssocData {
 
     fn clear(&mut self) { self.body.clear(); }
 
+    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        self.body.insert("0".to_string(), value.to_string());
+        Ok(())
+    }
+
     fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         self.body.insert(key.to_string(), value.to_string());
         self.last = Some(value.to_string());

@@ -91,6 +91,13 @@ impl DataBase {
             }
             return d.set_as_array("0", &val);
         }
+
+        if d.is_assoc() {
+            if ! d.is_initialized() {
+                *d = AssocData::default().boxed_clone();
+            }
+            return d.set_as_assoc("0", &val);
+        }
      
         d.set_as_single(&val)
     }
