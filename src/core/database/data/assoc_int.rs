@@ -151,7 +151,7 @@ impl Data for IntAssocData {
 
     fn remove_elem(&mut self, key: &str) -> Result<(), ExecError> {
         if key == "*" || key == "@" {
-            self.body.clear();
+       //     self.body.clear();
             return Ok(());
         }
 
