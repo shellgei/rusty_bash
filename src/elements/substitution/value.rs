@@ -59,15 +59,16 @@ impl Value {
         let i_flag = core.db.has_flag(&name, 'i');
         let mut first = true;
         let mut assoc_no_index_mode = false;
+        let assoc = core.db.is_assoc(&name);
 
-        for (s, v) in a.eval(core, i_flag)? { 
+        for (s, v) in a.eval(core, i_flag, assoc)? { 
             if assoc_no_index_mode {
                 vec_assoc.push(v);
                 continue;
             }
 
             if s.is_none() {
-                if first && core.db.is_assoc(&name) {
+                if first && assoc {
                     assoc_no_index_mode = true;
                     vec_assoc.push(v);
                 }else{
@@ -89,7 +90,7 @@ impl Value {
                 },
             };
 
-            if core.db.is_assoc(&name) {
+            if assoc {
                 hash.push((index, v));
             }else{
                 match index.parse::<isize>() {

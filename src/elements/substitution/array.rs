@@ -16,9 +16,8 @@ pub struct Array {
 }
 
 impl Array {
-    pub fn eval(&mut self, core: &mut ShellCore, as_int: bool)
+    pub fn eval(&mut self, core: &mut ShellCore, as_int: bool, as_assoc: bool)
     -> Result<Vec<(Option<Subscript>, String)>, ExecError> {
-
         if let Some(c) = self.error_strings.last() {
             return Err(ExecError::SyntaxError(c.to_string()));
         }
@@ -31,8 +30,12 @@ impl Array {
             }
         }else{
             for (s, w) in &mut self.words {
-                for e in w.eval(core)? {
-                    ans.push( (s.clone(), e) );
+                if as_assoc {
+                    ans.push( (s.clone(), w.eval_as_value(core)?) );
+                }else{
+                    for e in w.eval(core)? {
+                        ans.push( (s.clone(), e) );
+                    }
                 }
             }
         }
