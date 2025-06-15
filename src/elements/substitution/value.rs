@@ -55,15 +55,30 @@ impl Value {
         };
 
         let mut hash = vec![];
+        let mut vec_assoc = vec![];
         let i_flag = core.db.has_flag(&name, 'i');
+        let mut first = true;
+        let mut assoc_no_index_mode = false;
 
         for (s, v) in a.eval(core, i_flag)? { 
-            if s.is_none() {
-                hash.push((i.to_string(), v));
-                i += 1;
+            if assoc_no_index_mode {
+                vec_assoc.push(v);
                 continue;
             }
 
+            if s.is_none() {
+                if first && core.db.is_assoc(&name) {
+                    assoc_no_index_mode = true;
+                    vec_assoc.push(v);
+                }else{
+                    hash.push((i.to_string(), v));
+                }
+                i += 1;
+                first = false;
+                continue;
+            }
+
+            first = false;
             let index = match s.unwrap().eval(core, &name) {
                 Ok(i) => i,
                 Err(ExecError::ArithError(a,b))
@@ -87,6 +102,20 @@ impl Value {
                 hash.push((index, v));
             }
             i += 1;
+        }
+
+        if assoc_no_index_mode {
+            let mut key = String::new();
+            for (i, d) in vec_assoc.iter().enumerate() {
+                match i%2 {
+                    0 => key = d.clone(),
+                    _ => hash.push((key.clone(), d.clone())),
+                }
+            }
+
+            if vec_assoc.len()%2 == 1 {
+                hash.push((key.clone(), "".to_string()));
+            }
         }
 
         self.evaluated_array = Some(hash);
