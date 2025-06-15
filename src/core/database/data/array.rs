@@ -38,7 +38,7 @@ impl Data for ArrayData {
         for i in self.keys() {
             let ansi = utils::to_ansi_c(&self.body[&i]);
             if ansi == self.body[&i] {
-                formatted += &format!("[{}]=\"{}\" ", i, &ansi);
+                formatted += &format!("[{}]=\"{}\" ", i, &ansi.replace("$", "\\$"));
             }else{
                 formatted += &format!("[{}]={} ", i, &ansi);
             }

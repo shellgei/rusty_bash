@@ -74,33 +74,34 @@ impl Variable {
 
     pub fn init_variable(&self, core: &mut ShellCore, layer: Option<usize>, args: &mut Vec<String>)
     -> Result<(), ExecError> {
-        let mut prev = None;
+        //let mut prev = None;
+        let mut prev = vec![];
 
         if (layer.is_none() && core.db.exist(&self.name) )
         || core.db.params[layer.unwrap()].get(&self.name).is_some() {
-            prev = Some(vec![core.db.get_param(&self.name)?]);
+            prev = vec![core.db.get_param(&self.name)?];
         }
 
         let i_opt = arg::consume_option("-i", args);
         if arg::consume_option("-a", args) {
             return match i_opt { 
-                true  => core.db.set_int_array(&self.name, prev, layer),
-                false => core.db.set_array(&self.name, prev, layer),
+                true  => core.db.set_int_array(&self.name, Some(prev), layer),
+                false => core.db.set_array(&self.name, Some(prev), layer),
             };
         }else if arg::consume_option("-A", args) {
             match i_opt { 
                 true  => core.db.set_int_assoc(&self.name, layer)?,
                 false => core.db.set_assoc(&self.name, layer)?,
             }
-            if prev.is_some() {
-                core.db.set_assoc_elem(&self.name, &"0".to_string(), &prev.unwrap()[0], layer)?;
+            if ! prev.is_empty() {
+                core.db.set_assoc_elem(&self.name, &"0".to_string(), &prev[0], layer)?;
             }
             return Ok(());
         }
 
-        let value = match prev {
-            Some(v) => v[0].clone(),
-            None => "".to_string(),
+        let value = match prev.len() {
+            0 => "".to_string(),
+            _ => prev[0].clone(),
         };
 
         match i_opt { 

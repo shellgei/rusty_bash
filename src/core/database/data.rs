@@ -52,7 +52,7 @@ pub trait Data {
             return;
         }
 
-        let body = self.print_body().replace("$", "\\$");
+        let body = self.print_body();//.replace("$", "\\$");
         if ! self.is_initialized() {
             println!("{}", name);
         }else if declare_print && self.is_single() {

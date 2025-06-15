@@ -66,6 +66,8 @@ impl Value {
 
             let index = match s.unwrap().eval(core, &name) {
                 Ok(i) => i,
+                Err(ExecError::ArithError(a,b))
+                    => return Err(ExecError::ArithError(a,b)),
                 Err(e) => {
                     e.print(core);
                     continue;

@@ -60,6 +60,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
 
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
+    let little_opt = arg::consume_option("-l", args);
 
     let mut layer = layer;
     if arg::consume_option("-g", args) && layer != 0 {
@@ -86,6 +87,10 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
 
     if args.contains(&"-i".to_string()) {
         core.db.set_flag(&sub.left_hand.name, 'i', Some(layer));
+    }
+
+    if little_opt {
+        core.db.set_flag(&sub.left_hand.name, 'l', Some(layer));
     }
 
     let mut res = Ok(());
@@ -124,6 +129,10 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
 
         if core.db.is_int(&n) {
                 opt += "i";
+        }
+
+        if core.db.has_flag(&n, 'l') {
+                opt += "l";
         }
 
         if core.db.is_readonly(&n) {

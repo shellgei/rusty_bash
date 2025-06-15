@@ -68,11 +68,15 @@ impl DataBase {
             env::set_var(name, "");
         }
 
+        let val = match self.has_flag(name, 'l') {
+            true => val.to_string().to_lowercase(),
+            false => val.to_string(),
+        };
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
         if env::var(name).is_ok() {
-            env::set_var(name, val);
+            env::set_var(name, &val);
         }
 
         if db_layer.get(name).is_none() {
@@ -85,10 +89,10 @@ impl DataBase {
             if ! d.is_initialized() {
                 *d = ArrayData::default().boxed_clone();
             }
-            return d.set_as_array("0", val);
+            return d.set_as_array("0", &val);
         }
      
-        d.set_as_single(val)
+        d.set_as_single(&val)
     }
 
     pub fn append_param(&mut self, name: &str, val: &str, layer: Option<usize>)
@@ -114,10 +118,15 @@ impl DataBase {
             env::set_var(name, "");
         }
 
+        let val = match self.has_flag(name, 'l') {
+            true => val.to_string().to_lowercase(),
+            false => val.to_string(),
+        };
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
+
         if let Ok(v) = env::var(name) {
-            env::set_var(name, v + val);
+            env::set_var(name, v + &val);
         }
 
         if db_layer.get(name).is_none() {
@@ -127,10 +136,10 @@ impl DataBase {
         let d = db_layer.get_mut(name).unwrap();
 
         if d.is_array() {
-            return d.append_to_array_elem("0", val);
+            return d.append_to_array_elem("0", &val);
         }
      
-        d.append_as_single(val)
+        d.append_as_single(&val)
     }
 
     pub fn set_param2(&mut self, name: &str, index: &String, val: &String,
@@ -187,11 +196,15 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
+        let val = match self.has_flag(name, 'l') {
+            true => val.to_string().to_lowercase(),
+            false => val.to_string(),
+        };
 
         if self.has_flag(name, 'i') {
-            IntArrayData::set_elem(&mut self.params[layer], name, pos, val)
+            IntArrayData::set_elem(&mut self.params[layer], name, pos, &val)
         } else {
-            ArrayData::set_elem(&mut self.params[layer], name, pos, val)
+            ArrayData::set_elem(&mut self.params[layer], name, pos, &val)
         }
     }
 
@@ -206,8 +219,13 @@ impl DataBase {
             self.rsh_check(name)?;
         }
 
+        let val = match self.has_flag(name, 'l') {
+            true => val.to_string().to_lowercase(),
+            false => val.to_string(),
+        };
+
         let layer = self.get_target_layer(name, layer);
-        ArrayData::append_elem(&mut self.params[layer], name, pos, val)
+        ArrayData::append_elem(&mut self.params[layer], name, pos, &val)
     }
 
     pub fn set_assoc_elem(&mut self, name: &str, key: &String,
@@ -221,10 +239,13 @@ impl DataBase {
             self.rsh_check(name)?;
         }
 
+        let val = match self.has_flag(name, 'l') {
+            true => val.to_string().to_lowercase(),
+            false => val.to_string(),
+        };
         let i_flag = self.has_flag(name, 'i');
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
-        //AssocData::set_elem(&mut self.params[layer], name, key, val)
 
         match db_layer.get_mut(name) {
             Some(v) => {
@@ -235,7 +256,7 @@ impl DataBase {
                     };
                 }
 
-                v.set_as_assoc(key, val)
+                v.set_as_assoc(key, &val)
             }, 
             _ => Err(ExecError::Other("TODO".to_string())),
         }
@@ -251,8 +272,13 @@ impl DataBase {
             self.rsh_check(name)?;
         }
 
+        let val = match self.has_flag(name, 'l') {
+            true => val.to_string().to_lowercase(),
+            false => val.to_string(),
+        };
+
         let layer = self.get_target_layer(name, layer);
-        AssocData::append_elem(&mut self.params[layer], name, key, val)
+        AssocData::append_elem(&mut self.params[layer], name, key, &val)
     }
 
     pub fn set_array(&mut self, name: &str, v: Option<Vec<String>>,
@@ -270,13 +296,19 @@ impl DataBase {
             self.rsh_check(name)?;
         }
 
+        let l_flag = self.has_flag(name, 'l');
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
         if v.is_none() {
             db_layer.insert(name.to_string(), UninitArray{}.boxed_clone());
         }else {
-            db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
+            let v = match l_flag {
+                true => v.unwrap().iter().map(|e| e.to_lowercase()).collect(),
+                false => v.unwrap(),
+            };
+
+            db_layer.insert(name.to_string(), Box::new(ArrayData::from(Some(v))));
         }
         Ok(())
     }
@@ -394,14 +426,3 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_assoc("BASH_CMDS", None)?;
     Ok(())
 }
-
-/*
-pub fn flag(db: &mut DataBase, name: &str, flag: char) {
-    let layer = db.position_parameters.len() - 1;
-    let rf = &mut db.param_options[layer];
-    match rf.get_mut(name) {
-        Some(d) => d.push(flag),
-        None => {rf.insert(name.to_string(), flag.to_string()); },
-    }
-}
-*/
