@@ -19,7 +19,12 @@ impl From<&str> for SingleData {
 impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
     fn print_body(&self) -> String { 
-        utils::to_ansi_c(&self.body.to_string())
+        let ansi = utils::to_ansi_c(&self.body);
+        if ansi == self.body {
+            ansi.replace("$", "\\$")
+        }else{
+            ansi
+        }
     }
 
     fn clear(&mut self) { self.body.clear(); }
