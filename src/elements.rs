@@ -7,6 +7,7 @@ pub mod pipeline;
 pub mod command;
 pub mod io;
 pub mod word;
+pub mod substitution;
 pub mod subword;
 
 use self::io::pipe::Pipe;
