@@ -9,6 +9,7 @@ mod main_c_option;
 mod signal;
 mod proc_ctrl;
 mod utils;
+mod codec;
 
 use builtins::option;
 use std::{env, process};

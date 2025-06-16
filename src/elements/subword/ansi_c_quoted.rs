@@ -4,9 +4,11 @@
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use super::{Subword, SimpleSubword, EscapedChar};
+use crate::codec::ansi_c::AnsiCToken;
 
+/*
 #[derive(Clone, Debug)]
-enum Token {
+enum AnsiCToken {
     Normal(String),
     Oct(String),
     Hex(String),
@@ -17,12 +19,12 @@ enum Token {
     OtherEscaped(String),
 }
 
-impl Token {
+impl AnsiCToken {
     fn to_string(&mut self) -> String {
         match &self {
-            Token::EmptyHex => String::new(),
-            Token::Normal(s) => s.clone(), 
-            Token::Oct(s) => {
+            AnsiCToken::EmptyHex => String::new(),
+            AnsiCToken::Normal(s) => s.clone(), 
+            AnsiCToken::Oct(s) => {
                 let mut num = u32::from_str_radix(&s, 8).unwrap();
                 if num >= 256 {
                     num -= 256;
@@ -35,7 +37,7 @@ impl Token {
                     char::from(num as u8).to_string()
                 }
             },
-            Token::Hex(s) => {
+            AnsiCToken::Hex(s) => {
                 let hex = match s.len() > 2 {
                     true  => s[s.len()-2..].to_string(),
                     false => s.to_string(),
@@ -56,14 +58,14 @@ impl Token {
                     char::from(num as u8).to_string()
                 }
             },
-            Token::Unicode4(s) => {
+            AnsiCToken::Unicode4(s) => {
                 let num = u32::from_str_radix(&s, 16).unwrap();
                 match char::from_u32(num) {
                     Some(c) => c.to_string(),
                     _ => "U+".to_owned() + s,
                 }
             },
-            Token::Unicode8(s) => {
+            AnsiCToken::Unicode8(s) => {
                 let num = u64::from_str_radix(&s, 16).unwrap();
                 let mut ans = String::new();
                 for i in (0..4).rev() {
@@ -73,7 +75,7 @@ impl Token {
                 //unsafe { char::from_u32_unchecked(num as u32) }.to_string()
                 ans
             },
-            Token::Control(c) => {
+            AnsiCToken::Control(c) => {
                 let num = if *c == '@' { 0 }
                     else if *c == '[' { 27 }
                     else if *c == '\\' { 28 }
@@ -89,7 +91,7 @@ impl Token {
 
                 char::from_u32(num).unwrap().to_string()
             },
-            Token::OtherEscaped(s) => match s.as_ref() {
+            AnsiCToken::OtherEscaped(s) => match s.as_ref() {
                 "a" => char::from(7).to_string(),
                 "b" =>  char::from(8).to_string(),
                 "e" | "E" => char::from(27).to_string(),
@@ -105,12 +107,12 @@ impl Token {
             }
         }
     }
-}
+}*/
 
 #[derive(Debug, Clone, Default)]
 pub struct AnsiCQuoted {
     text: String,
-    tokens: Vec<Token>,
+    tokens: Vec<AnsiCToken>,
     in_heredoc: bool, 
 }
 
@@ -127,7 +129,7 @@ impl Subword for AnsiCQuoted {
 
         let mut ans = String::new();
         for t in &mut self.tokens {
-            if let Token::EmptyHex = t {
+            if let AnsiCToken::EmptyHex = t {
                 break;
             }
             ans += &t.to_string();
@@ -145,7 +147,7 @@ impl AnsiCQuoted {
     fn eat_simple_subword(feeder: &mut Feeder, ans: &mut Self) -> bool {
         if let Some(a) = SimpleSubword::parse(feeder) {
             ans.text += a.get_text();
-            ans.tokens.push(Token::Normal(a.get_text().to_string()));
+            ans.tokens.push(AnsiCToken::Normal(a.get_text().to_string()));
             true
         }else{
             false
@@ -164,7 +166,7 @@ impl AnsiCQuoted {
 
         let token = feeder.consume(len);
         ans.text += &token.clone();
-        ans.tokens.push( Token::Oct(token[1..].to_string()));
+        ans.tokens.push( AnsiCToken::Oct(token[1..].to_string()));
         true
     }
 
@@ -175,7 +177,7 @@ impl AnsiCQuoted {
 
         if feeder.starts_with("\\x{}") {
             ans.text += &feeder.consume(4);
-            ans.tokens.push(Token::EmptyHex);
+            ans.tokens.push(AnsiCToken::EmptyHex);
             return true;
         }
 
@@ -188,7 +190,7 @@ impl AnsiCQuoted {
         ans.text += &token.clone();
         token.retain(|c| c != '}' && c != '{');
         if token.len() > 3 {
-            ans.tokens.push( Token::Hex(token[3..].to_string()));
+            ans.tokens.push( AnsiCToken::Hex(token[3..].to_string()));
         }
         true
 
@@ -206,7 +208,7 @@ impl AnsiCQuoted {
 
         let token = feeder.consume(len);
         ans.text += &token.clone();
-        ans.tokens.push( Token::Hex(token[2..].to_string()));
+        ans.tokens.push( AnsiCToken::Hex(token[2..].to_string()));
         true
     }
 
@@ -222,7 +224,7 @@ impl AnsiCQuoted {
 
         let token = feeder.consume(len);
         ans.text += &token.clone();
-        ans.tokens.push( Token::Unicode4(token[2..].to_string()));
+        ans.tokens.push( AnsiCToken::Unicode4(token[2..].to_string()));
         true
     }
 
@@ -238,7 +240,7 @@ impl AnsiCQuoted {
 
         let token = feeder.consume(len);
         ans.text += &token.clone();
-        ans.tokens.push( Token::Unicode8(token[2..].to_string()));
+        ans.tokens.push( AnsiCToken::Unicode8(token[2..].to_string()));
         true
     }
 
@@ -248,20 +250,20 @@ impl AnsiCQuoted {
             ans.text += &txt.clone();
 
             if txt != "\\c" || feeder.len() == 0 {
-                ans.tokens.push(Token::OtherEscaped(txt[1..].to_string()));
+                ans.tokens.push(AnsiCToken::OtherEscaped(txt[1..].to_string()));
             }else{
                 if let Some(a) = EscapedChar::parse(feeder, core) {
                     let mut text_after = a.get_text().to_string();
                     ans.text += &text_after.clone();
                     text_after.remove(0);
                     let ctrl_c = text_after.chars().nth(0).unwrap();
-                    ans.tokens.push(Token::Control(ctrl_c));
+                    ans.tokens.push(AnsiCToken::Control(ctrl_c));
                 }else if feeder.starts_with("'") {
-                    ans.tokens.push(Token::Normal("\\c".to_string()));
+                    ans.tokens.push(AnsiCToken::Normal("\\c".to_string()));
                 }else{
                     let ctrl_c = feeder.consume(1).chars().nth(0).unwrap();
                     ans.text += &ctrl_c.to_string();
-                    ans.tokens.push(Token::Control(ctrl_c));
+                    ans.tokens.push(AnsiCToken::Control(ctrl_c));
                 }
             }
             true
@@ -295,7 +297,7 @@ impl AnsiCQuoted {
         
             let other = feeder.consume(1);
             ans.text += &other.clone();
-            ans.tokens.push(Token::Normal(other));
+            ans.tokens.push(AnsiCToken::Normal(other));
         }
 
         ans.text += &feeder.consume(1);
