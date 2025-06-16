@@ -114,12 +114,20 @@ impl SimpleCommand {
             self.fork_exec(core, pipe)
         }else if self.args.len() == 1 && self.args[0] == "exec" {
             for r in self.get_redirects().iter_mut() {
-                r.connect(true, core)?;
+                if let Err(e) = r.connect(true, core) {
+                    e.print(core);
+                    core.db.exit_status = 1;
+                    break;
+                }
             }
             Ok(None)
         }else{
             pipe.connect_lastpipe();
-            self.nofork_exec(core)
+            if let Err(e) = self.nofork_exec(core) {
+                e.print(core);
+                core.db.exit_status = 1;
+            }
+            Ok(None)
         }
     }
 

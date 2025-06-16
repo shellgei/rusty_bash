@@ -176,7 +176,7 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
     exit::not_found(&arg, core)
 }
 
-fn to_carg(arg: &String) -> CString {
+pub fn to_carg(arg: &String) -> CString {
     let mut tmp = String::new();
     let mut unicode8num = 0;
 
@@ -203,9 +203,4 @@ fn to_carg(arg: &String) -> CString {
 
 fn to_cargs(args: &Vec<String>) -> Vec<CString> {
     args.iter().map(|a| to_carg(a)).collect()
-        /*
-    args.iter()
-        .map(|a| CString::new(a.to_string()).unwrap())
-        .collect()
-        */
 }
