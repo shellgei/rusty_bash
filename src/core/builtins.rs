@@ -8,6 +8,7 @@ pub mod compgen;
 pub mod complete;
 mod compopt;
 mod command;
+mod echo;
 mod exec;
 mod getopts;
 mod hash;
@@ -26,9 +27,6 @@ mod unset;
 
 use crate::{exit, Feeder, Script, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::proc_ctrl;
-use std::io::{stdout, Write};
-use std::io;
 
 pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
@@ -57,7 +55,7 @@ impl ShellCore {
         self.builtins.insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("debug".to_string(), debug);
         self.builtins.insert("disown".to_string(), job_commands::disown);
-        self.builtins.insert("echo".to_string(), echo);
+        self.builtins.insert("echo".to_string(), echo::echo);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);
@@ -169,37 +167,3 @@ pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     last_result
 }
 
-pub fn echo(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut first = true;
-    let mut _e_opt = false;
-    let mut n_opt = false;
-
-    if args.len() == 1 {
-        println!("");
-        return 0;
-    }
-
-    match args[1].as_ref() {
-        "-ne" | "-en" => { _e_opt = true ; n_opt = true ; args.remove(1); },
-        "-e" => { _e_opt = true ; args.remove(1); },
-        "-n" => { n_opt = true ; args.remove(1); },
-        _ => {},
-    }
-
-    for a in &args[1..] {
-        if ! first {
-            let _ = io::stdout().write(b" ");
-        }
-        first = false;
-
-        let b = proc_ctrl::to_carg(a).into_bytes();
-        let _ = io::stdout().write_all(&b).unwrap();
-    }
-
-    if ! n_opt {
-        let _ = io::stdout().write(b"\n");
-    }
-
-    stdout().flush().unwrap();
-    0
-}
