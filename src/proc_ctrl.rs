@@ -3,6 +3,7 @@
 
 use crate::{exit, error, Feeder, Script, ShellCore, signal};
 use crate::error::exec::ExecError;
+use crate::codec::c_string;
 use nix::unistd;
 use nix::errno::Errno;
 use nix::sys::{resource, wait};
@@ -142,7 +143,7 @@ fn show_time(core: &ShellCore) {
 }
 
 pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> ! {
-    let cargs = to_cargs(args);
+    let cargs = c_string::to_cargs(args);
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
     if ! fullpath.is_empty() {
@@ -174,33 +175,4 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
         }
     }
     exit::not_found(&arg, core)
-}
-
-pub fn to_carg(arg: &String) -> CString {
-    let mut tmp = String::new();
-    let mut unicode8num = 0;
-
-    for c in arg.chars() {
-        if c as u32 >= 0xE080 && c as u32 <= 0xE0FF {
-            let num: u8 = (c as u32 - 0xE000) as u8;
-            let ch = unsafe{ String::from_utf8_unchecked(vec![num.try_into().unwrap()]) };
-            tmp.push_str(&ch);
-        }else if c as u32 >= 0xE200 && c as u32 <= 0xE4FF {
-            unicode8num <<= 8;
-            unicode8num += c as u32 & 0xFF;
-        }else if c as u32 >= 0xE100 && c as u32 <= 0xE1FF {
-            unicode8num <<= 8;
-            unicode8num += c as u32 & 0xFF;
-            let ch = unsafe { char::from_u32_unchecked(unicode8num) }.to_string();
-            unicode8num = 0;  //　^ An error occurs on debug mode. 
-            tmp.push_str(&ch);
-        }else{
-            tmp.push(c);
-        }
-    }
-    CString::new(tmp.to_string()).unwrap()
-}
-
-fn to_cargs(args: &Vec<String>) -> Vec<CString> {
-    args.iter().map(|a| to_carg(a)).collect()
 }

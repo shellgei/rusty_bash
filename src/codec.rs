@@ -2,3 +2,4 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod ansi_c;
+pub mod c_string;

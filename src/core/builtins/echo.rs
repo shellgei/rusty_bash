@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use crate::proc_ctrl;
+use crate::codec::c_string;
 use std::io::{stdout, Write};
 use std::io;
 
@@ -29,7 +29,7 @@ pub fn echo(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         first = false;
 
-        let b = proc_ctrl::to_carg(a).into_bytes();
+        let b = c_string::to_carg(a).into_bytes();
         let _ = io::stdout().write_all(&b).unwrap();
     }
 
