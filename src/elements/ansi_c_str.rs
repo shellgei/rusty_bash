@@ -227,12 +227,15 @@ impl AnsiCString {
         true
     }
 
-    fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
+    fn eat_escaped_char(feeder: &mut Feeder, ans: &mut Self,
+                        core: &mut ShellCore, for_echo: bool) -> bool {
         if let Some(a) = EscapedChar::parse(feeder, core) {
             let txt = a.get_text().to_string();
             ans.text += &txt.clone();
 
-            if txt != "\\c" || feeder.len() == 0 {
+            if for_echo && txt == "\\'" {
+                ans.tokens.push(AnsiCToken::Normal(txt));
+            }else if txt != "\\c" || feeder.len() == 0 {
                 ans.tokens.push(AnsiCToken::OtherEscaped(txt[1..].to_string()));
             }else{
                 if let Some(a) = EscapedChar::parse(feeder, core) {
@@ -270,7 +273,7 @@ impl AnsiCString {
             || Self::eat_oct(feeder, &mut ans, core)
             || Self::eat_unicode4(feeder, &mut ans, core)
             || Self::eat_unicode8(feeder, &mut ans, core)
-            || (! for_echo && Self::eat_escaped_char(feeder, &mut ans, core) ) {
+            || Self::eat_escaped_char(feeder, &mut ans, core, for_echo) {
                 continue;
             }
 
