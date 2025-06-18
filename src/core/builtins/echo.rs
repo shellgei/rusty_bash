@@ -1,14 +1,30 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
+use crate::error::exec::ExecError;
+use crate::elements::ansi_c_str::AnsiCString;
 use crate::codec::c_string;
 use std::io::{stdout, Write};
 use std::io;
+use std::ffi::CString;
 
-pub fn echo(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn arg_to_c_str(arg: &String, core: &mut ShellCore)
+-> Result<CString, ExecError> {
+    let mut f = Feeder::new(&arg);
+    let ans = match AnsiCString::parse(&mut f, core, None) {
+        Ok(Some(mut ansi_c_str))
+            => c_string::to_carg(&ansi_c_str.eval()),
+        Ok(None) => c_string::to_carg(arg),
+        Err(e) => return Err(ExecError::ParseError(e)),
+    };
+
+    Ok(ans)
+}
+
+pub fn echo(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut first = true;
-    let mut _e_opt = false;
+    let mut e_opt = false;
     let mut n_opt = false;
 
     if args.len() == 1 {
@@ -17,8 +33,8 @@ pub fn echo(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     match args[1].as_ref() {
-        "-ne" | "-en" => { _e_opt = true ; n_opt = true ; args.remove(1); },
-        "-e" => { _e_opt = true ; args.remove(1); },
+        "-ne" | "-en" => { e_opt = true ; n_opt = true ; args.remove(1); },
+        "-e" => { e_opt = true ; args.remove(1); },
         "-n" => { n_opt = true ; args.remove(1); },
         _ => {},
     }
@@ -29,8 +45,15 @@ pub fn echo(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
         first = false;
 
-        let b = c_string::to_carg(a).into_bytes();
-        let _ = io::stdout().write_all(&b).unwrap();
+        let bytes = match e_opt {
+            false => c_string::to_carg(a).into_bytes(),
+            true => match arg_to_c_str(a, core) {
+                Ok(v) => v.into_bytes(),
+                Err(e) => { e.print(core); return 1; },
+            }
+        };
+
+        let _ = io::stdout().write_all(&bytes).unwrap();
     }
 
     if ! n_opt {

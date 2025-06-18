@@ -7,7 +7,7 @@ pub mod single_quoted;
 mod braced_param;
 mod command_sub;
 //mod command_sub_old;
-mod escaped_char;
+pub mod escaped_char;
 mod file_input;
 mod ext_glob;
 mod double_quoted;
