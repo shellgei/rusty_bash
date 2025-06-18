@@ -50,7 +50,7 @@ impl AnsiCQuoted {
         ans.text += &feeder.consume(2);
 
         if let Some(ansi_c_str) 
-            = AnsiCString::parse(feeder, core, Some("'".to_string()))? {
+            = AnsiCString::parse(feeder, core, false)? {
             ans.text += &ansi_c_str.text;
             ans.tokens = ansi_c_str.tokens;
         }

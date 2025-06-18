@@ -255,15 +255,13 @@ impl AnsiCString {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, end: Option<String>)
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, for_echo: bool)
     -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 
         loop {
-            if let Some(ref e) = end {
-                if feeder.starts_with(&e) {
-                    break;
-                }
+            if ! for_echo && feeder.starts_with("'") {
+                break;
             }
 
             if Self::eat_simple_subword(feeder, &mut ans) 
@@ -272,12 +270,12 @@ impl AnsiCString {
             || Self::eat_oct(feeder, &mut ans, core)
             || Self::eat_unicode4(feeder, &mut ans, core)
             || Self::eat_unicode8(feeder, &mut ans, core)
-            || Self::eat_escaped_char(feeder, &mut ans, core) {
+            || (! for_echo && Self::eat_escaped_char(feeder, &mut ans, core) ) {
                 continue;
             }
 
             if feeder.len() == 0 {
-                if end.is_none() {
+                if for_echo {
                     break;
                 }
                 feeder.feed_additional_line(core)?;

@@ -12,7 +12,7 @@ use std::ffi::CString;
 fn arg_to_c_str(arg: &String, core: &mut ShellCore)
 -> Result<CString, ExecError> {
     let mut f = Feeder::new(&arg);
-    let ans = match AnsiCString::parse(&mut f, core, None) {
+    let ans = match AnsiCString::parse(&mut f, core, true) {
         Ok(Some(mut ansi_c_str))
             => c_string::to_carg(&ansi_c_str.eval()),
         Ok(None) => c_string::to_carg(arg),
