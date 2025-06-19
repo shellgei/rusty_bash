@@ -6,10 +6,19 @@ use crate::error::exec::ExecError;
 use crate::utils::arg;
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
-    if core.db.position_parameters.pop().is_none() {
-        return Err(ExecError::Other("empty param stack".to_string()));
+    let com = match core.db.position_parameters.pop() {
+        Some(layer) => if layer.len() == 0 {"".to_string() } else {layer[0].clone() },
+        None => return Err(ExecError::Other("empty param stack".to_string())),
+    };
+
+    let mut tmp = args.to_vec();
+    if tmp.len() > 0 {
+        tmp[0] = com;
+    }else{
+        tmp.push(com);
     }
-    core.db.position_parameters.push(args.to_vec());
+
+    core.db.position_parameters.push(tmp);
     Ok(())
 }
 
