@@ -23,6 +23,7 @@ pub enum WordMode {
     ReadCommand,
     Heredoc,
     RightOfSubstitution,
+    Value,
     ParamOption(Vec<String>),
 }
 
