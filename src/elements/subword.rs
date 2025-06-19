@@ -101,7 +101,7 @@ pub trait Subword {
 
     fn is_name(&self) -> bool {false}
     fn is_array(&self) -> bool {false}
-    fn get_elem(&self) -> Vec<String> {vec![]}
+    fn get_elem(&mut self) -> Vec<String> {vec![]}
     fn is_extglob(&self) -> bool {false}
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> { vec![] }
     fn set_heredoc_flag(&mut self) {}

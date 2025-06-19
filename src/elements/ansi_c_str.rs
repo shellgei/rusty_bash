@@ -172,8 +172,8 @@ impl AnsiCString {
         let mut token = feeder.consume(len);
         ans.text += &token.clone();
         token.retain(|c| c != '}' && c != '{');
-        if token.len() > 3 {
-            ans.tokens.push( AnsiCToken::Hex(token[3..].to_string()));
+        if token.len() > 2 {
+            ans.tokens.push( AnsiCToken::Hex(token[2..].to_string()));
         }
         true
 

@@ -129,7 +129,7 @@ impl Value {
         if let Some(a) = Array::parse(feeder, core)? {
             ans.text += &a.text;
             ans.value = ParsedDataType::Array(a);
-        }else if let Ok(Some(mut w)) = Word::parse(feeder, core, None) {
+        }else if let Ok(Some(mut w)) = Word::parse(feeder, core, Some(WordMode::Value)) {
             w.mode = Some(WordMode::RightOfSubstitution);
             ans.text += &w.text;
             ans.value = ParsedDataType::Single(w);

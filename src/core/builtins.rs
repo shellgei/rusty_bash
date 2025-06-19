@@ -27,6 +27,7 @@ mod unset;
 
 use crate::{exit, Feeder, Script, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::error::parse::ParseError;
 
 pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
@@ -97,18 +98,31 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         args.remove(0);
     }
 
-    let mut feeder = Feeder::new(&args.join(" "));
+    let script = args.join(" ");
+    let mut feeder = Feeder::new(&script);
+    let lineno = match core.db.get_param("LINENO") {
+        Ok(s) => s.parse::<usize>().unwrap_or_default(),
+        _ => 0,
+    };
+    feeder.lineno += lineno - 1;
 
-    core.eval_level += 1;
     match Script::parse(&mut feeder, core, false){
         Ok(Some(mut s)) => {
+            core.eval_level += 1;
             let _ = s.exec(core);
+            core.eval_level -= 1;
+        },
+        Err(ParseError::UnexpectedSymbol(t)) => {
+            let lineno = core.db.get_param("LINENO").unwrap_or("0".to_string());
+            let com = &core.db.position_parameters[0][0];
+            eprintln!("{}: eval: line {}: syntax error near unexpected token `{}'", com, &lineno, &t);
+            eprintln!("{}: eval: line {}: `{}'", com, &lineno, &script);
+            return 2;
         },
         Err(e) => e.print(core),
         _        => {},
     }
 
-    core.eval_level -= 1;
     core.db.exit_status
 }
 
