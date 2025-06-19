@@ -33,6 +33,7 @@ pub trait OptionalOperation {
     fn get_alternative(&self) -> Vec<Box<dyn Subword>> { vec![] }
 
     fn set_heredoc_flag(&mut self) {}
+    fn array_to_single(&mut self) -> bool {false}
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn OptionalOperation>>, ParseError> {

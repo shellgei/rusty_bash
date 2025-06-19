@@ -41,7 +41,7 @@ impl OptionalOperation for ValueCheck {
         match sym.as_ref() {
             "?" | ":?" => self.show_error(&param.name, core),
             "=" | ":=" => self.set_value(&param.name, core),
-            _  => self.replace(text, core),
+            _  => self.replace(core),
         }
     }
 
@@ -60,6 +60,8 @@ impl OptionalOperation for ValueCheck {
             .iter_mut()
             .for_each(|e| e.set_heredoc_flag());
     }
+
+    fn array_to_single(&mut self) -> bool {self.alternative_value.is_some()}
 }
 
 impl ValueCheck {
@@ -100,10 +102,10 @@ impl ValueCheck {
         *sw = Box::new(SingleQuoted{text: ans.to_string()});
     }
 
-    fn replace(&mut self, text: &String, core: &mut ShellCore)
+    fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> { 
-        self.set_alter_word(core)?;
-        Ok(text.clone())
+        self.set_alter_word(core)
+        //Ok(text.clone())
     }
 
     fn set_value(&mut self, name: &String, core: &mut ShellCore)
