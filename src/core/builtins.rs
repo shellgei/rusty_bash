@@ -111,7 +111,6 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         },
         Err(ParseError::UnexpectedSymbol(t)) => {
             let msg = format!("syntax error near unexpected token `{}'", &t);
-            dbg!("HERE");
             return error_exit(2, "eval", &msg, core);
         },
         Err(e) => e.print(core),
