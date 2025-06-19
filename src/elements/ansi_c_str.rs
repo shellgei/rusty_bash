@@ -165,23 +165,25 @@ impl AnsiCString {
         }
 
         let mut len = feeder.scanner_ansi_c_hex(core);
-        if len < 4 {
+        if len < 2 {
             return false;
         }
-        if len > 6 {
-            len = 6;
+
+        if len < 4 {
+            if feeder.len() > len {
+                len += 1;
+            }else{
+                return false;
+            }
         }
 
         let mut token = feeder.consume(len);
         ans.text += &token.clone();
-        //dbg!("{:?}", &token);
         token.remove(2);
         token.retain(|c| c != '}');
-        //if let Some('{') = token.chars().nth(2) {
-        //}
-        //token.retain(|c| c != '}' && c != '{');
         let ln = token.len();
-        if ln == 3 {
+        if ln == 2 {
+        }else if ln == 3 {
             ans.tokens.push( AnsiCToken::Hex(token[ln-1..ln].to_string()));
         }else{
             ans.tokens.push( AnsiCToken::Hex(token[ln-2..ln].to_string()));
