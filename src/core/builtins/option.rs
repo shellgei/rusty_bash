@@ -22,6 +22,15 @@ pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecEr
     Ok(())
 }
 
+pub fn set_positions_c(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
+    if core.db.position_parameters.pop().is_none() {
+        return Err(ExecError::Other("empty param stack".to_string()));
+    }
+
+    core.db.position_parameters.push(args.to_vec());
+    Ok(())
+}
+
 fn check_invalid_options(args: &mut Vec<String>) -> Result<(), ExecError> {
     for a in args {
         if a.starts_with("-") {
