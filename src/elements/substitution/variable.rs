@@ -23,7 +23,12 @@ impl Variable {
                 return Err(ExecError::ArrayIndexInvalid(s.text.clone()));
             }
             if s.text.chars().all(|c| " \n\t[]".contains(c)) {
-                //return Ok(Some("".to_string()));
+                if core.db.is_assoc(&self.name) {
+                    let mut index = s.text.clone();
+                    index.remove(0);
+                    index.pop();
+                    return Ok(Some(index));
+                }
                 return Ok(Some("0".to_string()));
             }
             let index = s.eval(core, &self.name)?;
