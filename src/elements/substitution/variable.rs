@@ -19,8 +19,12 @@ impl Variable {
     pub fn get_index(&mut self, core: &mut ShellCore,
                      right_is_array: bool, append: bool) -> Result<Option<String>, ExecError> {
         if let Some(mut s) = self.index.clone() {
+            if s.text == "[]" {
+                return Err(ExecError::ArrayIndexInvalid(s.text.clone()));
+            }
             if s.text.chars().all(|c| " \n\t[]".contains(c)) {
-                return Ok(Some("".to_string()));
+                //return Ok(Some("".to_string()));
+                return Ok(Some("0".to_string()));
             }
             let index = s.eval(core, &self.name)?;
             return Ok(Some(index));
