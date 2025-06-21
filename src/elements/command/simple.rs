@@ -147,9 +147,11 @@ impl SimpleCommand {
             if let Err(e) = s.eval(core, None, false) {
                 core.db.exit_status = 1;
                 if ! core.db.flags.contains('i') {
-                    e.print(core);
-                    let msg = "`".to_owned() + &s.text.clone() + "'";
-                    return Err(ExecError::Other(msg));
+                    if let ExecError::SyntaxError(_) = e {
+                        e.print(core);
+                        let msg = "`".to_owned() + &s.text.clone() + "'";
+                        return Err(ExecError::Other(msg));
+                    }
                 }
                 return Err(e);
             }
