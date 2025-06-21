@@ -21,12 +21,12 @@ pub struct ValueCheck {
 
 impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore)
+    fn exec(&mut self, variable: &Variable, text: &String, core: &mut ShellCore)
     -> Result<String, ExecError> {
         let sym = self.symbol.clone().unwrap();
         let mut check_ok = match sym.starts_with(":") {
             true  => text != "",
-            false => param.exist(core)?,
+            false => variable.exist(core)?,
         };
 
         if sym.ends_with("+") {
@@ -39,8 +39,8 @@ impl OptionalOperation for ValueCheck {
         }
 
         match sym.as_ref() {
-            "?" | ":?" => self.show_error(&param.name, core),
-            "=" | ":=" => self.set_value(&param.name, core),
+            "?" | ":?" => self.show_error(&variable.name, core),
+            "=" | ":=" => self.set_value(&variable, core),
             _  => self.replace(core),
         }
     }
@@ -105,13 +105,19 @@ impl ValueCheck {
     fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> { 
         self.set_alter_word(core)
-        //Ok(text.clone())
     }
 
-    fn set_value(&mut self, name: &String, core: &mut ShellCore)
+    fn set_value(&mut self, variable: &Variable, core: &mut ShellCore)
     -> Result<String, ExecError> {
         let value = self.set_alter_word(core)?;
-        core.db.set_param(&name, &value, None)?;
+        match &variable.index {
+            None => core.db.set_param(&variable.name, &value, None)?,
+            Some(s) => {
+                let mut s = s.clone();
+                let idx = s.eval(core, &variable.name)?; 
+                core.db.set_param2(&variable.name, &idx, &value, None)?
+            },
+        }
         self.alternative_value = None;
         Ok(value)
     }
