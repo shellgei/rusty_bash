@@ -10,7 +10,8 @@ pub struct Variable {
 }
 
 impl Variable {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {
             return Ok(None);
