@@ -10,6 +10,7 @@ use crate::error::exec::ExecError;
 use super::super::Variable;
 use super::OptionalOperation;
 use crate::elements::subword::SingleQuoted;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
@@ -109,15 +110,16 @@ impl ValueCheck {
 
     fn set_value(&mut self, variable: &Variable, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let value = self.set_alter_word(core)?;
-        match &variable.index {
-            None => core.db.set_param(&variable.name, &value, None)?,
-            Some(s) => {
-                let mut s = s.clone();
-                let idx = s.eval(core, &variable.name)?; 
-                core.db.set_param2(&variable.name, &idx, &value, None)?
-            },
+        let mut value = self.set_alter_word(core)?;
+
+        if core.db.is_int(&variable.name) {
+            let mut f = Feeder::new(&value);
+            if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
+                value = a.eval(core)?;
+            }
         }
+
+        variable.clone().set_value(&value, core)?;
         self.alternative_value = None;
         Ok(value)
     }
