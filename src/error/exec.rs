@@ -83,7 +83,7 @@ impl From<&ExecError> for String {
             ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
             ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
             ExecError::ParseIntError(e) => e.to_string(),
-            ExecError::SyntaxError(near) => format!("syntax error near {}", &near),
+            ExecError::SyntaxError(near) => format!("syntax error near unexpected token `{}'", &near),
             ExecError::Restricted(com) => format!("{}: restricted", com), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
             ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {:?}", ws),

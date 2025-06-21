@@ -17,7 +17,6 @@ impl SimpleCommand {
             ans.text += &s.text;
 
             if core.substitution_builtins.contains_key(&ans.command_name) {
-            //|| ans.command_name == "eval" {
                 ans.substitutions_as_args.push(s);
             }else{
                 ans.substitutions.push(s);

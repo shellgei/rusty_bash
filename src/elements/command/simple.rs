@@ -146,6 +146,11 @@ impl SimpleCommand {
         for s in self.substitutions.iter_mut() {
             if let Err(e) = s.eval(core, None, false) {
                 core.db.exit_status = 1;
+                if ! core.db.flags.contains('i') {
+                    e.print(core);
+                    let msg = "`".to_owned() + &s.text.clone() + "'";
+                    return Err(ExecError::Other(msg));
+                }
                 return Err(e);
             }
         }
