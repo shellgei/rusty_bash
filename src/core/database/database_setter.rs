@@ -18,12 +18,14 @@ impl DataBase {
     pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &Some(vec![value.to_string()]))?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 self.rsh_cmd_check(&vec![value.to_string()])?;
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         let layer = self.get_target_layer(name, layer);
         match self.param_options[layer].get_mut(name) {
@@ -51,12 +53,14 @@ impl DataBase {
     -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 self.rsh_cmd_check(&vec![val.to_string()])?;
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -106,12 +110,14 @@ impl DataBase {
     -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 self.rsh_cmd_check(&vec![val.to_string()])?;
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -195,12 +201,14 @@ impl DataBase {
     -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 self.rsh_cmd_check(&vec![val.to_string()])?;
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         let layer = self.get_target_layer(name, layer);
         let val = match self.has_flag(name, 'l') {
@@ -219,12 +227,14 @@ impl DataBase {
             pos: isize, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 self.rsh_cmd_check(&vec![val.to_string()])?;
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -239,12 +249,14 @@ impl DataBase {
             val: &String, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 self.rsh_cmd_check(&vec![val.to_string()])?;
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -272,12 +284,14 @@ impl DataBase {
     pub fn append_to_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 self.rsh_cmd_check(&vec![val.to_string()])?;
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -292,6 +306,8 @@ impl DataBase {
                      layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &v)?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 if v.is_some() {
@@ -301,7 +317,7 @@ impl DataBase {
                 }
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         let l_flag = self.has_flag(name, 'l');
         let layer = self.get_target_layer(name, layer);
@@ -324,6 +340,8 @@ impl DataBase {
                      layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
+        self.rsh_check(name, &v)?;
+        /*
         if self.flags.contains('r') {
             if name == "BASH_CMDS" {
                 if v.is_some() {
@@ -333,7 +351,7 @@ impl DataBase {
                 }
             }
             self.rsh_check(name)?;
-        }
+        }*/
 
         let layer = self.get_target_layer(name, layer);
 
@@ -357,9 +375,7 @@ impl DataBase {
     pub fn set_int_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        if self.flags.contains('r') {
-            self.rsh_check(name)?;
-        }
+        self.rsh_check(name, &None)?;
 
         let layer = self.get_target_layer(name, layer);
 
@@ -376,9 +392,7 @@ impl DataBase {
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>, set_array: bool) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        if self.flags.contains('r') {
-            self.rsh_check(name)?;
-        }
+        self.rsh_check(name, &None)?;
 
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
