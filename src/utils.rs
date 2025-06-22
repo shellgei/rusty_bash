@@ -8,6 +8,7 @@ pub mod file;
 pub mod file_check;
 pub mod glob;
 pub mod arg;
+pub mod restricted_shell;
 pub mod splitter;
 
 use crate::{Feeder, ShellCore};

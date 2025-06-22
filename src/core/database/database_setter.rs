@@ -6,6 +6,7 @@
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
 use super::{ArrayData, AssocData, SingleData, IntData, IntArrayData, IntAssocData, Data, UninitArray, UninitAssoc};
+use crate::utils::restricted_shell;
 use nix::unistd;
 use super::data::random::RandomVar;
 use super::data::srandom::SRandomVar;
@@ -18,7 +19,7 @@ impl DataBase {
     pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &Some(vec![value.to_string()]))?;
+        restricted_shell::check(self, name, &Some(vec![value.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
         match self.param_options[layer].get_mut(name) {
@@ -46,7 +47,7 @@ impl DataBase {
     -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -96,7 +97,7 @@ impl DataBase {
     -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -180,7 +181,7 @@ impl DataBase {
     -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
         let val = match self.has_flag(name, 'l') {
@@ -199,7 +200,7 @@ impl DataBase {
             pos: isize, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -214,7 +215,7 @@ impl DataBase {
             val: &String, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -242,7 +243,7 @@ impl DataBase {
     pub fn append_to_assoc_elem(&mut self, name: &str, key: &String, val: &String, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &Some(vec![val.to_string()]))?;
+        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -257,7 +258,7 @@ impl DataBase {
                      layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &v)?;
+        restricted_shell::check(self, name, &v)?;
 
         let l_flag = self.has_flag(name, 'l');
         let layer = self.get_target_layer(name, layer);
@@ -280,7 +281,7 @@ impl DataBase {
                      layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &v)?;
+        restricted_shell::check(self, name, &v)?;
 
         let layer = self.get_target_layer(name, layer);
 
@@ -304,7 +305,7 @@ impl DataBase {
     pub fn set_int_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &None)?;
+        restricted_shell::check(self, name, &None)?;
 
         let layer = self.get_target_layer(name, layer);
 
@@ -321,7 +322,7 @@ impl DataBase {
     pub fn set_assoc(&mut self, name: &str, layer: Option<usize>, set_array: bool) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
-        self.rsh_check(name, &None)?;
+        restricted_shell::check(self, name, &None)?;
 
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
