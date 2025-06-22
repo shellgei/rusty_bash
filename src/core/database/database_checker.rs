@@ -90,15 +90,14 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn rsh_check(&mut self, name: &str, value: &Option<Vec<String>>) -> Result<(), ExecError> {
+    pub fn rsh_check(&mut self, name: &str, value: &Option<Vec<String>>)
+    -> Result<(), ExecError> {
         if ! self.flags.contains('r') {
             return Ok(());
         }
 
         if value.is_some() && name == "BASH_CMDS" {
-            for e in value.as_ref().unwrap() {
-                self.rsh_cmd_check(&vec![e.clone()])?;
-            }
+            self.rsh_cmd_check(value.as_ref().unwrap())?;
         }
 
         if ["SHELL", "PATH", "ENV", "BASH_ENV"].contains(&name) {

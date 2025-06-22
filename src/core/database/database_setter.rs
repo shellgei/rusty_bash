@@ -19,13 +19,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &Some(vec![value.to_string()]))?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                self.rsh_cmd_check(&vec![value.to_string()])?;
-            }
-            self.rsh_check(name)?;
-        }*/
 
         let layer = self.get_target_layer(name, layer);
         match self.param_options[layer].get_mut(name) {
@@ -54,13 +47,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &Some(vec![val.to_string()]))?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                self.rsh_cmd_check(&vec![val.to_string()])?;
-            }
-            self.rsh_check(name)?;
-        }*/
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -111,13 +97,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &Some(vec![val.to_string()]))?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                self.rsh_cmd_check(&vec![val.to_string()])?;
-            }
-            self.rsh_check(name)?;
-        }*/
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -202,13 +181,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &Some(vec![val.to_string()]))?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                self.rsh_cmd_check(&vec![val.to_string()])?;
-            }
-            self.rsh_check(name)?;
-        }*/
 
         let layer = self.get_target_layer(name, layer);
         let val = match self.has_flag(name, 'l') {
@@ -228,13 +200,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &Some(vec![val.to_string()]))?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                self.rsh_cmd_check(&vec![val.to_string()])?;
-            }
-            self.rsh_check(name)?;
-        }*/
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -250,13 +215,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &Some(vec![val.to_string()]))?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                self.rsh_cmd_check(&vec![val.to_string()])?;
-            }
-            self.rsh_check(name)?;
-        }*/
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -285,13 +243,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &Some(vec![val.to_string()]))?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                self.rsh_cmd_check(&vec![val.to_string()])?;
-            }
-            self.rsh_check(name)?;
-        }*/
 
         let val = match self.has_flag(name, 'l') {
             true => val.to_string().to_lowercase(),
@@ -307,17 +258,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &v)?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                if v.is_some() {
-                    for val in v.as_ref().unwrap() {
-                        self.rsh_cmd_check(&vec![val.to_string()])?;
-                    }
-                }
-            }
-            self.rsh_check(name)?;
-        }*/
 
         let l_flag = self.has_flag(name, 'l');
         let layer = self.get_target_layer(name, layer);
@@ -341,17 +281,6 @@ impl DataBase {
         Self::name_check(name)?;
         self.write_check(name)?;
         self.rsh_check(name, &v)?;
-        /*
-        if self.flags.contains('r') {
-            if name == "BASH_CMDS" {
-                if v.is_some() {
-                    for val in v.as_ref().unwrap() {
-                        self.rsh_cmd_check(&vec![val.to_string()])?;
-                    }
-                }
-            }
-            self.rsh_check(name)?;
-        }*/
 
         let layer = self.get_target_layer(name, layer);
 
