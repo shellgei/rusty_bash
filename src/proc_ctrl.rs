@@ -3,7 +3,7 @@
 
 use crate::{exit, error, Feeder, Script, ShellCore, signal};
 use crate::error::exec::ExecError;
-use crate::codec::c_string;
+use crate::utils::c_string;
 use nix::unistd;
 use nix::errno::Errno;
 use nix::sys::{resource, wait};

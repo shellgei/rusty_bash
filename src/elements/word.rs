@@ -7,9 +7,8 @@ pub mod substitution;
 pub mod path_expansion;
 mod split;
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, utils};
 use crate::elements::subword;
-use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
@@ -92,14 +91,7 @@ impl Word {
     }
 
     pub fn eval_as_integer(&self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let mut f = Feeder::new(&self.text);
-        if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
-            if f.is_empty() {
-                return a.eval(core);
-            }
-        }
- 
-        Err(ExecError::SyntaxError(f.consume(f.len())))
+        utils::string_to_calculated_string(&self.text, core)
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {

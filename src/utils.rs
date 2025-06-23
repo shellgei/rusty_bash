@@ -10,9 +10,12 @@ pub mod glob;
 pub mod arg;
 pub mod restricted_shell;
 pub mod splitter;
+pub mod c_string;
 
 use crate::{Feeder, ShellCore};
 use crate::error::input::InputError;
+use crate::error::exec::ExecError;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use faccess::PathExt;
 use io_streams::StreamReader;
 use std::io::Read;
@@ -177,4 +180,17 @@ pub fn get_command_path(s: &String, core: &mut ShellCore) -> String {
     }
 
     String::new()
+}
+
+
+pub fn string_to_calculated_string(from: &str, core: &mut ShellCore)
+-> Result<String, ExecError> {
+    let mut f = Feeder::new(from);
+    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
+        if f.is_empty() {
+            return a.eval(core);
+        }
+    }
+ 
+    Err(ExecError::SyntaxError(f.consume(f.len())))
 }

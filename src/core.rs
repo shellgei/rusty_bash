@@ -110,6 +110,12 @@ impl ShellCore {
             },
             _ => {},
         };
+
+        if self.script_name != "-" {
+            let zero = "0".to_string();
+            let _ = self.db.set_param2("BASH_LINENO", &zero, &zero, None);
+            let _ = self.db.set_param2("BASH_SOURCE", &zero, &self.script_name, None);
+        }
     }
 
     pub fn new() -> Self {

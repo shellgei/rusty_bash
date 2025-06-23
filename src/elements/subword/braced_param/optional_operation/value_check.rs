@@ -7,10 +7,10 @@ use crate::elements::word::{Word, WordMode};
 use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
+use crate::utils;
 use super::super::Variable;
 use super::OptionalOperation;
 use crate::elements::subword::SingleQuoted;
-use crate::elements::expr::arithmetic::ArithmeticExpr;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
@@ -113,10 +113,7 @@ impl ValueCheck {
         let mut value = self.set_alter_word(core)?;
 
         if core.db.is_int(&variable.name) {
-            let mut f = Feeder::new(&value);
-            if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
-                value = a.eval(core)?;
-            }
+            value = utils::string_to_calculated_string(&value, core)?;
         }
 
         variable.clone().set_value(&value, core)?;

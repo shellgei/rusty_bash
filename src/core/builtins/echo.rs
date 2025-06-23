@@ -4,7 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::elements::ansi_c_str::AnsiCString;
-use crate::codec::c_string;
+use crate::utils::c_string;
 use std::io::{stdout, Write};
 use std::io;
 use std::ffi::CString;
