@@ -280,6 +280,11 @@ pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>,
     }
 
     for sub in subs {
+        if sub.left_hand.index.is_some() {
+            ExecError::VariableInvalid(sub.left_hand.text.clone()).print(core);
+            return 1;
+        }
+
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
 
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
