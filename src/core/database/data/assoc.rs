@@ -29,7 +29,7 @@ impl Data for AssocData {
         for k in self.keys() {
             let v = &self.get(&k).unwrap_or("".to_string());
             let ansi = utils::to_ansi_c(v);
-            let mut k = k.clone();
+            let mut k = utils::to_ansi_c(&k);
             if k.contains(" ") {
                 k = "\"".to_owned() + &k + "\"";
             }
@@ -40,10 +40,6 @@ impl Data for AssocData {
                 formatted += &format!("[{}]={} ", k, &ansi);
             }
         }
-        /*
-        if formatted.ends_with(" ") {
-            formatted.pop();
-        }*/
         formatted += ")";
         formatted
     }

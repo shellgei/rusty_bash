@@ -81,9 +81,9 @@ impl Variable {
         }
     }
 
-    pub fn init_variable(&self, core: &mut ShellCore, layer: Option<usize>, args: &mut Vec<String>)
+    pub fn init_variable(&self, core: &mut ShellCore,
+                         layer: Option<usize>, args: &mut Vec<String>)
     -> Result<(), ExecError> {
-        //let mut prev = None;
         let mut prev = vec![];
 
         if (layer.is_none() && core.db.exist(&self.name) )
@@ -92,7 +92,16 @@ impl Variable {
         }
 
         let i_opt = arg::consume_option("-i", args);
-        if arg::consume_option("-a", args) {
+        if arg::consume_option("-a", args)
+        || (! args.contains(&"-A".to_string()) && self.index.is_some() ) {
+            if prev.is_empty() {     //TODO: ^ Maybe, there is a case where an assoc must be
+                                     //prepared.
+                return match i_opt { 
+                    true  => core.db.set_int_array(&self.name, None, layer),
+                    false => core.db.set_array(&self.name, None, layer),
+                };
+            }
+
             return match i_opt { 
                 true  => core.db.set_int_array(&self.name, Some(prev), layer),
                 false => core.db.set_array(&self.name, Some(prev), layer),

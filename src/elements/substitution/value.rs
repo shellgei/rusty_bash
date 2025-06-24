@@ -83,7 +83,11 @@ impl Value {
             let index = match s.unwrap().eval(core, &name) {
                 Ok(i) => i,
                 Err(ExecError::ArithError(a,b))
-                    => return Err(ExecError::ArithError(a,b)),
+                    => {
+                        self.evaluated_array = Some(vec![]);
+                        ExecError::ArithError(a,b).print(core);
+                        return Ok(());
+                    },
                 Err(e) => {
                     e.print(core);
                     continue;
