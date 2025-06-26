@@ -161,26 +161,22 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
 pub fn to_ansi_c(s: &String) -> String {
     let mut ans = String::new();
     let mut ansi = false;
+    let mut double_quote = false;
 
     for c in s.chars() {
-        /*
-        if c < 8 as char {
-            if ! in_ansi {
-                in_ansi = true;
-                ans.push_str("$'");
-            }
-        }else {
-            if in_ansi {
-                in_ansi = false;
-                ans.push_str("'");
-            }
-        }*/
-
         match c as usize {
-            bin @ 0..8 => {
+            bin @ 0..9 => {
                 ansi = true;
                 let alter = format!("\\{:03o}", bin);
                 ans.push_str(&alter);
+            },
+            42 | 64 | 91 | 93 => { //* , @, [ , ]
+                double_quote = true;
+                ans.push(c);
+            },
+            9 => {
+                ansi = true;
+                ans.push_str("\\t");
             },
             0xA => {
                 ansi = true;
@@ -194,16 +190,12 @@ pub fn to_ansi_c(s: &String) -> String {
         ans.insert(0, '\'');
         ans.insert(0, '$');
         ans.push('\'');
+    }else if double_quote {
+        ans.insert(0, '"');
+        ans.push('"');
     }
 
     ans
-    /*
-    dbg!("{:?}", &s);
-    if s.contains('\n') { //TODO: add \t \a ...
-        return "$'".to_owned() + &s.replace("\n", "\\n") + "'";
-    }
-    s.clone()
-    */
 }
 
 pub fn get_command_path(s: &String, core: &mut ShellCore) -> String {
