@@ -30,7 +30,7 @@ impl Subscript {
                         Some(sub) => {
                             let mut f = Feeder::new(&sub.text);
                             if let Some(w) = Word::parse(&mut f, core, None)? {
-                                w.eval_as_value(core)
+                                w.eval_as_assoc_index(core)
                             }else{
                                 Ok(sub.text.clone())
                             }

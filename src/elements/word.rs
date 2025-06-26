@@ -90,6 +90,12 @@ impl Word {
         Ok( Self::make_args(&mut ws).join(&joint) )
     }
 
+    pub fn eval_as_assoc_index(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let w = self.tilde_and_dollar_expansion(core)?;
+        let joint = core.db.get_ifs_head();
+        Ok( Self::make_args(&mut vec![w]).join(&joint) )
+    }
+
     pub fn eval_as_integer(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         utils::string_to_calculated_string(&self.text, core)
     }
