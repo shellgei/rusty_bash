@@ -72,7 +72,7 @@ impl From<&ExecError> for String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
             ExecError::AmbiguousRedirect(name) => format!("{}: ambiguous redirect", name),
-            ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
+            ExecError::ArrayIndexInvalid(name) => format!("[{}]: bad array subscript", name),
             ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
             ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
             ExecError::CannotOverwriteExistingFile(file) => format!("{}: cannot overwrite existing file", file),

@@ -45,8 +45,7 @@ pub fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 if let Ok(Some(key)) = sub.get_index(core, false, false) {
                     let nm = sub.name.clone();
                     if let Err(e) = core.db.unset_array_elem(&nm, &key) {
-                        e.print(core);
-                        return 1;
+                        return super::error_exit(1, &args[0], &String::from(&e), core);
                     }
                     return 0;
                 }
@@ -74,39 +73,4 @@ pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         exit_status = unset_one(core, args);
     }
     exit_status
-    /*
-    match args[1].as_ref() {
-        "-f" => {
-            if args.len() > 2 {
-                return unset_function(core, &args[2]);
-            }
-        },
-        "-v" => {
-            if args.len() > 2 {
-                return unset_var(core, &args[2]);
-            }
-        },
-        name => {
-            if ! name.contains("[") {
-                return unset_all(core, name);
-            }
-
-            let mut f = Feeder::new(&(name.to_owned()));
-            if let Ok(Some(mut sub)) = Variable::parse(&mut f, core) {
-                if let Ok(Some(key)) = sub.get_index(core, false, false) {
-                    let nm = sub.name.clone();
-                    if let Err(e) = core.db.unset_array_elem(&nm, &key) {
-                        e.print(core);
-                        return 1;
-                    }
-                    return 0;
-                }
-            }
-
-            let msg = format!("{}: invalid variable", &name);
-            return super::error_exit(1, &args[0], &msg, core);
-        },
-    }
-    0
-    */
 }

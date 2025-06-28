@@ -29,9 +29,14 @@ impl Command for ArithmeticCommand {
 
         match err {
             Some(ExecError::ArithError(s, e)) => {
-                let err_with_com = ExecError::ArithError("((: ".to_owned() + &s.trim_start(), e);
-                err_with_com.print(core);
-                Err(err_with_com)
+                if s.starts_with("$(") {
+                    ExecError::ArithError(s.clone(), e.clone()).print(core);
+                    Err(ExecError::ArithError(s, e)) 
+                }else{
+                    let err_with_com = ExecError::ArithError("((: ".to_owned() + &s.trim_start(), e);
+                    err_with_com.print(core);
+                    Err(err_with_com)
+                }
             }
             Some(e) => {
                 e.print(core);
@@ -50,16 +55,6 @@ impl Command for ArithmeticCommand {
 }
 
 impl ArithmeticCommand {
-    /*
-    fn new() -> ArithmeticCommand {
-        ArithmeticCommand {
-            text: String::new(),
-            expressions: vec![],
-            redirects: vec![],
-            force_fork: false,
-        }
-    }*/
-
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut ans = String::new();
         for a in &mut self.expressions {

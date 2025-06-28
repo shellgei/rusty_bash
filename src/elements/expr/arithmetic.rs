@@ -61,9 +61,11 @@ impl ArithmeticExpr {
 
         let ans = match cp.eval_elems(core, true) {
             Ok(a) => a, 
-            Err(ExecError::ArithError(_, a)) => {
-                let text = cp.text.trim_start().to_string();
-                return Err(ExecError::ArithError(text, a))
+            Err(ExecError::ArithError(mut s, a)) => {
+                if s == "" {
+                    s = cp.text.trim_start().to_string();
+                }
+                return Err(ExecError::ArithError(s, a))
             },
             Err(e) => return Err(e),
         };
