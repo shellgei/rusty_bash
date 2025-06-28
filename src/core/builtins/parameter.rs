@@ -41,7 +41,7 @@ fn reparse(core: &mut ShellCore, sub: &mut Substitution)
     };
 
     let mut f = Feeder::new(&text.replace("~", "\\~"));
-    if let Ok(Some(s)) = Substitution::parse(&mut f, core, false, true) {
+    if let Ok(Some(s)) = Substitution::parse(&mut f, core, true) {
         if ! f.is_empty() {
             return Err(ExecError::InvalidName(text));
         }

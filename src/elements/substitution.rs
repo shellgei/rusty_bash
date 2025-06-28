@@ -20,6 +20,7 @@ pub struct Substitution {
     append: bool,
     lineno: usize,
     pub has_right: bool,
+    pub double_quoted: bool,
 }
 
 impl Substitution {
@@ -105,8 +106,7 @@ impl Substitution {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
-        permit_no_righthand: bool, permit_space: bool)
+    pub fn parse_as_arg(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         feeder.set_backup();
 
@@ -124,10 +124,40 @@ impl Substitution {
             ans.text += &feeder.consume(2);
         }else if feeder.starts_with("=") {
             ans.text += &feeder.consume(1);
-        }else if permit_no_righthand {
+        }else {
             feeder.pop_backup();
             ans.has_right = false;
             return Ok(Some(ans));
+        }
+        feeder.pop_backup();
+
+        ans.has_right = true;
+        if let Some(a) = Value::parse(feeder, core, false)? {
+            ans.text += &a.text.clone();
+            ans.right_hand = a;
+        }
+
+        Ok(Some(ans))
+    }
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_space: bool)
+    -> Result<Option<Self>, ParseError> {
+        feeder.set_backup();
+
+        let mut ans = Self::default();
+
+        ans.left_hand = match Variable::parse(feeder, core)? {
+            Some(a) => a,
+            None => return Ok(None),
+        };
+        ans.text = ans.left_hand.text.clone();
+        ans.lineno = ans.left_hand.lineno;
+
+        if feeder.starts_with("+=") {
+            ans.append = true;
+            ans.text += &feeder.consume(2);
+        }else if feeder.starts_with("=") {
+            ans.text += &feeder.consume(1);
         }else {
             feeder.rewind();
             return Ok(None);

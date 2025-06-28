@@ -11,16 +11,20 @@ use crate::error::parse::ParseError;
 impl SimpleCommand {
     pub fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
     -> Result<bool, ParseError> {
-        let read_var = core.substitution_builtins.contains_key(&ans.command_name);
-
-        if let Some(s) = Substitution::parse(feeder, core, read_var, false)? {
+        if let Some(s) = Substitution::parse(feeder, core, false)? {
             ans.text += &s.text;
+            ans.substitutions.push(s);
+            Ok(true)
+        }else{
+            Ok(false)
+        }
+    }
 
-            if core.substitution_builtins.contains_key(&ans.command_name) {
-                ans.substitutions_as_args.push(s);
-            }else{
-                ans.substitutions.push(s);
-            }
+    pub fn eat_substitution_as_arg(feeder: &mut Feeder, ans: &mut Self,
+                                   core: &mut ShellCore) -> Result<bool, ParseError> {
+        if let Some(s) = Substitution::parse_as_arg(feeder, core)? {
+            ans.text += &s.text;
+            ans.substitutions_as_args.push(s);
             Ok(true)
         }else{
             Ok(false)
@@ -78,8 +82,7 @@ impl SimpleCommand {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
 
             if core.substitution_builtins.contains_key(&ans.command_name) {
-            //|| ans.command_name == "eval" {
-                if Self::eat_substitution(feeder, &mut ans, core)? {
+                if Self::eat_substitution_as_arg(feeder, &mut ans, core)? {
                     continue;
                 }
             }
