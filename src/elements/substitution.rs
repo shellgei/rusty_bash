@@ -63,7 +63,7 @@ impl Substitution {
     fn set_array_elem(&mut self, core: &mut ShellCore, layer: usize, index: &String)
     -> Result<(), ExecError> {
         if index.is_empty() {
-            return Err(ExecError::ArrayIndexInvalid(self.left_hand.name.clone()));
+            return Err(ExecError::ArrayIndexInvalid(self.left_hand.text.clone()));
         }
         if let Some(v) = &self.right_hand.evaluated_string {
             if self.append {

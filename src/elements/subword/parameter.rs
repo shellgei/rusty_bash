@@ -40,6 +40,7 @@ impl Subword for Parameter {
             return splitter::split(&self.get_text(), ifs, prev_char).iter()
                 .map(|s| ( From::from(&s.0), s.1)).collect();
         }
+        dbg!("{:?}", &self);
 
         let mut ans = vec![];
         for p in self.array.clone().unwrap() {

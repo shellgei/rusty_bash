@@ -195,7 +195,7 @@ impl BracedParam {
 
             let value = core.db.get_param(&self.param.name).unwrap_or_default();
             self.text = match self.num {
-                true  => core.db.get_len(&self.param.name)?.to_string(),//value.chars().count().to_string(),
+                true  => core.db.get_len(&self.param.name)?.to_string(),
                 false => value.to_string(),
             };
     

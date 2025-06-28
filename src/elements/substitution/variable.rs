@@ -20,7 +20,7 @@ impl Variable {
                      right_is_array: bool, append: bool) -> Result<Option<String>, ExecError> {
         if let Some(mut s) = self.index.clone() {
             if s.text == "[]" {
-                return Err(ExecError::ArrayIndexInvalid(s.text.clone()));
+                return Err(ExecError::ArrayIndexInvalid("".to_string()));
             }
             if s.text.chars().all(|c| " \n\t[]".contains(c)) {
                 if core.db.is_assoc(&self.name) {
