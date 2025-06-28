@@ -230,8 +230,11 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Subs
     let layer = core.db.get_layer_num() - 2;
     for sub in subs {
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
+            return super::error_exit(1, &args[0], &String::from(&e), core);
+            /*
             e.print(core);
             return 1;
+            */
         }
     }
     0
