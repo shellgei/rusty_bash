@@ -63,8 +63,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
         consume_tail_ifs(&mut word, &tail_space);
         
         if let Err(e) = Variable::parse_and_set(&args[0], &word, core) {
-            e.print(core);
-            return 1;
+            return super::error_exit(1, "read", &String::from(&e), core);
         }
 
         args.remove(0);
