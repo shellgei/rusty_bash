@@ -13,7 +13,7 @@ impl SimpleCommand {
     -> Result<bool, ParseError> {
         let read_var = core.substitution_builtins.contains_key(&ans.command_name);
 
-        if let Some(s) = Substitution::parse(feeder, core, read_var)? {
+        if let Some(s) = Substitution::parse(feeder, core, read_var, false)? {
             ans.text += &s.text;
 
             if core.substitution_builtins.contains_key(&ans.command_name) {

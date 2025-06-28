@@ -4,7 +4,7 @@
 use crate::{env, ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::utils::arg;
 use super::error_exit;
 
@@ -27,29 +27,30 @@ pub fn local(core: &mut ShellCore,
     0
 }
 
-fn reparse(core: &mut ShellCore, sub: &mut Substitution) {
+fn reparse(core: &mut ShellCore, sub: &mut Substitution)
+-> Result<(), ExecError> {
     let mut f = Feeder::new(&sub.text);
-    let text = if let Ok(Some(s)) = Word::parse(&mut f, core, None) {
+    let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::NoFail)) {
         if ! f.is_empty() {
-            return;
+            return Err(ExecError::InvalidName(sub.text.clone()));
         }
 
-        match s.eval_as_value(core) {
-            Ok(txt) => txt,
-            _ => return,
-        }
+        s.eval_as_value(core)?
     }else{
-        return;
+        return Err(ExecError::InvalidName(sub.text.clone()));
     };
 
     let mut f = Feeder::new(&text.replace("~", "\\~"));
-    if let Ok(Some(s)) = Substitution::parse(&mut f, core, false) {
+    if let Ok(Some(s)) = Substitution::parse(&mut f, core, false, true) {
         if ! f.is_empty() {
-            return;
+            return Err(ExecError::InvalidName(text));
         }
 
         *sub = s;
+        return Ok(());
     }
+
+    Err(ExecError::InvalidName(text))
 }
 
 fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec<String>,
@@ -77,7 +78,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     if sub.has_right { //&& sub.left_hand.index.is_none() {
         if (args.contains(&"-a".to_string()) || args.contains(&"-A".to_string())) 
         || (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) ) {
-            reparse(core, sub);
+            reparse(core, sub)?;
         }
     }
 

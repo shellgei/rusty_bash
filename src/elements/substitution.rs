@@ -105,7 +105,8 @@ impl Substitution {
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_no_righthand: bool)
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+        permit_no_righthand: bool, permit_space: bool)
     -> Result<Option<Self>, ParseError> {
         feeder.set_backup();
 
@@ -134,7 +135,7 @@ impl Substitution {
         feeder.pop_backup();
 
         ans.has_right = true;
-        if let Some(a) = Value::parse(feeder, core)? {
+        if let Some(a) = Value::parse(feeder, core, permit_space)? {
             ans.text += &a.text.clone();
             ans.right_hand = a;
         }

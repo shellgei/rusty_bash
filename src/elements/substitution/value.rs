@@ -127,13 +127,19 @@ impl Value {
         Ok(())
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_space: bool)
+    -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
+
+        let wm = match permit_space {
+            true  => WordMode::NoFail,
+            false => WordMode::Value,
+        };
 
         if let Some(a) = Array::parse(feeder, core)? {
             ans.text += &a.text;
             ans.value = ParsedDataType::Array(a);
-        }else if let Ok(Some(mut w)) = Word::parse(feeder, core, Some(WordMode::Value)) {
+        }else if let Ok(Some(mut w)) = Word::parse(feeder, core, Some(wm)) {
             w.mode = Some(WordMode::RightOfSubstitution);
             ans.text += &w.text;
             ans.value = ParsedDataType::Single(w);

@@ -16,13 +16,14 @@ use super::subword::Subword;
 #[derive(Debug, Clone)]
 pub enum WordMode {
     Alias,
-    Arithmetric,
+    Arithmetic,
     EvalLet,
     CompgenF,
     ReadCommand,
     Heredoc,
     RightOfSubstitution,
     Value,
+    NoFail,
     ParamOption(Vec<String>),
 }
 
@@ -232,7 +233,7 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::Arithmetric) | Some(WordMode::CompgenF) => {
+            Some(WordMode::Arithmetic) | Some(WordMode::CompgenF) => {
                 if feeder.starts_with("}") {
                     return false;
                 }
@@ -254,7 +255,7 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::Arithmetric) | Some(WordMode::CompgenF) => {
+            Some(WordMode::Arithmetic) | Some(WordMode::CompgenF) => {
                 if feeder.starts_withs(&["]", "}"]) 
                 || feeder.scanner_math_symbol(core) != 0 {
                     return false;
