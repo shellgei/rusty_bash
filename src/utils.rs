@@ -170,17 +170,22 @@ pub fn to_ansi_c(s: &String) -> String {
                 let alter = format!("\\{:03o}", bin);
                 ans.push_str(&alter);
             },
-            42 | 64 | 91 | 93 => { //* , @, [ , ]
-                double_quote = true;
-                ans.push(c);
-            },
             9 => {
                 ansi = true;
                 ans.push_str("\\t");
             },
-            0xA => {
+            10 => {
                 ansi = true;
                 ans.push_str("\\n");
+            },
+            34 => { // "
+                double_quote = true;
+                ans.push('\\');
+                ans.push(c);
+            },
+            32 | 42 | 64 | 91 | 93 => { // space * , @, [ , ]
+                double_quote = true;
+                ans.push(c);
             },
             _ => ans.push(c),
         }

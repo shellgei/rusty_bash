@@ -29,11 +29,7 @@ impl Data for AssocData {
         for k in self.keys() {
             let v = &self.get(&k).unwrap_or("".to_string());
             let ansi = utils::to_ansi_c(v);
-            let mut k = utils::to_ansi_c(&k);
-            if k.contains(" ") {
-                k = "\"".to_owned() + &k + "\"";
-            }
-
+            let k = utils::to_ansi_c(&k);
             if ansi == *v {
                 formatted += &format!("[{}]=\"{}\" ", k, &ansi);
             }else{
