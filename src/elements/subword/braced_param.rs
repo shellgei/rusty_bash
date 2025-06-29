@@ -97,7 +97,9 @@ impl Subword for BracedParam {
             return self.make_split();
         }
 
-        if ! self.treat_as_array || ifs.starts_with(" ") || self.array.is_none() {
+        if (! self.treat_as_array && ! index_is_asterisk && self.param.name != "*")
+        || ifs.starts_with(" ")
+        || self.array.is_none() {
             return splitter::split(&self.text, ifs, prev_char).iter()
                 .map(|s| ( From::from(&s.0), s.1)).collect();
         }
