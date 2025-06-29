@@ -50,7 +50,7 @@ impl Subword for BracedParam {
                     if self.param.index.is_some()
                     && self.param.index.as_ref().unwrap().text == "[*]" {
                         self.text = self.array.clone().unwrap().join(&core.db.get_ifs_head());
-                        self.array = None;
+                    //    self.array = None;
                     }
 
                     return Ok(());
@@ -128,6 +128,10 @@ impl BracedParam {
     }
 
     fn make_split(&self)-> Vec<(Box<dyn Subword>, bool)>{ 
+        if self.array.is_none() {
+            return vec![];
+        }
+
         let mut ans = vec![];
         for p in self.array.clone().unwrap() {
             ans.push( (From::from(&p), true) );
