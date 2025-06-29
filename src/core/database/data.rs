@@ -55,7 +55,10 @@ pub trait Data {
         let body = self.print_body();//.replace("$", "\\$");
         if ! self.is_initialized() {
             println!("{}", name);
-        }else if declare_print && self.is_single() {
+        }else if declare_print
+            && self.is_single()
+            && ! body.starts_with("\"")
+            && ! body.ends_with("\"") {
             println!("{}=\"{}\"", name, body);
         }else{
             println!("{}={}", name, body);

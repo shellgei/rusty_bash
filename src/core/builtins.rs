@@ -159,25 +159,31 @@ pub fn debug(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut last_result = 0;
+    core.valid_assoc_expand_once = true;
+
     for a in &args[1..] {
         match ArithmeticExpr::parse(&mut Feeder::new(&a.replace("$", "\\$")), core, false, "") {
             Ok(Some(mut a)) => {
                 match a.eval(core) {
                     Ok(s) => last_result = if s == "0" {1} else {0},
                     Err(e) => {
+                        core.valid_assoc_expand_once = false;
                         return error_exit(1, &args[0], &String::from(&e), core);
                     },
                 }
             },
             Ok(None) => {
+                core.valid_assoc_expand_once = false;
                 return error_exit(1, &args[0], "expression expected", core);
             },
             Err(e) => {
+                core.valid_assoc_expand_once = false;
                 return error_exit(1, &args[0], &String::from(&e), core);
             }
         }
     }
 
+    core.valid_assoc_expand_once = false;
     last_result
 }
 

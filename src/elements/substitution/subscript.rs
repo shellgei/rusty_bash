@@ -15,7 +15,8 @@ pub struct Subscript {
 }
 
 impl Subscript {
-    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str) -> Result<String, ExecError> {
+    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str)
+    -> Result<String, ExecError> {
         if self.inner_special != "" {
             return Ok(self.inner_special.clone());
         }
@@ -28,6 +29,11 @@ impl Subscript {
                 true  => {
                     match self.inner.as_mut() {
                         Some(sub) => {
+                            if core.valid_assoc_expand_once
+                            && core.shopts.query("assoc_expand_once") {
+                                return Ok(sub.text.clone());
+                            }
+
                             let mut f = Feeder::new(&sub.text);
                             if let Some(w) = Word::parse(&mut f, core, None)? {
                                 w.eval_as_assoc_index(core)
