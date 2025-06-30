@@ -1,10 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{env, ShellCore, Feeder};
+use crate::{env, ShellCore};
 use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
-use crate::elements::word::{Word, WordMode};
 use crate::utils::arg;
 use super::error_exit;
 
@@ -27,6 +26,7 @@ pub fn local(core: &mut ShellCore,
     0
 }
 
+/*
 fn reparse(core: &mut ShellCore, sub: &mut Substitution)
 -> Result<(), ExecError> {
     let mut f = Feeder::new(&sub.text);
@@ -51,7 +51,7 @@ fn reparse(core: &mut ShellCore, sub: &mut Substitution)
     }
 
     Err(ExecError::InvalidName(text))
-}
+}*/
 
 fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec<String>,
                     layer: usize) -> Result<(), ExecError> {
@@ -80,7 +80,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         || (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) ) {
 
             if ! (sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'") ) {
-                reparse(core, sub)?; //TODO: reparate reparse of variable and value from each other
+                sub.reparse(core)?; //TODO: reparate reparse of variable and value from each other
             }
         }
     }

@@ -12,6 +12,7 @@ use crate::error::exec::ExecError;
 use crate::elements::word::Word;
 use self::value::Value;
 use self::variable::Variable;
+use crate::elements::word::WordMode;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
@@ -34,6 +35,32 @@ impl Substitution {
         }
 
         self.set_to_shell(core, layer)
+    }
+
+    pub fn reparse(&mut self, core: &mut ShellCore)
+    -> Result<(), ExecError> {
+        let mut f = Feeder::new(&self.text);
+        let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::NoFail)) {
+            if ! f.is_empty() {
+                return Err(ExecError::InvalidName(self.text.clone()));
+            }
+    
+            s.eval_as_value(core)?
+        }else{
+            return Err(ExecError::InvalidName(self.text.clone()));
+        };
+    
+        let mut f = Feeder::new(&text.replace("~", "\\~"));
+        if let Ok(Some(s)) = Substitution::parse(&mut f, core, true) {
+            if ! f.is_empty() {
+                return Err(ExecError::InvalidName(text));
+            }
+    
+            *self = s;
+            return Ok(());
+        }
+    
+        Err(ExecError::InvalidName(text))
     }
 
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
