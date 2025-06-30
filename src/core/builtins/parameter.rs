@@ -75,10 +75,13 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         }
     }
 
-    if sub.has_right { //&& sub.left_hand.index.is_none() {
+    if sub.has_right /*&& sub.left_hand.index.is_none()*/ { //TODO: ???????
         if (args.contains(&"-a".to_string()) || args.contains(&"-A".to_string())) 
         || (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) ) {
-            reparse(core, sub)?;
+
+            if ! (sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'") ) {
+                reparse(core, sub)?; //TODO: reparate reparse of variable and value from each other
+            }
         }
     }
 
