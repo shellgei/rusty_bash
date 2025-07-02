@@ -11,7 +11,7 @@ use self::variable::Variable;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
-    text: String,
+    pub text: String,
     left_hand: Variable,
     right_hand: Value,
 }

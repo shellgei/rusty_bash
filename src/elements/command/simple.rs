@@ -6,6 +6,7 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use crate::utils;
 use crate::utils::exit;
@@ -19,6 +20,7 @@ use nix::errno::Errno;
 #[derive(Debug, Default, Clone)]
 pub struct SimpleCommand {
     text: String,
+    substitutions: Vec<Substitution>,
     words: Vec<Word>,
     args: Vec<String>,
     redirects: Vec<Redirect>,
@@ -92,6 +94,17 @@ impl SimpleCommand {
         args.iter()
             .map(|a| CString::new(a.to_string()).unwrap())
             .collect()
+    }
+
+    pub fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
+        if let Some(s) = Substitution::parse(feeder, core)? {
+            ans.text += &s.text;
+            ans.substitutions.push(s);
+            Ok(true)
+        }else{
+            Ok(false)
+        }
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore)
