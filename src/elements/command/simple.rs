@@ -129,10 +129,7 @@ impl SimpleCommand {
 
         loop { 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-
-            if Self::eat_substitution(feeder, &mut ans, core)? {
-                command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            }else{
+            if ! Self::eat_substitution(feeder, &mut ans, core)? {
                 break;
             }
         }
