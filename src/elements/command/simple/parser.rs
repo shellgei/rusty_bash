@@ -11,23 +11,33 @@ use crate::error::parse::ParseError;
 impl SimpleCommand {
     pub fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
     -> Result<bool, ParseError> {
-        if let Some(s) = Substitution::parse(feeder, core, false)? {
-            ans.text += &s.text;
-            ans.substitutions.push(s);
-            Ok(true)
-        }else{
-            Ok(false)
+        match Substitution::parse(feeder, core, false) {
+            Ok(Some(s)) => {
+                ans.text += &s.text;
+                ans.substitutions.push(s);
+                Ok(true)
+            },
+            Ok(None) => Ok(false),
+            Err(e) => {
+                feeder.rewind();
+                Err(e)
+            },
         }
     }
 
     pub fn eat_substitution_as_arg(feeder: &mut Feeder, ans: &mut Self,
                                    core: &mut ShellCore) -> Result<bool, ParseError> {
-        if let Some(s) = Substitution::parse_as_arg(feeder, core)? {
-            ans.text += &s.text;
-            ans.substitutions_as_args.push(s);
-            Ok(true)
-        }else{
-            Ok(false)
+        match Substitution::parse_as_arg(feeder, core) {
+            Ok(Some(s)) => {
+                ans.text += &s.text;
+                ans.substitutions_as_args.push(s);
+                Ok(true)
+            },
+            Ok(None) => Ok(false),
+            Err(e) => {
+                feeder.rewind();
+                Err(e)
+            },
         }
     }
 
@@ -73,13 +83,34 @@ impl SimpleCommand {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        while command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?
-        || Self::eat_substitution(feeder, &mut ans, core)? {
-            command::eat_blank_with_comment(feeder, core, &mut ans.text);
+        loop {
+            let exist_redirect = match command::eat_redirects(feeder, core,
+                                 &mut ans.redirects, &mut ans.text) {
+                Ok(exist) => exist,
+                Err(e) => {
+                    feeder.rewind();
+                    return Err(e);
+                },
+            };
+
+            let exist_sub = match Self::eat_substitution(feeder, &mut ans, core) {
+                Ok(exist) => exist,
+                Err(e) => {
+                    feeder.rewind();
+                    return Err(e);
+                },
+            };
+
+            if ! exist_redirect && ! exist_sub {
+                break;
+            }
         }
 
         loop {
-            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
+            if let Err(e) = command::eat_redirects(feeder, core,&mut ans.redirects, &mut ans.text) {
+                feeder.rewind();
+                return Err(e);
+            }
 
             if core.substitution_builtins.contains_key(&ans.command_name) {
                 if Self::eat_substitution_as_arg(feeder, &mut ans, core)? {
