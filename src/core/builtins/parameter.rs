@@ -53,12 +53,10 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         sub.left_hand.init_variable(core, Some(layer), args)?;
     }
 
-    if sub.has_right /*&& sub.left_hand.index.is_none()*/ { //TODO: ???????
-        if (args.contains(&"-a".to_string()) || args.contains(&"-A".to_string())) 
-        || (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) ) {
-
+    if sub.has_right {
+        if core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) {
             if ! (sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'") ) {
-                sub.reparse(core)?; //TODO: reparate reparse of variable and value from each other
+                sub.reparse(core)?;
             }
         }
     }
