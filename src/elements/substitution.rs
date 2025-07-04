@@ -12,7 +12,6 @@ use crate::error::exec::ExecError;
 use crate::elements::word::Word;
 use self::value::Value;
 use self::variable::Variable;
-use crate::elements::word::WordMode;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {

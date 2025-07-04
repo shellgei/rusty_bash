@@ -146,7 +146,7 @@ impl Value {
 
         match v {
             ParsedDataType::Single(mut w) => self.reparse_word(&mut w, core),
-            ParsedDataType::Array(a) => Ok(()),
+            ParsedDataType::Array(_) => Ok(()),
             ParsedDataType::None => Ok(()),
         }
     }

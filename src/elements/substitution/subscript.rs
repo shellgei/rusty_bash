@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::word::{Word, WordMode};
+use crate::elements::word::Word;
 
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
