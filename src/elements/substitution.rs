@@ -40,6 +40,9 @@ impl Substitution {
 
     pub fn reparse(&mut self, core: &mut ShellCore) //TODO: solve this confusion
     -> Result<(), ExecError> {
+        if self.left_hand.index.is_some() {
+            self.left_hand.index.as_mut().unwrap().reparse(core, &self.left_hand.name)?;
+        }
         self.right_hand.reparse(core)?;
 
         /*

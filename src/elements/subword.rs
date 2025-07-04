@@ -164,8 +164,8 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
                 Ok(None)
             }
         },
-        Some(WordMode::ReparseOfValue) 
-        | Some(WordMode::ReparseOfSubstitution) => {
+        Some(WordMode::ReparseOfValue) => {
+        //| Some(WordMode::ReparseOfSubstitution) => {
             if feeder.len() == 0 {
                 Ok(None)
             }else{

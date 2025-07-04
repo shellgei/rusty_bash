@@ -140,7 +140,7 @@ impl Value {
         Ok(())
     }
 
-    pub fn reparse(&mut self, core: &mut ShellCore) //TODO: solve this confusion
+    pub fn reparse(&mut self, core: &mut ShellCore) 
     -> Result<(), ExecError> {
         let v = self.value.clone();
 

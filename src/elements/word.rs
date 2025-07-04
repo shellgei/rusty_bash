@@ -24,7 +24,7 @@ pub enum WordMode {
     RightOfSubstitution,
     Value,
     ReparseOfValue,
-    ReparseOfSubstitution,
+    //ReparseOfSubstitution,
     ParamOption(Vec<String>),
 }
 

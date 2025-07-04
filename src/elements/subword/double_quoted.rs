@@ -13,7 +13,7 @@ pub struct DoubleQuoted {
     text: String,
     subwords: Vec<Box<dyn Subword>>,
     split_points: Vec<usize>,
-    quote_substitution: bool,
+//    quote_substitution: bool,
 }
 
 impl Subword for DoubleQuoted {
@@ -54,13 +54,14 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
+        /*
         if self.quote_substitution
         && self.text.starts_with("[")
         && self.text.contains("]=") {
             self.text.insert(0, '"');
             self.text.push('"');
             return Some(self.text.clone());
-        }
+        }*/
 
         let mut text = String::new();
 
@@ -192,9 +193,10 @@ impl DoubleQuoted {
         }
 
         let mut ans = Self::default();
+        /*
         if let Some(WordMode::ReparseOfSubstitution) = mode {
             ans.quote_substitution = true;
-        }
+        }*/
 
         feeder.nest.push(("\"".to_string(), vec!["\"".to_string()]));
 

@@ -14,6 +14,8 @@ pub struct Subscript {
     pub inner_special: String,
 }
 
+//TOOD: put enum here
+
 impl Subscript {
     pub fn eval(&mut self, core: &mut ShellCore, param_name: &str)
     -> Result<String, ExecError> {
@@ -51,7 +53,24 @@ impl Subscript {
         Err(ExecError::ArrayIndexInvalid("".to_string()))
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+    pub fn reparse(&mut self, core: &mut ShellCore, param_name: &str) 
+    -> Result<(), ExecError> {
+        let mut text = self.eval(core, param_name)?;
+        text.insert(0, '[');
+        text.push(']');
+
+        let mut f = Feeder::new(&text);
+        match Self::parse(&mut f, core) {
+            Ok(Some(s)) => *self = s,
+            _ => return Err(ExecError::InvalidName(text.clone())),
+        }
+
+        Ok(())
+    }
+
+
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("[") {
             return Ok(None);
         }
