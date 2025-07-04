@@ -42,7 +42,7 @@ impl Substitution {
     -> Result<(), ExecError> {
         let mut f = Feeder::new(&self.text);
 
-        let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::ReparseOfSubstitutionArray)) {
+        let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::ReparseOfSubstitution)) {
             if ! f.is_empty() {
                 return Err(ExecError::InvalidName(self.text.clone()));
             }

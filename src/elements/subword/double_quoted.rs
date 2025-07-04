@@ -192,7 +192,7 @@ impl DoubleQuoted {
         }
 
         let mut ans = Self::default();
-        if let Some(WordMode::ReparseOfSubstitutionArray) = mode {
+        if let Some(WordMode::ReparseOfSubstitution) = mode {
             ans.quote_substitution = true;
         }
 
