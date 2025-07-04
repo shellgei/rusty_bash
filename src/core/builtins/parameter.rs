@@ -48,6 +48,11 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         }
     }
 
+    if ( args.contains(&"-A".to_string()) || args.contains(&"-a".to_string()) )
+    && ! core.db.exist(&sub.left_hand.name) {
+        sub.left_hand.init_variable(core, Some(layer), args)?;
+    }
+
     if sub.has_right /*&& sub.left_hand.index.is_none()*/ { //TODO: ???????
         if (args.contains(&"-a".to_string()) || args.contains(&"-A".to_string())) 
         || (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) ) {
@@ -71,11 +76,6 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     }
 
     let mut res = Ok(());
-
-    if ( args.contains(&"-A".to_string()) || args.contains(&"-a".to_string()) )
-    && ! core.db.exist(&sub.left_hand.name) {
-        sub.left_hand.init_variable(core, Some(layer), args)?;
-    }
  
     match sub.has_right {
         true  => res = sub.eval(core, Some(layer), true),

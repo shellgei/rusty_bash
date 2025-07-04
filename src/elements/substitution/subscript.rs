@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
@@ -18,6 +18,7 @@ enum SubscriptType {
     #[default]
     None,
     Arith(ArithmeticExpr),
+    Evaluated(String),
     Array(String),
 }
 
@@ -26,6 +27,9 @@ impl Subscript {
     -> Result<String, ExecError> {
         if let SubscriptType::Array(a) = &self.data {
             return Ok(a.clone());
+        }
+        if let SubscriptType::Evaluated(s) = &self.data {
+            return Ok(s.clone());
         }
 
         if let SubscriptType::Arith(mut a) = self.data.clone() {
@@ -55,6 +59,23 @@ impl Subscript {
 
     pub fn reparse(&mut self, core: &mut ShellCore, param_name: &str) 
     -> Result<(), ExecError> {
+        if let SubscriptType::Array(_) = &self.data {
+            return Ok(());
+        }
+
+        if core.db.is_assoc(param_name) {
+            match &self.data {
+                SubscriptType::Arith(w) => {
+                    let mut f = Feeder::new(&w.text);
+                    if let Some(w) = Word::parse(&mut f, core, Some(WordMode::ReparseOfValue))? {
+                        dbg!("{:?}", &w);
+                        self.data = SubscriptType::Evaluated(w.eval_as_assoc_index(core)?);
+                    }
+                },
+                _ => {},
+            }
+        }
+
         let mut text = self.eval(core, param_name)?;
         text.insert(0, '[');
         text.push(']');
