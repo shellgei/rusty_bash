@@ -18,7 +18,7 @@ enum SubscriptType {
     #[default]
     None,
     Arith(ArithmeticExpr),
-    Evaluated(String),
+    //Evaluated(String),
     Array(String),
 }
 
@@ -28,30 +28,30 @@ impl Subscript {
         if let SubscriptType::Array(a) = &self.data {
             return Ok(a.clone());
         }
+        /*
         if let SubscriptType::Evaluated(s) = &self.data {
             return Ok(s.clone());
-        }
+        }*/
 
         if let SubscriptType::Arith(mut a) = self.data.clone() {
             if a.text.is_empty() {
                 return Err(ExecError::ArrayIndexInvalid(a.text.clone()));
             }
-            return match core.db.is_assoc(param_name) {
-                true  => {
-                    if core.valid_assoc_expand_once
-                    && core.shopts.query("assoc_expand_once") {
-                        return Ok(a.text.clone());
-                    }
+            if ! core.db.is_assoc(param_name) {
+                return a.eval(core);
+            }
 
-                    let mut f = Feeder::new(&a.text);
-                    if let Some(w) = Word::parse(&mut f, core, None)? {
-                        w.eval_as_assoc_index(core)
-                    }else{
-                        Ok(a.text.clone())
-                    }
-                },
-                false => a.eval(core),
-            };
+            if core.valid_assoc_expand_once
+            && core.shopts.query("assoc_expand_once") {
+                return Ok(a.text.clone());
+            }
+
+            let mut f = Feeder::new(&a.text);
+            if let Some(w) = Word::parse(&mut f, core, None)? {
+                return w.eval_as_assoc_index(core);
+            }else{
+                return Ok(a.text.clone());
+            }
         }
 
         Err(ExecError::ArrayIndexInvalid("".to_string()))
@@ -63,6 +63,7 @@ impl Subscript {
             return Ok(());
         }
 
+        /*
         if core.db.is_assoc(param_name) {
             match &self.data {
                 SubscriptType::Arith(w) => {
@@ -74,7 +75,7 @@ impl Subscript {
                 },
                 _ => {},
             }
-        }
+        }*/
 
         let mut text = self.eval(core, param_name)?;
         text.insert(0, '[');
