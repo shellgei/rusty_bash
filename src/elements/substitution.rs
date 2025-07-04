@@ -40,6 +40,9 @@ impl Substitution {
 
     pub fn reparse(&mut self, core: &mut ShellCore) //TODO: solve this confusion
     -> Result<(), ExecError> {
+        self.right_hand.reparse(core)?;
+
+        /*
         let mut f = Feeder::new(&self.text);
 
         let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::ReparseOfSubstitution)) {
@@ -63,6 +66,8 @@ impl Substitution {
         }
     
         Err(ExecError::InvalidName(text))
+        */
+        Ok(())
     }
 
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {

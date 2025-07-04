@@ -127,6 +127,30 @@ impl Value {
         Ok(())
     }
 
+    fn reparse_word(&mut self, w: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
+        let text = w.eval_as_value(core)?;
+        let mut f = Feeder::new(&text.replace("~", "\\~"));
+        if let Ok(Some(s)) = Self::parse(&mut f, core, true) {
+            if ! f.is_empty() {
+                return Err(ExecError::InvalidName(text));
+            }
+    
+            *self = s;
+        }
+        Ok(())
+    }
+
+    pub fn reparse(&mut self, core: &mut ShellCore) //TODO: solve this confusion
+    -> Result<(), ExecError> {
+        let v = self.value.clone();
+
+        match v {
+            ParsedDataType::Single(mut w) => self.reparse_word(&mut w, core),
+            ParsedDataType::Array(a) => Ok(()),
+            ParsedDataType::None => Ok(()),
+        }
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, permit_space: bool)
     -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
