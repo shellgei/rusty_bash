@@ -10,40 +10,40 @@ use crate::elements::word::Word;
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
     pub text: String,
-    pub inner: Option<ArithmeticExpr>,
-    pub inner_special: String,
+    data: SubscriptType,
 }
 
-//TOOD: put enum here
+#[derive(Debug, Clone, Default)]
+enum SubscriptType {
+    #[default]
+    None,
+    Arith(ArithmeticExpr),
+    Array(String),
+}
 
 impl Subscript {
     pub fn eval(&mut self, core: &mut ShellCore, param_name: &str)
     -> Result<String, ExecError> {
-        if self.inner_special != "" {
-            return Ok(self.inner_special.clone());
+        if let SubscriptType::Array(a) = &self.data {
+            return Ok(a.clone());
         }
 
-        if let Some(a) = self.inner.as_mut() {
+        if let SubscriptType::Arith(mut a) = self.data.clone() {
             if a.text.is_empty() {
                 return Err(ExecError::ArrayIndexInvalid(a.text.clone()));
             }
             return match core.db.is_assoc(param_name) {
                 true  => {
-                    match self.inner.as_mut() {
-                        Some(sub) => {
-                            if core.valid_assoc_expand_once
-                            && core.shopts.query("assoc_expand_once") {
-                                return Ok(sub.text.clone());
-                            }
+                    if core.valid_assoc_expand_once
+                    && core.shopts.query("assoc_expand_once") {
+                        return Ok(a.text.clone());
+                    }
 
-                            let mut f = Feeder::new(&sub.text);
-                            if let Some(w) = Word::parse(&mut f, core, None)? {
-                                w.eval_as_assoc_index(core)
-                            }else{
-                                Ok(sub.text.clone())
-                            }
-                        },
-                        None => Err(ExecError::ArrayIndexInvalid("".to_string())),
+                    let mut f = Feeder::new(&a.text);
+                    if let Some(w) = Word::parse(&mut f, core, None)? {
+                        w.eval_as_assoc_index(core)
+                    }else{
+                        Ok(a.text.clone())
                     }
                 },
                 false => a.eval(core),
@@ -78,15 +78,13 @@ impl Subscript {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        if feeder.starts_with("@") {
-            ans.text += "@";
-            ans.inner_special = feeder.consume(1);
-        }else if feeder.starts_with("*") {
-            ans.text += "*";
-            ans.inner_special = feeder.consume(1);
+        if feeder.starts_withs(&["@", "*"]) {
+            let s = feeder.consume(1);
+            ans.text += &s.clone();
+            ans.data = SubscriptType::Array(s);
         }else if let Some(a) = ArithmeticExpr::parse(feeder, core, true, "[")? {
             ans.text += &a.text.clone();
-            ans.inner = Some(a);
+            ans.data = SubscriptType::Arith(a);
         }
 
         if ! feeder.starts_with("]") {
