@@ -26,7 +26,8 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, declare: bool) -> Result<(), ExecError> {
+    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>, declare: bool)
+    -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
         self.right_hand.eval(core, &self.left_hand.name, self.append)?;
 
@@ -37,10 +38,11 @@ impl Substitution {
         self.set_to_shell(core, layer)
     }
 
-    pub fn reparse(&mut self, core: &mut ShellCore)
+    pub fn reparse(&mut self, core: &mut ShellCore) //TODO: solve this confusion
     -> Result<(), ExecError> {
         let mut f = Feeder::new(&self.text);
-        let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::NoFail)) {
+
+        let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::ReparseOfSubstitutionArray)) {
             if ! f.is_empty() {
                 return Err(ExecError::InvalidName(self.text.clone()));
             }

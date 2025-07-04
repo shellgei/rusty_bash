@@ -23,7 +23,8 @@ pub enum WordMode {
     Heredoc,
     RightOfSubstitution,
     Value,
-    NoFail,
+    ReparseOfValue,
+    ReparseOfSubstitutionArray,
     ParamOption(Vec<String>),
 }
 

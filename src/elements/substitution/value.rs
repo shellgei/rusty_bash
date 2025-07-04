@@ -132,7 +132,7 @@ impl Value {
         let mut ans = Self::default();
 
         let wm = match permit_space {
-            true  => WordMode::NoFail,
+            true  => WordMode::ReparseOfValue,
             false => WordMode::Value,
         };
 

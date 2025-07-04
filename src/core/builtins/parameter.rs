@@ -26,33 +26,6 @@ pub fn local(core: &mut ShellCore,
     0
 }
 
-/*
-fn reparse(core: &mut ShellCore, sub: &mut Substitution)
--> Result<(), ExecError> {
-    let mut f = Feeder::new(&sub.text);
-    let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::NoFail)) {
-        if ! f.is_empty() {
-            return Err(ExecError::InvalidName(sub.text.clone()));
-        }
-
-        s.eval_as_value(core)?
-    }else{
-        return Err(ExecError::InvalidName(sub.text.clone()));
-    };
-
-    let mut f = Feeder::new(&text.replace("~", "\\~"));
-    if let Ok(Some(s)) = Substitution::parse(&mut f, core, true) {
-        if ! f.is_empty() {
-            return Err(ExecError::InvalidName(text));
-        }
-
-        *sub = s;
-        return Ok(());
-    }
-
-    Err(ExecError::InvalidName(text))
-}*/
-
 fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec<String>,
                     layer: usize) -> Result<(), ExecError> {
     if core.db.is_readonly(&sub.left_hand.name) {
