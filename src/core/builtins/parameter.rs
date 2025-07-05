@@ -138,7 +138,6 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    /*
     if args.len() == 2 && args[1] == "-f" {
         let mut names: Vec<String> = core.db.functions.keys().map(|k| k.to_string()).collect();
         names.sort();
@@ -147,7 +146,7 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             core.db.functions.get_mut(&n).unwrap().pretty_print(0); 
         }
         return 0;
-    }*/
+    }
 
     let mut names = core.db.get_keys();
     let mut options = String::new();
