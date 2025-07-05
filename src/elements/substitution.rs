@@ -178,9 +178,13 @@ impl Substitution {
         }else{
             return Ok(None);
         };
+
+        if text == "" {
+            return Ok(Some(Self::default()));
+        }
     
         let mut f = Feeder::new(&text.replace("~", "\\~"));
-        return Substitution::parse(&mut f, core, true);
+        return Self::parse_as_arg(&mut f, core);
     }
 
     pub fn parse_as_arg(feeder: &mut Feeder, core: &mut ShellCore)

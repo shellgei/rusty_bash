@@ -138,6 +138,7 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
+    /*
     if args.len() == 2 && args[1] == "-f" {
         let mut names: Vec<String> = core.db.functions.keys().map(|k| k.to_string()).collect();
         names.sort();
@@ -146,7 +147,7 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             core.db.functions.get_mut(&n).unwrap().pretty_print(0); 
         }
         return 0;
-    }
+    }*/
 
     let mut names = core.db.get_keys();
     let mut options = String::new();
@@ -187,11 +188,33 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
+fn declare_print_function(core: &mut ShellCore, subs: &mut Vec<Substitution>) -> i32 {
+    let mut names: Vec<String> = subs.iter().map(|s| s.left_hand.name.clone()).collect();
+    names.sort();
+
+    for n in &names {
+        if n == "" {
+            return 1;
+        }
+
+        match core.db.functions.get_mut(n) {
+            Some(f) => f.pretty_print(0),
+            None => return 1,
+        }
+    }
+    0
+}
+
+pub fn declare(core: &mut ShellCore, args: &mut Vec<String>,
+               subs: &mut Vec<Substitution>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
     if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
         return declare_print_all(core, &mut args);
+    }
+
+    if arg::consume_option("-f", &mut args) {
+        return declare_print_function(core, subs);
     }
 
     if arg::consume_option("-p", &mut args) {

@@ -63,20 +63,6 @@ impl Subscript {
             return Ok(());
         }
 
-        /*
-        if core.db.is_assoc(param_name) {
-            match &self.data {
-                SubscriptType::Arith(w) => {
-                    let mut f = Feeder::new(&w.text);
-                    if let Some(w) = Word::parse(&mut f, core, Some(WordMode::ReparseOfValue))? {
-                        dbg!("{:?}", &w);
-                        self.data = SubscriptType::Evaluated(w.eval_as_assoc_index(core)?);
-                    }
-                },
-                _ => {},
-            }
-        }*/
-
         let mut text = self.eval(core, param_name)?;
         text.insert(0, '[');
         text.push(']');
