@@ -66,6 +66,8 @@ pub fn run_substitution_builtin(com: &mut SimpleCommand, core: &mut ShellCore)
                             _ => {
                                 let mut s = Substitution::default();
                                 s.text = arg;
+                                s.left_hand.text = s.text.clone();
+                                s.left_hand.name = s.text.clone();
                                 subs.push(s);
                             },
                         }
@@ -75,6 +77,8 @@ pub fn run_substitution_builtin(com: &mut SimpleCommand, core: &mut ShellCore)
         }
     }
 
+    dbg!("{:?}", &com.args);
+    dbg!("{:?}", &subs);
     core.db.exit_status = func(core, &mut com.args, &mut subs);
     Ok(true)
 }
