@@ -9,9 +9,6 @@ use super::error_exit;
 
 pub fn local(core: &mut ShellCore,
              args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
-    // TODO: local should parse bot args and subs
-    //dbg!("{:?}", &args);
-    //dbg!("{:?}", &subs);
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2//The last element of data.parameters is for local itself. 
     }else{

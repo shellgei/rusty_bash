@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder, utils};
-use super::{alias, SimpleCommand};
+use super::{alias, SimpleCommand, SubsArgType};
 use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::{Word, WordMode};
@@ -27,18 +27,27 @@ impl SimpleCommand {
 
     pub fn eat_substitution_as_arg(feeder: &mut Feeder, ans: &mut Self,
                                    core: &mut ShellCore) -> Result<bool, ParseError> {
-        match Substitution::parse_as_arg(feeder, core) {
-            Ok(Some(s)) => {
+        if let Some(s) = Substitution::parse_as_arg(feeder, core)? {
+            //Ok(Some(s)) => {
                 ans.text += &s.text;
-                ans.substitutions_as_args.push(s);
-                Ok(true)
-            },
+                ans.substitutions_as_args.push(SubsArgType::Subs(s));
+                return Ok(true);
+            /*},
             Ok(None) => Ok(false),
             Err(e) => {
                 feeder.rewind();
                 Err(e)
             },
+            */
         }
+
+        if let Some(w) = Word::parse(feeder, core, None)? {
+                ans.text += &w.text;
+                ans.substitutions_as_args.push(SubsArgType::Other(w));
+                return Ok(true);
+        }
+
+        Ok(false)
     }
 
     fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore)

@@ -1,9 +1,11 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use super::SimpleCommand;
+use super::SubsArgType;
 use crate::error::exec::ExecError;
+use crate::elements::substitution::Substitution;
 
 pub fn run(com: &mut SimpleCommand, core: &mut ShellCore)
 -> Result<bool, ExecError> {
@@ -48,6 +50,26 @@ pub fn run_substitution_builtin(com: &mut SimpleCommand, core: &mut ShellCore)
     }
 
     let func = core.substitution_builtins[&com.args[0]];
-    core.db.exit_status = func(core, &mut com.args, &mut com.substitutions_as_args);
+    let mut subs = vec![];
+    for sub in com.substitutions_as_args.iter_mut() {
+        match sub {
+            SubsArgType::Subs(s) => subs.push(s.clone()),
+            SubsArgType::Other(w) => {
+                for arg in w.eval(core)? {
+                    if arg.starts_with("-") {
+                        com.args.push(arg);
+                    }
+                    else {
+                        let mut f = Feeder::new(&arg);
+                        if let Some(s) = Substitution::parse(&mut f, core, true)? {
+                            subs.push(s);
+                        }
+                    }
+                }
+            },
+        }
+    }
+
+    core.db.exit_status = func(core, &mut com.args, &mut subs);
     Ok(true)
 }

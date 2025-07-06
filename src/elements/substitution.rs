@@ -9,7 +9,6 @@ pub mod value;
 use crate::{ShellCore, Feeder};
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
-use crate::elements::word::Word;
 use self::value::Value;
 use self::variable::Variable;
 
@@ -168,6 +167,7 @@ impl Substitution {
     }
 
     /* for the case 'declare "A=B"' */
+    /*
     pub fn parse_double_quoted(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         let text = if let Some(s) = Word::parse(feeder, core, None)? {
@@ -184,14 +184,15 @@ impl Substitution {
             Ok(Some(a)) => Ok(Some(a)),
             _ => Ok(Some(Self::default())),
         }
-    }
+    }*/
 
     pub fn parse_as_arg(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
+        /*
         if feeder.starts_with("\"") 
         && ! feeder.starts_with("\"-") {
             return Self::parse_double_quoted(feeder, core);
-        }
+        }*/
 
         let mut ans = Self::default();
         if ! ans.eat_left_hand(feeder, core)? {

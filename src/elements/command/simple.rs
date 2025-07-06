@@ -17,6 +17,12 @@ use crate::elements::word::Word;
 use std::sync::atomic::Ordering::Relaxed;
 use nix::unistd::Pid;
 
+#[derive(Debug, Clone)]
+enum SubsArgType {
+    Subs(Substitution),
+    Other(Word),
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct SimpleCommand {
     text: String,
@@ -25,14 +31,13 @@ pub struct SimpleCommand {
     pub args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool, 
-    substitutions_as_args: Vec<Substitution>,
+    substitutions_as_args: Vec<SubsArgType>,
     command_name: String,
     lineno: usize,
     continue_alias_check: bool,
     invalid_alias: bool,
     command_path: String,
 }
-
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe)
