@@ -56,13 +56,18 @@ pub fn run_substitution_builtin(com: &mut SimpleCommand, core: &mut ShellCore)
             SubsArgType::Subs(s) => subs.push(s.clone()),
             SubsArgType::Other(w) => {
                 for arg in w.eval(core)? {
-                    if arg.starts_with("-") {
+                    if arg.starts_with("-") || arg.starts_with("+") {
                         com.args.push(arg);
                     }
                     else {
                         let mut f = Feeder::new(&arg);
-                        if let Some(s) = Substitution::parse(&mut f, core, true)? {
-                            subs.push(s);
+                        match Substitution::parse(&mut f, core, true)? {
+                            Some(s) => subs.push(s),
+                            _ => {
+                                let mut s = Substitution::default();
+                                s.text = arg;
+                                subs.push(s);
+                            },
                         }
                     }
                 }
