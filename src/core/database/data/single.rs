@@ -19,7 +19,17 @@ impl From<&str> for SingleData {
 impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> { Box::new(self.clone()) }
     fn print_body(&self) -> String { 
-        utils::to_ansi_c(&self.body.to_string())
+        let mut s = self.body.replace("'", "\\'");
+        if s.contains('~') 
+        || s.starts_with('#') {
+            s = "'".to_owned() + &s + "'";
+        }
+        let ansi = utils::to_ansi_c(&s);
+        if ansi == s {
+            ansi.replace("$", "\\$")
+        }else{
+            ansi
+        }
     }
 
     fn clear(&mut self) { self.body.clear(); }
@@ -37,13 +47,11 @@ impl Data for SingleData {
     fn get_as_single(&mut self) -> Result<String, ExecError> { Ok(self.body.to_string()) }
     fn len(&mut self) -> usize { self.body.chars().count() }
     fn is_single(&self) -> bool {true}
-}
 
-    /*
-impl SingleData {
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str, value: &str)-> Result<(), ExecError> {
-        db_layer.insert( name.to_string(), Box::new(SingleData::from(value)) );
-        Ok(())
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        Ok(key == "0")
     }
 }
-    */

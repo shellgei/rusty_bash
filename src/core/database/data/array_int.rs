@@ -4,6 +4,8 @@
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
 use super::Data;
+use super::array_uninit::UninitArray;
+use super::array::ArrayData;
 
 #[derive(Debug, Clone, Default)]
 pub struct IntArrayData {
@@ -16,7 +18,7 @@ impl Data for IntArrayData {
     fn print_body(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
-            formatted += &format!("[{}]={} ", i, &self.body[&i]);
+            formatted += &format!("[{}]=\"{}\" ", i, &self.body[&i]);
         };
         if formatted.ends_with(" ") {
             formatted.pop();
@@ -27,6 +29,14 @@ impl Data for IntArrayData {
 
     fn clear(&mut self) { self.body.clear(); }
     fn is_initialized(&self) -> bool { true }
+
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        let n = self.to_index(key)?;
+        Ok(self.body.contains_key(&n))
+    }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         let n = super::to_int(value)?;
@@ -49,7 +59,7 @@ impl Data for IntArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let key = super::to_key(key)?;
+        let key = self.to_index(key)?;
         let n = super::to_int(value)?;
         self.body.insert(key, n);
         Ok(())
@@ -70,7 +80,7 @@ impl Data for IntArrayData {
     }*/
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let key = super::to_key(key)?;
+        let key = self.to_index(key)?;
         let n = super::to_int(value)?;
 
         if let Some(prev) = self.body.get(&key) {
@@ -116,12 +126,42 @@ impl Data for IntArrayData {
         Ok(ans)
     }
 
+    fn get_vec_from(&mut self, pos: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
+        if self.body.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let keys = self.keys();
+        let max = *keys.iter().max().unwrap() as usize;
+        let mut ans = vec![];
+        for i in pos..(max+1) {
+            match self.body.get(&i) {
+                Some(s) => ans.push(s.to_string()),
+                None => {
+                    if ! skip_non {
+                        ans.push("".to_string());
+                    }
+                },
+            }
+        }
+        Ok(ans)
+    }
+
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
         Ok(self.keys().iter().map(|k| k.to_string()).collect())
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         self.body.get(&0).map(|v| Ok(v.to_string())).ok_or(ExecError::Other("No entry".to_string()))?
+    }
+
+    fn get_str_type(&self) -> Box<dyn Data> {
+        let mut hash = HashMap::new();
+        for d in &self.body {
+            hash.insert(*d.0, d.1.to_string());
+        }
+
+        Box::new(ArrayData::from(hash))
     }
 
     fn is_array(&self) -> bool {true}
@@ -153,6 +193,40 @@ impl Data for IntArrayData {
 }
 
 impl IntArrayData {
+    pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
+                        name: &str, pos: isize, val: &String) -> Result<(), ExecError> {
+        if let Some(d) = db_layer.get_mut(name) {
+            if d.is_array() {
+                if ! d.is_initialized() {
+                    *d = IntArrayData::default().boxed_clone();
+                }
+                
+                return d.set_as_array(&pos.to_string(), val);
+            }else if d.is_assoc() {
+                return d.set_as_assoc(&pos.to_string(), val);
+            }else if d.is_single() {
+                let data = d.get_as_single()?;
+                IntArrayData::set_new_entry(db_layer, name)?;
+                
+                if data != "" {
+                    Self::set_elem(db_layer, name, 0, &data)?;
+                }
+                Self::set_elem(db_layer, name, pos, val)
+            }else {
+                IntArrayData::set_new_entry(db_layer, name)?;
+                Self::set_elem(db_layer, name, pos, val)
+            }
+        }else{
+            IntArrayData::set_new_entry(db_layer, name)?;
+            Self::set_elem(db_layer, name, pos, val)
+        }
+    }
+
+    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str)
+    -> Result<(), ExecError> {
+        db_layer.insert(name.to_string(), UninitArray{}.boxed_clone());
+        Ok(())
+    }
 
     pub fn values(&self) -> Vec<String> {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
@@ -164,5 +238,29 @@ impl IntArrayData {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
         keys.sort();
         keys
+    }
+
+    fn to_index(&mut self, key: &str) -> Result<usize, ExecError> {
+        let mut index = match key.parse::<isize>() {
+            Ok(i) => i,
+            _ => return Err(ExecError::ArrayIndexInvalid(key.to_string())),
+        };
+
+        if index >= 0 {
+            return Ok(index as usize);
+        }
+
+        let keys = self.keys();
+        let max = match keys.iter().max() {
+            Some(n) => *n as isize,
+            None => -1,
+        };
+        index += max + 1;
+
+        if index < 0 {
+            return Err(ExecError::ArrayIndexInvalid(key.to_string()));
+        }
+
+        Ok(index  as usize)
     }
 }

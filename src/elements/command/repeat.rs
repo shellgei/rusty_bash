@@ -1,14 +1,13 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, utils};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::job::Job;
 use crate::elements::word::Word;
-use crate::elements::expr::arithmetic::ArithmeticExpr;
 
 #[derive(Debug, Clone, Default)]
 pub struct RepeatCommand {
@@ -22,12 +21,15 @@ pub struct RepeatCommand {
 
 impl Command for RepeatCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+        let n = utils::string_to_calculated_string(&self.times.text, core)?
+                .parse::<usize>()?;
+        /*
         let mut f = Feeder::new(&self.times.text);
         
         let n = match ArithmeticExpr::parse(&mut f, core, false, "")? {
             Some(mut a) => a.eval(core)?.parse::<usize>()?,
             None => 0,
-        };
+        };*/
 
         for _ in 0..n {
             self.job.clone().exec(core, false)?;

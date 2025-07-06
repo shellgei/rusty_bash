@@ -4,6 +4,7 @@
 use crate::utils;
 use crate::error::exec::ExecError;
 use super::Data;
+use super::assoc::AssocData;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
@@ -30,6 +31,11 @@ impl Data for IntAssocData {
         for k in self.keys() {
             let v = &self.get(&k).unwrap_or("".to_string());
             let ansi = utils::to_ansi_c(v);
+            let mut k = k.clone();
+            if k.contains(" ") {
+                k = "\"".to_owned() + &k + "\"";
+            }
+
             if ansi == *v {
                 formatted += &format!("[{}]=\"{}\" ", k, &ansi);
             }else{
@@ -42,6 +48,12 @@ impl Data for IntAssocData {
     }
 
     fn clear(&mut self) { self.body.clear(); }
+
+    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+        let n = super::to_int(value)?;
+        self.body.insert("0".to_string(), n);
+        Ok(())
+    }
 
     fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let n = super::to_int(value)?;
@@ -81,8 +93,24 @@ impl Data for IntAssocData {
         self.last.clone().ok_or(ExecError::Other("No last input".to_string()))
     }
 
+    fn get_str_type(&self) -> Box<dyn Data> {
+        let mut hash = HashMap::new();
+        for d in &self.body {
+            hash.insert(d.0.to_string(), d.1.to_string());
+        }
+
+        Box::new(AssocData::from(hash))
+    }
+
     fn is_assoc(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
+
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        Ok(self.body.contains_key(key))
+    }
 
     fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
         if key == "@" || key == "*" {
@@ -123,7 +151,7 @@ impl Data for IntAssocData {
 
     fn remove_elem(&mut self, key: &str) -> Result<(), ExecError> {
         if key == "*" || key == "@" {
-            self.body.clear();
+       //     self.body.clear();
             return Ok(());
         }
 

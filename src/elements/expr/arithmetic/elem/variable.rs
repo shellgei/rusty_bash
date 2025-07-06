@@ -130,7 +130,7 @@ fn subs(op: &str, w: &str, sub: &String, right_value: &mut ArithElem, core: &mut
         return Err(ArithError::OperandExpected(w.to_string()).into());
     }
 
-    let name = w.to_string();//w.eval_as_value(core)?;
+    let name = w.to_string();
     let right_str = right_value.to_string();
 
     match op {

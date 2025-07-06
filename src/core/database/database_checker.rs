@@ -2,7 +2,6 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::utils;
-use crate::utils::file_check;
 use crate::error::exec::ExecError;
 use crate::core::DataBase;
 
@@ -18,15 +17,24 @@ impl DataBase {
         false
     }
 
-    pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
-        let layer = self.param_options.len() - 1;
-        match self.param_options[layer].get(name) {
-            None => false,
-            Some(e) => e.contains(flag),
+    pub fn has_flag_layer(&mut self, name: &str, flag: char, layer: usize) -> bool {
+        if let Some(e) = self.param_options[layer].get(name) {
+            return e.contains(flag);
         }
+        false
     }
 
-    pub fn has_value(&mut self, name: &str) -> bool {
+    pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(e) = self.param_options[layer].get(name) {
+                return e.contains(flag);
+            }
+        }
+        false
+    }
+
+    pub fn exist(&mut self, name: &str) -> bool {
         if let Ok(n) = name.parse::<usize>() {
             let layer = self.position_parameters.len() - 1;
             return n < self.position_parameters[layer].len();
@@ -41,6 +49,16 @@ impl DataBase {
         false
     }
 
+    pub fn has_key(&mut self, name: &str, key: &str) -> Result<bool, ExecError> {
+        let num = self.params.len();
+        for layer in (0..num).rev()  {
+            if let Some(e) = self.params[layer].get_mut(name) {
+                return Ok(e.has_key(key)?);
+            }
+        }
+        Ok(false)
+    }
+
     pub fn name_check(name: &str) -> Result<(), ExecError> {
         if ! utils::is_param(name) {
             return Err(ExecError::VariableInvalid(name.to_string()));
@@ -52,26 +70,8 @@ impl DataBase {
         self.has_flag(name, 'r')
     }
 
-    pub fn rsh_cmd_check(&mut self, cmds: &Vec<String>) -> Result<(), ExecError> {
-        for c in cmds {
-            if c.contains('/') {
-                let msg = format!("{}: restricted", &c);
-                return Err(ExecError::Other(msg));
-            }
-
-            if file_check::is_executable(&c) {
-                let msg = format!("{}: not found", &c);
-                return Err(ExecError::Other(msg));
-            }
-        }
-        Ok(())
-    }
-
-    pub fn rsh_check(&mut self, name: &str) -> Result<(), ExecError> {
-        if ["SHELL", "PATH", "ENV", "BASH_ENV"].contains(&name) {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
-        Ok(())
+    pub fn is_int(&mut self, name: &str) -> bool {
+        self.has_flag(name, 'i')
     }
 
     pub fn write_check(&mut self, name: &str) -> Result<(), ExecError> {

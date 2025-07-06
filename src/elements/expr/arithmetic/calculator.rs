@@ -161,6 +161,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
 
 fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ArithError> {
     let mut stack = vec![];
+    let mut last = None;
 
     for e in rev_pol {
         match e {
@@ -170,7 +171,7 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ArithError> {
                     return Err( ArithError::OperandExpected(e.to_string()));
                 }
             },
-            ArithElem::UnaryOp(_) | ArithElem::Increment(_) => { },
+            ArithElem::UnaryOp(_) | ArithElem::Increment(_) => last = Some(e),
             ArithElem::Ternary(_, _) => {
                 if stack.is_empty() {
                     return Err( ArithError::OperandExpected(e.to_string()));
@@ -181,7 +182,10 @@ fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ArithError> {
     }
 
     if stack.is_empty() {
-        return Err( ArithError::OperandExpected(String::new()));
+        match last {
+            Some(e) => return Err( ArithError::OperandExpected(e.to_string()) ),
+            None => return Err( ArithError::OperandExpected(String::new())),
+        }
     }
     if stack.len() != 1 {
         return Err( ArithError::SyntaxError(stack.last().unwrap().to_string()));

@@ -26,8 +26,11 @@ impl OptionalOperation for Substr {
 
     fn set_array(&mut self, param: &Variable, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
+
+        let ifs = core.db.get_ifs_head();
         match param.name.as_str() {
-            "@" | "*" => self.set_partial_position_params(array, text, core),
+            "@" => self.set_partial_position_params(array, text, core, " "),
+            "*" => self.set_partial_position_params(array, text, core, &ifs),
             _   => self.set_partial_array(&param.name, array, text, core),
         }
     }
@@ -35,7 +38,7 @@ impl OptionalOperation for Substr {
 
 impl Substr {
     fn set_partial_position_params(&mut self, array: &mut Vec<String>,
-                    text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
+                    text: &mut String, core: &mut ShellCore, ifs: &str) -> Result<(), ExecError> {
         let offset = self.offset.as_mut().unwrap();
     
         if offset.text == "" {
@@ -61,7 +64,7 @@ impl Substr {
         *array = array.split_off(start);
     
         if self.length.is_none() {
-            *text = array.join(" ");
+            *text = array.join(ifs);
             return Ok(());
         }
 
