@@ -10,28 +10,20 @@ mod signal;
 mod proc_ctrl;
 mod utils;
 
-use builtins::option;
-use std::{env, process};
+// Externals crates
+use std::{env, fs, process};
 use std::sync::atomic::Ordering::Relaxed;
+use fluent_bundle::{FluentBundle, FluentError, FluentResource};
+use unic_langid::LanguageIdentifier;
+
+// Internals crates
 use crate::core::{builtins, ShellCore};
+use crate::core::builtins::source;
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
-use utils::{exit, file_check, arg};
 use error::input::InputError;
-use crate::core::builtins::source;
-
-fn show_version() {
-    const V: &'static str = env!("CARGO_PKG_VERSION");
-    const P: &'static str = env!("CARGO_BUILD_PROFILE");
-    eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}
-© 2024 Ryuichi Ueda
-License: BSD 3-Clause
-
-This is open source software. You can redistirbute and use in source
-and binary forms with or without modification under the license.
-There is no warranty, to the extent permitted by law.", V, P);
-    process::exit(0);
-}
+use utils::{arg, exit, file_check};
+use builtins::option;
 
 fn read_rc_file(core: &mut ShellCore) {
     if ! core.db.flags.contains("i") {
@@ -133,11 +125,11 @@ fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str
 fn main() {
     let mut args = arg::dissolve_options_main();
 
-    let command = args[0].clone();
-    if args.len() > 1 && args[1] == "--version" {
+    if args.iter().any(|arg| arg == "--version" || arg == "-v") {
         show_version();
     }
 
+    let command = args.get(0).cloned().unwrap_or_else(|| "sush".to_string());
     let script_parts = consume_file_and_subsequents(&mut args);
 
     let mut c_opt = false;
@@ -260,4 +252,61 @@ fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
         },
     }
     core.sigint.store(false, Relaxed);
+}
+
+fn get_system_language() -> String {
+    fn extract_lang(s: &str) -> Option<String> {
+        let first_part = s.split(&['_', '.']).next()?;
+        if first_part.is_empty() {
+            None
+        } else {
+            Some(first_part.to_string())
+        }
+    }
+
+    for var in &["LC_ALL", "LC_MESSAGES", "LANG"] {
+        if let Ok(val) = std::env::var(var) {
+            if let Some(lang) = extract_lang(&val) {
+                return lang;
+            }
+        }
+    }
+
+    "en".to_string()
+}
+
+fn load_fluent_bundle(lang: &str) -> FluentBundle<FluentResource> {
+    let langid: LanguageIdentifier = lang.parse().unwrap_or_else(|_| "en".parse().unwrap());
+    let ftl_string = fs::read_to_string(format!("i18n/{}.ftl", lang))
+        .or_else(|_| fs::read_to_string("i18n/en.ftl"))
+        .expect("No suitable .ftl file found");
+    let resource = FluentResource::try_new(ftl_string).expect("Invalid FTL syntax");
+    let mut bundle = FluentBundle::new(vec![langid]);
+    bundle.add_resource(resource).expect("Failed to add resource");
+    bundle
+}
+
+fn fl(key: &str) -> String {
+    let lang = get_system_language();
+    let bundle = load_fluent_bundle(&lang);
+    let mut errors: Vec<FluentError> = vec![];
+    bundle
+        .get_message(key)
+        .and_then(|msg| msg.value())
+        .map(|pattern| bundle.format_pattern(pattern, None, &mut errors).to_string())
+        .unwrap_or_else(|| format!("{{{}}}", key))
+}
+
+fn show_version() {
+    const V: &'static str = env!("CARGO_PKG_VERSION");
+    const P: &'static str = env!("CARGO_BUILD_PROFILE");
+    eprintln!(
+        "Rusty Bash (a.k.a. Sushi shell), version {} - {}\n\
+         © 2024 Ryuichi Ueda\n\
+         {}: BSD 3-Clause\n\
+         \n\
+         {}",
+        V, P, fl("license"), fl("text-version")
+    );
+    process::exit(0);
 }
