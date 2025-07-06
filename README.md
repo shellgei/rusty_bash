@@ -228,6 +228,7 @@ Bash Variables
 
 |features | status |
 |-------------------|----|
+| repeat command | :heavy_check_mark: |
 | branch display in prompt | :heavy_check_mark: |
 
 ## Thanks to
