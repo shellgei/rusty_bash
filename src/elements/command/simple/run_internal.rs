@@ -77,8 +77,6 @@ pub fn run_substitution_builtin(com: &mut SimpleCommand, core: &mut ShellCore)
         }
     }
 
-    dbg!("{:?}", &com.args);
-    dbg!("{:?}", &subs);
     core.db.exit_status = func(core, &mut com.args, &mut subs);
     Ok(true)
 }
