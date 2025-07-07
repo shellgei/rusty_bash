@@ -131,7 +131,7 @@ fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str
 fn main() {
     let mut args = arg::dissolve_options_main();
 
-    if args.iter().any(|arg| arg == "--version" || arg == "-v") {
+    if args.iter().any(|arg| arg == "--version") {
         show_version();
     }
 
