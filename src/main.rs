@@ -12,8 +12,10 @@ mod utils;
 
 // Externals crates
 use std::{env, fs, process};
+use std::cell::RefCell;
 use std::sync::atomic::Ordering::Relaxed;
-use fluent_bundle::{FluentBundle, FluentError, FluentResource};
+use fluent_bundle::{FluentBundle, FluentResource};
+use once_cell::unsync::OnceCell;
 use unic_langid::LanguageIdentifier;
 
 // Internals crates
@@ -24,6 +26,10 @@ use crate::feeder::Feeder;
 use error::input::InputError;
 use utils::{arg, exit, file_check};
 use builtins::option;
+
+thread_local! {
+    static FLUENT_BUNDLE: RefCell<OnceCell<FluentBundle<FluentResource>>> = RefCell::new(OnceCell::new());
+}
 
 fn read_rc_file(core: &mut ShellCore) {
     if ! core.db.flags.contains("i") {
@@ -287,14 +293,20 @@ fn load_fluent_bundle(lang: &str) -> FluentBundle<FluentResource> {
 }
 
 fn fl(key: &str) -> String {
-    let lang = get_system_language();
-    let bundle = load_fluent_bundle(&lang);
-    let mut errors: Vec<FluentError> = vec![];
-    bundle
-        .get_message(key)
-        .and_then(|msg| msg.value())
-        .map(|pattern| bundle.format_pattern(pattern, None, &mut errors).to_string())
-        .unwrap_or_else(|| format!("{{{}}}", key))
+    FLUENT_BUNDLE.with(|cell| {
+        let cell = cell.borrow_mut();
+        let bundle = cell.get_or_init(|| {
+            let lang = get_system_language();
+            load_fluent_bundle(&lang)
+        });
+
+        let mut errors = vec![];
+        bundle
+            .get_message(key)
+            .and_then(|msg| msg.value())
+            .map(|pattern| bundle.format_pattern(pattern, None, &mut errors).to_string())
+            .unwrap_or_else(|| format!("{{{}}}", key))
+    })
 }
 
 fn show_version() {
