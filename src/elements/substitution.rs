@@ -27,14 +27,8 @@ impl Substitution {
                 ans.text += &v.text.clone();
                 ans.left_hand = v;
             },
-            Ok(None) => {
-                feeder.rewind();
-                return Ok(None);
-            },
-            Err(e) => {
-                feeder.rewind();
-                return Err(e);
-            },
+            Ok(None) => { feeder.rewind(); return Ok(None); },
+            Err(e)   => { feeder.rewind(); return Err(e); },
         }
 
         if ! feeder.starts_with("=") {
