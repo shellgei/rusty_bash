@@ -96,11 +96,11 @@ impl SimpleCommand {
             .collect()
     }
 
-    pub fn eat_substitution(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore)
+    pub fn eat_substitution(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<bool, ParseError> {
         if let Some(s) = Substitution::parse(feeder, core)? {
-            ans.text += &s.text;
-            ans.substitutions.push(s);
+            self.text += &s.text;
+            self.substitutions.push(s);
             Ok(true)
         }else{
             Ok(false)
@@ -129,7 +129,7 @@ impl SimpleCommand {
 
         loop { 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-            if ! Self::eat_substitution(feeder, &mut ans, core)? {
+            if ! ans.eat_substitution(feeder, core)? {
                 break;
             }
         }
