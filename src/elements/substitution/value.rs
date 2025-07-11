@@ -4,6 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::elements::word::Word;
 use crate::error::parse::ParseError;
+use crate::error::exec::ExecError;
 
 #[derive(Debug, Clone, Default)]
 pub struct Value {
@@ -13,6 +14,11 @@ pub struct Value {
 }
 
 impl Value {
+    pub fn eval(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        self.evaluated_string = Some(self.value.clone().eval_as_value(core)?);
+        Ok(())
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();

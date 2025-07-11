@@ -58,6 +58,12 @@ impl Word {
         Self::make_args(&mut ws)
     }
 
+    pub fn eval_as_value(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let mut w = self.tilde_and_dollar_expansion(core)?;
+        let mut ws = path_expansion::eval(&mut w);
+        Ok( Self::make_args(&mut ws)?.join(" ") )
+    }
+
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
         let mut w = self.clone();
         tilde_expansion::eval(&mut w, core);
