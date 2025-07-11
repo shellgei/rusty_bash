@@ -28,13 +28,6 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
     }
 }
 
-fn to_key(s: &str) -> Result<usize, ExecError> {
-    match s.parse::<usize>() {
-        Ok(n) => Ok(n),
-        Err(_) => return Err(ExecError::ArrayIndexInvalid(s.to_string())),
-    }
-}
-
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.print_body()).finish()
@@ -51,16 +44,21 @@ pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
     fn print_body(&self) -> String;
 
+    fn get_str_type(&self) -> Box<dyn Data> { self.boxed_clone() }
+
     fn print_with_name(&self, name: &str, declare_print: bool) {
         if self.is_special() {
             println!("{}", name);
             return;
         }
 
-        let body = self.print_body();
+        let body = self.print_body();//.replace("$", "\\$");
         if ! self.is_initialized() {
             println!("{}", name);
-        }else if declare_print && self.is_single() {
+        }else if declare_print
+            && self.is_single()
+            && ! body.starts_with("\"")
+            && ! body.ends_with("\"") {
             println!("{}=\"{}\"", name, body);
         }else{
             println!("{}={}", name, body);
@@ -69,7 +67,7 @@ pub trait Data {
 
     fn is_initialized(&self) -> bool {true}
 
-    //fn push_elems(&mut self, _: Vec<String>) -> Result<(), ExecError> { Err(ExecError::Other("Undefined call push_elems".to_string())) }
+    fn has_key(&mut self, _: &str) -> Result<bool, ExecError> { Ok(false) }
 
     fn clear(&mut self) {}
     fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {Err(ExecError::Other("Undefined call set_as_single".to_string()))}
@@ -122,8 +120,6 @@ pub trait Data {
         }else{
             return Ok("".to_string());
         }
-
-        //Err(ExecError::ArrayIndexInvalid(pos.to_string()))
     }
 
     fn get_all_as_array(&mut self, flatten: bool) -> Result<Vec<String>, ExecError> {

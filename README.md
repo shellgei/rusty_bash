@@ -42,7 +42,7 @@ ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 
 ## Comparison with Bash 5.2
 
-This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed 22 of 84 test scripts. 
+This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed 24 of 84 test scripts.
 
 ![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
 
@@ -50,8 +50,11 @@ This graph shows the test result with the script in `./sush_test/bash_genuine_te
 
 The following behavior of Bash will not be imitated by `sush`. So we alter the right output file (e.g `globstar.right`) for comparision. 
 
-* Bash outputs the same path repeatedly in some situations of globstar. It may be for compatibility of ksh. 
-* Bash outputs overflow calculation results at the border of 64 bit intergers and `arith5.sub` tells that this behavior should be reproduced. But we don't follow it. 
+* the output order of associative array
+* output duplication of globstar
+    * Bash outputs the same path repeatedly in some situations of globstar. It may be for compatibility of ksh. 
+* overflow at calculations
+    * Bash outputs overflow calculation results at the border of 64 bit intergers and `arith5.sub` tells that this behavior should be reproduced. But we don't follow it. 
     ```bash
     ### Bash example ###
     $ echo $(( -9223372036854775808 * -1 )) 
@@ -64,7 +67,8 @@ The following behavior of Bash will not be imitated by `sush`. So we alter the r
     🍣 echo $(( -9223372036854775807 * -1 ))
     9223372036854775807
     ```
-* Bash adds spaces to each token and displays them in error messages. These spaces are elliminated in our shell.
+* spaces of error log
+    * Bash adds spaces to each token and displays them in error messages. These spaces are elliminated in our shell.
     ```bash
     ### Bash ###
     $ (( 1++     ))
@@ -73,7 +77,6 @@ The following behavior of Bash will not be imitated by `sush`. So we alter the r
     🍣 (( 1++     ))
     sush: ((: 1++     : syntax error: operand expected (error token is "+")
     ```
-
 
 ## Contribution
 
@@ -225,6 +228,7 @@ Bash Variables
 
 |features | status |
 |-------------------|----|
+| repeat command | :heavy_check_mark: |
 | branch display in prompt | :heavy_check_mark: |
 
 ## Thanks to

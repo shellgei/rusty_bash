@@ -74,6 +74,7 @@ pub struct ShellCore {
     pub script_name: String,
     pub exit_script: String,
     pub exit_script_run: bool,
+    pub valid_assoc_expand_once: bool,
 }
 
 impl ShellCore {
@@ -110,6 +111,12 @@ impl ShellCore {
             },
             _ => {},
         };
+
+        if self.script_name != "-" {
+            let zero = "0".to_string();
+            let _ = self.db.set_param2("BASH_LINENO", &zero, &zero, None);
+            let _ = self.db.set_param2("BASH_SOURCE", &zero, &self.script_name, None);
+        }
     }
 
     pub fn new() -> Self {
@@ -159,7 +166,7 @@ impl ShellCore {
         let _ = self.db.set_param("HOSTTYPE", &t_arch, None);
         let _ = self.db.set_param("OSTYPE", &t_os, None);
         let _ = self.db.set_array("BASH_VERSINFO", Some(versinfo), None);
-        let _ = self.db.set_flag("BASH_VERSINFO", 'r');
+        let _ = self.db.set_flag("BASH_VERSINFO", 'r', None);
     }
 
     pub fn flip_exit_status(&mut self) {

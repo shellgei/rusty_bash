@@ -38,7 +38,7 @@ impl Subword for ProcessSubstitution {
 impl ProcessSubstitution {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
     -> Result<Option<Self>, ParseError> {
-        if let Some(WordMode::Arithmetric) = mode {
+        if let Some(WordMode::Arithmetic) = mode {
             return Ok(None);
         }
 

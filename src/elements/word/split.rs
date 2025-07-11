@@ -6,7 +6,7 @@ use crate::elements::word::Word;
 use crate::elements::subword::Subword;
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
-    if ! core.db.has_value("IFS") {
+    if ! core.db.exist("IFS") {
         let _ = core.db.set_param("IFS", " \t\n", None);
     }
 

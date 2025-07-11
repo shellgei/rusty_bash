@@ -19,8 +19,17 @@ impl Variable {
     pub fn get_index(&mut self, core: &mut ShellCore,
                      right_is_array: bool, append: bool) -> Result<Option<String>, ExecError> {
         if let Some(mut s) = self.index.clone() {
+            if s.text == "[]" {
+                return Err(ExecError::ArrayIndexInvalid("".to_string()));
+            }
             if s.text.chars().all(|c| " \n\t[]".contains(c)) {
-                return Ok(Some("".to_string()));
+                if core.db.is_assoc(&self.name) {
+                    let mut index = s.text.clone();
+                    index.remove(0);
+                    index.pop();
+                    return Ok(Some(index));
+                }
+                return Ok(Some("0".to_string()));
             }
             let index = s.eval(core, &self.name)?;
             return Ok(Some(index));
@@ -49,7 +58,7 @@ impl Variable {
         sub == "[*]" || sub == "[@]"
     }
 
-    fn set_value(&mut self, value: &String, core: &mut ShellCore)
+    pub fn set_value(&mut self, value: &String, core: &mut ShellCore)
     -> Result<(), ExecError> {
         if self.index.is_none() {
             return core.db.set_param(&self.name, value, None);
@@ -72,35 +81,45 @@ impl Variable {
         }
     }
 
-    pub fn init_variable(&self, core: &mut ShellCore, layer: Option<usize>, args: &mut Vec<String>)
+    pub fn init_variable(&self, core: &mut ShellCore,
+                         layer: Option<usize>, args: &mut Vec<String>)
     -> Result<(), ExecError> {
-        let mut prev = None;
+        let mut prev = vec![];
 
-        if (layer.is_none() && core.db.has_value(&self.name) )
+        if (layer.is_none() && core.db.exist(&self.name) )
         || core.db.params[layer.unwrap()].get(&self.name).is_some() {
-            prev = Some(vec![core.db.get_param(&self.name)?]);
+            prev = vec![core.db.get_param(&self.name)?];
         }
 
         let i_opt = arg::consume_option("-i", args);
         if arg::consume_option("-a", args)
-        || self.index.is_some() {
-            return match i_opt { 
-                true  => core.db.set_int_array(&self.name, prev, layer),
-                false => core.db.set_array(&self.name, prev, layer),
-            };
-        }
-        if arg::consume_option("-A", args) {
-            core.db.set_assoc(&self.name, layer)?;
+        || (! args.contains(&"-A".to_string()) && self.index.is_some() ) {
+            if prev.is_empty() {     //TODO: ^ Maybe, there is a case where an assoc must be
+                                     //prepared.
+                return match i_opt { 
+                    true  => core.db.set_int_array(&self.name, None, layer),
+                    false => core.db.set_array(&self.name, None, layer),
+                };
+            }
 
-            if prev.is_some() {
-                core.db.set_assoc_elem(&self.name, &"0".to_string(), &prev.unwrap()[0], layer)?;
+            return match i_opt { 
+                true  => core.db.set_int_array(&self.name, Some(prev), layer),
+                false => core.db.set_array(&self.name, Some(prev), layer),
+            };
+        }else if arg::consume_option("-A", args) {
+            match i_opt { 
+                true  => core.db.set_int_assoc(&self.name, layer)?,
+                false => core.db.set_assoc(&self.name, layer, false)?,
+            }
+            if ! prev.is_empty() {
+                core.db.set_assoc_elem(&self.name, &"0".to_string(), &prev[0], layer)?;
             }
             return Ok(());
         }
 
-        let value = match prev {
-            Some(v) => v[0].clone(),
-            None => "".to_string(),
+        let value = match prev.len() {
+            0 => "".to_string(),
+            _ => prev[0].clone(),
         };
 
         match i_opt { 
@@ -110,19 +129,22 @@ impl Variable {
     }
 
     pub fn exist(&self, core: &mut ShellCore) -> Result<bool, ExecError> {//used in value_check.rs
-        if core.db.is_array(&self.name) 
-        && core.db.get_vec(&self.name, false)?.is_empty() {
-            return Ok(false);
-        }
-        
-        if let Some(sub) = self.index.clone().as_mut() {
-            if sub.eval(core, &self.name).is_ok()
-            && core.db.has_array_value(&self.name, &sub.text) {
-                return Ok(true);
+        if core.db.is_array(&self.name) || core.db.is_assoc(&self.name) {
+            if core.db.get_vec(&self.name, false)?.is_empty() {
+                return Ok(false);
+            }
+
+            if self.index.is_none() {
+                return Ok(core.db.has_key(&self.name, "0")?);
             }
         }
 
-        Ok(core.db.has_value(&self.name))
+        if let Some(sub) = self.index.clone().as_mut() {
+            let index = sub.eval(core, &self.name)?;
+            return Ok(core.db.has_key(&self.name, &index)?);
+        }
+
+        Ok(core.db.exist(&self.name))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {

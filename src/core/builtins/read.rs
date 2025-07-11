@@ -27,7 +27,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
         return 1;
     }
 
-    let ifs = match core.db.has_value("IFS") {
+    let ifs = match core.db.exist("IFS") {
         true  => core.db.get_param("IFS").unwrap(),
         false => " \t\n".to_string(),
     };
@@ -63,8 +63,7 @@ pub fn read_(core: &mut ShellCore, args: &mut Vec<String>,
         consume_tail_ifs(&mut word, &tail_space);
         
         if let Err(e) = Variable::parse_and_set(&args[0], &word, core) {
-            e.print(core);
-            return 1;
+            return super::error_exit(1, "read", &String::from(&e), core);
         }
 
         args.remove(0);
@@ -82,7 +81,7 @@ pub fn read_a(core: &mut ShellCore, name: &String, ignore_escape: bool,
         return 1;
     }
 
-    let ifs = match core.db.has_value("IFS") {
+    let ifs = match core.db.exist("IFS") {
         true  => core.db.get_param("IFS").unwrap(),
         false => " \t\n".to_string(),
     };

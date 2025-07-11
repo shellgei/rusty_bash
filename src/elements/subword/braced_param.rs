@@ -50,7 +50,7 @@ impl Subword for BracedParam {
                     if self.param.index.is_some()
                     && self.param.index.as_ref().unwrap().text == "[*]" {
                         self.text = self.array.clone().unwrap().join(&core.db.get_ifs_head());
-                        self.array = None;
+                    //    self.array = None;
                     }
 
                     return Ok(());
@@ -67,7 +67,16 @@ impl Subword for BracedParam {
     fn set_text(&mut self, text: &str) { self.text = text.to_string(); }
 
     fn is_array(&self) -> bool {self.treat_as_array }
-    fn get_elem(&self) -> Vec<String> {self.array.clone().unwrap_or_default()}
+
+    fn get_elem(&mut self) -> Vec<String> {
+        if let Some(op) = self.optional_operation.as_mut() {
+            if op.array_to_single() {
+                return vec![self.text.clone()];
+            }
+        }
+
+        self.array.clone().unwrap_or_default()
+    }
 
     fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         match self.optional_operation.as_mut() {
@@ -88,7 +97,9 @@ impl Subword for BracedParam {
             return self.make_split();
         }
 
-        if ! self.treat_as_array || ifs.starts_with(" ") || self.array.is_none() {
+        if (! self.treat_as_array && ! index_is_asterisk && self.param.name != "*")
+        || ifs.starts_with(" ")
+        || self.array.is_none() {
             return splitter::split(&self.text, ifs, prev_char).iter()
                 .map(|s| ( From::from(&s.0), s.1)).collect();
         }
@@ -119,6 +130,10 @@ impl BracedParam {
     }
 
     fn make_split(&self)-> Vec<(Box<dyn Subword>, bool)>{ 
+        if self.array.is_none() {
+            return vec![];
+        }
+
         let mut ans = vec![];
         for p in self.array.clone().unwrap() {
             ans.push( (From::from(&p), true) );
@@ -132,12 +147,13 @@ impl BracedParam {
             return Err(ExecError::InvalidName(msg));
         }
 
-        if ! core.db.has_value(&self.param.name) {
+        if ! core.db.exist(&self.param.name) {
             self.text = "".to_string();
             return Ok(());
         }
 
-        if ! core.db.is_array(&self.param.name) && ! core.db.is_assoc(&self.param.name) {
+        if ! core.db.is_array(&self.param.name)
+        && ! core.db.is_assoc(&self.param.name) {
             self.text = "0".to_string();
             return Ok(());
         }
@@ -185,7 +201,7 @@ impl BracedParam {
 
             let value = core.db.get_param(&self.param.name).unwrap_or_default();
             self.text = match self.num {
-                true  => core.db.get_len(&self.param.name)?.to_string(),//value.chars().count().to_string(),
+                true  => core.db.get_len(&self.param.name)?.to_string(),
                 false => value.to_string(),
             };
     
@@ -211,14 +227,12 @@ impl BracedParam {
             return Ok(());
         }
 
-        //let ifs = core.db.get_param("IFS").unwrap_or(" \t\n".to_string());
         let ifs = core.db.get_ifs_head();
 
         if index.as_str() == "@" {
             self.atmark_operation(core, " ")
-        }else if/* ifs == "" &&*/ index.as_str() == "*" {
+        }else if index.as_str() == "*" {
             self.atmark_operation(core, &ifs)
-            //self.atmark_operation(core, "")
         }else{
             let tmp = core.db.get_elem(&self.param.name, &index)?;
             self.text = self.optional_operation(tmp, core)?;
@@ -236,7 +250,7 @@ impl BracedParam {
 
         self.text = match self.num {
             true  => core.db.len(&self.param.name).to_string(),
-            false => core.db.get_elem(&self.param.name, "@").unwrap(),
+            false => core.db.get_vec(&self.param.name, true)?.join(ifs),
         };
 
         if arr.len() <= 1 || self.has_value_check() {
@@ -258,7 +272,8 @@ impl BracedParam {
         }
     }
 
-    fn optional_operation(&mut self, text: String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn optional_operation(&mut self, text: String, core: &mut ShellCore)
+    -> Result<String, ExecError> {
         match self.optional_operation.as_mut() {
             Some(op) => op.exec(&self.param, &text, core),
             None => Ok(text.clone()),

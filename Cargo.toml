@@ -1,6 +1,6 @@
 [package]
 name = "sush"
-version = "1.1.8"
+version = "1.2.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -18,11 +18,13 @@ rand = "0.9"
 rand_chacha = { version = "0.9.0", features = [ "os_rng" ]}
 time = "0.3"
 sprintf = "0.4"
+
 #Internationalization
 fluent-bundle = "0.16"
 unic-langid = "0.9"
 once_cell = "1"
 locale_config = "0.3"
+widestring = "1.2.0"
 
 [profile.release]
 opt-level = 3

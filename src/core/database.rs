@@ -7,6 +7,7 @@ mod database_getter;
 mod database_setter;
 
 use crate::{env, exit};
+use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::HashMap;
 use self::data::Data;
@@ -97,16 +98,20 @@ impl DataBase {
         self.unset_function(name);
     }
 
-    pub fn unset_array_elem(&mut self, name: &str, key: &str) {
-        for layer in &mut self.params {
-            if let Some(d) = layer.get_mut(name) {
-                let _ = d.remove_elem(key);
+    pub fn unset_array_elem(&mut self, name: &str, key: &str) -> Result<(), ExecError> {
+        if self.is_single(name) {
+            if key == "0" || key == "@" || key == "*" {
+                self.unset_var(name);
+                return Ok(());
             }
         }
-    }
 
-    pub fn set_flag(&mut self, name: &str, flag: char) {
-        database_setter::flag(self, name, flag)
+        for layer in &mut self.params {
+            if let Some(d) = layer.get_mut(name) {
+                let _ = d.remove_elem(key)?;
+            }
+        }
+        Ok(())
     }
 
     pub fn print(&mut self, name: &str) {
@@ -123,5 +128,22 @@ impl DataBase {
         }else if let Some(f) = self.functions.get(name) {
             println!("{}", &f.text);
         }
+    }
+
+    pub fn int_to_str_type(&mut self, name: &str, layer: usize)
+    -> Result<(), ExecError> {
+        let layer_len = self.param_options.len();
+        for ly in layer..layer_len {
+            if let Some(opt) = self.param_options[ly].get_mut(name) {
+                opt.retain(|c| c != 'i');
+            }
+        }
+
+        if let Some(d) = self.params[layer].get_mut(name) {
+            let new_d = d.get_str_type();
+            self.params[layer].insert(name.to_string(), new_d);
+        }
+
+        Ok(())
     }
 }

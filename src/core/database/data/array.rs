@@ -12,6 +12,14 @@ pub struct ArrayData {
     body: HashMap<usize, String>,
 }
 
+impl From<HashMap<usize, String>> for ArrayData {
+    fn from(h: HashMap<usize, String>) -> Self {
+        let mut ans = Self::default();
+        ans.body = h;
+        ans
+    }
+}
+
 impl From<Option<Vec<String>>> for ArrayData {
     fn from(v: Option<Vec<String>>) -> Self {
         let mut ans = Self::default();
@@ -30,7 +38,7 @@ impl Data for ArrayData {
         for i in self.keys() {
             let ansi = utils::to_ansi_c(&self.body[&i]);
             if ansi == self.body[&i] {
-                formatted += &format!("[{}]=\"{}\" ", i, &ansi);
+                formatted += &format!("[{}]=\"{}\" ", i, &ansi.replace("$", "\\$"));
             }else{
                 formatted += &format!("[{}]={} ", i, &ansi);
             }
@@ -60,37 +68,19 @@ impl Data for ArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        if let Ok(n) = key.parse::<usize>() {
-            self.body.insert(n, value.to_string());
-            return Ok(());
-        }
-        Err(ExecError::Other("invalid index".to_string()))
+        let n = self.to_index(key)?;
+        self.body.insert(n, value.to_string());
+        return Ok(());
     }
 
-    /*
-    fn push_elems(&mut self, values: Vec<String>) -> Result<(), ExecError> {
-        let mut index = match self.body.is_empty() {
-            true  => 0,
-            false => *self.keys().iter().max().unwrap(),
-        };
-
-        for v in values {
-            self.body.insert(index, v);
-            index += 1;
-        }
-        Ok(())
-    }*/
-
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        if let Ok(n) = key.parse::<usize>() {
-            if let Some(v) = self.body.get(&n) {
-                self.body.insert(n, v.to_owned() + value);
-            }else{
-                self.body.insert(n, value.to_string());
-            }
-            return Ok(());
+        let n = self.to_index(key)?;
+        if let Some(v) = self.body.get(&n) {
+            self.body.insert(n, v.to_owned() + value);
+        }else{
+            self.body.insert(n, value.to_string());
         }
-        Err(ExecError::Other("invalid index".to_string()))
+        return Ok(());
     }
 
     fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
@@ -101,32 +91,9 @@ impl Data for ArrayData {
             return Ok(self.values().join(ifs));
         }
 
-        let n = key.parse::<usize>().map_err(|_| ExecError::ArrayIndexInvalid(key.to_string()))?;
+        let n = self.to_index(key)?;
         Ok( self.body.get(&n).unwrap_or(&"".to_string()).clone() )
     }
-
-    /*
-    fn get_all_as_array(&mut self, skip_non: bool) -> Result<Vec<String>, ExecError> {
-        if self.body.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let keys = self.keys();
-        let max = *keys.iter().max().unwrap() as usize;
-        let mut ans = vec![];
-        for i in 0..(max+1) {
-            match self.body.get(&i) {
-                Some(s) => ans.push(s.clone()),
-                None => {
-                    if ! skip_non {
-                        ans.push("".to_string());
-                    }
-                },
-            }
-        }
-        Ok(ans)
-    }
-    */
 
     fn get_vec_from(&mut self, pos: usize, skip_non: bool) -> Result<Vec<String>, ExecError> {
         if self.body.is_empty() {
@@ -160,6 +127,14 @@ impl Data for ArrayData {
     fn is_array(&self) -> bool {true}
     fn len(&mut self) -> usize { self.body.len() }
 
+    fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
+        if key == "@" || key == "*" {
+            return Ok(true);
+        }
+        let n = self.to_index(key)?;
+        Ok(self.body.contains_key(&n))
+    }
+
     fn index_based_len(&mut self) -> usize {
         match self.body.iter().map(|e| e.0).max() {
             Some(n) => *n+1,
@@ -172,7 +147,7 @@ impl Data for ArrayData {
             return Ok(self.len());
         }
 
-        let n = key.parse::<usize>().map_err(|_| ExecError::ArrayIndexInvalid(key.to_string()))?;
+        let n = self.to_index(key)?;
         let s = self.body.get(&n).unwrap_or(&"".to_string()).clone();
 
         Ok(s.chars().count())
@@ -184,11 +159,9 @@ impl Data for ArrayData {
             return Ok(());
         }
 
-        if let Ok(n) = key.parse::<usize>() {
-            self.body.remove(&n);
-            return Ok(());
-        }
-        Err(ExecError::Other("invalid index".to_string()))
+        let index = self.to_index(key)?;
+        self.body.remove(&index);
+        Ok(())
     }
 }
 
@@ -204,7 +177,7 @@ impl ArrayData {
     }
 
     pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
-                        name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
+                        name: &str, pos: isize, val: &String) -> Result<(), ExecError> {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if ! d.is_initialized() {
@@ -233,7 +206,7 @@ impl ArrayData {
     }
 
     pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>,
-                        name: &str, pos: usize, val: &String) -> Result<(), ExecError> {
+                        name: &str, pos: isize, val: &String) -> Result<(), ExecError> {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if ! d.is_initialized() {
@@ -265,5 +238,29 @@ impl ArrayData {
         let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
         keys.sort();
         keys
+    }
+
+    fn to_index(&mut self, key: &str) -> Result<usize, ExecError> {
+        let mut index = match key.parse::<isize>() {
+            Ok(i) => i,
+            _ => return Err(ExecError::ArrayIndexInvalid(key.to_string())),
+        };
+
+        if index >= 0 {
+            return Ok(index as usize);
+        }
+
+        let keys = self.keys();
+        let max = match keys.iter().max() {
+            Some(n) => *n as isize,
+            None => -1,
+        };
+        index += max + 1;
+
+        if index < 0 {
+            return Err(ExecError::ArrayIndexInvalid(key.to_string()));
+        }
+
+        Ok(index  as usize)
     }
 }

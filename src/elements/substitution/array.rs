@@ -16,9 +16,8 @@ pub struct Array {
 }
 
 impl Array {
-    pub fn eval(&mut self, core: &mut ShellCore, as_int: bool)
+    pub fn eval(&mut self, core: &mut ShellCore, as_int: bool, as_assoc: bool)
     -> Result<Vec<(Option<Subscript>, String)>, ExecError> {
-
         if let Some(c) = self.error_strings.last() {
             return Err(ExecError::SyntaxError(c.to_string()));
         }
@@ -31,8 +30,12 @@ impl Array {
             }
         }else{
             for (s, w) in &mut self.words {
-                for e in w.eval(core)? {
-                    ans.push( (s.clone(), e) );
+                if as_assoc {
+                    ans.push( (s.clone(), w.eval_as_value(core)?) );
+                }else{
+                    for e in w.eval(core)? {
+                        ans.push( (s.clone(), e) );
+                    }
                 }
             }
         }
@@ -75,6 +78,7 @@ impl Array {
 
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
+        let mut paren_counter = 1;
         loop {
             command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
@@ -85,14 +89,22 @@ impl Array {
 
             if feeder.len() != 0 {
                 if feeder.starts_with(")") {
-                    ans.text += &feeder.consume(1);
-                    break;
+                    paren_counter -= 1;
+                    if paren_counter == 0 {
+                        ans.text += &feeder.consume(1);
+                        break;
+                    }
                 }else if feeder.starts_with("\n") {
                     ans.text += &feeder.consume(1);
                 }
 
                 let len = feeder.scanner_char();
-                ans.error_strings.push(feeder.consume(len));
+                let err_char = feeder.consume(len);
+                if &err_char == "(" {
+                    paren_counter += 1;
+                }
+                ans.text += &err_char.clone();
+                ans.error_strings.push(err_char);
                 continue;
 
             }else if ! feeder.feed_additional_line(core).is_ok() {

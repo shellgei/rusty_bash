@@ -61,9 +61,11 @@ impl ArithmeticExpr {
 
         let ans = match cp.eval_elems(core, true) {
             Ok(a) => a, 
-            Err(ExecError::ArithError(_, a)) => {
-                let text = cp.text.trim_start().to_string();
-                return Err(ExecError::ArithError(text, a))
+            Err(ExecError::ArithError(mut s, a)) => {
+                if s == "" {
+                    s = cp.text.trim_start().to_string();
+                }
+                return Err(ExecError::ArithError(s, a))
             },
             Err(e) => return Err(e),
         };
@@ -79,33 +81,6 @@ impl ArithmeticExpr {
             e => return Err(ExecError::ArithError(cp.text,
                             ArithError::OperandExpected(e.to_string()).into())),
         }
-    }
-
-    pub fn eval_as_assoc_index(&mut self, core: &mut ShellCore)
-    -> Result<String, ExecError> {
-        self.eval_doller(core)?;
-        let mut ans = String::new();
-
-        for e in &self.elements {
-            match e {
-                ArithElem::Word(w, i) => {
-                    match w.eval_as_value(core) {
-                        Ok(s) => {
-                            ans += &s;
-                            if *i > 0 {
-                                ans += "++";
-                            }else if *i < 0 {
-                                ans += "--";
-                            }
-                        },
-                        Err(e) => return Err(e),
-                    }
-                },
-                _ => ans += &e.to_string(),
-            }
-        }
-
-        Ok(ans)
     }
 
     pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Result<i128, ExecError> {
