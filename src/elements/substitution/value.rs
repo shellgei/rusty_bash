@@ -7,5 +7,5 @@ use crate::elements::word::Word;
 pub struct Value {
     pub text: String,
     pub value: Word,
-    pub evaluated_string: Option<String>,
+    pub evaluated_string: String,
 }
