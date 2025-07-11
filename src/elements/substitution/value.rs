@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
@@ -10,7 +10,7 @@ use crate::error::exec::ExecError;
 pub struct Value {
     pub text: String,
     pub value: Word,
-    pub evaluated_string: Option<String>,
+    pub evaluated_string: String,
 }
 
 impl Value {
