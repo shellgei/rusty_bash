@@ -15,7 +15,7 @@ pub struct Value {
 
 impl Value {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        self.evaluated_string = Some(self.value.clone().eval_as_value(core)?);
+        self.evaluated_string = self.value.clone().eval_as_value(core)?;
         Ok(())
     }
 

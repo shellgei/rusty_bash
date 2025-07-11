@@ -6,6 +6,7 @@ mod variable;
 
 use crate::{Feeder, ShellCore};
 use crate::error::parse::ParseError;
+use crate::error::exec::ExecError;
 use self::value::Value;
 use self::variable::Variable;
 
@@ -19,13 +20,8 @@ pub struct Substitution {
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>)
     -> Result<(), ExecError> {
-        self.right_hand.eval(core, &self.left_hand.name, self.append)?;
-
-        match self.right_hand.evaluated_string {
-            Some(
-        }
-
-        core.db.set_param(self.left_hand.text, 
+        self.right_hand.eval(core)?;
+        core.db.set_param(&self.left_hand.text, &self.right_hand.evaluated_string)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
