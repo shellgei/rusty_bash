@@ -53,7 +53,9 @@ pub fn consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<S
 }
 
 pub fn dissolve_option(opt: &str) -> Vec<String> {
-    if opt.starts_with("-") {
+    if opt.starts_with("--") {
+        vec![opt.to_string()]
+    }else if opt.starts_with("-") {
         opt[1..].chars().map(|c| ("-".to_owned() + &c.to_string()).to_string()).collect()
     }else if opt.starts_with("+") {
         opt[1..].chars().map(|c| ("+".to_owned() + &c.to_string()).to_string()).collect()
