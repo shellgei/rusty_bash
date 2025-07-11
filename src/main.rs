@@ -284,8 +284,8 @@ fn get_system_language() -> String {
 fn load_fluent_bundle(lang: &str) -> FluentBundle<FluentResource> {
     let langid: LanguageIdentifier = lang.parse().unwrap_or_else(|_| "en".parse().unwrap());
     let ftl_string = fs::read_to_string(format!("i18n/{}.ftl", lang))
-        .or_else(|_| fs::read_to_string("i18n/en.ftl"))
-        .expect("No suitable .ftl file found");
+        .unwrap_or("license = License\ntext-version =\n    This is open source software.\n    You are free to use, modify, and redistribute this software in source\n    or binary form, with or without modification, provided that the original\n    copyright notice, list of conditions, and disclaimer are retained.\n    THIS SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\n    EXPRESS OR IMPLIED, TO THE EXTENT PERMITTED BY LAW.".to_string());
+
     let resource = FluentResource::try_new(ftl_string).expect("Invalid FTL syntax");
     let mut bundle = FluentBundle::new(vec![langid]);
     bundle.add_resource(resource).expect("Failed to add resource");
