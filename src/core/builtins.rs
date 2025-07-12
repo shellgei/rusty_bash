@@ -22,12 +22,14 @@ mod read;
 pub mod source;
 mod trap;
 mod type_;
+mod ulimit;
 mod loop_control;
 mod unset;
 
 use crate::{exit, Feeder, Script, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
+use crate::utils::file;
 
 pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
@@ -77,6 +79,11 @@ impl ShellCore {
         self.builtins.insert("type".to_string(), type_::type_);
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
+
+        if file::search_command("ulimit").is_none() {
+            self.builtins.insert("ulimit".to_string(), ulimit::ulimit);
+        }
+
         self.builtins.insert("unalias".to_string(), alias::unalias);
         self.builtins.insert("unset".to_string(), unset::unset);
         self.builtins.insert("source".to_string(), source::source);
