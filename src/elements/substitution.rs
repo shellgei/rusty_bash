@@ -51,7 +51,7 @@ impl Substitution {
             ans.right_hand = a;
         }
 
-        dbg!("{:?}", &ans);
+        //dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }

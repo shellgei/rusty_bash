@@ -778,5 +778,19 @@ OK" ] || err $LINENO
 res=$($com <<< 'function f () { echo a; if true ; then return ; fi ; echo b; } ; f')
 [ "$res" = "a" ] || err $LINENO
 
+### substitution ###
+
+res=$($com <<< 'A=/*; echo $A | grep -q "*"')
+[ "$?" == "1" ] || err $LINENO
+
+res=$($com <<< 'A=/*; echo $A | grep -q "etc"')
+[ "$?" == "0" ] || err $LINENO
+
+res=$($com <<< 'A=${ }; echo NG')
+[ "$ref" != "NG" ] || err $LINENO
+
+res=$($com <<< 'A=${ }')
+[ "$?" == 1 ] || err $LINENO
+
 
 echo OK $0
