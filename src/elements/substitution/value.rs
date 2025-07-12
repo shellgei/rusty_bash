@@ -23,7 +23,7 @@ impl Value {
     -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 
-        if let Some(mut w) = Word::parse(feeder, core)? {
+        if let Some(w) = Word::parse(feeder, core)? {
             ans.text += &w.text;
             ans.value = w;
         }//パース失敗は左辺が空文字と解釈
