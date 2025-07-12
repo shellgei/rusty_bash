@@ -332,5 +332,5 @@ fn show_version() {
         env!("CARGO_BUILD_PROFILE"),
         fl("license"), fl("text-version")
     );
-    std::process::exit(0);
+    process::exit(0);
 }
