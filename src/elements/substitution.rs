@@ -18,7 +18,7 @@ pub struct Substitution {
 }
 
 impl Substitution {
-    pub fn eval(&mut self, core: &mut ShellCore, layer: Option<usize>)
+    pub fn eval(&mut self, core: &mut ShellCore)
     -> Result<(), ExecError> {
         self.right_hand.eval(core)?;
         core.db.set_param(&self.left_hand.text, &self.right_hand.evaluated_string)

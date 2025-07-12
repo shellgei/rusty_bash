@@ -38,6 +38,10 @@ impl Command for SimpleCommand {
         }
 
         if self.args.is_empty() {
+            for sub in &self.substitutions {
+                sub.clone().eval(core)?;
+            }
+
             return Ok(None);
         }
 
@@ -141,7 +145,7 @@ impl SimpleCommand {
             }
         }
 
-        if ans.words.len() + ans.redirects.len() > 0 {
+        if ans.words.len() + ans.redirects.len() + ans.substitutions.len() > 0 {
             feeder.pop_backup();
             Ok(Some(ans))
         }else{
