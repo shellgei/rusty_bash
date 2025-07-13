@@ -31,22 +31,48 @@ thread_local! {
     static FLUENT_BUNDLE: RefCell<OnceCell<FluentBundle<FluentResource>>> = RefCell::new(OnceCell::new());
 }
 
-fn read_rc_file(core: &mut ShellCore) {
-    if ! core.db.flags.contains("i") {
+///// Main program entry point /////
+
+fn main() {
+    let mut args = arg::dissolve_options_main();
+
+    if args.iter().any(|a| a == "--version") {
+        show_version();
         return;
     }
 
-    let mut dir = core.db.get_param("CARGO_MANIFEST_DIR").unwrap_or(String::new());
-    if dir == "" {
-        dir = core.db.get_param("HOME").unwrap_or(String::new());
+    let command = args.get(0).cloned().unwrap_or_else(|| "sush".to_string());
+    let script_parts = consume_file_and_subsequents(&mut args);
+
+    let mut c_opt = false;
+    if let Some(opt) = args.last() {
+        if opt == "-c" {
+            c_opt = true;
+            args.pop();
+        }
     }
 
-    let rc_file = dir + "/.sushrc";
+    let mut core = ShellCore::new();
+    set_o_options(&mut args, &mut core);
+    set_short_options(&mut args, &mut core);
 
-    if file_check::is_regular_file(&rc_file) {
-        core.db.exit_status = source::source(core, &mut vec![".".to_string(), rc_file]);
+    if ! c_opt {
+        set_parameters(script_parts, &mut core, &command);
+    }else{
+        main_c_option::set_parameters(&script_parts, &mut core, &args[0]);
+        main_c_option::run_and_exit(&args, &script_parts, &mut core);
     }
+
+    core.configure();
+    signal::run_signal_check(&mut core);
+
+    if core.script_name == "-" {
+        read_rc_file(&mut core);
+    }
+    main_loop(&mut core, &command);
 }
+
+///// Parses arguments and sets up shell options, parameters, and config. /////
 
 fn consume_file_and_subsequents(args: &mut Vec<String>) -> Vec<String> {
     let len = args.len();
@@ -115,6 +141,23 @@ fn set_short_options(args: &mut Vec<String>, core: &mut ShellCore) {
     }
 }
 
+fn read_rc_file(core: &mut ShellCore) {
+    if ! core.db.flags.contains("i") {
+        return;
+    }
+
+    let mut dir = core.db.get_param("CARGO_MANIFEST_DIR").unwrap_or(String::new());
+    if dir == "" {
+        dir = core.db.get_param("HOME").unwrap_or(String::new());
+    }
+
+    let rc_file = dir + "/.sushrc";
+
+    if file_check::is_regular_file(&rc_file) {
+        core.db.exit_status = source::source(core, &mut vec![".".to_string(), rc_file]);
+    }
+}
+
 fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str) {
     match script_parts.is_empty() {
         true  => {
@@ -128,61 +171,7 @@ fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str
     }
 }
 
-fn main() {
-    let mut args = arg::dissolve_options_main();
-
-    if args.iter().any(|a| a == "--version") {
-        show_version();
-    }
-
-    let command = args.get(0).cloned().unwrap_or_else(|| "sush".to_string());
-    let script_parts = consume_file_and_subsequents(&mut args);
-
-    let mut c_opt = false;
-    if let Some(opt) = args.last() {
-        if opt == "-c" {
-            c_opt = true;
-            args.pop();
-        }
-    }
-
-    let mut core = ShellCore::new();
-    set_o_options(&mut args, &mut core);
-    set_short_options(&mut args, &mut core);
-
-    if ! c_opt {
-        set_parameters(script_parts, &mut core, &command);
-    }else{
-        main_c_option::set_parameters(&script_parts, &mut core, &args[0]);
-        main_c_option::run_and_exit(&args, &script_parts, &mut core); //exit here
-    }
-
-    core.configure();
-    signal::run_signal_check(&mut core);
-
-    if core.script_name == "-" {
-        read_rc_file(&mut core);
-    }
-    main_loop(&mut core, &command);
-}
-
-fn set_history(core: &mut ShellCore, s: &str) {
-    if core.db.flags.contains('i') || core.history.is_empty() {
-        return;
-    }
-
-    core.history[0] = s.trim_end().replace("\n", "↵ \0").to_string();
-    if core.history[0].is_empty()
-    || (core.history.len() > 1 && core.history[0] == core.history[1]) {
-        core.history.remove(0);
-    }
-}
-
-fn show_message() {
-    const V: &'static str = env!("CARGO_PKG_VERSION");
-    const P: &'static str = env!("CARGO_BUILD_PROFILE");
-    eprintln!("Rusty Bash (a.k.a. Sushi shell), version {} - {}", V, P);
-}
+///// Core shell flow: input, parsing, execution, and history. /////
 
 fn main_loop(core: &mut ShellCore, command: &String) {
     let mut feeder = Feeder::new("");
@@ -214,7 +203,6 @@ fn main_loop(core: &mut ShellCore, command: &String) {
     core.write_history_to_file();
     exit::normal(core);
 }
-
 
 fn feed_script(feeder: &mut Feeder, core: &mut ShellCore) -> (bool, bool) {
     if let Err(e) = core.jobtable_check_status() {          //(continue, break)
@@ -259,6 +247,20 @@ fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
     }
     core.sigint.store(false, Relaxed);
 }
+
+fn set_history(core: &mut ShellCore, s: &str) {
+    if core.db.flags.contains('i') || core.history.is_empty() {
+        return;
+    }
+
+    core.history[0] = s.trim_end().replace("\n", "↵ \0").to_string();
+    if core.history[0].is_empty()
+    || (core.history.len() > 1 && core.history[0] == core.history[1]) {
+        core.history.remove(0);
+    }
+}
+
+///// Internationalization with Fluent and system language detection /////
 
 fn get_system_language() -> String {
     fn extract_lang(s: &str) -> Option<String> {
@@ -309,16 +311,26 @@ fn fl(key: &str) -> String {
     })
 }
 
+///// Text related functions /////
+
+fn show_message() {
+    eprintln!(
+        "Rusty Bash (a.k.a. Sushi shell), version {} - {}",
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_BUILD_PROFILE")
+    );
+}
+
 fn show_version() {
-    const V: &'static str = env!("CARGO_PKG_VERSION");
-    const P: &'static str = env!("CARGO_BUILD_PROFILE");
     eprintln!(
         "Rusty Bash (a.k.a. Sushi shell), version {} - {}\n\
          © 2024 Ryuichi Ueda\n\
          {}: BSD 3-Clause\n\
          \n\
          {}",
-        V, P, fl("license"), fl("text-version")
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_BUILD_PROFILE"),
+        fl("license"), fl("text-version")
     );
     process::exit(0);
 }
