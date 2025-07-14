@@ -339,7 +339,7 @@ fn show_version() {
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_BUILD_PROFILE"),
         fl("license"),
-        fl("text_version"),
+        fl("text_version")
     );
     process::exit(0);
 }
@@ -363,7 +363,7 @@ fn show_help() {
         fl("long_options"),
         fl("shell_options"),
         fl("special_options"),
-        fl("text_help"),
+        fl("text_help")
     );
     process::exit(0);
 }
