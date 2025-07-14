@@ -1,4 +1,4 @@
-license = 授
+license = 授權
 version = 版本
 
 usage = Usage: sushi [LONG OPTIONS] [OPTIONS] [SCRIPT] [ARGS]
