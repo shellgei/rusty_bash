@@ -13,6 +13,27 @@ shell_options =
         -B                         Enable brace expansion (equivalent to `set -B`)
         -e                         Exit immediately if any command returns a non-zero status
 
+builtins =
+    Builtin commands:
+        cd                         Change the current directory
+        pwd                        Print the current working directory
+        exit                       Exit the shell
+        source                     Read and execute commands from a file
+        :                          No-op (does nothing)
+        "."                        Source a file in the current shell
+        alias                      Define or display aliases
+        break                      Exit from a loop
+        builtin                    Execute a shell builtin, bypassing functions
+        command                    Execute a command, ignoring shell functions
+        continue                   Resume the next iteration of a loop
+        eval                       Evaluate arguments as a shell command
+        local                      Declare local variables inside functions
+        return                     Return from a shell function
+        false                      Do nothing, unsuccessfully
+        true                       Do nothing, successfully
+        shift                      Shift positional parameters
+        unalias                    Remove aliases
+
 shopt =
     Shell options:
         dotglob                   Include hidden files (starting with .) in pathname expansions
