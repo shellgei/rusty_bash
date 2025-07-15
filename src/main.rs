@@ -338,23 +338,25 @@ fn show_version() {
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_BUILD_PROFILE"),
         fl("license"),
-        fl("text_version")
+        fl("text-version")
     );
     process::exit(0);
 }
 
 fn show_help() {
-    eprintln!("Rusty Bash (a.k.a. Sushi shell), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n\n{}",
+    eprintln!("Rusty Bash (a.k.a. Sushi shell), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n\n{}",
     fl("version"),
     env!("CARGO_PKG_VERSION"),
     env!("CARGO_BUILD_PROFILE"),
     fl("usage"),
     fl("options"),
+    fl("comp-commands"),
+    fl("parameters"),
     fl("builtins"),
     fl("shopt"),
-    fl("variables_born"),
-    fl("variables_bash"),
-    fl("text_help")
+    fl("variables-born"),
+    fl("variables-bash"),
+    fl("text-help")
     );
     process::exit(0);
 }

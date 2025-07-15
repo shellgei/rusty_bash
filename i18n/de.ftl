@@ -5,50 +5,69 @@ usage = Usage: sushi [LONG OPTIONS] [OPTIONS] [SCRIPT] [ARGS]
 
 options =
     Options:
-        -c                         Execute COMMAND and exit
-        -i                         Force interactive mode
-        -l, --login                unsuported
-        -r                         unsuported
-        -s                         unsuported
-        -D                         unsuported
-        [-+]O                      unsuported
-        --                         unsuported
-        --debugger                 unsuported
-        --dimp-po-strings          unsuported
-        --help                     Display this help message and exit
-        --init-file FILE           unsuported
-        --rcfile FILE              unsuported
-        --noediting                unsuported
-        --noprofile                unsuported
-        --norc                     unsuported
-        --posix                    unsuported
-        --restricted               unsuported
-        -v, --verbose              unsuported
-        --version                  Display version information and exit
-        -e                         Exit immediately if a command returns non‑zero
-        --pipefail                 Return status of first failing command in pipeline
-        -B                         Enable brace expansion (equivalent to `set -B`)
+        -c                        Execute COMMAND and exit
+        -i                        Force interactive mode
+        -l, --login               unsuported
+        -r                        unsuported
+        -s                        unsuported
+        -D                        unsuported
+        -O, +O                    unsuported
+        --                        unsuported
+        --debugger                unsuported
+        --dimp-po-strings         unsuported
+        --help                    Display this help message and exit
+        --init-file FILE          unsuported
+        --rcfile FILE             unsuported
+        --noediting               unsuported
+        --noprofile               unsuported
+        --norc                    unsuported
+        --posix                   unsuported
+        --restricted              unsuported
+        -v, --verbose             unsuported
+        --version                 Display version information and exit
+        -e                        Exit immediately if a command returns non‑zero
+        --pipefail                Return status of first failing command in pipeline
+        -B                        Enable brace expansion (equivalent to `set -B`)
+
+comp-commands =
+    Compound commands:
+        if                        Conditional execution
+        while                     Loop while a condition is true
+        ()                        Run commands in a subshell
+        case                      Match patterns against a word
+        until                     unsupported
+        for                       Iterate over a list of items
+
+parameters =
+    Special parameters:
+        "$"                       Process ID of the shell or script
+        ?                         Exit status of the last command
+        @                         All positional parameters (as separate words)
+        #                         Number of positional parameters
+        -                         Current shell options
+        _                         Last argument of the previous command
+        !                         unsupported
 
 builtins =
     Builtin commands:
-        cd                         Change the current directory
-        pwd                        Print the current working directory
-        exit                       Exit the shell
-        source                     Read and execute commands from a file
-        :                          No-op (does nothing)
-        "."                        Source a file in the current shell
-        alias                      Define or display aliases
-        break                      Exit from a loop
-        builtin                    Execute a shell builtin, bypassing functions
-        command                    Execute a command, ignoring shell functions
-        continue                   Resume the next iteration of a loop
-        eval                       Evaluate arguments as a shell command
-        local                      Declare local variables inside functions
-        return                     Return from a shell function
-        false                      Do nothing, unsuccessfully
-        true                       Do nothing, successfully
-        shift                      Shift positional parameters
-        unalias                    Remove aliases
+        cd                        Change the current directory
+        pwd                       Print the current working directory
+        exit                      Exit the shell
+        source                    Read and execute commands from a file
+        :                         No-op (does nothing)
+        "."                       Source a file in the current shell
+        alias                     Define or display aliases
+        break                     Exit from a loop
+        builtin                   Execute a shell builtin, bypassing functions
+        command                   Execute a command, ignoring shell functions
+        continue                  Resume the next iteration of a loop
+        eval                      Evaluate arguments as a shell command
+        local                     Declare local variables inside functions
+        return                    Return from a shell function
+        false                     Do nothing, unsuccessfully
+        true                      Do nothing, successfully
+        shift                     Shift positional parameters
+        unalias                   Remove aliases
 
 shopt =
     Shell options:
@@ -57,7 +76,7 @@ shopt =
         progcomp                  Enable programmable command completion
         nullglob                  Allow patterns which match nothing to expand to null string
 
-variables_born =
+variables-born =
     Born Shell Variables:
         CDPATH                    unsuported
         HOME                      User’s home directory
@@ -70,7 +89,7 @@ variables_born =
         PS1                       Primary prompt string
         PS2                       Secondary prompt string
 
-variables_bash =
+variables-bash =
     Bash Variables:
         _                         Last argument of the previous command
         BASH                      unsuported
@@ -170,13 +189,12 @@ variables_bash =
         TMOUT                     unsuported
         TMPDIR                    unsuported
         UID                       unsuported
-    
     Beyond Bash feature: 
         branch display in prompt
            
-text_help = Project homepage: https://github.com/shellgei/rusty_bash
+text-help = Project homepage: https://github.com/shellgei/rusty_bash
 
-text_version =
+text-version =
     Dies ist Open-Source-Software.
     Sie dürfen diese Software in Quell- oder Binärform frei verwenden,
     modifizieren und weiterverbreiten, mit oder ohne Änderungen,
