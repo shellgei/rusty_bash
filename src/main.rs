@@ -41,6 +41,11 @@ fn main() {
         return;
     }
 
+    if args.iter().any(|a| a == "--help") {
+        show_help();
+        return;
+    }
+
     let command = args.get(0).cloned().unwrap_or_else(|| "sush".to_string());
     let script_parts = consume_file_and_subsequents(&mut args);
 
@@ -315,22 +320,41 @@ fn fl(key: &str) -> String {
 
 fn show_message() {
     eprintln!(
-        "Rusty Bash (a.k.a. Sushi shell), version {} - {}",
+        "Rusty Bash (a.k.a. Sushi shell), {} {} - {}",
+        fl("version"),
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_BUILD_PROFILE")
     );
 }
 
+
 fn show_version() {
     eprintln!(
-        "Rusty Bash (a.k.a. Sushi shell), version {} - {}\n\
+        "Rusty Bash (a.k.a. Sushi shell), {} {} - {}\n\
          © 2024 Ryuichi Ueda\n\
          {}: BSD 3-Clause\n\
          \n\
-         {}",
+         {}\n",
+        fl("version"),
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_BUILD_PROFILE"),
-        fl("license"), fl("text-version")
+        fl("license"),
+        fl("text_version")
+    );
+    process::exit(0);
+}
+
+fn show_help() {
+    eprintln!("Rusty Bash (a.k.a. Sushi shell), {} {} - {}\n\n{}\n\n{}\n\n{}:\n\n{}:\n\n{}:\n\n{}",
+    fl("version"),
+    env!("CARGO_PKG_VERSION"),
+    env!("CARGO_BUILD_PROFILE"),
+    fl("usage"),
+    fl("shell_options"),
+    fl("shopt"),
+    fl("variables_born"),
+    fl("variables_bash"),
+    fl("text_help")
     );
     process::exit(0);
 }
