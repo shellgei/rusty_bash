@@ -38,6 +38,68 @@ comp-commands =
         until                     unsupported
         for                       Iterate over a list of items
 
+builtins =
+    Builtin commands:
+        :                         No-op (does nothing)
+        "."                       Source a file in the current shell
+        alias                     Define or display aliases
+        bg                        Resume a job in the background
+        bind                      Unsupported
+        break                     Exit from a loop
+        builtin                   Execute a shell builtin, bypassing functions
+        caller                    Unsupported
+        cd                        Change the current directory
+        command                   Execute a command, ignoring shell functions
+        compgen                   Generate possible completion matches
+        complete                  Specify how arguments are completed
+        compopt                   Unsupported
+        continue                  Resume the next iteration of a loop
+        declare                   Unsupported
+        dirs                      Unsupported
+        disown                    Unsupported
+        echo                      Unsupported
+        enable                    Unsupported
+        eval                      Evaluate arguments as a shell command
+        exec                      Unsupported
+        exit                      Exit the shell
+        export                    Unsupported
+        false                     Do nothing, unsuccessfully
+        fc                        Unsupported
+        fg                        Resume a job in the foreground
+        getopts                   Parse positional parameters
+        hash                      Unsupported
+        help                      Unsupported
+        history                   Show or manipulate the command history
+        jobs                      Display status of jobs
+        kill                      Unsupported
+        let                       Unsupported
+        local                     Declare local variables inside functions
+        logout                    Unsupported
+        mapfile                   Unsupported
+        popd                      Unsupported
+        printf                    Unsupported
+        pushd                     Unsupported
+        pwd                       Print the current working directory
+        read                      Read a line from standard input
+        readonly                  Unsupported
+        return                    Return from a shell function
+        set                       Modify shell options
+        shift                     Shift positional parameters
+        shopt                     Change shell optional behavior
+        source                    Read and execute commands from a file
+        suspend                   Unsupported
+        test                      Unsupported
+        times                     Unsupported
+        trap                      Unsupported
+        true                      Do nothing, successfully
+        type                      Unsupported
+        typeset                   Unsupported
+        ulimit                    Unsupported
+        umask                     Unsupported
+        unalias                   Remove aliases
+        unset                     Unset variables or functions
+        wait                      Wait for jobs to complete
+
 parameters =
     Special parameters:
         "$"                       Process ID of the shell or script
@@ -47,27 +109,6 @@ parameters =
         -                         Current shell options
         _                         Last argument of the previous command
         !                         unsupported
-
-builtins =
-    Builtin commands:
-        cd                        Change the current directory
-        pwd                       Print the current working directory
-        exit                      Exit the shell
-        source                    Read and execute commands from a file
-        :                         No-op (does nothing)
-        "."                       Source a file in the current shell
-        alias                     Define or display aliases
-        break                     Exit from a loop
-        builtin                   Execute a shell builtin, bypassing functions
-        command                   Execute a command, ignoring shell functions
-        continue                  Resume the next iteration of a loop
-        eval                      Evaluate arguments as a shell command
-        local                     Declare local variables inside functions
-        return                    Return from a shell function
-        false                     Do nothing, unsuccessfully
-        true                      Do nothing, successfully
-        shift                     Shift positional parameters
-        unalias                   Remove aliases
 
 shopt =
     Shell options:
@@ -194,7 +235,7 @@ variables-bash =
            
 text-help = Project homepage: https://github.com/shellgei/rusty_bash
 
-text_version =
+text-version =
     यह एक ओपन सोर्स सॉफ़्टवेयर है।
     आप इस सॉफ़्टवेयर का उपयोग, संशोधन और पुनर्वितरण स्वतंत्र रूप से कर सकते हैं,
     स्रोत या बाइनरी रूप में, संशोधन के साथ या बिना, बशर्ते कि मूल
