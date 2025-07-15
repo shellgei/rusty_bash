@@ -344,12 +344,12 @@ fn show_version() {
 }
 
 fn show_help() {
-    eprintln!("Rusty Bash (a.k.a. Sushi shell), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+    eprintln!("Rusty Bash (a.k.a. Sushi shell), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n\n{}",
     fl("version"),
     env!("CARGO_PKG_VERSION"),
     env!("CARGO_BUILD_PROFILE"),
     fl("usage"),
-    fl("shell_options"),
+    fl("options"),
     fl("builtins"),
     fl("shopt"),
     fl("variables_born"),
