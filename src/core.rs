@@ -151,7 +151,7 @@ impl ShellCore {
     }
 
     pub fn run_function(&mut self, args: &mut Vec<String>) -> bool {
-        match self.db.functions.get_mut(&args[0]) {
+        match self.db.functions.get(&args[0]) {
             Some(f) => {f.clone().run_as_command(args, self); true},
             None => false,
         }
