@@ -69,12 +69,57 @@ fn print_all(soft: bool) -> i32 {
     0
 }
 
-pub fn ulimit(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let args = arg::dissolve_options(args);
-    if args.iter().any(|a| a == "-a"){
-        return print_all(args.iter().all(|a| a != "-H"));
+fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
+    let mut limit = match num.as_str() {
+        "unlimited" => nix::sys::resource::RLIM_INFINITY,
+        numstr => match numstr.parse::<u64>() {
+            Ok(n) => n,
+            Err(e) => {dbg!("{:?}", &e);return 1},
+        }
+    };
+
+    for (_, unit, opt2, key) in ITEMS {
+        if opt == opt2 {
+            let (mut soft_limit, mut hard_limit) = resource::getrlimit(key).unwrap();
+
+            if unit.starts_with("kbytes") {
+                limit *= 1024;
+            }
+
+            if soft {
+                soft_limit = limit;
+            }
+            if hard {
+                hard_limit = limit;
+            }
+
+            match resource::setrlimit(key, soft_limit, hard_limit) {
+                Err(e) => {dbg!("{:?}", &e);return 1},
+                _ => return 0,
+            }
+        }
     }
 
-    print_items(&args, args.iter().all(|a| a != "-H"))
+    0
+}
+
+pub fn ulimit(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+    let mut args = arg::dissolve_options(args);
+    let mut soft = arg::consume_option("-S", &mut args);
+    let mut hard = arg::consume_option("-H", &mut args);
+
+    if args.iter().any(|a| a == "-a"){
+        return print_all(!hard);
+    }
+
+    if args.len() > 2 && args[2].parse::<usize>().is_ok() {
+        if !soft && !hard {
+            soft = true;
+            hard = true;
+        }
+        return set_limit(&args[1], &args[2], soft, hard);
+    }
+
+    print_items(&args, !hard)
 }
 
