@@ -7,10 +7,26 @@ use nix::sys::resource::Resource;
 
 fn print(soft: bool) -> i32 {
     let items = [
-        (Resource::RLIMIT_RTTIME, "real-time non-blocking time  (microseconds, -R)")
+        ("real-time non-blocking time  (microseconds, -R)", Resource::RLIMIT_RTTIME),
+        ("core file size              (blocks, -c)", Resource::RLIMIT_CORE),
+        ("data seg size               (kbytes, -d)", Resource::RLIMIT_DATA),
+        ("scheduling priority                 (-e)", Resource::RLIMIT_NICE),
+        ("file size                   (blocks, -f)", Resource::RLIMIT_FSIZE),
+        ("pending signals                     (-i)", Resource::RLIMIT_SIGPENDING),
+        ("max locked memory           (kbytes, -l)", Resource::RLIMIT_MEMLOCK),
+        //("max memory size             (kbytes, -m)", Resource::RLIMIT_AS),
+        ("open files                          (-n)", Resource::RLIMIT_NOFILE),
+        //("pipe size                (512 bytes, -p)", Resource::RLIMIT_MSGQUEUE),
+        ("POSIX message queues         (bytes, -q)", Resource::RLIMIT_MSGQUEUE),
+        ("real-time priority                  (-r)", Resource::RLIMIT_RTPRIO),
+        ("stack size                  (kbytes, -s)", Resource::RLIMIT_STACK),
+        ("cpu time                   (seconds, -t)", Resource::RLIMIT_RTTIME),
+        //("max user processes                  (-u)", Resource::RLIMIT_RTTIME),
+        ("virtual memory              (kbytes, -v)", Resource::RLIMIT_AS),
+        ("file locks                          (-x)", Resource::RLIMIT_LOCKS),
     ];
 
-    for (key, item) in items {
+    for (item, key) in items {
         let (soft_limit, hard_limit) = resource::getrlimit(key).unwrap();
 
         let v = if soft { soft_limit } else { hard_limit };
