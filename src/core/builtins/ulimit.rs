@@ -29,7 +29,6 @@ fn print(soft: bool) -> i32 {
 
     for (item, unit, key) in items {
         let (soft_limit, hard_limit) = resource::getrlimit(key).unwrap();
-
         let mut v = if soft { soft_limit } else { hard_limit };
         let mut infty = nix::sys::resource::RLIM_INFINITY;
 
@@ -53,7 +52,7 @@ pub fn ulimit(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let args = arg::dissolve_options(args);
 
     if args.iter().any(|a| a == "-a"){
-        return print(args.iter().any(|a| a != "-H"));
+        return print(args.iter().all(|a| a != "-H"));
     }
 
     0
