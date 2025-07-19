@@ -32,3 +32,4 @@
 ./test_fixed.bash
 ./test_builtins.bash
 ./test_builtins.bash
+./test_fixed.bash
