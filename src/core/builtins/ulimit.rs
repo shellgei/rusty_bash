@@ -6,8 +6,7 @@ use nix::libc;
 use nix::sys::resource;
 use nix::sys::resource::Resource;
 
-fn print(soft: bool) -> i32 {
-    let items = [
+const ITEMS: [(&str, &str, &str, Resource); 17] = [
         ("real-time non-blocking time  ","microseconds", "-R", Resource::RLIMIT_RTTIME),
         ("core file size              ","blocks", "-c", Resource::RLIMIT_CORE),
         ("data seg size               ","kbytes", "-d", Resource::RLIMIT_DATA),
@@ -27,7 +26,7 @@ fn print(soft: bool) -> i32 {
         ("file locks                          ","", "-x", Resource::RLIMIT_LOCKS),
     ];
 
-    for (item, unit, opt, key) in items {
+fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i32 {
         let (soft_limit, hard_limit) = resource::getrlimit(key).unwrap();
         let mut v = if soft { soft_limit } else { hard_limit };
         let mut infty = nix::sys::resource::RLIM_INFINITY;
@@ -48,6 +47,12 @@ fn print(soft: bool) -> i32 {
         } else {
             println!("{}({}, {}) {}", &item, &unit, &opt, &s);
         }
+    0
+}
+
+fn print_all(soft: bool) -> i32 {
+    for (item, unit, opt, key) in ITEMS {
+        print_item(item, unit, opt, key, soft);
     }
     0
 }
@@ -56,7 +61,7 @@ pub fn ulimit(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let args = arg::dissolve_options(args);
 
     if args.iter().any(|a| a == "-a"){
-        return print(args.iter().all(|a| a != "-H"));
+        return print_all(args.iter().all(|a| a != "-H"));
     }
 
     0
