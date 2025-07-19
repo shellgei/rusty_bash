@@ -29,10 +29,16 @@ fn print(soft: bool) -> i32 {
     for (item, key) in items {
         let (soft_limit, hard_limit) = resource::getrlimit(key).unwrap();
 
-        let v = if soft { soft_limit } else { hard_limit };
+        let mut v = if soft { soft_limit } else { hard_limit };
+
+        if key == Resource::RLIMIT_MEMLOCK
+        || key == Resource::RLIMIT_STACK {
+            v /= 1024;
+        }
+
         let s = match v {
             nix::sys::resource::RLIM_INFINITY => "unlimited",
-            _ => &soft_limit.to_string(),
+            _ => &v.to_string(),
         };
     
         println!("{} {}", &item, &s);
