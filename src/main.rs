@@ -201,7 +201,7 @@ fn main_loop(core: &mut ShellCore, command: &String) {
         show_message();
     }
 
-    loop {                    
+    loop {
         match feed_script(&mut feeder, core) {
             (true, false) => {},
             (false, true) => break,
