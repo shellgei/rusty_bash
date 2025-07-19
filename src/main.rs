@@ -276,7 +276,7 @@ fn set_history(core: &mut ShellCore, s: &str) {
 
 fn show_message() {
     eprintln!(
-        "Rusty Bash (a.k.a. Sushi Sush), {} {} - {}",
+        "Sushi shell (a.k.a. Sush), {} {} - {}",
         fl("version"),
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_BUILD_PROFILE")
