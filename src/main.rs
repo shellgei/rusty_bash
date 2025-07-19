@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod i18n;
 mod core;
 mod error;
 mod feeder;
@@ -11,14 +12,11 @@ mod proc_ctrl;
 mod utils;
 
 // Externals crates
-use std::{env, fs, process};
-use std::cell::RefCell;
+use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
-use fluent_bundle::{FluentBundle, FluentResource};
-use once_cell::unsync::OnceCell;
-use unic_langid::LanguageIdentifier;
 
 // Internals crates
+use crate::i18n::{load_fluent_bundle, fl, FLUENT_BUNDLE};
 use crate::core::{builtins, ShellCore};
 use crate::core::builtins::source;
 use crate::elements::script::Script;
@@ -26,10 +24,6 @@ use crate::feeder::Feeder;
 use error::input::InputError;
 use utils::{arg, exit, file_check};
 use builtins::option;
-
-thread_local! {
-    static FLUENT_BUNDLE: RefCell<OnceCell<FluentBundle<FluentResource>>> = RefCell::new(OnceCell::new());
-}
 
 ///// Main program entry point /////
 
@@ -58,6 +52,19 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
+    
+    let bundle = match load_fluent_bundle() {
+        Some(b) => b,
+        None => {
+            eprintln!("No resources found for language");
+            std::process::exit(1);
+        }
+    };
+    
+    FLUENT_BUNDLE.with(|cell| {
+        cell.set(bundle).ok();
+    });
+    
     set_o_options(&mut args, &mut core);
     set_short_options(&mut args, &mut core);
 
@@ -194,7 +201,7 @@ fn main_loop(core: &mut ShellCore, command: &String) {
         show_message();
     }
 
-    loop {
+    loop {                    
         match feed_script(&mut feeder, core) {
             (true, false) => {},
             (false, true) => break,
@@ -263,57 +270,6 @@ fn set_history(core: &mut ShellCore, s: &str) {
     || (core.history.len() > 1 && core.history[0] == core.history[1]) {
         core.history.remove(0);
     }
-}
-
-///// Internationalization with Fluent and system language detection /////
-
-fn get_system_language() -> String {
-    fn extract_lang(s: &str) -> Option<String> {
-        let first_part = s.split(&['_', '.']).next()?;
-        if first_part.is_empty() {
-            None
-        } else {
-            Some(first_part.to_string())
-        }
-    }
-
-    for var in &["LC_ALL", "LC_MESSAGES", "LANG"] {
-        if let Ok(val) = std::env::var(var) {
-            if let Some(lang) = extract_lang(&val) {
-                return lang;
-            }
-        }
-    }
-
-    "en".to_string()
-}
-
-fn load_fluent_bundle(lang: &str) -> FluentBundle<FluentResource> {                     // Do not hardcode fallback strings here; get_system_language already uses en.ftl as a fallback.
-    let langid: LanguageIdentifier = lang.parse().unwrap();                             // If the language is not supported, en.ftl will be used by default; adding another fallback here is not necessary and messy.
-    let ftl_string = fs::read_to_string(format!("i18n/{}.ftl", lang))                   // If the language is supported but a specific string is not translated, (fluent-key) will be shown.
-        .or_else(|_| fs::read_to_string("i18n/en.ftl"))                                 // If the language is supported, hardcoded strings here won’t fill any missing keys — by design.
-        .expect("No suitable .ftl file found");                                         // If either fn get_system_language or fn load_fluent_bundle fail; en.ftl will be used by default.
-    let resource = FluentResource::try_new(ftl_string).expect("Invalid FTL syntax");    // All missing strings will show visibly; as translations come from one single source file.
-    let mut bundle = FluentBundle::new(vec![langid]);                                   // Changing this logic might hide missing translations or bugs.
-    bundle.add_resource(resource).expect("Failed to add resource");                     // TODO: Selecting the wanted .ftl files at compilation; en.ftl will be included in the binary by default.
-    bundle                                                                              // Provide maximum reliability, portability and safety (anti-tempering) while optimizing the overall size.
-}
-
-fn fl(key: &str) -> String {
-    FLUENT_BUNDLE.with(|cell| {
-        let cell = cell.borrow_mut();
-        let bundle = cell.get_or_init(|| {
-            let lang = get_system_language();
-            load_fluent_bundle(&lang)
-        });
-
-        let mut errors = vec![];
-        bundle
-            .get_message(key)
-            .and_then(|msg| msg.value())
-            .map(|pattern| bundle.format_pattern(pattern, None, &mut errors).to_string())
-            .unwrap_or_else(|| format!("{{{}}}", key))
-    })
 }
 
 ///// Text related functions /////
