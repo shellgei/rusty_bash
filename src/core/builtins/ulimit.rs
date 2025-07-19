@@ -50,10 +50,10 @@ fn print(soft: bool) -> i32 {
 }
 
 pub fn ulimit(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let _ = arg::dissolve_options(args);
+    let args = arg::dissolve_options(args);
 
     if args.iter().any(|a| a == "-a"){
-        return print(true);
+        return print(args.iter().any(|a| a != "-H"));
     }
 
     0
