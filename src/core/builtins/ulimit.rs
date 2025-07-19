@@ -26,6 +26,18 @@ const ITEMS: [(&str, &str, &str, Resource); 17] = [
         ("file locks                          ","", "-x", Resource::RLIMIT_LOCKS),
     ];
 
+fn print_items(args: &Vec<String>, soft: bool) -> i32 {
+    for a in args {
+        for (item, unit, opt, key) in ITEMS {
+            if a == opt {
+                print_item(item, unit, opt, key, soft);
+            }
+        }
+    }
+
+    0
+}
+
 fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i32 {
         let (soft_limit, hard_limit) = resource::getrlimit(key).unwrap();
         let mut v = if soft { soft_limit } else { hard_limit };
@@ -59,11 +71,10 @@ fn print_all(soft: bool) -> i32 {
 
 pub fn ulimit(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let args = arg::dissolve_options(args);
-
     if args.iter().any(|a| a == "-a"){
         return print_all(args.iter().all(|a| a != "-H"));
     }
 
-    0
+    print_items(&args, args.iter().all(|a| a != "-H"))
 }
 
