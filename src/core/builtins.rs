@@ -22,7 +22,10 @@ mod read;
 pub mod source;
 mod trap;
 mod type_;
+#[cfg(not(target_os = "macos"))]
 mod ulimit;
+#[cfg(target_os = "macos")]
+mod ulimit_mac;
 mod loop_control;
 mod unset;
 
@@ -81,7 +84,10 @@ impl ShellCore {
         self.builtins.insert("shopt".to_string(), option::shopt);
 
         if file::search_command("ulimit").is_none() {
+#[cfg(not(target_os = "macos"))]
             self.builtins.insert("ulimit".to_string(), ulimit::ulimit);
+#[cfg(target_os = "macos")]
+            self.builtins.insert("ulimit".to_string(), ulimit_mac::ulimit);
         }
 
         self.builtins.insert("unalias".to_string(), alias::unalias);
