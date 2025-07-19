@@ -28,11 +28,28 @@ locale_config = "0.3"
 
 # Compile-time feature
 [features]
-lang_ar = [] ; lang_da = [] ; lang_de = [] ; lang_el = [] ; lang_en = []
-lang_es = [] ; lang_fi = [] ; lang_fr = [] ; lang_hi = [] ; lang_it = []
-lang_ja = [] ; lang_ko = [] ; lang_nl = [] ; lang_no = [] ; lang_pl = []
-lang_pt = [] ; lang_ru = [] ; lang_sl = [] ; lang_sv = [] ; lang_sw = []
-lang_uk = [] ; lang_zh = []
+lang_ar = []
+lang_da = []
+lang_de = []
+lang_el = []
+lang_en = []
+lang_es = []
+lang_fi = []
+lang_fr = []
+lang_hi = []
+lang_it = []
+lang_ja = []
+lang_ko = []
+lang_nl = []
+lang_no = []
+lang_pl = []
+lang_pt = []
+lang_ru = []
+lang_sl = []
+lang_sv = []
+lang_sw = []
+lang_uk = []
+lang_zh = []
 
 default = ["0", "1", "2", "3", "4", "5", "6"]               # All
 0 = ["lang_en", "lang_fr", "lang_ja"]                       # Dev Pack
