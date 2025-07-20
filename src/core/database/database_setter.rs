@@ -15,6 +15,14 @@ use super::data::epochseconds::EpochSeconds;
 use super::data::epochrealtime::EpochRealTime;
 use std::{env, process};
 
+fn case_change(s: &str, l_flag: bool, u_flag: bool) -> String {
+    match ( l_flag, u_flag ) {
+        (true, _) => s.to_string().to_lowercase(),
+        (_, true) => s.to_string().to_uppercase(),
+        _ => s.to_string(),
+    }
+}
+
 impl DataBase {
     pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>) -> Result<(), ExecError> {
         Self::name_check(name)?;
@@ -59,11 +67,7 @@ impl DataBase {
             env::set_var(name, "");
         }
 
-        let val = match ( self.has_flag(name, 'l'), self.has_flag(name, 'u') ) {
-            (true, _) => val.to_string().to_lowercase(),
-            (_, true) => val.to_string().to_uppercase(),
-            (false, false) => val.to_string(),
-        };
+        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u') );
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
@@ -112,10 +116,7 @@ impl DataBase {
             env::set_var(name, "");
         }
 
-        let val = match self.has_flag(name, 'l') {
-            true => val.to_string().to_lowercase(),
-            false => val.to_string(),
-        };
+        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u') );
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
@@ -185,10 +186,7 @@ impl DataBase {
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
-        let val = match self.has_flag(name, 'l') {
-            true => val.to_string().to_lowercase(),
-            false => val.to_string(),
-        };
+        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u') );
 
         if self.has_flag(name, 'i') {
             IntArrayData::set_elem(&mut self.params[layer], name, pos, &val)
@@ -203,11 +201,7 @@ impl DataBase {
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
-        let val = match self.has_flag(name, 'l') {
-            true => val.to_string().to_lowercase(),
-            false => val.to_string(),
-        };
-
+        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u') );
         let layer = self.get_target_layer(name, layer);
         ArrayData::append_elem(&mut self.params[layer], name, pos, &val)
     }
@@ -218,10 +212,7 @@ impl DataBase {
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
-        let val = match self.has_flag(name, 'l') {
-            true => val.to_string().to_lowercase(),
-            false => val.to_string(),
-        };
+        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u') );
         let i_flag = self.has_flag(name, 'i');
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
@@ -246,11 +237,7 @@ impl DataBase {
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
-        let val = match self.has_flag(name, 'l') {
-            true => val.to_string().to_lowercase(),
-            false => val.to_string(),
-        };
-
+        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u') );
         let layer = self.get_target_layer(name, layer);
         AssocData::append_elem(&mut self.params[layer], name, key, &val)
     }
@@ -262,17 +249,14 @@ impl DataBase {
         restricted_shell::check(self, name, &v)?;
 
         let l_flag = self.has_flag(name, 'l');
+        let u_flag = self.has_flag(name, 'u');
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
         if v.is_none() {
             db_layer.insert(name.to_string(), UninitArray{}.boxed_clone());
         }else {
-            let v = match l_flag {
-                true => v.unwrap().iter().map(|e| e.to_lowercase()).collect(),
-                false => v.unwrap(),
-            };
-
+            let v = v.unwrap().iter().map(|e| case_change(e, l_flag, u_flag) ).collect();
             db_layer.insert(name.to_string(), Box::new(ArrayData::from(Some(v))));
         }
         Ok(())
