@@ -1,3 +1,6 @@
+//SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-License-Identifier: BSD-3-Clause
+
 ///// Internationalization with Fluent and system language detection /////
 
 use once_cell::unsync::OnceCell;
