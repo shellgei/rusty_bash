@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod case_conv;
+mod escape;
 mod replace;
 mod remove;
 mod substr;
@@ -16,6 +17,7 @@ use self::case_conv::CaseConv;
 use self::replace::Replace;
 use self::remove::Remove;
 use self::substr::Substr;
+use self::escape::Escape;
 use self::value_check::ValueCheck;
 use core::fmt;
 use core::fmt::Debug;
@@ -42,6 +44,7 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn
     else if let Some(a) = CaseConv::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = Remove::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = Substr::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = Escape::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else{ Ok(None) }
 }
 

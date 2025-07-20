@@ -374,6 +374,11 @@ impl Feeder {
         return 0;
     }
 
+    pub fn scanner_escape_directive_in_braced_param(&mut self, core: &mut ShellCore) -> usize {
+        self.backslash_check_and_feed(vec!["@"], core);
+        self.scanner_one_of(&["@k", "@Q", "@K"])
+    }
+
     pub fn scanner_test_compare_op(&mut self, core: &mut ShellCore) -> usize {
         self.backslash_check_and_feed(vec!["-", "-e", "-n", "-o", "=", "!"], core);
         self.scanner_one_of(&["-ef", "-nt", "-ot", "==", "=~", "=", "!=", "<", ">",
