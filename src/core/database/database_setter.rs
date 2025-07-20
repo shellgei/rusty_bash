@@ -348,6 +348,19 @@ impl DataBase {
             None => {rf.insert(name.to_string(), flag.to_string()); },
         }
     }
+
+    pub fn unset_flag(&mut self, name: &str, flag: char, layer: Option<usize>) {
+        let layer = match layer {
+            None => self.position_parameters.len() - 1,
+            Some(lay) => lay,
+        };
+
+        let rf = &mut self.param_options[layer];
+        match rf.get_mut(name) {
+            Some(d) => d.retain(|e| e != flag),
+            None => {},
+        }
+    }
 }
 
 pub fn initialize(db: &mut DataBase) -> Result<(), String> {

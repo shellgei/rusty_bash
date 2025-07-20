@@ -71,10 +71,12 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     }
 
     if little_opt {
+        core.db.unset_flag(&sub.left_hand.name, 'u', Some(layer));
         core.db.set_flag(&sub.left_hand.name, 'l', Some(layer));
     }
 
     if upper_opt {
+        core.db.unset_flag(&sub.left_hand.name, 'l', Some(layer));
         core.db.set_flag(&sub.left_hand.name, 'u', Some(layer));
     }
 
