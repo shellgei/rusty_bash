@@ -22,6 +22,7 @@ mod read;
 pub mod source;
 mod trap;
 mod type_;
+#[cfg(not(target_os = "macos"))]
 mod ulimit;
 mod loop_control;
 mod unset;
@@ -29,6 +30,7 @@ mod unset;
 use crate::{exit, Feeder, Script, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
+#[cfg(not(target_os = "macos"))]
 use crate::utils::file;
 
 pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
@@ -80,9 +82,13 @@ impl ShellCore {
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
 
-        if file::search_command("ulimit").is_none() {
+        //if file::search_command("ulimit").is_none() {
+#[cfg(not(target_os = "macos"))]
             self.builtins.insert("ulimit".to_string(), ulimit::ulimit);
-        }
+            /*
+#[cfg(target_os = "macos")]
+            self.builtins.insert("ulimit".to_string(), ulimit_mac::ulimit);
+        }*/
 
         self.builtins.insert("unalias".to_string(), alias::unalias);
         self.builtins.insert("unset".to_string(), unset::unset);
