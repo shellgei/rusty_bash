@@ -21,12 +21,12 @@ pub struct Value {
     pub text: String,
     pub value: ParsedDataType,
     pub evaluated_string: Option<String>,
-    //pub evaluated_array: Option<HashMap<String, String>>,
     pub evaluated_array: Option<Vec<(String, String)>>,
 }
 
 impl Value {
-    pub fn eval(&mut self, core: &mut ShellCore, name: &str, append: bool) -> Result<(), ExecError> {
+    pub fn eval(&mut self, core: &mut ShellCore, name: &str, append: bool)
+    -> Result<(), ExecError> {
         match self.value.clone() {
             ParsedDataType::Single(v) => self.eval_as_value(&v, core, name),
             ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core, name, append),

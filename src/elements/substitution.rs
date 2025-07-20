@@ -30,16 +30,13 @@ impl Substitution {
         self.right_hand.eval(core, &self.left_hand.name, self.append)?;
 
         if declare && self.right_hand.evaluated_array.is_some() {
-            //let msg = format!("{}: cannot assign list to array member", self.left_hand.text);
-            //return Err(ExecError::Other(msg)); 
             self.left_hand.index = None;
         }
 
         self.set_to_shell(core, layer)
     }
 
-    pub fn reparse(&mut self, core: &mut ShellCore) //TODO: solve this confusion
-    -> Result<(), ExecError> {
+    pub fn reparse(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.left_hand.index.is_some() {
             self.left_hand.index.as_mut().unwrap().reparse(core, &self.left_hand.name)?;
         }

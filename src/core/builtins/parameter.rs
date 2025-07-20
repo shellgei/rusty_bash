@@ -48,6 +48,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         layer = 0;
     }
 
+
     if arg::consume_option("+i", args) {
         if core.db.has_flag_layer(&sub.left_hand.name, 'i', layer) {
             core.db.int_to_str_type(&sub.left_hand.name, layer)?;
@@ -56,11 +57,17 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
 
     if ( args.contains(&"-A".to_string()) || args.contains(&"-a".to_string()) )
     && ! core.db.exist(&sub.left_hand.name) {
-        sub.left_hand.init_variable(core, Some(layer), args)?;
+        sub.left_hand.init_variable(core, Some(layer), &mut args.clone())?;
+    }
+
+    if ( args.contains(&"-A".to_string()) || args.contains(&"-a".to_string()) )
+    && ( sub.right_hand.text.starts_with("(") || sub.right_hand.text.starts_with("'(") ) { 
+        sub.left_hand.index = None;
     }
 
     if sub.has_right {
-        if core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) {
+        if core.db.is_array(&sub.left_hand.name)
+        || core.db.is_assoc(&sub.left_hand.name) {
             if ! (sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'") ) {
                 sub.reparse(core)?;
             }
