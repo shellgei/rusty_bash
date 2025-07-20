@@ -9,26 +9,23 @@ use super::OptionalOperation;
 impl OptionalOperation for Escape {
     fn get_text(&self) -> String {self.text.clone()}
     fn exec(&mut self, _: &Variable, text: &String, _: &mut ShellCore) -> Result<String, ExecError> {
-        match self.symbol.as_ref() {
-            "k" | "K" | "Q" => {
-                let text = format!("'{}'", &text);
-                return Ok(text);
-            },
-            _ => {},
-        }
-        Ok(text.clone())
+        self.replace_single_data(text)
     }
 
     fn set_array(&mut self, param: &Variable, array: &mut Vec<String>,
                     text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
-        *array = match param.name.as_str() {
-            "@" | "*" => core.db.get_position_params(),
-            _ => core.db.get_vec(&param.name, true)?,
-        };
+        if param.name == "@" || param.name == "*" {
+            *array = core.db.get_position_params();
+            for i in 0..array.len() {
+                array[i] = self.replace_single_data(&array[i])?;
+            }
+            return Ok(());
+        }
+
+        *array = core.db.get_vec(&param.name, true)?;
 
         for i in 0..array.len() {
-            array[i] = self.replace_elem(&array[i])?;
-            array[i] = format!("{} {}", &i, array[i]);
+            array[i] = self.replace_array_elem(i, &array[i])?;
         }
 
         if param.name == "@"
@@ -53,9 +50,28 @@ pub struct Escape {
 }
 
 impl Escape {
-    pub fn replace_elem(&self, text: &String) -> Result<String, ExecError> {
+    pub fn replace_single_data(&self, text: &String) -> Result<String, ExecError> {
         match self.symbol.as_ref() {
             "k" | "K" | "Q" => {
+                let text = format!("'{}'", &text);
+                return Ok(text);
+            },
+            _ => {},
+        }
+        Ok(text.clone())
+    }
+
+    pub fn replace_array_elem(&self, pos: usize, text: &String) -> Result<String, ExecError> {
+        match self.symbol.as_ref() {
+            "k" => {
+                let text = format!("{} {}", &pos, &text);
+                return Ok(text);
+            },
+            "K" => {
+                let text = format!("{} \"{}\"", &pos, &text);
+                return Ok(text);
+            },
+            "Q" => {
                 let text = format!("'{}'", &text);
                 return Ok(text);
             },
