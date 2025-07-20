@@ -32,6 +32,11 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
         return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
     }
 
+    if sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("(") {
+        let msg = format!("{}: cannot assign list to array member", sub.left_hand.text);
+        return Err(ExecError::Other(msg)); 
+    }
+
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
     let little_opt = arg::consume_option("-l", args);

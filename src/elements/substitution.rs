@@ -30,6 +30,8 @@ impl Substitution {
         self.right_hand.eval(core, &self.left_hand.name, self.append)?;
 
         if declare && self.right_hand.evaluated_array.is_some() {
+            //let msg = format!("{}: cannot assign list to array member", self.left_hand.text);
+            //return Err(ExecError::Other(msg)); 
             self.left_hand.index = None;
         }
 
@@ -42,32 +44,6 @@ impl Substitution {
             self.left_hand.index.as_mut().unwrap().reparse(core, &self.left_hand.name)?;
         }
         self.right_hand.reparse(core)?;
-
-        /*
-        let mut f = Feeder::new(&self.text);
-
-        let text = if let Ok(Some(s)) = Word::parse(&mut f, core, Some(WordMode::ReparseOfSubstitution)) {
-            if ! f.is_empty() {
-                return Err(ExecError::InvalidName(self.text.clone()));
-            }
-    
-            s.eval_as_value(core)?
-        }else{
-            return Err(ExecError::InvalidName(self.text.clone()));
-        };
-    
-        let mut f = Feeder::new(&text.replace("~", "\\~"));
-        if let Ok(Some(s)) = Substitution::parse(&mut f, core, true) {
-            if ! f.is_empty() {
-                return Err(ExecError::InvalidName(text));
-            }
-    
-            *self = s;
-            return Ok(());
-        }
-    
-        Err(ExecError::InvalidName(text))
-        */
         Ok(())
     }
 
