@@ -35,6 +35,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
     let little_opt = arg::consume_option("-l", args);
+    let upper_opt = arg::consume_option("-u", args);
 
     let mut layer = layer;
     if arg::consume_option("-g", args) && layer != 0 {
@@ -71,6 +72,10 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
 
     if little_opt {
         core.db.set_flag(&sub.left_hand.name, 'l', Some(layer));
+    }
+
+    if upper_opt {
+        core.db.set_flag(&sub.left_hand.name, 'u', Some(layer));
     }
 
     let mut res = Ok(());
@@ -227,10 +232,6 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>,
     for sub in subs {
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
             return super::error_exit(1, &args[0], &String::from(&e), core);
-            /*
-            e.print(core);
-            return 1;
-            */
         }
     }
     0

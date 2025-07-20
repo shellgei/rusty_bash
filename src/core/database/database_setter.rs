@@ -59,9 +59,10 @@ impl DataBase {
             env::set_var(name, "");
         }
 
-        let val = match self.has_flag(name, 'l') {
-            true => val.to_string().to_lowercase(),
-            false => val.to_string(),
+        let val = match ( self.has_flag(name, 'l'), self.has_flag(name, 'u') ) {
+            (true, _) => val.to_string().to_lowercase(),
+            (_, true) => val.to_string().to_uppercase(),
+            (false, false) => val.to_string(),
         };
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
