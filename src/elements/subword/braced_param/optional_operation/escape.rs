@@ -13,7 +13,7 @@ impl OptionalOperation for Escape {
     }
 
     fn set_array(&mut self, param: &Variable, array: &mut Vec<String>,
-                    text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
+                    _: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
         if param.name == "@" || param.name == "*" {
             *array = core.db.get_position_params();
             for i in 0..array.len() {
@@ -22,12 +22,21 @@ impl OptionalOperation for Escape {
             return Ok(());
         }
 
-        *array = core.db.get_vec(&param.name, true)?;
-
-        for i in 0..array.len() {
-            array[i] = self.replace_array_elem(i, &array[i])?;
+        if core.db.is_assoc(&param.name) {
+            array.clear();
+            for key in core.db.get_indexes_all(&param.name) {
+                let value = core.db.get_elem(&param.name, &key).unwrap_or_default();
+                array.push( self.replace_array_elem(&key, &value)? );
+            }
+            return Ok(());
         }
 
+        *array = core.db.get_vec(&param.name, true)?;
+        for i in 0..array.len() {
+            array[i] = self.replace_array_elem(&i.to_string(), &array[i])?;
+        }
+
+        /*
         if param.name == "@"
         || (param.index.is_some() && param.index.as_ref().unwrap().text == "[@]") {
             *text = array.join(" ");
@@ -36,6 +45,7 @@ impl OptionalOperation for Escape {
 
         let ifs = core.db.get_ifs_head();
         *text = array.join(&ifs);
+        */
         Ok(())
     }
 
@@ -61,7 +71,7 @@ impl Escape {
         Ok(text.clone())
     }
 
-    pub fn replace_array_elem(&self, pos: usize, text: &String) -> Result<String, ExecError> {
+    pub fn replace_array_elem(&self, pos: &String, text: &String) -> Result<String, ExecError> {
         match self.symbol.as_ref() {
             "k" => {
                 let text = format!("{} {}", &pos, &text);
