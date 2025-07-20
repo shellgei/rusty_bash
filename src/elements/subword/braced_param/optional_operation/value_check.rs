@@ -115,6 +115,11 @@ impl ValueCheck {
         if core.db.is_int(&variable.name) {
             value = utils::string_to_calculated_string(&value, core)?;
         }
+        if core.db.has_flag(&variable.name, 'l') {
+            value = value.to_lowercase();
+        }else if core.db.has_flag(&variable.name, 'u') {
+            value = value.to_uppercase();
+        }
 
         variable.clone().set_value(&value, core)?;
         self.alternative_value = None;
