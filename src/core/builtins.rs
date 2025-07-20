@@ -30,8 +30,7 @@ mod unset;
 use crate::{exit, Feeder, Script, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
-#[cfg(not(target_os = "macos"))]
-use crate::utils::file;
+//#[cfg(not(target_os = "macos"))]
 
 pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();

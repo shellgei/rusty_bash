@@ -19,7 +19,31 @@ impl OptionalOperation for Escape {
         Ok(text.clone())
     }
 
+    fn set_array(&mut self, param: &Variable, array: &mut Vec<String>,
+                    text: &mut String, core: &mut ShellCore) -> Result<(), ExecError> {
+        *array = match param.name.as_str() {
+            "@" | "*" => core.db.get_position_params(),
+            _ => core.db.get_vec(&param.name, true)?,
+        };
+
+        for i in 0..array.len() {
+            array[i] = self.replace_elem(&array[i])?;
+            array[i] = format!("{} {}", &i, array[i]);
+        }
+
+        if param.name == "@"
+        || (param.index.is_some() && param.index.as_ref().unwrap().text == "[@]") {
+            *text = array.join(" ");
+            return Ok(());
+        }
+
+        let ifs = core.db.get_ifs_head();
+        *text = array.join(&ifs);
+        Ok(())
+    }
+
     fn boxed_clone(&self) -> Box<dyn OptionalOperation> {Box::new(self.clone())}
+    fn has_array_replace(&self) -> bool {true}
 }
 
 #[derive(Debug, Clone, Default)]
@@ -29,6 +53,17 @@ pub struct Escape {
 }
 
 impl Escape {
+    pub fn replace_elem(&self, text: &String) -> Result<String, ExecError> {
+        match self.symbol.as_ref() {
+            "k" | "K" | "Q" => {
+                let text = format!("'{}'", &text);
+                return Ok(text);
+            },
+            _ => {},
+        }
+        Ok(text.clone())
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
         if ! feeder.starts_with("@") {
             return None;
