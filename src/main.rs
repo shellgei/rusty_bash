@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod i18n;
 mod core;
 mod error;
 mod feeder;
@@ -11,14 +12,11 @@ mod proc_ctrl;
 mod utils;
 
 // Externals crates
-use std::{env, fs, process};
-use std::cell::RefCell;
+use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
-use fluent_bundle::{FluentBundle, FluentResource};
-use once_cell::unsync::OnceCell;
-use unic_langid::LanguageIdentifier;
 
 // Internals crates
+use crate::i18n::{load_fluent_bundle, fl, FLUENT_BUNDLE};
 use crate::core::{builtins, ShellCore};
 use crate::core::builtins::source;
 use crate::elements::script::Script;
@@ -26,10 +24,6 @@ use crate::feeder::Feeder;
 use error::input::InputError;
 use utils::{arg, exit, file_check};
 use builtins::option;
-
-thread_local! {
-    static FLUENT_BUNDLE: RefCell<OnceCell<FluentBundle<FluentResource>>> = RefCell::new(OnceCell::new());
-}
 
 ///// Main program entry point /////
 
@@ -58,6 +52,19 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
+    
+    let bundle = match load_fluent_bundle() {
+        Some(b) => b,
+        None => {
+            eprintln!("No resources found for language");
+            std::process::exit(1);
+        }
+    };
+    
+    FLUENT_BUNDLE.with(|cell| {
+        cell.set(bundle).ok();
+    });
+    
     set_o_options(&mut args, &mut core);
     set_short_options(&mut args, &mut core);
 
@@ -265,62 +272,11 @@ fn set_history(core: &mut ShellCore, s: &str) {
     }
 }
 
-///// Internationalization with Fluent and system language detection /////
-
-fn get_system_language() -> String {
-    fn extract_lang(s: &str) -> Option<String> {
-        let first_part = s.split(&['_', '.']).next()?;
-        if first_part.is_empty() {
-            None
-        } else {
-            Some(first_part.to_string())
-        }
-    }
-
-    for var in &["LC_ALL", "LC_MESSAGES", "LANG"] {
-        if let Ok(val) = std::env::var(var) {
-            if let Some(lang) = extract_lang(&val) {
-                return lang;
-            }
-        }
-    }
-
-    "en".to_string()
-}
-
-fn load_fluent_bundle(lang: &str) -> FluentBundle<FluentResource> {
-    let langid: LanguageIdentifier = lang.parse().unwrap_or_else(|_| "en".parse().unwrap());
-    let ftl_string = fs::read_to_string(format!("i18n/{}.ftl", lang))
-        .unwrap_or("license = License\ntext-version =\n    This is open source software.\n    You are free to use, modify, and redistribute this software in source\n    or binary form, with or without modification, provided that the original\n    copyright notice, list of conditions, and disclaimer are retained.\n    THIS SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\n    EXPRESS OR IMPLIED, TO THE EXTENT PERMITTED BY LAW.".to_string());
-
-    let resource = FluentResource::try_new(ftl_string).expect("Invalid FTL syntax");
-    let mut bundle = FluentBundle::new(vec![langid]);
-    bundle.add_resource(resource).expect("Failed to add resource");
-    bundle
-}
-
-fn fl(key: &str) -> String {
-    FLUENT_BUNDLE.with(|cell| {
-        let cell = cell.borrow_mut();
-        let bundle = cell.get_or_init(|| {
-            let lang = get_system_language();
-            load_fluent_bundle(&lang)
-        });
-
-        let mut errors = vec![];
-        bundle
-            .get_message(key)
-            .and_then(|msg| msg.value())
-            .map(|pattern| bundle.format_pattern(pattern, None, &mut errors).to_string())
-            .unwrap_or_else(|| format!("{{{}}}", key))
-    })
-}
-
 ///// Text related functions /////
 
 fn show_message() {
     eprintln!(
-        "Rusty Bash (a.k.a. Sushi shell), {} {} - {}",
+        "Sushi shell (a.k.a. Sush), {} {} - {}",
         fl("version"),
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_BUILD_PROFILE")
@@ -329,7 +285,7 @@ fn show_message() {
 
 fn show_version() {
     eprintln!(
-        "Rusty Bash (a.k.a. Sushi shell), {} {} - {}\n\
+        "Sushi shell (a.k.a. Sush), {} {} - {}\n\
          © 2024 Ryuichi Ueda\n\
          {}: BSD 3-Clause\n\
          \n\
@@ -344,7 +300,7 @@ fn show_version() {
 }
 
 fn show_help() {
-    eprintln!("Rusty Bash (a.k.a. Sushi shell), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n\n{}",
+    eprintln!("Sushi shell (a.k.a. Sush), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n\n{}",
     fl("version"),
     env!("CARGO_PKG_VERSION"),
     env!("CARGO_BUILD_PROFILE"),

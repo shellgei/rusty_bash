@@ -1,4 +1,4 @@
-# Rusty Bash (a.k.a. sushi 🍣 shell)
+# Sushi shell (a.k.a. 🍣 Sush)
 
 
 [![ubuntu-latest](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml)
@@ -61,7 +61,7 @@ The following behavior of Bash will not be imitated by `sush`. So we alter the r
     -9223372036854775808                    #IT'S WRONG. 
     $ echo $(( -9223372036854775807 * -1 )) #IT'S OK.
     9223372036854775807
-    ### Rusty Bash ###
+    ### Sushi shell ###
     🍣 echo $(( -9223372036854775808 * -1 ))
     9223372036854775808
     🍣 echo $(( -9223372036854775807 * -1 ))
