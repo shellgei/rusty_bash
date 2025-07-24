@@ -16,7 +16,7 @@ use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 
 // Internals crates
-use crate::i18n::{load_fluent_bundle, fl, FLUENT_BUNDLE};
+use crate::i18n::FLUENT_BUNDLE;
 use crate::core::{builtins, ShellCore};
 use crate::core::builtins::source;
 use crate::elements::script::Script;
@@ -53,7 +53,7 @@ fn main() {
 
     let mut core = ShellCore::new();
     
-    let bundle = match load_fluent_bundle() {
+    let bundle = match i18n::load_fluent_bundle() {
         Some(b) => b,
         None => {
             eprintln!("No resources found for language");
@@ -277,7 +277,7 @@ fn set_history(core: &mut ShellCore, s: &str) {
 fn show_message() {
     eprintln!(
         "Sushi shell (a.k.a. Sush), {} {} - {}",
-        fl("version"),
+        i18n::fl("version"),
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_BUILD_PROFILE")
     );
@@ -290,29 +290,29 @@ fn show_version() {
          {}: BSD 3-Clause\n\
          \n\
          {}\n",
-        fl("version"),
+        i18n::fl("version"),
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_BUILD_PROFILE"),
-        fl("license"),
-        fl("text-version")
+        i18n::fl("license"),
+        i18n::fl("text-version")
     );
     process::exit(0);
 }
 
 fn show_help() {
     eprintln!("Sushi shell (a.k.a. Sush), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n\n{}",
-    fl("version"),
+    i18n::fl("version"),
     env!("CARGO_PKG_VERSION"),
     env!("CARGO_BUILD_PROFILE"),
-    fl("usage"),
-    fl("options"),
-    fl("comp-commands"),
-    fl("builtins"),
-    fl("parameters"),
-    fl("shopt"),
-    fl("variables-born"),
-    fl("variables-bash"),
-    fl("text-help")
+    i18n::fl("usage"),
+    i18n::fl("options"),
+    i18n::fl("comp-commands"),
+    i18n::fl("builtins"),
+    i18n::fl("parameters"),
+    i18n::fl("shopt"),
+    i18n::fl("variables-born"),
+    i18n::fl("variables-bash"),
+    i18n::fl("text-help")
     );
     process::exit(0);
 }
