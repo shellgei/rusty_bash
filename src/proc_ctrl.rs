@@ -3,6 +3,7 @@
 
 use crate::{exit, error, Feeder, Script, ShellCore, signal};
 use crate::error::exec::ExecError;
+use crate::utils::c_string;
 use nix::unistd;
 use nix::errno::Errno;
 use nix::sys::{resource, wait};
@@ -142,7 +143,7 @@ fn show_time(core: &ShellCore) {
 }
 
 pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> ! {
-    let cargs = to_cargs(args);
+    let cargs = c_string::to_cargs(args);
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
     if ! fullpath.is_empty() {
@@ -174,10 +175,4 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
         }
     }
     exit::not_found(&arg, core)
-}
-
-fn to_cargs(args: &Vec<String>) -> Vec<CString> {
-    args.iter()
-        .map(|a| CString::new(a.to_string()).unwrap())
-        .collect()
 }

@@ -8,6 +8,7 @@ pub mod compgen;
 pub mod complete;
 mod compopt;
 mod command;
+mod echo;
 mod exec;
 mod getopts;
 mod hash;
@@ -26,6 +27,7 @@ mod unset;
 
 use crate::{exit, Feeder, Script, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::error::parse::ParseError;
 
 pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
@@ -54,6 +56,7 @@ impl ShellCore {
         self.builtins.insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("debug".to_string(), debug);
         self.builtins.insert("disown".to_string(), job_commands::disown);
+        self.builtins.insert("echo".to_string(), echo::echo);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);
@@ -95,18 +98,31 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         args.remove(0);
     }
 
-    let mut feeder = Feeder::new(&args.join(" "));
+    let script = args.join(" ");
+    let mut feeder = Feeder::new(&script);
+    let lineno = match core.db.get_param("LINENO") {
+        Ok(s) => s.parse::<usize>().unwrap_or_default(),
+        _ => 0,
+    };
+    feeder.lineno += lineno - 1;
 
-    core.eval_level += 1;
     match Script::parse(&mut feeder, core, false){
         Ok(Some(mut s)) => {
+            core.eval_level += 1;
             let _ = s.exec(core);
+            core.eval_level -= 1;
+        },
+        Err(ParseError::UnexpectedSymbol(t)) => {
+            let lineno = core.db.get_param("LINENO").unwrap_or("0".to_string());
+            let com = &core.db.position_parameters[0][0];
+            eprintln!("{}: eval: line {}: syntax error near unexpected token `{}'", com, &lineno, &t);
+            eprintln!("{}: eval: line {}: `{}'", com, &lineno, &script);
+            return 2;
         },
         Err(e) => e.print(core),
         _        => {},
     }
 
-    core.eval_level -= 1;
     core.db.exit_status
 }
 
@@ -143,24 +159,31 @@ pub fn debug(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
 pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut last_result = 0;
+    core.valid_assoc_expand_once = true;
+
     for a in &args[1..] {
         match ArithmeticExpr::parse(&mut Feeder::new(&a.replace("$", "\\$")), core, false, "") {
             Ok(Some(mut a)) => {
                 match a.eval(core) {
                     Ok(s) => last_result = if s == "0" {1} else {0},
                     Err(e) => {
+                        core.valid_assoc_expand_once = false;
                         return error_exit(1, &args[0], &String::from(&e), core);
                     },
                 }
             },
             Ok(None) => {
+                core.valid_assoc_expand_once = false;
                 return error_exit(1, &args[0], "expression expected", core);
             },
             Err(e) => {
+                core.valid_assoc_expand_once = false;
                 return error_exit(1, &args[0], &String::from(&e), core);
             }
         }
     }
 
+    core.valid_assoc_expand_once = false;
     last_result
 }
+

@@ -7,7 +7,7 @@ pub mod single_quoted;
 mod braced_param;
 mod command_sub;
 //mod command_sub_old;
-mod escaped_char;
+pub mod escaped_char;
 mod file_input;
 mod ext_glob;
 mod double_quoted;
@@ -101,7 +101,7 @@ pub trait Subword {
 
     fn is_name(&self) -> bool {false}
     fn is_array(&self) -> bool {false}
-    fn get_elem(&self) -> Vec<String> {vec![]}
+    fn get_elem(&mut self) -> Vec<String> {vec![]}
     fn is_extglob(&self) -> bool {false}
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> { vec![] }
     fn set_heredoc_flag(&mut self) {}
@@ -162,6 +162,14 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
                 Ok(Some(From::from(&feeder.consume(1))))
             }else{
                 Ok(None)
+            }
+        },
+        Some(WordMode::ReparseOfValue) => {
+        //| Some(WordMode::ReparseOfSubstitution) => {
+            if feeder.len() == 0 {
+                Ok(None)
+            }else{
+                Ok(Some(From::from(&feeder.consume(1))))
             }
         },
         _ => Ok(None),

@@ -7,9 +7,8 @@ pub mod substitution;
 pub mod path_expansion;
 mod split;
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, utils};
 use crate::elements::subword;
-use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use super::subword::Subword;
@@ -17,12 +16,15 @@ use super::subword::Subword;
 #[derive(Debug, Clone)]
 pub enum WordMode {
     Alias,
-    Arithmetric,
+    Arithmetic,
     EvalLet,
     CompgenF,
     ReadCommand,
     Heredoc,
     RightOfSubstitution,
+    Value,
+    ReparseOfValue,
+    //ReparseOfSubstitution,
     ParamOption(Vec<String>),
 }
 
@@ -90,15 +92,14 @@ impl Word {
         Ok( Self::make_args(&mut ws).join(&joint) )
     }
 
+    pub fn eval_as_assoc_index(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let w = self.tilde_and_dollar_expansion(core)?;
+        let joint = core.db.get_ifs_head();
+        Ok( Self::make_args(&mut vec![w]).join(&joint) )
+    }
+
     pub fn eval_as_integer(&self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let mut f = Feeder::new(&self.text);
-        if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
-            if f.is_empty() {
-                return a.eval(core);
-            }
-        }
- 
-        Err(ExecError::SyntaxError(f.consume(f.len())))
+        utils::string_to_calculated_string(&self.text, core)
     }
 
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
@@ -233,7 +234,7 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::Arithmetric) | Some(WordMode::CompgenF) => {
+            Some(WordMode::Arithmetic) | Some(WordMode::CompgenF) => {
                 if feeder.starts_with("}") {
                     return false;
                 }
@@ -255,7 +256,7 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::Arithmetric) | Some(WordMode::CompgenF) => {
+            Some(WordMode::Arithmetic) | Some(WordMode::CompgenF) => {
                 if feeder.starts_withs(&["]", "}"]) 
                 || feeder.scanner_math_symbol(core) != 0 {
                     return false;

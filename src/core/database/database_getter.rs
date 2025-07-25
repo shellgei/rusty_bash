@@ -256,14 +256,3 @@ pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
         false => Ok(String::new()),
     };
 }
-
-/*
-pub fn array_elem(db: &mut DataBase, name: &str, pos: &str) -> Result<String, ExecError> {
-    let layer = match db.get_layer_pos(name) {
-        Some(n) => n,
-        _ => return Ok("".to_string()),
-    };
-
-    let ifs = db.get_ifs_head();
-    db.params[layer].get_mut(name).unwrap().get_as_array_or_assoc(pos, &ifs)
-}*/

@@ -17,6 +17,12 @@ use crate::elements::word::Word;
 use std::sync::atomic::Ordering::Relaxed;
 use nix::unistd::Pid;
 
+#[derive(Debug, Clone)]
+enum SubsArgType {
+    Subs(Substitution),
+    Other(Word),
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct SimpleCommand {
     text: String,
@@ -25,14 +31,13 @@ pub struct SimpleCommand {
     pub args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool, 
-    substitutions_as_args: Vec<Substitution>,
+    substitutions_as_args: Vec<SubsArgType>,
     command_name: String,
     lineno: usize,
     continue_alias_check: bool,
     invalid_alias: bool,
     command_path: String,
 }
-
 
 impl Command for SimpleCommand {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe)
@@ -114,12 +119,20 @@ impl SimpleCommand {
             self.fork_exec(core, pipe)
         }else if self.args.len() == 1 && self.args[0] == "exec" {
             for r in self.get_redirects().iter_mut() {
-                r.connect(true, core)?;
+                if let Err(e) = r.connect(true, core) {
+                    e.print(core);
+                    core.db.exit_status = 1;
+                    break;
+                }
             }
             Ok(None)
         }else{
             pipe.connect_lastpipe();
-            self.nofork_exec(core)
+            if let Err(e) = self.nofork_exec(core) {
+                e.print(core);
+                core.db.exit_status = 1;
+            }
+            Ok(None)
         }
     }
 
@@ -138,6 +151,13 @@ impl SimpleCommand {
         for s in self.substitutions.iter_mut() {
             if let Err(e) = s.eval(core, None, false) {
                 core.db.exit_status = 1;
+                if ! core.db.flags.contains('i') {
+                    if let ExecError::SyntaxError(_) = e {
+                        e.print(core);
+                        let msg = "`".to_owned() + &s.text.clone() + "'";
+                        return Err(ExecError::Other(msg));
+                    }
+                }
                 return Err(e);
             }
         }

@@ -15,7 +15,8 @@ pub enum ParseError {
 impl From<&ParseError> for String {
     fn from(e: &ParseError) -> String {
         match e {
-            ParseError::UnexpectedSymbol(s) => format!("Unexpected token: {}", s),
+            //ParseError::UnexpectedSymbol(s) => format!("Unexpected token: {}", s),
+            ParseError::UnexpectedSymbol(s) => format!("syntax error near unexpected token: {}", s),
             ParseError::Input(e) => From::from(e),
             ParseError::WrongAlias(msg) => format!("Someting wrong alias: {}", msg),
         }

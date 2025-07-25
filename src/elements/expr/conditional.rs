@@ -11,6 +11,7 @@ use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
+use crate::elements::substitution::variable::Variable;
 use regex::Regex;
 use self::elem::CondElem;
 use super::arithmetic::elem::ArithElem;
@@ -183,8 +184,18 @@ impl ConditionalExpr {
         if op == "-o" || op == "-v" || op == "-z" || op == "-n" {
             let ans = match op {
                 "-o" => core.options.query(&operand),
-                //"-v" => core.db.get_value(&operand).is_some() || env::var(&operand).is_ok(),
-                "-v" => core.db.has_value(&operand) || env::var(&operand).is_ok(),
+                "-v" => {
+                    if env::var(&operand).is_ok() {
+                        true
+                    }else {
+                        let mut f = Feeder::new(&operand);
+                        if let Some(v) = Variable::parse(&mut f, core)? {
+                            v.exist(core)?
+                        } else {
+                            false
+                        }
+                    }
+                },
                 "-z" => operand.is_empty(),
                 "-n" => operand.len() > 0,
                 _    => false,
@@ -225,7 +236,7 @@ impl ConditionalExpr {
             for i in 0.. {
                 if let Some(e) = res.get(i) {
                     let s = e.as_str().to_string();
-                    core.db.set_array_elem("BASH_REMATCH", &s, i, None)?;
+                    core.db.set_array_elem("BASH_REMATCH", &s, i as isize, None)?;
                 }else{
                     break;
                 }

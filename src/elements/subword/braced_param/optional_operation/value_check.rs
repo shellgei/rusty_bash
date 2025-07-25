@@ -7,6 +7,7 @@ use crate::elements::word::{Word, WordMode};
 use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
+use crate::utils;
 use super::super::Variable;
 use super::OptionalOperation;
 use crate::elements::subword::SingleQuoted;
@@ -21,12 +22,12 @@ pub struct ValueCheck {
 
 impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {self.text.clone()}
-    fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore)
+    fn exec(&mut self, variable: &Variable, text: &String, core: &mut ShellCore)
     -> Result<String, ExecError> {
         let sym = self.symbol.clone().unwrap();
         let mut check_ok = match sym.starts_with(":") {
             true  => text != "",
-            false => param.exist(core)?,
+            false => variable.exist(core)?,
         };
 
         if sym.ends_with("+") {
@@ -39,9 +40,9 @@ impl OptionalOperation for ValueCheck {
         }
 
         match sym.as_ref() {
-            "?" | ":?" => self.show_error(&param.name, core),
-            "=" | ":=" => self.set_value(&param.name, core),
-            _  => self.replace(text, core),
+            "?" | ":?" => self.show_error(&variable.name, core),
+            "=" | ":=" => self.set_value(&variable, core),
+            _  => self.replace(core),
         }
     }
 
@@ -60,6 +61,8 @@ impl OptionalOperation for ValueCheck {
             .iter_mut()
             .for_each(|e| e.set_heredoc_flag());
     }
+
+    fn array_to_single(&mut self) -> bool {self.alternative_value.is_some()}
 }
 
 impl ValueCheck {
@@ -100,16 +103,20 @@ impl ValueCheck {
         *sw = Box::new(SingleQuoted{text: ans.to_string()});
     }
 
-    fn replace(&mut self, text: &String, core: &mut ShellCore)
+    fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> { 
-        self.set_alter_word(core)?;
-        Ok(text.clone())
+        self.set_alter_word(core)
     }
 
-    fn set_value(&mut self, name: &String, core: &mut ShellCore)
+    fn set_value(&mut self, variable: &Variable, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let value = self.set_alter_word(core)?;
-        core.db.set_param(&name, &value, None)?;
+        let mut value = self.set_alter_word(core)?;
+
+        if core.db.is_int(&variable.name) {
+            value = utils::string_to_calculated_string(&value, core)?;
+        }
+
+        variable.clone().set_value(&value, core)?;
         self.alternative_value = None;
         Ok(value)
     }

@@ -24,7 +24,7 @@ pub struct Replace {
 impl OptionalOperation for Replace {
     fn get_text(&self) -> String {self.text.clone()}
     fn exec(&mut self, param: &Variable, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        match core.db.has_value(&param.name) {
+        match core.db.exist(&param.name) {
             true  => self.get_text(text, core),
             false => Ok("".to_string()),
         }
@@ -43,8 +43,13 @@ impl OptionalOperation for Replace {
             array[i] = self.get_text(&array[i], core)?;
         }
 
-        let ifs = core.db.get_ifs_head();
+        if param.name == "@"
+        || (param.index.is_some() && param.index.as_ref().unwrap().text == "[@]") {
+            *text = array.join(" ");
+            return Ok(());
+        }
 
+        let ifs = core.db.get_ifs_head();
         *text = array.join(&ifs);
         Ok(())
     }

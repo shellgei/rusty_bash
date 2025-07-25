@@ -9,7 +9,6 @@ use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::error;
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
@@ -89,8 +88,9 @@ impl ForCommand {
 
             if let Err(e) = core.db.set_param(&self.name, &p, None) {
                 core.db.exit_status = 1;
-                let msg = format!("{:?}", &e);
-                error::print(&msg, core);
+                e.print(core);
+//                let msg = format!("{:?}", &e);
+ //               error::print(&msg, core);
             }
 
             if core.continue_counter > 0 {
@@ -98,7 +98,7 @@ impl ForCommand {
                 continue;
             }
 
-            let _ = self.do_script.as_mut().unwrap().exec(core);
+            let _ = self.do_script.clone().as_mut().unwrap().exec(core);
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;
@@ -135,7 +135,7 @@ impl ForCommand {
                 return ok;
             }
 
-            let _ = self.do_script.as_mut().unwrap().exec(core);
+            let _ = self.do_script.clone().as_mut().unwrap().exec(core);
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;

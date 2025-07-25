@@ -1,10 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{env, ShellCore, Feeder};
+use crate::{env, ShellCore};
 use crate::error::exec::ExecError;
 use crate::elements::substitution::Substitution;
-use crate::elements::word::Word;
 use crate::utils::arg;
 use super::error_exit;
 
@@ -27,31 +26,6 @@ pub fn local(core: &mut ShellCore,
     0
 }
 
-fn reparse(core: &mut ShellCore, sub: &mut Substitution) {
-    let mut f = Feeder::new(&sub.text);
-    let text = if let Ok(Some(s)) = Word::parse(&mut f, core, None) {
-        if ! f.is_empty() {
-            return;
-        }
-
-        match s.eval_as_value(core) {
-            Ok(txt) => txt,
-            _ => return,
-        }
-    }else{
-        return;
-    };
-
-    let mut f = Feeder::new(&text.replace("~", "\\~"));
-    if let Ok(Some(s)) = Substitution::parse(&mut f, core, false) {
-        if ! f.is_empty() {
-            return;
-        }
-
-        *sub = s;
-    }
-}
-
 fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec<String>,
                     layer: usize) -> Result<(), ExecError> {
     if core.db.is_readonly(&sub.left_hand.name) {
@@ -60,21 +34,47 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
 
     let read_only = arg::consume_option("-r", args);
     let export_opt = arg::consume_option("-x", args);
+    let little_opt = arg::consume_option("-l", args);
+
+    let mut layer = layer;
+    if arg::consume_option("-g", args) && layer != 0 {
+        core.db.unset(&sub.left_hand.name);
+        layer = 0;
+    }
+
+    if arg::consume_option("+i", args) {
+        if core.db.has_flag_layer(&sub.left_hand.name, 'i', layer) {
+            core.db.int_to_str_type(&sub.left_hand.name, layer)?;
+        }
+    }
+
+    if ( args.contains(&"-A".to_string()) || args.contains(&"-a".to_string()) )
+    && ! core.db.exist(&sub.left_hand.name) {
+        sub.left_hand.init_variable(core, Some(layer), args)?;
+    }
 
     if sub.has_right {
-        reparse(core, sub);
+        if core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) {
+            if ! (sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'") ) {
+                sub.reparse(core)?;
+            }
+        }
     }
 
     if export_opt {
-        core.db.set_flag(&sub.left_hand.name, 'x');
+        core.db.set_flag(&sub.left_hand.name, 'x', Some(layer));
     }
 
     if args.contains(&"-i".to_string()) {
-        core.db.set_flag(&sub.left_hand.name, 'i');
+        core.db.set_flag(&sub.left_hand.name, 'i', Some(layer));
+    }
+
+    if little_opt {
+        core.db.set_flag(&sub.left_hand.name, 'l', Some(layer));
     }
 
     let mut res = Ok(());
-
+ 
     match sub.has_right {
         true  => res = sub.eval(core, Some(layer), true),
         false => {
@@ -87,7 +87,7 @@ fn set_substitution(core: &mut ShellCore, sub: &mut Substitution, args: &mut Vec
     }
 
     if read_only {
-        core.db.set_flag(&sub.left_hand.name, 'r');
+        core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
     }
 
     res
@@ -97,10 +97,18 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
     for n in names {
         let mut opt = if core.db.is_assoc(&n) { "A" }
         else if core.db.is_array(&n) { "a" }
-        else if core.db.has_value(&n) { "" }
+        else if core.db.exist(&n) { "" }
         else{
             return error_exit(1, &n, "not found", core);
         }.to_string();
+
+        if core.db.is_int(&n) {
+                opt += "i";
+        }
+
+        if core.db.has_flag(&n, 'l') {
+                opt += "l";
+        }
 
         if core.db.is_readonly(&n) {
             if ! opt.contains('r') 
@@ -118,7 +126,7 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
             true  => format!("{} -{} ", com, opt),
         };
         print!("{}", prefix);
-        core.db.print(&n);
+        core.db.declare_print(&n);
     }
     0
 }
@@ -179,11 +187,33 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {
+fn declare_print_function(core: &mut ShellCore, subs: &mut Vec<Substitution>) -> i32 {
+    let mut names: Vec<String> = subs.iter().map(|s| s.left_hand.name.clone()).collect();
+    names.sort();
+
+    for n in &names {
+        if n == "" {
+            return 1;
+        }
+
+        match core.db.functions.get_mut(n) {
+            Some(f) => f.pretty_print(0),
+            None => return 1,
+        }
+    }
+    0
+}
+
+pub fn declare(core: &mut ShellCore, args: &mut Vec<String>,
+               subs: &mut Vec<Substitution>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
     if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
         return declare_print_all(core, &mut args);
+    }
+
+    if arg::consume_option("-f", &mut args) {
+        return declare_print_function(core, subs);
     }
 
     if arg::consume_option("-p", &mut args) {
@@ -196,8 +226,11 @@ pub fn declare(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Subs
     let layer = core.db.get_layer_num() - 2;
     for sub in subs {
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
+            return super::error_exit(1, &args[0], &String::from(&e), core);
+            /*
             e.print(core);
             return 1;
+            */
         }
     }
     0
@@ -247,13 +280,19 @@ pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>,
     }
 
     for sub in subs {
+        if sub.left_hand.index.is_some() {
+            let msg = ExecError::VariableInvalid(sub.left_hand.text.clone());
+            return super::error_exit(1, &args[0], &String::from(&msg), core);
+            //return 1;
+        }
+
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
 
         if let Err(e) = set_substitution(core, sub, &mut args.clone(), layer) {
             e.print(core);
             return 1;
         }
-        core.db.set_flag(&sub.left_hand.name, 'r');
+        core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
     }
     0
 }

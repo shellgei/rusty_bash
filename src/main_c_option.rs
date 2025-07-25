@@ -17,7 +17,7 @@ pub fn set_parameters(c_parts: &Vec<String>, core: &mut ShellCore, command: &str
         vec![command.to_string()]
     };
 
-    if let Err(e) = option::set_positions(core, &parameters) {
+    if let Err(e) = option::set_positions_c(core, &parameters) {
         e.print(core);
         core.db.exit_status = 2;
         exit::normal(core);

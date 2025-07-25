@@ -8,10 +8,14 @@ pub mod file;
 pub mod file_check;
 pub mod glob;
 pub mod arg;
+pub mod restricted_shell;
 pub mod splitter;
+pub mod c_string;
 
 use crate::{Feeder, ShellCore};
 use crate::error::input::InputError;
+use crate::error::exec::ExecError;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use faccess::PathExt;
 use io_streams::StreamReader;
 use std::io::Read;
@@ -155,10 +159,52 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
 }
 
 pub fn to_ansi_c(s: &String) -> String {
-    if s.contains('\n') { //TODO: add \t \a ...
-        return "$'".to_owned() + &s.replace("\n", "\\n") + "'";
+    let mut ans = String::new();
+    let mut ansi = false;
+    let mut double_quote = false;
+
+    for c in s.chars() {
+        match c as usize {
+            bin @ 0..9 => {
+                ansi = true;
+                let alter = format!("\\{:03o}", bin);
+                ans.push_str(&alter);
+            },
+            9 => {
+                ansi = true;
+                ans.push_str("\\t");
+            },
+            10 => {
+                ansi = true;
+                ans.push_str("\\n");
+            },
+            34 => { // "
+                double_quote = true;
+                ans.push('\\');
+                ans.push(c);
+            },
+            36 => { // "
+                ans.push('\\');
+                ans.push(c);
+            },
+            32 | 42 | 64 | 91 | 93 => { // space * , @, [ , ]
+                double_quote = true;
+                ans.push(c);
+            },
+            _ => ans.push(c),
+        }
     }
-    s.clone()
+
+    if ansi {
+        ans.insert(0, '\'');
+        ans.insert(0, '$');
+        ans.push('\'');
+    }else if double_quote {
+        ans.insert(0, '"');
+        ans.push('"');
+    }
+
+    ans
 }
 
 pub fn get_command_path(s: &String, core: &mut ShellCore) -> String {
@@ -176,4 +222,17 @@ pub fn get_command_path(s: &String, core: &mut ShellCore) -> String {
     }
 
     String::new()
+}
+
+
+pub fn string_to_calculated_string(from: &str, core: &mut ShellCore)
+-> Result<String, ExecError> {
+    let mut f = Feeder::new(from);
+    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
+        if f.is_empty() {
+            return a.eval(core);
+        }
+    }
+ 
+    Err(ExecError::SyntaxError(f.consume(f.len())))
 }
