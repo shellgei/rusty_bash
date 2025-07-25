@@ -1,4 +1,6 @@
-# Rusty Bash (a.k.a. sushi 🍣 shell)
+# sush 
+
+a Bash clone shell implemented in Rust
 
 
 [![ubuntu-latest](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml)
