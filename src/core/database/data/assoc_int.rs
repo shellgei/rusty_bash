@@ -30,17 +30,28 @@ impl Data for IntAssocData {
         formatted += "(";
         for k in self.keys() {
             let v = &self.get(&k).unwrap_or("".to_string());
-            let ansi = utils::to_ansi_c(v);
+            let mut ansi = utils::to_ansi_c(v);
+            if ansi == *v {
+                ansi = format!("\"{}\"", &ansi);
+            }
+
+            /*
             let mut k = k.clone();
             if k.contains(" ") {
                 k = "\"".to_owned() + &k + "\"";
-            }
+            }*/
+            let k = utils::to_ansi_c(&k);
+            /*
+            if k.contains('\'')
+            || k.contains('$')
+            || k.contains(' ')
+            || k.contains('`') {
+                if ! k.starts_with("$'") && ! k.ends_with("'") {
+                    k = format!("\"{}\"", &k);
+                }
+            }*/
 
-            if ansi == *v {
-                formatted += &format!("[{}]=\"{}\" ", k, &ansi);
-            }else{
-                formatted += &format!("[{}]={} ", k, &ansi);
-            }
+            formatted += &format!("[{}]={} ", k, &ansi);
         }
 
         formatted += ")";

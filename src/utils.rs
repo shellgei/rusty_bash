@@ -158,7 +158,7 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     }
 }
 
-pub fn to_ansi_c(s: &String) -> String {
+pub fn to_ansi_c(s: &String) -> String { //TODO: it seems that escaping should be considered.
     let mut ans = String::new();
     let mut ansi = false;
     let mut double_quote = false;
