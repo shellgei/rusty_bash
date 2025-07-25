@@ -1,4 +1,4 @@
-# sush 
+# sush (Sushi shell)
 
 a Bash clone shell implemented in Rust
 
