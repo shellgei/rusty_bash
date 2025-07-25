@@ -3,8 +3,6 @@ version = バージョン
 
 usage = Usage: sushi [LONG OPTIONS] [OPTIONS] [SCRIPT] [ARGS]
 
-usage = Usage: sushi [LONG OPTIONS] [OPTIONS] [SCRIPT] [ARGS]
-
 options =
     Options:
         -c                        Execute COMMAND and exit
