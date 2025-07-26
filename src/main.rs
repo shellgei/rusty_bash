@@ -7,6 +7,7 @@ mod error;
 mod feeder;
 mod elements;
 mod main_c_option;
+mod regex;
 mod signal;
 mod proc_ctrl;
 mod utils;

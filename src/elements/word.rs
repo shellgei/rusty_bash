@@ -113,21 +113,21 @@ impl Word {
     }
 
     pub fn eval_for_regex(&self, core: &mut ShellCore) -> Option<String> {
-        let quoted = self.text.starts_with("\"") && self.text.ends_with("\"");
+        let quoted = self.text.starts_with('"') && self.text.ends_with('"');
 
         match self.tilde_and_dollar_expansion(core) {
             Ok(mut w) => {
-                let mut re = w.make_regex()?;
+                let text = w.make_unquoted_word()?;
+                let mut re = crate::regex::shell_pattern_to_regex(&text);
                 if quoted {
                     re.insert(0, '"');
-                    re += "\"";
+                    re.push('"');
                 }
-
                 Some(re)
             },
-            Err(e)    => {
+            Err(e) => {
                 e.print(core);
-                return None;
+                None
             },
         }
     }
@@ -184,19 +184,6 @@ impl Word {
             .collect();
 
         if sw.is_empty() && ! self.do_not_erase {
-            return None;
-        }
-
-        Some(sw.into_iter().map(|s| s.unwrap()).collect::<String>())
-    }
-
-    pub fn make_regex(&mut self) -> Option<String> {
-        let sw: Vec<Option<String>> = self.subwords.iter_mut()
-            .map(|s| s.make_regex())
-            .filter(|s| *s != None)
-            .collect();
-
-        if sw.is_empty() {
             return None;
         }
 
