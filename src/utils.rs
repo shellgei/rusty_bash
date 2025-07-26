@@ -158,7 +158,7 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     }
 }
 
-pub fn to_ansi_c(s: &String) -> String { //TODO: it seems that escaping should be considered.
+pub fn to_ansi_c(s: &String) -> String {
     let mut ans = String::new();
     let mut ansi = false;
     let mut double_quote = false;
@@ -174,20 +174,16 @@ pub fn to_ansi_c(s: &String) -> String { //TODO: it seems that escaping should b
                 ansi = true;
                 ans.push_str("\\t");
             },
-            10 => {
+            0x0A => {
                 ansi = true;
                 ans.push_str("\\n");
             },
-            34 => { // "
+            0x22 | 0x24 | 0x60 => { // "
                 double_quote = true;
                 ans.push('\\');
                 ans.push(c);
             },
-            36 => { // "
-                ans.push('\\');
-                ans.push(c);
-            },
-            32 | 42 | 64 | 91 | 93 => { // space * , @, [ , ]
+            0x20 | 0x2A | 0x40 | 0x5B | 0x5D => { // space * , @, [ , ],
                 double_quote = true;
                 ans.push(c);
             },
