@@ -21,6 +21,7 @@ mod process_sub;
 use crate::{ShellCore, Feeder};
 use crate::error::{exec::ExecError, parse::ParseError};
 use crate::elements::word::WordMode;
+use crate::regex;
 use crate::utils::splitter;
 use self::ansi_c_quoted::AnsiCQuoted;
 use self::arithmetic::Arithmetic;
@@ -95,7 +96,7 @@ pub trait Subword {
     fn make_regex(&mut self) -> Option<String> {
         match self.get_text() {
             "" => None,
-            s  => Some(s.to_string()),
+            s  => Some(regex::shell_pattern_to_regex(s)),
         }
     }
 

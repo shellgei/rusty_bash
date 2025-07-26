@@ -12,7 +12,7 @@ use crate::error::exec::ExecError;
 use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
 use crate::elements::substitution::variable::Variable;
-use regex::Regex;
+use crate::regex;
 use self::elem::CondElem;
 use super::arithmetic::elem::ArithElem;
 use std::env;
@@ -226,25 +226,15 @@ impl ConditionalExpr {
             None  => return Err(ExecError::Other("Invalid operand".to_string())),
         };
 
-        let re = match Regex::new(&right_eval) {
-            Ok(regex) => regex,
-            Err(e) => return Err(ExecError::Other(e.to_string())),
-        };
+        let pattern = regex::glob_to_regex(&right_eval);
+        let matched = regex::naive_glob_match(&left, &pattern);
 
         core.db.set_array("BASH_REMATCH", Some(vec![]), None)?;
-        if let Some(res) = re.captures(&left) {
-            for i in 0.. {
-                if let Some(e) = res.get(i) {
-                    let s = e.as_str().to_string();
-                    core.db.set_array_elem("BASH_REMATCH", &s, i as isize, None)?;
-                }else{
-                    break;
-                }
-            }
-            stack.push( CondElem::Ans(true) );
-        }else{
-            stack.push( CondElem::Ans(false) );
+        if matched {
+            core.db.set_array_elem("BASH_REMATCH", &left, 0, None)?;
         }
+
+        stack.push(CondElem::Ans(matched));
 
         return Ok(());
     }
