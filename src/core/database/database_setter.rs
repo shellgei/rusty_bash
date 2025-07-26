@@ -376,6 +376,7 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_array("BASH_ARGV", Some(vec![]), None)?;
     db.set_array("BASH_LINENO", Some(vec![]), None)?;
     db.set_array("DIRSTACK", Some(vec![]), None)?;
-    db.set_assoc("BASH_CMDS", None, false)?;
+    db.set_assoc("BASH_ALIASES", None, true)?;
+    db.set_assoc("BASH_CMDS", None, true)?;
     Ok(())
 }
