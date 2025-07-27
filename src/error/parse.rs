@@ -9,6 +9,7 @@ pub enum ParseError {
     UnexpectedSymbol(String),
     Input(InputError),
     WrongAlias(String),
+    Regex(String),
 }
 //expected for conditional expression
 
@@ -18,7 +19,8 @@ impl From<&ParseError> for String {
             //ParseError::UnexpectedSymbol(s) => format!("Unexpected token: {}", s),
             ParseError::UnexpectedSymbol(s) => format!("syntax error near unexpected token: {}", s),
             ParseError::Input(e) => From::from(e),
-            ParseError::WrongAlias(msg) => format!("Someting wrong alias: {}", msg),
+            ParseError::WrongAlias(msg) => format!("Something wrong alias: {}", msg),
+            ParseError::Regex(msg) => format!("regex error: {}", msg),
         }
     }
 }

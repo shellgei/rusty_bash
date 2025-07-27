@@ -208,6 +208,6 @@ impl ConditionalExpr {
 
             break;
         }
-        Ok(None)
+        Ok(Some(ans))
     }
 }
