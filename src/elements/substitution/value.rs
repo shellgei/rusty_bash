@@ -21,7 +21,7 @@ pub struct Value {
     pub text: String,
     pub value: ParsedDataType,
     pub evaluated_string: Option<String>,
-    pub evaluated_array: Option<Vec<(String, String)>>,
+    pub evaluated_array: Option<Vec<(String, bool, String)>>, //bool: true if append
 }
 
 impl Value {
@@ -61,22 +61,22 @@ impl Value {
         let mut assoc_no_index_mode = false;
         let assoc = core.db.is_assoc(&name);
 
-        for (pos, (s, v)) in a.eval(core, i_flag, assoc)?.into_iter().enumerate() { 
+        for (pos, (s, append, v)) in a.eval(core, i_flag, assoc)?.into_iter().enumerate() { 
             if assoc_no_index_mode {
-                vec_assoc.push(v);
+                vec_assoc.push((v, append));
                 continue;
             }
 
             if s.is_none() {
                 if first && assoc {
                     assoc_no_index_mode = true;
-                    vec_assoc.push(v);
+                    vec_assoc.push((v, append));
                 }else if assoc {
                     let msg = format!("{}: {}: must use subscript when assigning associative array",
-                                      &name, &a.words[pos].1.text);
+                                      &name, &a.words[pos].2.text);
                     ExecError::Other(msg).print(core);
                 }else{
-                    hash.push((i.to_string(), v));
+                    hash.push((i.to_string(), append, v));
                 }
                 i += 1;
                 first = false;
@@ -99,7 +99,7 @@ impl Value {
             };
 
             if assoc {
-                hash.push((index, v));
+                hash.push((index, append, v));
             }else{
                 match index.parse::<isize>() {
                     Ok(j) => i = j,
@@ -108,22 +108,22 @@ impl Value {
                         continue;
                     },
                 }
-                hash.push((index, v));
+                hash.push((index, append, v));
             }
             i += 1;
         }
 
         if assoc_no_index_mode {
             let mut key = String::new();
-            for (i, d) in vec_assoc.iter().enumerate() {
+            for (i, (d, append)) in vec_assoc.iter().enumerate() {
                 match i%2 {
                     0 => key = d.clone(),
-                    _ => hash.push((key.clone(), d.clone())),
+                    _ => hash.push((key.clone(), *append, d.clone())),
                 }
             }
 
             if vec_assoc.len()%2 == 1 {
-                hash.push((key.clone(), "".to_string()));
+                hash.push((key.clone(), append, "".to_string()));
             }
         }
 

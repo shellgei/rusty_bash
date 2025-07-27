@@ -11,13 +11,13 @@ use crate::elements::word::Word;
 #[derive(Debug, Clone, Default)]
 pub struct Array {
     pub text: String,
-    pub words: Vec<(Option<Subscript>, Word)>,
+    pub words: Vec<(Option<Subscript>, bool, Word)>, //bool: true if append
     error_strings: Vec<String>,
 }
 
 impl Array {
     pub fn eval(&mut self, core: &mut ShellCore, as_int: bool, as_assoc: bool)
-    -> Result<Vec<(Option<Subscript>, String)>, ExecError> {
+    -> Result<Vec<(Option<Subscript>, bool, String)>, ExecError> {
         if let Some(c) = self.error_strings.last() {
             return Err(ExecError::SyntaxError(c.to_string()));
         }
@@ -25,16 +25,16 @@ impl Array {
         let mut ans = vec![];
 
         if as_int {
-            for (s, w) in &mut self.words {
-                ans.push( (s.clone(), w.eval_as_integer(core)?) );
+            for (s, append, w) in &mut self.words {
+                ans.push( (s.clone(), *append, w.eval_as_integer(core)?) );
             }
         }else{
-            for (s, w) in &mut self.words {
+            for (s, append, w) in &mut self.words {
                 if as_assoc {
-                    ans.push( (s.clone(), w.eval_as_value(core)?) );
+                    ans.push( (s.clone(), *append, w.eval_as_value(core)?) );
                 }else{
                     for e in w.eval(core)? {
-                        ans.push( (s.clone(), e) );
+                        ans.push( (s.clone(), *append, e) );
                     }
                 }
             }
@@ -42,8 +42,8 @@ impl Array {
         Ok(ans)
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut Self,
-                sub: Option<Subscript>, core: &mut ShellCore) -> bool {
+    fn eat_word(feeder: &mut Feeder, ans: &mut Self, sub: Option<Subscript>,
+        core: &mut ShellCore, append: bool) -> bool {
         if feeder.starts_with(")") {
             return false;
         }
@@ -53,7 +53,7 @@ impl Array {
             _       => return false,
         };
         ans.text += &w.text;
-        ans.words.push((sub, w));
+        ans.words.push((sub, append, w));
         true
     }
 
@@ -62,11 +62,9 @@ impl Array {
         if let Some(s) = Subscript::parse(feeder, core)? {
             if feeder.starts_with("=") {
                 ans.text += &s.text.clone();
-                ans.text += &feeder.consume(1);
                 return Ok(Some(s));
             }else if feeder.starts_with("+=") {
                 ans.text += &s.text.clone();
-                ans.text += &feeder.consume(2);
                 return Ok(Some(s));
             }else{
                 feeder.replace(0, &s.text);
@@ -84,10 +82,21 @@ impl Array {
         ans.text = feeder.consume(1);
         let mut paren_counter = 1;
         loop {
+            let mut append = false;
             command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
             let sub = Self::eat_subscript(feeder, core, &mut ans)?;
-            if Self::eat_word(feeder, &mut ans, sub, core) {
+
+            if sub.is_some() {
+                if feeder.starts_with("=") {
+                    ans.text += &feeder.consume(1);
+                }else if feeder.starts_with("+=") {
+                    append = true;
+                    ans.text += &feeder.consume(2);
+                }
+            }
+
+            if Self::eat_word(feeder, &mut ans, sub, core, append) {
                 continue;
             }
 
