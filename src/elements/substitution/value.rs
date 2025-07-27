@@ -61,7 +61,7 @@ impl Value {
         let mut assoc_no_index_mode = false;
         let assoc = core.db.is_assoc(&name);
 
-        for (s, v) in a.eval(core, i_flag, assoc)? { 
+        for (pos, (s, v)) in a.eval(core, i_flag, assoc)?.into_iter().enumerate() { 
             if assoc_no_index_mode {
                 vec_assoc.push(v);
                 continue;
@@ -71,6 +71,10 @@ impl Value {
                 if first && assoc {
                     assoc_no_index_mode = true;
                     vec_assoc.push(v);
+                }else if assoc {
+                    let msg = format!("{}: {}: must use subscript when assigning associative array",
+                                      &name, &a.words[pos].1.text);
+                    ExecError::Other(msg).print(core);
                 }else{
                     hash.push((i.to_string(), v));
                 }

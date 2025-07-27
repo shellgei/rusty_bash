@@ -191,6 +191,10 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let prefix = format!("declare -{}", options);
     for name in names {
         print!("{}", prefix);
+        if core.db.has_flag(&name, 'i')
+        && ! options.contains('i') {
+            print!("i");
+        }
         if core.db.is_readonly(&name)
         && ! options.contains('r')
         && ! core.options.query("posix") {

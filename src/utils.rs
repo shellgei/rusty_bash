@@ -183,7 +183,7 @@ pub fn to_ansi_c(s: &String) -> String {
                 ans.push('\\');
                 ans.push(c);
             },
-            0x20 | 0x27 | 0x2A | 0x40 | 0x5B | 0x5D => { // space, ' , * , @, [ , ],
+            0x20 | /*0x27 |*/ 0x2A | 0x40 | 0x5B | 0x5D => { // space, ' , * , @, [ , ],
                 double_quote = true;
                 ans.push(c);
             },
