@@ -205,12 +205,12 @@ fn drop_unmatch(args: &mut Vec<String>, pos: usize, list: &mut Vec<String>) {
 pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
 
-    let mut aliases: Vec<String> = core.aliases.keys().map(|k| k.clone()).collect();
+    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").iter().map(|k| k.clone()).collect();
     commands.append(&mut aliases);
 
     let head = get_head(args, 2);
     if head != "" {
-        commands.retain(|a| a.starts_with(&head));
+        commands.retain(|a: &String| a.starts_with(&head));
     }
     commands
 }
@@ -234,7 +234,7 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     }
     commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
 
-    let mut aliases: Vec<String> = core.aliases.keys().map(|k| k.clone()).collect();
+    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").iter().map(|k| k.clone()).collect();
     commands.append(&mut aliases);
     let mut builtins: Vec<String> = core.builtins.keys().map(|k| k.clone()).collect();
     commands.append(&mut builtins);
@@ -284,7 +284,7 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
 pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
 
-    let mut aliases: Vec<String> = core.aliases.keys().map(|k| k.clone()).collect();
+    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").iter().map(|k| k.clone()).collect();
     commands.append(&mut aliases);
     let mut functions: Vec<String> = core.db.functions.keys().map(|k| k.clone()).collect();
     commands.append(&mut functions);

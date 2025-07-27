@@ -44,7 +44,7 @@ impl Default for MeasuredTime {
 #[derive(Default)]
 pub struct ShellCore {
     pub db: DataBase,
-    pub aliases: HashMap<String, String>,
+    //pub aliases: HashMap<String, String>,
     pub alias_memo: Vec<(String, String)>,
     pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
@@ -241,7 +241,7 @@ impl ShellCore {
         }
     }
 
-    fn replace_alias_core(&self, word: &mut String) -> bool {
+    fn replace_alias_core(&mut self, word: &mut String) -> bool {
         if ! self.shopts.query("expand_aliases") {
             if ! self.db.flags.contains('i') {
                 return false;
@@ -262,8 +262,10 @@ impl ShellCore {
                 return ans;
             }
     
-            if let Some(value) = self.aliases.get(&head) {
-                *word = word.replacen(&head, value, 1);
+            //if let Some(value) = self.aliases.get(&head) {
+            if self.db.has_array_value("BASH_ALIASES", &head) {
+                let value = self.db.get_elem("BASH_ALIASES", &head).unwrap_or_default();
+                *word = word.replacen(&head, &value, 1);
                 if history.contains(word) {
                     return false;
                 }

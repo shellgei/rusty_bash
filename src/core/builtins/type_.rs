@@ -6,8 +6,10 @@ use crate::{file_check, ShellCore, utils};
 use crate::utils::{arg, file};
 
 fn type_no_opt_sub(core: &mut ShellCore, com: &String) -> i32 {
-    if core.aliases.contains_key(com) {
-        println!("{} is aliased to `{}'", &com, &core.aliases[com]);
+    //if core.aliases.contains_key(com) {
+    if core.db.has_array_value("BASH_ALIASES", com) {
+        let alias = core.db.get_elem("BASH_ALIASES", com).unwrap();
+        println!("{} is aliased to `{}'", &com, &alias);
         return 0;
     }
     if utils::reserved(com) {
@@ -57,7 +59,7 @@ fn type_t(core: &mut ShellCore, args: &[String]) -> i32 {
 }
 
 fn type_t_sub(core: &mut ShellCore, com: &String) -> i32 {
-    if core.aliases.contains_key(com) {
+    if core.db.has_array_value("BASH_ALIASES", com) {
         println!("alias");
         return 0;
     }
@@ -105,7 +107,7 @@ fn type_large_p(core: &mut ShellCore, args: &[String]) -> i32 {
 }
 
 fn type_p_sub(core: &mut ShellCore, com: &String) -> i32 {
-    if core.aliases.contains_key(com) 
+    if core.db.has_array_value("BASH_ALIASES", com)
     || core.db.functions.contains_key(com)
     || utils::reserved(com)
     || core.builtins.contains_key(com) {
@@ -125,7 +127,7 @@ fn type_p_sub(core: &mut ShellCore, com: &String) -> i32 {
 
 fn type_large_p_sub(core: &mut ShellCore, com: &String) -> i32 {
     let mut es = 1;
-    if core.aliases.contains_key(com) 
+    if core.db.has_array_value("BASH_ALIASES", com)
     || core.db.functions.contains_key(com)
     || utils::reserved(com)
     || core.builtins.contains_key(com) {

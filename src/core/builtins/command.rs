@@ -27,10 +27,11 @@ fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -> i3
     let mut return_value = 1;
 
     for com in words.iter() {
-        if core.aliases.contains_key(com) {
+        if core.db.has_array_value("BASH_ALIASES", com) {
+            let alias = core.db.get_elem("BASH_ALIASES", com).unwrap();
             match large_v {
-                true  => println!("{} is aliased to `{}'", &com, core.aliases[com]),
-                false => println!("alias {}='{}'", &com, &core.aliases[com]),
+                true  => println!("{} is aliased to `{}'", &com, &alias),
+                false => println!("alias {}='{}'", &com, &alias),
             }
         }else if core.builtins.contains_key(com) {
             return_value = 0;
