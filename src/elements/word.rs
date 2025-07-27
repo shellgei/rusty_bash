@@ -118,7 +118,7 @@ impl Word {
         match self.tilde_and_dollar_expansion(core) {
             Ok(mut w) => {
                 let text = w.make_unquoted_word()?;
-                let mut re = crate::regex::shell_pattern_to_regex(&text);
+                let mut re = crate::regex::glob_to_regex(&text);
                 if quoted {
                     re.insert(0, '"');
                     re.push('"');

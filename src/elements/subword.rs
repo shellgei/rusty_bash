@@ -96,7 +96,7 @@ pub trait Subword {
     fn make_regex(&mut self) -> Option<String> {
         match self.get_text() {
             "" => None,
-            s  => Some(regex::shell_pattern_to_regex(s)),
+            s  => Some(regex::glob_to_regex(s)),
         }
     }
 

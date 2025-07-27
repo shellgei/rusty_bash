@@ -12,7 +12,6 @@ use crate::error::exec::ExecError;
 use crate::utils::{file_check, glob};
 use crate::elements::word::Word;
 use crate::elements::substitution::variable::Variable;
-use crate::regex;
 use self::elem::CondElem;
 use super::arithmetic::elem::ArithElem;
 use std::env;
@@ -226,8 +225,8 @@ impl ConditionalExpr {
             None  => return Err(ExecError::Other("Invalid operand".to_string())),
         };
 
-        let pattern = regex::glob_to_regex(&right_eval);
-        let matched = regex::naive_glob_match(&left, &pattern);
+        let ast = crate::regex::parse_regex(&right_eval)?;
+        let matched = crate::regex::match_here(&ast, &left);
 
         core.db.set_array("BASH_REMATCH", Some(vec![]), None)?;
         if matched {
@@ -235,8 +234,7 @@ impl ConditionalExpr {
         }
 
         stack.push(CondElem::Ans(matched));
-
-        return Ok(());
+        Ok(())
     }
 
     fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ArithError> {
