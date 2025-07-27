@@ -30,7 +30,7 @@ pub enum CharSetItem {
     Range(char, char),
 }
 
-pub fn regex_match(pattern: &str, text: &str) -> bool {
+fn regex_match(pattern: &str, text: &str) -> bool {
     match parse(pattern) {
         Ok(ast) => match_here(&ast, text),
         Err(_) => false,
@@ -297,4 +297,28 @@ fn char_class_match(c: char, set: &[CharSetItem]) -> bool {
         }
     }
     false
+}
+
+fn eval_double_bracket_condition(cond: &str, context: &ShellContext) -> bool {
+    let parts: Vec<&str> = cond.splitn(2, "=~").map(str::trim).collect();
+    if parts.len() != 2 {
+        return false;
+    }
+
+    let var_name = parts[0].trim_start_matches('$');
+    let pattern = parts[1];
+
+    let var_value = context.get_var(var_name).unwrap_or_default();
+
+    regex_match(pattern, &var_value)
+}
+
+pub struct ShellContext {
+    vars: std::collections::HashMap<String, String>,
+}
+
+impl ShellContext {
+    pub fn get_var(&self, name: &str) -> Option<String> {
+        self.vars.get(name).cloned()
+    }
 }
