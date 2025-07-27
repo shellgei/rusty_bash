@@ -1,8 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
-use crate::elements::substitution::variable::Variable;
+use crate::ShellCore;
 
 fn unset_all(core: &mut ShellCore, name: &str) -> i32 {
     core.db.unset(name);
@@ -40,19 +39,21 @@ pub fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 return unset_all(core, &name);
             }
 
-            let mut f = Feeder::new(&(name.to_owned()));
-            if let Ok(Some(mut sub)) = Variable::parse(&mut f, core) {
-                if let Ok(Some(key)) = sub.get_index(core, false, false) {
-                    let nm = sub.name.clone();
-                    if let Err(e) = core.db.unset_array_elem(&nm, &key) {
-                        return super::error_exit(1, &args[0], &String::from(&e), core);
-                    }
-                    return 0;
-                }
+            let pos = name.find("[").unwrap();
+            let mut name = name.clone();
+            let mut index = name.split_off(pos);
+
+            if ! index.ends_with("]") {
+                let msg = format!("{}: invalid variable", &name);
+                return super::error_exit(1, &args[0], &msg, core);
             }
 
-            let msg = format!("{}: invalid variable", &name);
-            return super::error_exit(1, &args[0], &msg, core);
+            index.remove(0);
+            index.pop();
+            if let Err(e) = core.db.unset_array_elem(&name, &index) {
+                return super::error_exit(1, &args[0], &String::from(&e), core);
+            }
+            return 0;
         },
     }
     0
