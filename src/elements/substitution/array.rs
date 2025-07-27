@@ -64,6 +64,10 @@ impl Array {
                 ans.text += &s.text.clone();
                 ans.text += &feeder.consume(1);
                 return Ok(Some(s));
+            }else if feeder.starts_with("+=") {
+                ans.text += &s.text.clone();
+                ans.text += &feeder.consume(2);
+                return Ok(Some(s));
             }else{
                 feeder.replace(0, &s.text);
             }
