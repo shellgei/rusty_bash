@@ -164,8 +164,14 @@ pub fn parse_special_subword(feeder: &mut Feeder,core: &mut ShellCore,
                 Ok(None)
             }
         },
+        Some(WordMode::AssocIndex) => {
+            if ! feeder.starts_with("]") {
+                Ok(Some(From::from(&feeder.consume(1))))
+            }else{
+                Ok(None)
+            }
+        },
         Some(WordMode::ReparseOfValue) => {
-        //| Some(WordMode::ReparseOfSubstitution) => {
             if feeder.len() == 0 {
                 Ok(None)
             }else{

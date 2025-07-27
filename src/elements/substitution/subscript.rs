@@ -5,7 +5,7 @@ use crate::{ShellCore, Feeder};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
@@ -28,10 +28,6 @@ impl Subscript {
         if let SubscriptType::Array(a) = &self.data {
             return Ok(a.clone());
         }
-        /*
-        if let SubscriptType::Evaluated(s) = &self.data {
-            return Ok(s.clone());
-        }*/
 
         if let SubscriptType::Arith(mut a) = self.data.clone() {
             if a.text.is_empty() {
@@ -47,7 +43,7 @@ impl Subscript {
             }
 
             let mut f = Feeder::new(&a.text);
-            if let Some(w) = Word::parse(&mut f, core, None)? {
+            if let Some(w) = Word::parse(&mut f, core, Some(WordMode::AssocIndex))? {
                 return w.eval_as_assoc_index(core);
             }else{
                 return Ok(a.text.clone());

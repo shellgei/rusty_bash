@@ -17,6 +17,7 @@ use super::subword::Subword;
 pub enum WordMode {
     Alias,
     Arithmetic,
+    AssocIndex,
     EvalLet,
     CompgenF,
     ReadCommand,
