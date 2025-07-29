@@ -16,6 +16,7 @@ pub struct ProcessSubstitution {
     pub text: String,
     command: ParenCommand,
     pub direction: char,
+    pub file_pipe: Option<Pipe>,
 }
 
 impl Subword for ProcessSubstitution {
@@ -29,7 +30,6 @@ impl Subword for ProcessSubstitution {
 
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        //pipe.proc_replace_recv = self.direction == '>';
         let _ = self.command.exec(core, &mut pipe)?;
         self.text = "/dev/fd/".to_owned() + &pipe.send.to_string();
         Ok(())
@@ -38,14 +38,11 @@ impl Subword for ProcessSubstitution {
 
 impl ProcessSubstitution {
     fn substitute_in(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut file_pipe = Pipe::new("|".to_string());
-        file_pipe.set(-1, unistd::getpgrp());
-
+        self.file_pipe.as_mut().unwrap().set(-1, unistd::getpgrp());
         let mut pipe = Pipe::new("|".to_string());
-        pipe.set(file_pipe.recv, unistd::getpgrp());
-        //pipe.proc_replace_recv = self.direction == '>';
+        pipe.set(self.file_pipe.as_mut().unwrap().recv, unistd::getpgrp());
         let _ = self.command.exec(core, &mut pipe)?;
-        self.text = "/dev/fd/".to_owned() + &file_pipe.send.to_string();
+        self.text = "/dev/fd/".to_owned() + &self.file_pipe.as_mut().unwrap().send.to_string();
         Ok(())
     }
 
@@ -65,6 +62,9 @@ impl ProcessSubstitution {
         if let Some(pc) = ParenCommand::parse(feeder, core, true)? {
             ans.text += &pc.get_text();
             ans.command = pc;
+            if ans.direction == '>' {
+                ans.file_pipe = Some(Pipe::new("|".to_string()));
+            }
             return Ok(Some(ans));
         }
 

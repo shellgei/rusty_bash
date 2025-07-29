@@ -18,7 +18,7 @@ pub struct Pipe {
     pub pgid: Pid,
     pub lastpipe: bool,
     pub lastpipe_backup: RawFd,
-    pub proc_replace_recv: bool,
+//    pub proc_sub_in: bool,
 }
 
 impl Pipe {
@@ -31,7 +31,7 @@ impl Pipe {
             pgid: Pid::from_raw(0),
             lastpipe: false,
             lastpipe_backup: -1,
-            proc_replace_recv: false,
+            //proc_sub_in: false,
         }
     }
 
