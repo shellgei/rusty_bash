@@ -23,19 +23,32 @@ impl Subword for ProcessSubstitution {
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.direction != '<' {
-            return Err(ExecError::Other(">() is not supported yet".to_string()));
+        if self.direction == '>' {
+            return self.substitute_in(core);
         }
 
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
+        //pipe.proc_replace_recv = self.direction == '>';
         let _ = self.command.exec(core, &mut pipe)?;
-        self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
+        self.text = "/dev/fd/".to_owned() + &pipe.send.to_string();
         Ok(())
     }
 }
 
 impl ProcessSubstitution {
+    fn substitute_in(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut file_pipe = Pipe::new("|".to_string());
+        file_pipe.set(-1, unistd::getpgrp());
+
+        let mut pipe = Pipe::new("|".to_string());
+        pipe.set(file_pipe.recv, unistd::getpgrp());
+        //pipe.proc_replace_recv = self.direction == '>';
+        let _ = self.command.exec(core, &mut pipe)?;
+        self.text = "/dev/fd/".to_owned() + &file_pipe.send.to_string();
+        Ok(())
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
     -> Result<Option<Self>, ParseError> {
         if let Some(WordMode::Arithmetic) = mode {
