@@ -30,7 +30,7 @@ impl Subword for ProcessSubstitution {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
         let _ = self.command.exec(core, &mut pipe)?;
-        self.text = "/dev/fd/".to_owned() + &pipe.send.to_string();
+        self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
         Ok(())
     }
 }
