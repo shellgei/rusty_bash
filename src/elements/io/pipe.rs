@@ -74,10 +74,12 @@ impl Pipe {
     }
 
     pub fn set(&mut self, prev: RawFd, pgid: Pid) {
-        let (recv, send) = unistd::pipe().expect("Cannot open pipe");
-        self.recv = recv.into_raw_fd();
-        self.send = send.into_raw_fd();
-        self.prev = prev;
+        if self.proc_sub_file.as_mut().is_none() {
+            let (recv, send) = unistd::pipe().expect("Cannot open pipe");
+            self.recv = recv.into_raw_fd();
+            self.send = send.into_raw_fd();
+            self.prev = prev;
+        }
 
         if let Some(f) = self.proc_sub_file.as_mut() {
             f.set(-1, unistd::getpgrp());
