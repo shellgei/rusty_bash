@@ -1,27 +1,41 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub mod directory;
+pub mod arg;
 pub mod clock;
+pub mod directory;
 pub mod exit;
 pub mod file;
 pub mod file_check;
 pub mod glob;
-pub mod arg;
 pub mod splitter;
 
-use crate::{Feeder, ShellCore};
 use crate::error::input::InputError;
+use crate::{Feeder, ShellCore};
 use faccess::PathExt;
 use io_streams::StreamReader;
 use std::io::Read;
 use std::path::Path;
 
 pub fn reserved(w: &str) -> bool {
-    match w {
-        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif" | "else" | "fi" | "case" | "esac" | "repeat" => true,
-        _ => false,
-    }
+    matches!(
+        w,
+        "[[" | "]]"
+            | "{"
+            | "}"
+            | "while"
+            | "for"
+            | "do"
+            | "done"
+            | "if"
+            | "then"
+            | "elif"
+            | "else"
+            | "fi"
+            | "case"
+            | "esac"
+            | "repeat"
+    )
 }
 
 pub fn split_words(s: &str) -> Vec<String> {
@@ -36,17 +50,17 @@ pub fn split_words(s: &str) -> Vec<String> {
     for c in s.chars() {
         end_with_space = false;
         if escaped || c == '\\' {
-            escaped = ! escaped;
+            escaped = !escaped;
             tmp.push(c);
             continue;
         }
 
         if c == '\'' || c == '"' {
             if c == quote {
-                in_quote = ! in_quote;
+                in_quote = !in_quote;
                 quote = ' ';
-            }else if quote == ' ' {
-                in_quote = ! in_quote;
+            } else if quote == ' ' {
+                in_quote = !in_quote;
                 quote = c;
             }
             tmp.push(c);
@@ -58,18 +72,18 @@ pub fn split_words(s: &str) -> Vec<String> {
             continue;
         }
 
-        if ! in_quote && ( c == ' ' || c == '\t') {
+        if !in_quote && (c == ' ' || c == '\t') {
             end_with_space = true;
-            if ! tmp.is_empty() {
+            if !tmp.is_empty() {
                 ans.push(tmp.clone());
                 tmp.clear();
             }
-        }else{
+        } else {
             tmp.push(c);
         }
     }
 
-    if ! tmp.is_empty() {
+    if !tmp.is_empty() {
         ans.push(tmp);
     }
 
@@ -83,7 +97,7 @@ pub fn split_words(s: &str) -> Vec<String> {
 pub fn is_wsl() -> bool {
     if let Ok(info) = nix::sys::utsname::uname() {
         let release = info.release().to_string_lossy().to_string();
-        return release.find("WSL").is_some();
+        return release.contains("WSL");
     };
 
     false
@@ -91,33 +105,33 @@ pub fn is_wsl() -> bool {
 
 pub fn is_name(s: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(s);
-    s.len() > 0 && f.scanner_name(core) == s.len()
+    !s.is_empty() && f.scanner_name(core) == s.len()
 }
 
-pub fn is_param(s :&str) -> bool {
+pub fn is_param(s: &str) -> bool {
     if s.is_empty() {
         return false;
     }
 
-    let first_ch = s.chars().nth(0).unwrap();
-    if s.len() == 1 { //special or position param
-        if "$?*@#-!_0123456789".find(first_ch) != None {
+    let first_ch = s.chars().next().unwrap();
+    if s.len() == 1 {
+        //special or position param
+        if "$?*@#-!_0123456789".find(first_ch).is_some() {
             return true;
         }
-    }else {
-        if let Ok(n) = s.parse::<usize>() {
-            return n > 0;
-        }
+    } else if let Ok(n) = s.parse::<usize>() {
+        return n > 0;
     }
 
     /* variable */
-    if '0' <= first_ch && first_ch <= '9' {
+    if first_ch.is_ascii_digit() {
         return false;
     }
 
-    let name_c = |c| ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
-                     || ('0' <= c && c <= '9') || '_' == c;
-    s.chars().position(|c| !name_c(c)) == None
+    let name_c = |c: char| {
+        c.is_ascii_lowercase() || c.is_ascii_uppercase() || c.is_ascii_digit() || '_' == c
+    };
+    !s.chars().any(|c| !name_c(c))
 }
 
 pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
@@ -127,7 +141,7 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
 
     let mut d = 10; //\n
     if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
-        d = c;    
+        d = c;
     }
 
     loop {
@@ -137,13 +151,13 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
                     return Err(InputError::Eof);
                 }
                 break;
-            },
+            }
             Ok(_) => {
                 line.push(ch[0]);
                 if d == ch[0] {
                     break;
                 }
-            },
+            }
             Err(_) => return Err(InputError::Eof),
         }
     }
@@ -154,18 +168,19 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     }
 }
 
-pub fn to_ansi_c(s: &String) -> String {
-    if s.contains('\n') { //TODO: add \t \a ...
+pub fn to_ansi_c(s: &str) -> String {
+    if s.contains('\n') {
+        //TODO: add \t \a ...
         return "$'".to_owned() + &s.replace("\n", "\\n") + "'";
     }
-    s.clone()
+    s.to_string()
 }
 
-pub fn get_command_path(s: &String, core: &mut ShellCore) -> String {
-    for path in core.db.get_param("PATH").unwrap_or(String::new()).to_string().split(":") {
+pub fn get_command_path(s: &str, core: &mut ShellCore) -> String {
+    for path in core.db.get_param("PATH").unwrap_or_default().split(":") {
         for command in directory::files(path).iter() {
             let fullpath = path.to_owned() + "/" + command;
-            if ! Path::new(&fullpath).executable() {
+            if !Path::new(&fullpath).executable() {
                 continue;
             }
 

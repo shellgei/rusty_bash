@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
-use crate::utils::arg;
-use crate::error::parse::ParseError;
-use crate::error::exec::ExecError;
 use super::subscript::Subscript;
+use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
+use crate::utils::arg;
+use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
 pub struct Variable {
@@ -16,8 +16,12 @@ pub struct Variable {
 }
 
 impl Variable {
-    pub fn get_index(&mut self, core: &mut ShellCore,
-                     right_is_array: bool, append: bool) -> Result<Option<String>, ExecError> {
+    pub fn get_index(
+        &mut self,
+        core: &mut ShellCore,
+        right_is_array: bool,
+        append: bool,
+    ) -> Result<Option<String>, ExecError> {
         if let Some(mut s) = self.index.clone() {
             if s.text.chars().all(|c| " \n\t[]".contains(c)) {
                 return Ok(Some("".to_string()));
@@ -26,9 +30,9 @@ impl Variable {
             return Ok(Some(index));
         }
 
-        if core.db.is_array(&self.name) && ! append && ! right_is_array {
+        if core.db.is_array(&self.name) && !append && !right_is_array {
             Ok(Some("0".to_string()))
-        }else{
+        } else {
             Ok(None)
         }
     }
@@ -49,12 +53,11 @@ impl Variable {
         sub == "[*]" || sub == "[@]"
     }
 
-    fn set_value(&mut self, value: &String, core: &mut ShellCore)
-    -> Result<(), ExecError> {
+    fn set_value(&mut self, value: &str, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.index.is_none() {
             return core.db.set_param(&self.name, value, None);
         }
-    
+
         let index = self.index.clone().unwrap().eval(core, &self.name)?;
         core.db.set_param2(&self.name, &index, value, None)
     }
@@ -63,29 +66,33 @@ impl Variable {
         let mut f = Feeder::new(arg);
         match Self::parse(&mut f, core)? {
             Some(mut v) => {
-                if ! f.is_empty() {
+                if !f.is_empty() {
                     return Err(ExecError::InvalidName(arg.to_string()));
                 }
-                v.set_value(&value.to_string(), core)
-            },
+                v.set_value(value, core)
+            }
             None => Err(ExecError::InvalidName(arg.to_string())),
         }
     }
 
-    pub fn init_variable(&self, core: &mut ShellCore, layer: Option<usize>, args: &mut Vec<String>)
-    -> Result<(), ExecError> {
+    pub fn init_variable(
+        &self,
+        core: &mut ShellCore,
+        layer: Option<usize>,
+        args: &mut Vec<String>,
+    ) -> Result<(), ExecError> {
         let mut prev = None;
 
-        if (layer.is_none() && core.db.has_value(&self.name) )
-        || core.db.params[layer.unwrap()].get(&self.name).is_some() {
+        if (layer.is_none() && core.db.has_value(&self.name))
+            || core.db.params[layer.unwrap()].contains_key(&self.name)
+        {
             prev = Some(vec![core.db.get_param(&self.name)?]);
         }
 
         let i_opt = arg::consume_option("-i", args);
-        if arg::consume_option("-a", args)
-        || self.index.is_some() {
-            return match i_opt { 
-                true  => core.db.set_int_array(&self.name, prev, layer),
+        if arg::consume_option("-a", args) || self.index.is_some() {
+            return match i_opt {
+                true => core.db.set_int_array(&self.name, prev, layer),
                 false => core.db.set_array(&self.name, prev, layer),
             };
         }
@@ -93,7 +100,8 @@ impl Variable {
             core.db.set_assoc(&self.name, layer)?;
 
             if prev.is_some() {
-                core.db.set_assoc_elem(&self.name, &"0".to_string(), &prev.unwrap()[0], layer)?;
+                core.db
+                    .set_assoc_elem(&self.name, "0", &prev.unwrap()[0], layer)?;
             }
             return Ok(());
         }
@@ -103,21 +111,21 @@ impl Variable {
             None => "".to_string(),
         };
 
-        match i_opt { 
-            true  => core.db.init_as_num(&self.name, &value, layer),
+        match i_opt {
+            true => core.db.init_as_num(&self.name, &value, layer),
             false => core.db.set_param(&self.name, &value, layer),
         }
     }
 
-    pub fn exist(&self, core: &mut ShellCore) -> Result<bool, ExecError> {//used in value_check.rs
-        if core.db.is_array(&self.name) 
-        && core.db.get_vec(&self.name, false)?.is_empty() {
+    pub fn exist(&self, core: &mut ShellCore) -> Result<bool, ExecError> {
+        //used in value_check.rs
+        if core.db.is_array(&self.name) && core.db.get_vec(&self.name, false)?.is_empty() {
             return Ok(false);
         }
-        
+
         if let Some(sub) = self.index.clone().as_mut() {
-            if sub.eval(core, &self.name).is_ok()
-            && core.db.has_array_value(&self.name, &sub.text) {
+            if sub.eval(core, &self.name).is_ok() && core.db.has_array_value(&self.name, &sub.text)
+            {
                 return Ok(true);
             }
         }
@@ -131,8 +139,10 @@ impl Variable {
             return Ok(None);
         }
 
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            ..Default::default()
+        };
 
         let name = feeder.consume(len);
         ans.name = name.clone();

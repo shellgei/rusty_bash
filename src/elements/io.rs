@@ -4,15 +4,15 @@
 pub mod pipe;
 pub mod redirect;
 
-use std::os::unix::prelude::RawFd;
-use nix::{fcntl, unistd};
-use crate::ShellCore;
-use crate::error::exec::ExecError;
-use nix::errno::Errno;
-use crate::elements::Pipe;
 use crate::elements::io::redirect::Redirect;
+use crate::elements::Pipe;
+use crate::error::exec::ExecError;
+use crate::ShellCore;
+use nix::errno::Errno;
+use nix::{fcntl, unistd};
+use std::os::unix::prelude::RawFd;
 
-pub fn close(fd: RawFd, err_str: &str){
+pub fn close(fd: RawFd, err_str: &str) {
     if fd >= 0 {
         unistd::close(fd).expect(err_str);
     }
@@ -25,17 +25,17 @@ pub fn replace(from: RawFd, to: RawFd) -> bool {
 
     match unistd::dup2(from, to) {
         Ok(_) => {
-            close(from, &format!("sush(fatal): {}: cannot be closed", from));
+            close(from, &format!("sush(fatal): {from}: cannot be closed"));
             true
-        },
+        }
         Err(Errno::EBADF) => {
-            eprintln!("sush: {}: Bad file descriptor", to);
+            eprintln!("sush: {to}: Bad file descriptor");
             false
-        },
+        }
         Err(_) => {
             eprintln!("sush: dup2 Unknown error");
             false
-        },
+        }
     }
 }
 
@@ -55,11 +55,14 @@ pub fn backup(from: RawFd) -> RawFd {
     if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
         return from;
     }
-    fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(10))
-           .expect("Can't allocate fd for backup")
+    fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(10)).expect("Can't allocate fd for backup")
 }
 
-pub fn connect(pipe: &mut Pipe, rs: &mut Vec<Redirect>, core: &mut ShellCore) -> Result<(), ExecError> {
+pub fn connect(
+    pipe: &mut Pipe,
+    rs: &mut [Redirect],
+    core: &mut ShellCore,
+) -> Result<(), ExecError> {
     pipe.connect()?;
 
     for r in rs.iter_mut() {

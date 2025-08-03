@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
-use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
+use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
 pub struct ArithmeticCommand {
@@ -21,32 +21,53 @@ impl Command for ArithmeticCommand {
         let mut err = None;
 
         let exit_status = match self.eval(core) {
-            Ok(n) => if n == "0" { 1 } else {0},
-            Err(e) => {err = Some(e); 1},
+            Ok(n) => {
+                if n == "0" {
+                    1
+                } else {
+                    0
+                }
+            }
+            Err(e) => {
+                err = Some(e);
+                1
+            }
         };
 
         core.db.exit_status = exit_status;
 
         match err {
             Some(ExecError::ArithError(s, e)) => {
-                let err_with_com = ExecError::ArithError("((: ".to_owned() + &s.trim_start(), e);
+                let err_with_com = ExecError::ArithError("((: ".to_owned() + s.trim_start(), e);
                 err_with_com.print(core);
                 Err(err_with_com)
             }
             Some(e) => {
                 e.print(core);
                 Err(e.clone())
-            },
+            }
             _ => Ok(()),
         }
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
-    fn get_lineno(&mut self) -> usize { self.lineno }
-    fn set_force_fork(&mut self) { self.force_fork = true; }
-    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
-    fn force_fork(&self) -> bool { self.force_fork }
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> {
+        &mut self.redirects
+    }
+    fn get_lineno(&mut self) -> usize {
+        self.lineno
+    }
+    fn set_force_fork(&mut self) {
+        self.force_fork = true;
+    }
+    fn boxed_clone(&self) -> Box<dyn Command> {
+        Box::new(self.clone())
+    }
+    fn force_fork(&self) -> bool {
+        self.force_fork
+    }
 }
 
 impl ArithmeticCommand {
@@ -69,16 +90,17 @@ impl ArithmeticCommand {
         Ok(ans)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
-        -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("((") {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        if !feeder.starts_with("((") {
             return Ok(None);
         }
         feeder.set_backup();
 
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
-        ans.text = feeder.consume(2);
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            text: feeder.consume(2),
+            ..Default::default()
+        };
 
         if let Some(c) = ArithmeticExpr::parse(feeder, core, true, "((")? {
             if feeder.starts_with("))") {
@@ -90,6 +112,6 @@ impl ArithmeticCommand {
             }
         }
         feeder.rewind();
-        return Ok(None);
+        Ok(None)
     }
 }

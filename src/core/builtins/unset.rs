@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
 use crate::elements::substitution::variable::Variable;
+use crate::{Feeder, ShellCore};
 
 fn unset_all(core: &mut ShellCore, name: &str) -> i32 {
     core.db.unset(name);
@@ -19,7 +19,7 @@ fn unset_function(core: &mut ShellCore, name: &str) -> i32 {
     0
 }
 
-pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn unset(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() < 2 {
         return 0;
     }
@@ -29,18 +29,18 @@ pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             if args.len() > 2 {
                 return unset_function(core, &args[2]);
             }
-        },
+        }
         "-v" => {
             if args.len() > 2 {
                 return unset_var(core, &args[2]);
             }
-        },
+        }
         name => {
-            if ! name.contains("[") {
+            if !name.contains("[") {
                 return unset_all(core, name);
             }
 
-            let mut f = Feeder::new(&(name.to_owned()));
+            let mut f = Feeder::new(name);
             if let Ok(Some(mut sub)) = Variable::parse(&mut f, core) {
                 if let Ok(Some(key)) = sub.get_index(core, false, false) {
                     let nm = sub.name.clone();
@@ -51,7 +51,7 @@ pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             let msg = format!("{}: invalid variable", &name);
             return super::error_exit(1, &args[0], &msg, core);
-        },
+        }
     }
     0
 }

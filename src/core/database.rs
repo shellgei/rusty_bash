@@ -6,18 +6,18 @@ mod database_checker;
 mod database_getter;
 mod database_setter;
 
-use crate::{env, exit};
-use crate::elements::command::function_def::FunctionDefinition;
-use std::collections::HashMap;
-use self::data::Data;
-use self::data::assoc::AssocData;
-use self::data::single::SingleData;
 use self::data::array::ArrayData;
 use self::data::array_int::IntArrayData;
-use self::data::assoc_int::IntAssocData;
 use self::data::array_uninit::UninitArray;
+use self::data::assoc::AssocData;
+use self::data::assoc_int::IntAssocData;
 use self::data::assoc_uninit::UninitAssoc;
+use self::data::single::SingleData;
 use self::data::single_int::IntData;
+use self::data::Data;
+use crate::elements::command::function_def::FunctionDefinition;
+use crate::{env, exit};
+use std::collections::HashMap;
 //use self::data::special::SpecialData;
 
 #[derive(Debug, Default)]
@@ -56,7 +56,6 @@ impl DataBase {
     fn solve_layer(&mut self, name: &str) -> usize {
         self.get_layer_pos(name).unwrap_or(0)
     }
-
 
     pub fn push_local(&mut self) {
         self.params.push(HashMap::new());
@@ -112,7 +111,7 @@ impl DataBase {
     pub fn print(&mut self, name: &str) {
         if let Some(d) = self.get_ref(name) {
             d.print_with_name(name, false);
-        }else if let Some(f) = self.functions.get(name) {
+        } else if let Some(f) = self.functions.get(name) {
             println!("{}", &f.text);
         }
     }
@@ -120,7 +119,7 @@ impl DataBase {
     pub fn declare_print(&mut self, name: &str) {
         if let Some(d) = self.get_ref(name) {
             d.print_with_name(name, true);
-        }else if let Some(f) = self.functions.get(name) {
+        } else if let Some(f) = self.functions.get(name) {
             println!("{}", &f.text);
         }
     }

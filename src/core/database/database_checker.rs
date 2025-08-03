@@ -1,15 +1,15 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use crate::core::DataBase;
+use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::file_check;
-use crate::error::exec::ExecError;
-use crate::core::DataBase;
 
 impl DataBase {
     pub fn has_array_value(&mut self, name: &str, index: &str) -> bool {
         let num = self.params.len();
-        for layer in (0..num).rev()  {
+        for layer in (0..num).rev() {
             if let Some(e) = self.params[layer].get(name) {
                 let mut a = e.clone();
                 return a.get_as_array_or_assoc(index, "").is_ok();
@@ -33,8 +33,8 @@ impl DataBase {
         }
 
         let num = self.params.len();
-        for layer in (0..num).rev()  {
-            if self.params[layer].get(name).is_some() {
+        for layer in (0..num).rev() {
+            if self.params[layer].contains_key(name) {
                 return true;
             }
         }
@@ -42,7 +42,7 @@ impl DataBase {
     }
 
     pub fn name_check(name: &str) -> Result<(), ExecError> {
-        if ! utils::is_param(name) {
+        if !utils::is_param(name) {
             return Err(ExecError::VariableInvalid(name.to_string()));
         }
         Ok(())
@@ -59,7 +59,7 @@ impl DataBase {
                 return Err(ExecError::Other(msg));
             }
 
-            if file_check::is_executable(&c) {
+            if file_check::is_executable(c) {
                 let msg = format!("{}: not found", &c);
                 return Err(ExecError::Other(msg));
             }
@@ -90,21 +90,21 @@ impl DataBase {
 
     pub fn is_single(&mut self, name: &str) -> bool {
         match self.get_ref(name) {
-            Some(d) => return d.is_single(),
+            Some(d) => d.is_single(),
             _ => false,
         }
     }
 
     pub fn is_single_num(&mut self, name: &str) -> bool {
         match self.get_ref(name) {
-            Some(d) => return d.is_single_num(),
+            Some(d) => d.is_single_num(),
             _ => false,
         }
     }
 
     pub fn is_array(&mut self, name: &str) -> bool {
         match self.get_ref(name) {
-            Some(d) => return d.is_array(),
+            Some(d) => d.is_array(),
             _ => false,
         }
     }

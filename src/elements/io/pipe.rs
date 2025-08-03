@@ -1,13 +1,13 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
 use crate::elements::io;
 use crate::error::exec::ExecError;
-use std::os::fd::IntoRawFd;
-use std::os::unix::prelude::RawFd;
+use crate::{Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::Pid;
+use std::os::fd::IntoRawFd;
+use std::os::unix::prelude::RawFd;
 
 #[derive(Debug, Clone)]
 pub struct Pipe {
@@ -23,7 +23,7 @@ pub struct Pipe {
 impl Pipe {
     pub fn new(text: String) -> Pipe {
         Pipe {
-            text: text,
+            text,
             recv: -1,
             send: -1,
             prev: -1,
@@ -59,7 +59,7 @@ impl Pipe {
 
         if len > 0 {
             Some(Self::new(feeder.consume(len)))
-        }else{
+        } else {
             None
         }
     }
@@ -77,15 +77,15 @@ impl Pipe {
         io::replace(self.send, 1);
         io::replace(self.prev, 0);
 
-        if &self.text == &"|&" {
+        if self.text == "|&" {
             io::share(1, 2)?;
         }
         Ok(())
     }
 
     pub fn parent_close(&mut self) {
-            io::close(self.send, "Cannot close parent pipe out");
-            io::close(self.prev,"Cannot close parent prev pipe out");
+        io::close(self.send, "Cannot close parent pipe out");
+        io::close(self.prev, "Cannot close parent prev pipe out");
     }
 
     pub fn is_connected(&self) -> bool {

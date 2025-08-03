@@ -1,15 +1,15 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script};
+use crate::{Feeder, Script, ShellCore};
 
-use crate::error::exec::ExecError;
-use crate::error::parse::ParseError;
 use super::{Command, Redirect};
 use crate::elements::command;
-use crate::elements::word::Word;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::elements::word::Word;
 use crate::error;
+use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
@@ -31,11 +31,11 @@ impl Command for ForCommand {
         core.loop_level += 1;
 
         let ok = match self.has_arithmetic {
-            true  => self.run_with_arithmetic(core),
+            true => self.run_with_arithmetic(core),
             false => self.run_with_values(core),
         };
 
-        if ! ok && core.db.exit_status == 0 {
+        if !ok && core.db.exit_status == 0 {
             core.db.exit_status = 1;
         }
 
@@ -46,12 +46,24 @@ impl Command for ForCommand {
         Ok(())
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
-    fn get_lineno(&mut self) -> usize { self.lineno }
-    fn set_force_fork(&mut self) { self.force_fork = true; }
-    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
-    fn force_fork(&self) -> bool { self.force_fork }
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> {
+        &mut self.redirects
+    }
+    fn get_lineno(&mut self) -> usize {
+        self.lineno
+    }
+    fn set_force_fork(&mut self) {
+        self.force_fork = true;
+    }
+    fn boxed_clone(&self) -> Box<dyn Command> {
+        Box::new(self.clone())
+    }
+    fn force_fork(&self) -> bool {
+        self.force_fork
+    }
 }
 
 impl ForCommand {
@@ -60,10 +72,10 @@ impl ForCommand {
         for w in &mut self.values {
             match w.eval(core) {
                 Ok(mut ws) => ans.append(&mut ws),
-                Err(e)     => {
+                Err(e) => {
                     e.print(core);
                     return None;
-                },
+                }
             }
         }
 
@@ -72,9 +84,9 @@ impl ForCommand {
 
     fn run_with_values(&mut self, core: &mut ShellCore) -> bool {
         let values = match self.has_in {
-            true  => match self.eval_values(core) {
+            true => match self.eval_values(core) {
                 Some(vs) => vs,
-                None     => return false,
+                None => return false,
             },
             false => core.db.get_position_params(),
         };
@@ -114,18 +126,18 @@ impl ForCommand {
         }
 
         match a.clone().unwrap().eval(core) {
-            Ok(n) => return (true, n),
-            _     => return (false, "0".to_string()),
+            Ok(n) => (true, n),
+            _ => (false, "0".to_string()),
         }
     }
 
     fn run_with_arithmetic(&mut self, core: &mut ShellCore) -> bool {
         let (ok, _) = Self::eval_arithmetic(&mut self.arithmetics[0], core);
-        if ! ok {
+        if !ok {
             return false;
         }
 
-        while ! core.return_flag {
+        while !core.return_flag {
             if core.sigint.load(Relaxed) {
                 return false;
             }
@@ -143,7 +155,7 @@ impl ForCommand {
             }
 
             let (ok, _) = Self::eval_arithmetic(&mut self.arithmetics[2], core);
-            if ! ok {
+            if !ok {
                 return false;
             }
         }
@@ -164,19 +176,23 @@ impl ForCommand {
         true
     }
 
-    fn eat_arithmetic(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
-        if ! feeder.starts_with("((") {
+    fn eat_arithmetic(
+        feeder: &mut Feeder,
+        ans: &mut Self,
+        core: &mut ShellCore,
+    ) -> Result<bool, ParseError> {
+        if !feeder.starts_with("((") {
             return Ok(false);
         }
         ans.text += &feeder.consume(2);
         ans.has_arithmetic = true;
- 
+
         loop {
             command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
             let a = ArithmeticExpr::parse(feeder, core, true, "((")?;
-            if a.is_some() {
-                ans.text += &a.as_ref().unwrap().text.clone();
+            if let Some(ref arithmetic) = &a {
+                ans.text += &arithmetic.text.clone();
             }
             ans.arithmetics.push(a);
 
@@ -186,20 +202,24 @@ impl ForCommand {
                     return Ok(false);
                 }
                 ans.text += &feeder.consume(1);
-            }else if feeder.starts_with("))") {
+            } else if feeder.starts_with("))") {
                 if ans.arithmetics.len() != 3 {
                     return Ok(false);
                 }
                 ans.text += &feeder.consume(2);
                 return Ok(ans.arithmetics.len() == 3);
-            }else {
+            } else {
                 return Ok(false);
             }
         }
     }
 
-    fn eat_in_part(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<(), ParseError> {
-        if ! feeder.starts_with("in") {
+    fn eat_in_part(
+        feeder: &mut Feeder,
+        ans: &mut Self,
+        core: &mut ShellCore,
+    ) -> Result<(), ParseError> {
+        if !feeder.starts_with("in") {
             return Ok(());
         }
 
@@ -212,8 +232,8 @@ impl ForCommand {
                 Some(w) => {
                     ans.text += &w.text.clone();
                     ans.values.push(w);
-                },
-                _    => return Ok(()),
+                }
+                _ => return Ok(()),
             }
         }
     }
@@ -224,40 +244,42 @@ impl ForCommand {
             ans.text += &feeder.consume(1);
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
             true
-        }else{
+        } else {
             false
         }
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
-        -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("for") {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        if !feeder.starts_with("for") {
             return Ok(None);
         }
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
-        ans.text = feeder.consume(3);
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            text: feeder.consume(3),
+            ..Default::default()
+        };
 
         if Self::eat_name(feeder, &mut ans, core) {
             Self::eat_in_part(feeder, &mut ans, core)?;
-        }else if ! Self::eat_arithmetic(feeder, &mut ans, core)? {
+        } else if !Self::eat_arithmetic(feeder, &mut ans, core)? {
             return Ok(None);
         }
 
-        if ! Self::eat_end(feeder, &mut ans, core) {
+        if !Self::eat_end(feeder, &mut ans, core) {
             return Ok(None);
         }
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
-        if command::eat_inner_script(feeder, core, "do", vec!["done"],  &mut ans.do_script, false)? {
+        if command::eat_inner_script(feeder, core, "do", vec!["done"], &mut ans.do_script, false)? {
             ans.text.push_str("do");
-            ans.text.push_str(&ans.do_script.as_mut().unwrap().get_text());
+            ans.text
+                .push_str(&ans.do_script.as_mut().unwrap().get_text());
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             Ok(Some(ans))
-        }else{
+        } else {
             Ok(None)
         }
     }

@@ -7,18 +7,19 @@ use nix::unistd;
 use std::fs;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 
-use std::os::unix::fs::MetadataExt as UnixMetadataExt;
+#[cfg(target_os = "android")]
+use std::os::android::fs::MetadataExt;
 #[cfg(target_os = "linux")]
 use std::os::linux::fs::MetadataExt;
 #[cfg(target_os = "macos")]
 use std::os::macos::fs::MetadataExt;
-#[cfg(target_os = "android")]
-use std::os::android::fs::MetadataExt;
+use std::os::unix::fs::MetadataExt as UnixMetadataExt;
 
 use std::path::Path;
 
 pub fn exists(name: &str) -> bool {
-    if name.ends_with("/") { //for macOS
+    if name.ends_with("/") {
+        //for macOS
         return is_dir(name);
     }
 
@@ -34,28 +35,25 @@ pub fn is_dir(name: &str) -> bool {
 }
 
 pub fn metadata_comp(left: &str, right: &str, tp: &str) -> bool {
-    let (lmeta, rmeta) = match ( fs::metadata(left), fs::metadata(right) ) {
-        ( Ok(lm), Ok(rm) ) => (lm, rm),
-        ( Ok(_), Err(_) )  => return tp == "-nt",
-        ( Err(_), Ok(_) )  => return tp == "-ot",
-        ( Err(_), Err(_) ) => return false,
+    let (lmeta, rmeta) = match (fs::metadata(left), fs::metadata(right)) {
+        (Ok(lm), Ok(rm)) => (lm, rm),
+        (Ok(_), Err(_)) => return tp == "-nt",
+        (Err(_), Ok(_)) => return tp == "-ot",
+        (Err(_), Err(_)) => return false,
     };
 
     match tp {
-        "-ef" => (lmeta.dev(), lmeta.ino())
-                 == (rmeta.dev(), rmeta.ino()),
-        "-nt" => lmeta.modified().unwrap()
-                 > rmeta.modified().unwrap(),
-        "-ot" => lmeta.modified().unwrap()
-                 < rmeta.modified().unwrap(),
-        _     => false,
+        "-ef" => (lmeta.dev(), lmeta.ino()) == (rmeta.dev(), rmeta.ino()),
+        "-nt" => lmeta.modified().unwrap() > rmeta.modified().unwrap(),
+        "-ot" => lmeta.modified().unwrap() < rmeta.modified().unwrap(),
+        _ => false,
     }
 }
 
 pub fn metadata_check(name: &str, tp: &str) -> bool {
     let meta = match fs::metadata(name) {
         Ok(m) => m,
-        _     => return false,
+        _ => return false,
     };
 
     match tp {
@@ -74,17 +72,17 @@ pub fn metadata_check(name: &str, tp: &str) -> bool {
                 _ => return false,
             };
             return modified_time > accessed_time;
-        },
+        }
         "-O" => return unistd::getuid() == meta.st_uid().into(),
         "-S" => return meta.file_type().is_socket(),
-        _ => {},
+        _ => {}
     }
 
-    let special_mode = (meta.permissions().mode()/0o1000)%8;
+    let special_mode = (meta.permissions().mode() / 0o1000) % 8;
     match tp {
-        "-g" => (special_mode%4)>>1 == 1,
-        "-k" => special_mode%2 == 1,
-        "-u" => special_mode/4 == 1,
+        "-g" => (special_mode % 4) >> 1 == 1,
+        "-k" => special_mode % 2 == 1,
+        "-u" => special_mode / 4 == 1,
         _ => false,
     }
 }

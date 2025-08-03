@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{builtins, ShellCore};
 use crate::core::{CompletionEntry, HashMap};
 use crate::utils::arg;
+use crate::{builtins, ShellCore};
 
 fn action_to_reduce_symbol(arg: &str) -> String {
     match arg {
@@ -21,7 +21,8 @@ fn action_to_reduce_symbol(arg: &str) -> String {
         "service" => "s",
         "user" => "u",
         _ => "",
-    }.to_string()
+    }
+    .to_string()
 }
 
 fn opt_to_action(arg: &str) -> String {
@@ -38,23 +39,24 @@ fn opt_to_action(arg: &str) -> String {
         "-u" => "user",
         "-v" => "variable",
         _ => "",
-    }.to_string()
+    }
+    .to_string()
 }
 
 fn print_complete(core: &mut ShellCore) -> i32 {
-    if core.completion.default_function != "" {
+    if !core.completion.default_function.is_empty() {
         println!("complete -F {} -D", &core.completion.default_function);
     }
 
     for (name, info) in &core.completion.entries {
-        if info.function != "" {
+        if !info.function.is_empty() {
             print!("complete -F {} ", &info.function);
-        }else if info.action != "" {
+        } else if !info.action.is_empty() {
             let symbol = action_to_reduce_symbol(&info.action);
 
-            if symbol == "" {
+            if symbol.is_empty() {
                 print!("complete -A {} ", &info.action);
-            }else{
+            } else {
                 print!("complete -{} ", &symbol);
             }
 
@@ -64,58 +66,60 @@ fn print_complete(core: &mut ShellCore) -> i32 {
             if info.options.contains_key("-S") {
                 print!("-S '{}' ", &info.options["-S"]);
             }
-        }else{
+        } else {
             print!("complete ");
         }
-        println!("{}", &name); 
+        println!("{}", &name);
     }
     0
 }
 
-fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<String>) -> i32 {
+fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &[String]) -> i32 {
     let d_option = arg::consume_option("-D", args);
 
     if args.len() <= 1 {
         return builtins::error_exit(2, &args[0], "-F: option requires an argument", core);
     }
- 
+
     if d_option {
         core.completion.default_function = args[1].clone();
-        return 0;
-    }else {
+        0
+    } else {
         let func = args[1].clone();
         for command in &args[2..] {
-            if ! core.completion.entries.contains_key(command) {
-                core.completion.entries.insert(command.clone(), CompletionEntry::default());
+            if !core.completion.entries.contains_key(command) {
+                core.completion
+                    .entries
+                    .insert(command.clone(), CompletionEntry::default());
             }
-    
+
             let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.function = func.clone();
-            info.o_options = o_options.clone();
+            info.o_options = o_options.to_vec();
         }
 
-        return 0;
+        0
     }
 }
 
-fn complete_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    for command in &mut args[1..] {
+fn complete_r(core: &mut ShellCore, args: &[String]) -> i32 {
+    for command in &args[1..] {
         core.completion.entries.remove(command);
     }
 
     0
 }
 
-pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 || args[1] == "-p" {
         return print_complete(core);
     }
 
     let mut o_options = vec![];
-    let mut args = arg::dissolve_options(args);
+    let mut args = arg::dissolve_options(&args.to_vec());
 
     if arg::consume_option("-r", &mut args) {
-        return complete_r(core, &mut args);
+        return complete_r(core, &args);
     }
 
     while let Some(v) = arg::consume_with_next_arg("-o", &mut args) {
@@ -124,21 +128,23 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut options = HashMap::new();
     let prefix = arg::consume_with_next_arg("-P", &mut args);
-    if prefix != None {
-        options.insert("-P".to_string(), prefix.unwrap().clone());
+    if let Some(prefix_val) = prefix {
+        options.insert("-P".to_string(), prefix_val.clone());
     }
     let suffix = arg::consume_with_next_arg("-S", &mut args);
-    if suffix != None {
-        options.insert("-S".to_string(), suffix.unwrap().clone());
+    if let Some(suffix_val) = suffix {
+        options.insert("-S".to_string(), suffix_val.clone());
     }
 
     let action = opt_to_action(&args[1]);
-    if action != "" {
+    if !action.is_empty() {
         for command in &args[2..] {
-            if ! core.completion.entries.contains_key(command) {
-                core.completion.entries.insert(command.clone(), CompletionEntry::default());
+            if !core.completion.entries.contains_key(command) {
+                core.completion
+                    .entries
+                    .insert(command.clone(), CompletionEntry::default());
             }
-    
+
             let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.action = action.clone();
             info.options = options.clone();
@@ -148,10 +154,12 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() > 3 && args[1] == "-A" {
         for command in &args[3..] {
-            if ! core.completion.entries.contains_key(command) {
-                core.completion.entries.insert(command.clone(), CompletionEntry::default());
+            if !core.completion.entries.contains_key(command) {
+                core.completion
+                    .entries
+                    .insert(command.clone(), CompletionEntry::default());
             }
-    
+
             let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.action = args[2].clone();
             info.options = options.clone();
@@ -162,7 +170,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if arg::consume_option("-F", &mut args) {
         complete_f(core, &mut args, &o_options)
-    }else{
+    } else {
         let msg = format!("{}: still unsupported", &args[1]);
         builtins::error_exit(1, &args[0], &msg, core)
     }

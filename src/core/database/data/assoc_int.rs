@@ -1,9 +1,9 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::utils;
-use crate::error::exec::ExecError;
 use super::Data;
+use crate::error::exec::ExecError;
+use crate::utils;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
@@ -32,7 +32,7 @@ impl Data for IntAssocData {
             let ansi = utils::to_ansi_c(v);
             if ansi == *v {
                 formatted += &format!("[{}]=\"{}\" ", k, &ansi);
-            }else{
+            } else {
                 formatted += &format!("[{}]={} ", k, &ansi);
             }
         }
@@ -41,7 +41,9 @@ impl Data for IntAssocData {
         formatted
     }
 
-    fn clear(&mut self) { self.body.clear(); }
+    fn clear(&mut self) {
+        self.body.clear();
+    }
 
     fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let n = super::to_int(value)?;
@@ -55,7 +57,7 @@ impl Data for IntAssocData {
 
         if let Some(v) = self.body.get(key) {
             self.body.insert(key.to_string(), v + n);
-        }else{
+        } else {
             self.body.insert(key.to_string(), n);
         }
         self.last = Some(value.to_string());
@@ -78,18 +80,24 @@ impl Data for IntAssocData {
             return Ok(s.to_string());
         }
 
-        self.last.clone().ok_or(ExecError::Other("No last input".to_string()))
+        self.last
+            .clone()
+            .ok_or(ExecError::Other("No last input".to_string()))
     }
 
-    fn is_assoc(&self) -> bool {true}
-    fn len(&mut self) -> usize { self.body.len() }
+    fn is_assoc(&self) -> bool {
+        true
+    }
+    fn len(&mut self) -> usize {
+        self.body.len()
+    }
 
     fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
         if key == "@" || key == "*" {
             return Ok(self.len());
         }
 
-        let s = self.body.get(key).unwrap_or(&0).clone();
+        let s = *self.body.get(key).unwrap_or(&0);
 
         Ok(s.to_string().len())
     }
@@ -102,16 +110,18 @@ impl Data for IntAssocData {
         if self.body.is_empty() {
             return Ok(vec![]);
         }
-        
+
         let mut keys = self.keys();
         keys.sort();
         let mut ans = vec![];
         for i in keys {
             match self.body.get(&i) {
                 Some(s) => ans.push(s.to_string()),
-                None => if ! skip_none {
-                    ans.push("".to_string());
-                },
+                None => {
+                    if !skip_none {
+                        ans.push("".to_string());
+                    }
+                }
             }
         }
         Ok(ans)
@@ -128,7 +138,7 @@ impl Data for IntAssocData {
         }
 
         self.body.remove(key);
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -142,7 +152,7 @@ impl IntAssocData {
     pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
                      key: &String, val: &String) -> Result<(), ExecError> {
         match db_layer.get_mut(name) {
-            Some(v) => v.set_as_assoc(key, val), 
+            Some(v) => v.set_as_assoc(key, val),
             _ => Err(ExecError::Other("TODO".to_string())),
         }
     }
@@ -150,7 +160,7 @@ impl IntAssocData {
     pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
                      key: &String, val: &String) -> Result<(), ExecError> {
         match db_layer.get_mut(name) {
-            Some(v) => v.append_to_assoc_elem(key, val), 
+            Some(v) => v.append_to_assoc_elem(key, val),
             _ => Err(ExecError::Other("TODO".to_string())),
         }
     }*/

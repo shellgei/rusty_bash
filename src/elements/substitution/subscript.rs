@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
@@ -15,7 +15,7 @@ pub struct Subscript {
 
 impl Subscript {
     pub fn eval(&mut self, core: &mut ShellCore, param_name: &str) -> Result<String, ExecError> {
-        if self.inner_special != "" {
+        if !self.inner_special.is_empty() {
             return Ok(self.inner_special.clone());
         }
 
@@ -24,11 +24,9 @@ impl Subscript {
                 return Err(ExecError::ArrayIndexInvalid(a.text.clone()));
             }
             return match core.db.is_assoc(param_name) {
-                true  => {
-                    match self.inner.as_mut() {
-                        Some(sub) => sub.eval_as_assoc_index(core),
-                        None => Err(ExecError::ArrayIndexInvalid("".to_string())),
-                    }
+                true => match self.inner.as_mut() {
+                    Some(sub) => sub.eval_as_assoc_index(core),
+                    None => Err(ExecError::ArrayIndexInvalid("".to_string())),
                 },
                 false => a.eval(core),
             };
@@ -38,7 +36,7 @@ impl Subscript {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("[") {
+        if !feeder.starts_with("[") {
             return Ok(None);
         }
 
@@ -48,15 +46,15 @@ impl Subscript {
         if feeder.starts_with("@") {
             ans.text += "@";
             ans.inner_special = feeder.consume(1);
-        }else if feeder.starts_with("*") {
+        } else if feeder.starts_with("*") {
             ans.text += "*";
             ans.inner_special = feeder.consume(1);
-        }else if let Some(a) = ArithmeticExpr::parse(feeder, core, true, "[")? {
+        } else if let Some(a) = ArithmeticExpr::parse(feeder, core, true, "[")? {
             ans.text += &a.text.clone();
             ans.inner = Some(a);
         }
 
-        if ! feeder.starts_with("]") {
+        if !feeder.starts_with("]") {
             return Ok(None);
         }
 
