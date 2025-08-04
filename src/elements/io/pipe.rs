@@ -38,11 +38,13 @@ impl Pipe {
             proc_sub_send: -1,
         };
 
+        /*
         if text == ">()" {
             let (recv, send) = unistd::pipe().expect("Cannot open pipe");
             ans.proc_sub_recv = recv.into_raw_fd();
             ans.proc_sub_send = send.into_raw_fd();
         }
+        */
 
         ans
     }
@@ -79,17 +81,25 @@ impl Pipe {
     }
 
     pub fn set(&mut self, prev: RawFd, pgid: Pid) {
-        if self.proc_sub_recv == -1 {
+        if self.text != ">()" {
             let (recv, send) = unistd::pipe().expect("Cannot open pipe");
             self.recv = recv.into_raw_fd();
             self.send = send.into_raw_fd();
             self.prev = prev;
         }
 
+        if self.text == ">()" {
+            let (recv, send) = unistd::pipe().expect("Cannot open pipe");
+            self.proc_sub_recv = recv.into_raw_fd();
+            self.proc_sub_send = send.into_raw_fd();
+            self.prev = self.proc_sub_recv;
+        }
+
+        /*
         if self.proc_sub_send != -1 {
             //f.set(-1, unistd::getpgrp());
             self.prev = self.proc_sub_recv;
-        }
+        }*/
 
         self.pgid = pgid;
     }
