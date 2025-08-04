@@ -18,8 +18,10 @@ pub struct Pipe {
     pub pgid: Pid,
     pub lastpipe: bool,
     pub lastpipe_backup: RawFd,
-    pub proc_sub_file: Option<Box::<Pipe>>,
+    //pub proc_sub_file: Option<Box::<Pipe>>,
 //    pub proc_sub_in: bool,
+    pub proc_sub_recv: RawFd,
+    pub proc_sub_send: RawFd,
 }
 
 impl Pipe {
@@ -32,11 +34,14 @@ impl Pipe {
             pgid: Pid::from_raw(0),
             lastpipe: false,
             lastpipe_backup: -1,
-            proc_sub_file: None,
+            proc_sub_recv: -1,
+            proc_sub_send: -1,
         };
 
         if text == ">()" {
-            ans.proc_sub_file = Some(Box::new(Pipe::new("fifo".to_string())));
+            let (recv, send) = unistd::pipe().expect("Cannot open pipe");
+            ans.proc_sub_recv = recv.into_raw_fd();
+            ans.proc_sub_send = send.into_raw_fd();
         }
 
         ans
@@ -74,16 +79,16 @@ impl Pipe {
     }
 
     pub fn set(&mut self, prev: RawFd, pgid: Pid) {
-        if self.proc_sub_file.as_mut().is_none() {
+        if self.proc_sub_recv == -1 {
             let (recv, send) = unistd::pipe().expect("Cannot open pipe");
             self.recv = recv.into_raw_fd();
             self.send = send.into_raw_fd();
             self.prev = prev;
         }
 
-        if let Some(f) = self.proc_sub_file.as_mut() {
-            f.set(-1, unistd::getpgrp());
-            self.prev = f.recv;
+        if self.proc_sub_send != -1 {
+            //f.set(-1, unistd::getpgrp());
+            self.prev = self.proc_sub_recv;
         }
 
         self.pgid = pgid;
