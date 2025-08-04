@@ -26,7 +26,7 @@ pub struct Pipe {
 
 impl Pipe {
     pub fn new(text: String) -> Pipe {
-        let mut ans = Pipe {
+        Pipe {
             text: text.clone(),
             recv: -1,
             send: -1,
@@ -36,17 +36,7 @@ impl Pipe {
             lastpipe_backup: -1,
             proc_sub_recv: -1,
             proc_sub_send: -1,
-        };
-
-        /*
-        if text == ">()" {
-            let (recv, send) = unistd::pipe().expect("Cannot open pipe");
-            ans.proc_sub_recv = recv.into_raw_fd();
-            ans.proc_sub_send = send.into_raw_fd();
         }
-        */
-
-        ans
     }
 
     pub fn end(prev: RawFd, pgid: Pid, lastpipe: bool) -> Pipe {
@@ -116,8 +106,8 @@ impl Pipe {
     }
 
     pub fn parent_close(&mut self) {
-            io::close(self.send, "Cannot close parent pipe out");
-            io::close(self.prev,"Cannot close parent prev pipe out");
+        io::close(self.send, "Cannot close parent pipe out");
+        io::close(self.prev,"Cannot close parent prev pipe out");
     }
 
     pub fn is_connected(&self) -> bool {
