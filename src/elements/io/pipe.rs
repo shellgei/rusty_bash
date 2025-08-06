@@ -18,13 +18,15 @@ pub struct Pipe {
     pub pgid: Pid,
     pub lastpipe: bool,
     pub lastpipe_backup: RawFd,
-    pub proc_sub_file: Option<Box::<Pipe>>,
+    //pub proc_sub_file: Option<Box::<Pipe>>,
 //    pub proc_sub_in: bool,
+    pub proc_sub_recv: RawFd,
+    pub proc_sub_send: RawFd,
 }
 
 impl Pipe {
     pub fn new(text: String) -> Pipe {
-        let mut ans = Pipe {
+        Pipe {
             text: text.clone(),
             recv: -1,
             send: -1,
@@ -32,14 +34,9 @@ impl Pipe {
             pgid: Pid::from_raw(0),
             lastpipe: false,
             lastpipe_backup: -1,
-            proc_sub_file: None,
-        };
-
-        if text == ">()" {
-            ans.proc_sub_file = Some(Box::new(Pipe::new("fifo".to_string())));
+            proc_sub_recv: -1,
+            proc_sub_send: -1,
         }
-
-        ans
     }
 
     pub fn end(prev: RawFd, pgid: Pid, lastpipe: bool) -> Pipe {
@@ -74,17 +71,25 @@ impl Pipe {
     }
 
     pub fn set(&mut self, prev: RawFd, pgid: Pid) {
-        if self.proc_sub_file.as_mut().is_none() {
+        if self.text != ">()" {
             let (recv, send) = unistd::pipe().expect("Cannot open pipe");
             self.recv = recv.into_raw_fd();
             self.send = send.into_raw_fd();
             self.prev = prev;
         }
 
-        if let Some(f) = self.proc_sub_file.as_mut() {
-            f.set(-1, unistd::getpgrp());
-            self.prev = f.recv;
+        if self.text == ">()" {
+            let (recv, send) = unistd::pipe().expect("Cannot open pipe");
+            self.proc_sub_recv = recv.into_raw_fd();
+            self.proc_sub_send = send.into_raw_fd();
+            self.prev = self.proc_sub_recv;
         }
+
+        /*
+        if self.proc_sub_send != -1 {
+            //f.set(-1, unistd::getpgrp());
+            self.prev = self.proc_sub_recv;
+        }*/
 
         self.pgid = pgid;
     }
@@ -101,8 +106,8 @@ impl Pipe {
     }
 
     pub fn parent_close(&mut self) {
-            io::close(self.send, "Cannot close parent pipe out");
-            io::close(self.prev,"Cannot close parent prev pipe out");
+        io::close(self.send, "Cannot close parent pipe out");
+        io::close(self.prev,"Cannot close parent prev pipe out");
     }
 
     pub fn is_connected(&self) -> bool {
