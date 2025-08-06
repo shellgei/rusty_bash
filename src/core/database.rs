@@ -25,7 +25,7 @@ impl DataBase {
 
         if ! self.parameters.contains_key(name) {
             if let Ok(val) = env::var(name) {
-                self.set_param(name, &val)?;
+                self.set_param(name, &val, None)?;
             }
         }
 
@@ -37,7 +37,8 @@ impl DataBase {
         Ok(ans)
     }
 
-    pub fn set_param(&mut self, name: &str, val: &str) -> Result<(), ExecError> {
+    pub fn set_param(&mut self, name: &str, val: &str,
+                     layer: Option<usize>) -> Result<(), ExecError> {
         self.parameters.insert(name.to_string(), val.to_string());
         Ok(())
     }

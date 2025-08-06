@@ -53,7 +53,7 @@ pub fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     }
 
     core.sigint.store(false, Relaxed); //core.input_interrupt = false;
-    core.db.set_param("?", "130").unwrap();
+    core.db.set_param("?", "130", None).unwrap();
     feeder.consume(feeder.len());
     true
 }

@@ -62,20 +62,20 @@ impl ShellCore {
         }
 
         let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
-        core.db.set_param("HISTFILE", &(home + "/.sush_history")).unwrap();
-        core.db.set_param("HISTFILESIZE", "2000").unwrap();
+        core.db.set_param("HISTFILE", &(home + "/.sush_history"), None).unwrap();
+        core.db.set_param("HISTFILESIZE", "2000", None).unwrap();
 
         core
     }
 
     fn set_initial_parameters(&mut self) {
-        self.db.set_param("$", &process::id().to_string()).unwrap();
-        self.db.set_param("BASHPID", &process::id().to_string()).unwrap();
-        self.db.set_param("BASH_SUBSHELL", "0").unwrap();
-        self.db.set_param("?", "0").unwrap();
-        self.db.set_param("PS1", "\\[\\033[01;36m\\]\\b\\[\\033[00m\\]\\[\\033[01;35m\\]\\w\\[\\033[00m\\](debug)🍣 ").unwrap();
-        self.db.set_param("PS2", "> ").unwrap();
-        self.db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string())).unwrap();
+        self.db.set_param("$", &process::id().to_string(), None).unwrap();
+        self.db.set_param("BASHPID", &process::id().to_string(), None).unwrap();
+        self.db.set_param("BASH_SUBSHELL", "0", None).unwrap();
+        self.db.set_param("?", "0", None).unwrap();
+        self.db.set_param("PS1", "\\[\\033[01;36m\\]\\b\\[\\033[00m\\]\\[\\033[01;35m\\]\\w\\[\\033[00m\\](debug)🍣 ", None).unwrap();
+        self.db.set_param("PS2", "> ", None).unwrap();
+        self.db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None).unwrap();
     }
 
     pub fn has_flag(&self, flag: char) -> bool {

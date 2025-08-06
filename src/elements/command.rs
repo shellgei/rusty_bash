@@ -57,7 +57,7 @@ pub trait Command {
             ForkResult::Child => {
                 if let Err(e) = self.fork_exec_child(core, pipe) {
                     e.print(core);
-                    core.db.set_param("?", "1")?;
+                    core.db.set_param("?", "1", None)?;
                 }
                 exit::normal(core)
             },
@@ -80,7 +80,7 @@ pub trait Command {
         if result.is_ok() {
             let _ = self.run(core, false);
         }else{
-            core.db.set_param("?", "1")?;
+            core.db.set_param("?", "1", None)?;
         }
         self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
         result
