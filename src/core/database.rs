@@ -9,7 +9,7 @@ use std::env;
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub position_parameters: Vec<Vec<String>>,
-    pub parameters: HashMap<String, String>,
+    parameters: Vec<HashMap<String, String>>,
     pub functions: HashMap<String, FunctionDefinition>,
 }
 
@@ -23,13 +23,13 @@ impl DataBase {
             return Ok("".to_string());
         }
 
-        if ! self.parameters.contains_key(name) {
+        if ! self.parameters[0].contains_key(name) {
             if let Ok(val) = env::var(name) {
                 self.set_param(name, &val, None)?;
             }
         }
 
-        let ans = match self.parameters.get(name) {
+        let ans = match self.parameters[0].get(name) {
             Some(val) => val,
             None      => "",
         }.to_string();
@@ -39,7 +39,7 @@ impl DataBase {
 
     pub fn set_param(&mut self, name: &str, val: &str,
                      layer: Option<usize>) -> Result<(), ExecError> {
-        self.parameters.insert(name.to_string(), val.to_string());
+        self.parameters[0].insert(name.to_string(), val.to_string());
         Ok(())
     }
 }

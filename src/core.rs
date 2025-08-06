@@ -103,7 +103,7 @@ impl ShellCore {
         if exit_status == 130 {
             self.sigint.store(true, Relaxed);
         }
-        self.db.parameters.insert("?".to_string(), exit_status.to_string()); //追加
+        let _ = self.db.set_param("?", &exit_status.to_string(), None);
     } 
 
     fn set_foreground(&self) {
@@ -146,7 +146,7 @@ impl ShellCore {
 
         let func = self.builtins[&args[0]];
         let status = func(self, args);
-        self.db.parameters.insert("?".to_string(), status.to_string());
+        let _ = self.db.set_param("?", &status.to_string(), None);
         true
     }
 
@@ -159,10 +159,10 @@ impl ShellCore {
 
     fn set_subshell_parameters(&mut self) {
         let pid = nix::unistd::getpid();
-        self.db.parameters.insert("BASHPID".to_string(), pid.to_string());
-        match self.db.parameters["BASH_SUBSHELL"].parse::<usize>() {
-            Ok(num) => self.db.parameters.insert("BASH_SUBSHELL".to_string(), (num+1).to_string()),
-            Err(_) =>  self.db.parameters.insert("BASH_SUBSHELL".to_string(), "0".to_string()),
+        let _ = self.db.set_param("BASHPID", &pid.to_string(), None);
+        let _ = match self.db.get_param("BASH_SUBSHELL").unwrap().parse::<usize>() {
+            Ok(num) => self.db.set_param("BASH_SUBSHELL", &(num+1).to_string(), None),
+            Err(_) =>  self.db.set_param("BASH_SUBSHELL", "0", None),
         };
     }
 

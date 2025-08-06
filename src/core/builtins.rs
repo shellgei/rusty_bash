@@ -24,7 +24,7 @@ impl ShellCore {
 pub fn exit(core: &mut ShellCore, args: &mut [String]) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
-        core.db.parameters.insert("?".to_string(), args[1].clone());
+        let _ = core.db.set_param("?", &args[1], None);
     }
     exit::normal(core)
 }
