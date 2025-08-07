@@ -48,7 +48,10 @@ fn is_interactive() -> bool {
 
 impl ShellCore {
     pub fn new() -> ShellCore {
-        let mut core = ShellCore::default();
+        let mut core = ShellCore {
+            db: DataBase::new(),
+            ..Default::default()
+        };
 
         core.init_current_directory();
         core.set_initial_parameters();

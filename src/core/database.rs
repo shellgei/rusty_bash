@@ -14,6 +14,13 @@ pub struct DataBase {
 }
 
 impl DataBase {
+    pub fn new() -> DataBase {
+        DataBase {
+            parameters: vec![HashMap::new()],
+            ..Default::default()
+        }
+    }
+
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
         if let Ok(n) = name.parse::<usize>() {
             let layer = &self.position_parameters.last().unwrap();
