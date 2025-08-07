@@ -14,8 +14,9 @@ pub struct DataBase {
 }
 
 impl DataBase {
-    pub fn new() -> DataBase {
-        DataBase {
+    pub fn new() -> Self {
+        Self {
+            position_parameters: vec![vec!["sush".to_string()]],
             parameters: vec![HashMap::new()],
             ..Default::default()
         }
