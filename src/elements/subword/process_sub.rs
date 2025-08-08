@@ -39,8 +39,8 @@ impl ProcessSubstitution {
     fn substitute_in(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut pipe = Pipe::new(">()".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let _ = self.command.exec(core, &mut pipe)?;
-        core.process_sub_fd.push(pipe.proc_sub_send);
+        let pid = self.command.exec(core, &mut pipe)?.unwrap();
+        core.process_sub.push((pid, pipe.proc_sub_send));
         self.text = "/dev/fd/".to_owned() + &pipe.proc_sub_send.to_string();
 
         Ok(())

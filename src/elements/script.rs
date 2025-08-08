@@ -6,6 +6,7 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 use crate::elements::io;
+use nix::sys::wait;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -24,16 +25,18 @@ impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
             if let Err(e) = job.exec(core, end == "&") {
-                while let Some(fd) = core.process_sub_fd.pop() {
+                while let Some((pid,fd)) = core.process_sub.pop() {
                     io::close(fd, "");
+                    let _ = wait::waitpid(pid, None);
                 }
 
                 return Err(e);
             }
         }
 
-        while let Some(fd) = core.process_sub_fd.pop() {
+        while let Some((pid, fd)) = core.process_sub.pop() {
             io::close(fd, "");
+            let _ = wait::waitpid(pid, None);
         }
 
         Ok(())
