@@ -24,6 +24,7 @@ use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+use std::os::fd::RawFd;
 
 pub struct MeasuredTime {
     pub real: TimeSpec, 
@@ -75,6 +76,7 @@ pub struct ShellCore {
     pub exit_script: String,
     pub exit_script_run: bool,
     pub valid_assoc_expand_once: bool,
+    pub process_sub_fd: Vec<RawFd>,
 }
 
 impl ShellCore {

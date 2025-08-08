@@ -67,10 +67,14 @@ pub trait Command {
     fn fork_exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
         match unsafe{unistd::fork()?} {
             ForkResult::Child => {
+                if pipe.text == ">()" {
+                    io::replace(pipe.proc_sub_send, 0);
+                }
                 if let Err(e) = self.fork_exec_child(core, pipe) {
                     e.print(core);
                     core.db.exit_status = 1;
                 }
+
                 exit::normal(core)
             },
             ForkResult::Parent { child } => {

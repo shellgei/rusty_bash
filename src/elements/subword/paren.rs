@@ -27,51 +27,6 @@ impl Subword for EvalLetParen {
     }
 
     fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {vec![]}
-
-    /*
-    fn make_glob_string(&mut self) -> String {
-        return self.text.replace("\\", "\\\\")
-                        .replace("*", "\\*")
-                        .replace("?", "\\?")
-                        .replace("[", "\\[")
-                        .replace("]", "\\]")
-                        .replace("@", "\\@")
-                        .replace("+", "\\+")
-                        .replace("!", "\\!")
-    }
-
-    fn make_unquoted_string(&mut self) -> Option<String> {
-        let mut text = String::new();
-
-        for (i, sw) in self.subwords.iter_mut().enumerate() {
-            if self.split_points.contains(&i) {
-                text += " ";
-            }
-
-            if let Some(txt) = sw.make_unquoted_string() {
-                text += &txt;
-            }
-        }
-
-        if text.is_empty() && self.split_points.len() == 1 {
-            return None;
-        }
-
-        Some(text)
-    }
-
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)>{
-        let mut ans = vec![];
-        let mut last = 0;
-        let mut tmp = Self::default();
-        for p in &self.split_points {
-            tmp.subwords = self.subwords[last..*p].to_vec();
-            ans.push((tmp.boxed_clone(), true));
-            last = *p;
-        }
-        ans
-    }
-    */
 }
 
 impl EvalLetParen {

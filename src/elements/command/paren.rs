@@ -31,6 +31,7 @@ impl Command for ParenCommand {
             Some(ref mut s) => s.exec(core)?,
             _ => exit::internal(" (ParenCommand::exec)"),
         }
+
         Ok(())
     }
 

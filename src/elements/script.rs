@@ -5,6 +5,7 @@ use super::job::Job;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
+use crate::elements::io;
 
 enum Status{
     UnexpectedSymbol(String),
@@ -22,8 +23,19 @@ pub struct Script {
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
-            job.exec(core, end == "&")?;
+            if let Err(e) = job.exec(core, end == "&") {
+                while let Some(fd) = core.process_sub_fd.pop() {
+                    io::close(fd, "");
+                }
+
+                return Err(e);
+            }
         }
+
+        while let Some(fd) = core.process_sub_fd.pop() {
+            io::close(fd, "");
+        }
+
         Ok(())
     }
 

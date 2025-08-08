@@ -40,8 +40,9 @@ impl ProcessSubstitution {
         let mut pipe = Pipe::new(">()".to_string());
         pipe.set(-1, unistd::getpgrp());
         let _ = self.command.exec(core, &mut pipe)?;
-        //let out_fd = pipe.proc_sub_file.as_mut().unwrap().send.to_string();
+        core.process_sub_fd.push(pipe.proc_sub_send);
         self.text = "/dev/fd/".to_owned() + &pipe.proc_sub_send.to_string();
+
         Ok(())
     }
 
