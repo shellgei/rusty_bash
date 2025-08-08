@@ -39,8 +39,7 @@ pub fn wait_pipeline(
     let mut pipestatus = vec![];
     let mut ans = vec![];
     for pid in &pids {
-        if pid.is_some() {
-            //None: lastpipe
+        if pid.is_some() { //None: lastpipe
             let ws = wait_process(core, pid.unwrap());
             ans.push(ws);
             pipestatus.push(core.db.exit_status);
