@@ -1,11 +1,11 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use super::Data;
 use crate::error::exec::ExecError;
-use rand_chacha::ChaCha20Rng;
 use rand_chacha::rand_core::RngCore;
 use rand_chacha::rand_core::SeedableRng;
-use super::Data;
+use rand_chacha::ChaCha20Rng;
 
 #[derive(Debug, Clone)]
 pub struct RandomVar {
@@ -18,7 +18,9 @@ impl Data for RandomVar {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String { self.prev.clone() }
+    fn print_body(&self) -> String {
+        self.prev.clone()
+    }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         let rand = self.rng.next_u32() & 0x7FFF;
@@ -36,7 +38,9 @@ impl Data for RandomVar {
         Ok(())
     }
 
-    fn is_special(&self) -> bool {true}
+    fn is_special(&self) -> bool {
+        true
+    }
 }
 
 impl RandomVar {

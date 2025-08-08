@@ -1,10 +1,10 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use super::Data;
 use crate::error::exec::ExecError;
 use crate::utils::clock;
 use std::time::Duration;
-use super::Data;
 
 #[derive(Debug, Clone)]
 pub struct Seconds {
@@ -44,8 +44,12 @@ impl Data for Seconds {
         Ok(()) // TODO
     }
 
-    fn is_special(&self) -> bool {true}
-    fn is_single_num(&self) -> bool { true }
+    fn is_special(&self) -> bool {
+        true
+    }
+    fn is_single_num(&self) -> bool {
+        true
+    }
 }
 
 impl Seconds {

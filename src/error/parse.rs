@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
 use super::input::InputError;
+use crate::ShellCore;
 
 #[derive(Debug, Clone)]
 pub enum ParseError {
@@ -29,7 +29,7 @@ impl ParseError {
         let s: String = From::<&ParseError>::from(self);
         if core.db.flags.contains('i') {
             eprintln!("{}: {}", &name, &s);
-        }else{
+        } else {
             let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
             eprintln!("{}: line {}: {}", &name, &lineno, s);
         }

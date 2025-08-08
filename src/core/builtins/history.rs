@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
 use crate::utils::arg;
+use crate::ShellCore;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -32,7 +32,7 @@ pub fn history(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let file = match File::open(&filename) {
         Ok(f) => f,
-        _     => return 0,
+        _ => return 0,
     };
 
     let f = BufReader::new(file);

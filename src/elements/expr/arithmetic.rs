@@ -6,13 +6,13 @@ pub mod elem;
 mod parser;
 mod rev_polish;
 
-use crate::{Feeder, ShellCore};
-use crate::error::arith::ArithError;
-use crate::error::exec::ExecError;
-use crate::utils::exit;
 use self::calculator::calculate;
 use self::elem::ArithElem;
 use crate::elements::word::Word;
+use crate::error::arith::ArithError;
+use crate::error::exec::ExecError;
+use crate::utils::exit;
+use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
 pub struct ArithmeticExpr {
@@ -35,9 +35,9 @@ impl ArithmeticExpr {
                         return Err(ExecError::ArithError(arith_txt, err));
                     }
                     let text = w.eval_as_value(core)?;
-                    let word = ArithElem::Word( Word::from(&text), *inc);
+                    let word = ArithElem::Word(Word::from(&text), *inc);
                     txt += &word.to_string();
-                },
+                }
                 e => txt += &e.to_string(),
             }
         }
@@ -60,26 +60,28 @@ impl ArithmeticExpr {
         cp.eval_doller(core)?;
 
         let ans = match cp.eval_elems(core, true) {
-            Ok(a) => a, 
+            Ok(a) => a,
             Err(ExecError::ArithError(mut s, a)) => {
                 if s == "" {
                     s = cp.text.trim_start().to_string();
                 }
-                return Err(ExecError::ArithError(s, a))
-            },
+                return Err(ExecError::ArithError(s, a));
+            }
             Err(e) => return Err(e),
         };
 
         match ans {
-            ArithElem::Integer(n) => {
-                match self.ans_to_string(n) {
-                    Ok(ans) => Ok(ans),
-                    Err(a) => return Err(ExecError::ArithError(cp.text, a)),
-                }
+            ArithElem::Integer(n) => match self.ans_to_string(n) {
+                Ok(ans) => Ok(ans),
+                Err(a) => return Err(ExecError::ArithError(cp.text, a)),
             },
-            ArithElem::Float(f)   => Ok(f.to_string()),
-            e => return Err(ExecError::ArithError(cp.text,
-                            ArithError::OperandExpected(e.to_string()).into())),
+            ArithElem::Float(f) => Ok(f.to_string()),
+            e => {
+                return Err(ExecError::ArithError(
+                    cp.text,
+                    ArithError::OperandExpected(e.to_string()).into(),
+                ))
+            }
         }
     }
 
@@ -88,20 +90,24 @@ impl ArithmeticExpr {
 
         match self.eval_elems(core, true)? {
             ArithElem::Integer(n) => Ok(n),
-            ArithElem::Float(f)   => {
+            ArithElem::Float(f) => {
                 let msg = format!("sush: {}: Not integer. {}", &self.text, f);
                 Err(ExecError::Other(msg))
-            },
+            }
             _ => exit::internal("invalid calculation result"),
         }
     }
 
-    pub fn eval_elems(&mut self, core: &mut ShellCore, permit_empty: bool) -> Result<ArithElem, ExecError> {
-        if self.elements.is_empty() && ! permit_empty {
+    pub fn eval_elems(
+        &mut self,
+        core: &mut ShellCore,
+        permit_empty: bool,
+    ) -> Result<ArithElem, ExecError> {
+        if self.elements.is_empty() && !permit_empty {
             return Err(ArithError::OperandExpected("\")\"".to_string()).into());
         }
         let es = match self.decompose_increments() {
-            Ok(data)     => data, 
+            Ok(data) => data,
             Err(err_msg) => return Err(err_msg),
         };
 
@@ -117,9 +123,9 @@ impl ArithmeticExpr {
 
         let base = match base_str.parse::<i128>() {
             Ok(b) => b,
-            _     => {
+            _ => {
                 return Err(ArithError::InvalidBase(base_str));
-            },
+            }
         };
 
         if base <= 1 || base > 64 {
@@ -134,7 +140,7 @@ impl ArithmeticExpr {
         }
 
         let mut ans = Self::dec_to_str(&digits, base);
-        if ! self.hide_base {
+        if !self.hide_base {
             ans = base_str + "#" + &ans;
         }
 
@@ -148,18 +154,31 @@ impl ArithmeticExpr {
     fn dec_to_str(nums: &Vec<u8>, base: i128) -> String {
         let shift = if base <= 0 {
             |n| n + '0' as u8
-        }else if base <= 36 {
-            |n| if n < 10 { n + '0' as u8 }
-                else { n - 10 + 'A' as u8 } 
-        }else{
-            |n| if n < 10 { n + '0' as u8 }
-                else if n < 36 { n - 10 + 'a' as u8 } 
-                else if n < 62 { n - 36 + 'A' as u8 } 
-                else if n == 62 { '@' as u8 } 
-                else { '_' as u8 } 
+        } else if base <= 36 {
+            |n| {
+                if n < 10 {
+                    n + '0' as u8
+                } else {
+                    n - 10 + 'A' as u8
+                }
+            }
+        } else {
+            |n| {
+                if n < 10 {
+                    n + '0' as u8
+                } else if n < 36 {
+                    n - 10 + 'a' as u8
+                } else if n < 62 {
+                    n - 36 + 'A' as u8
+                } else if n == 62 {
+                    '@' as u8
+                } else {
+                    '_' as u8
+                }
+            }
         };
 
-        let ascii = nums.iter().map(|n| shift(*n) ).collect::<Vec<u8>>();
+        let ascii = nums.iter().map(|n| shift(*n)).collect::<Vec<u8>>();
         std::str::from_utf8(&ascii).unwrap().to_string()
     }
 
@@ -170,19 +189,21 @@ impl ArithmeticExpr {
 
     fn preinc_to_unarys(&mut self, ans: &mut Vec<ArithElem>, pos: usize, inc: i128) -> i128 {
         let pm = match inc {
-            1  => "+",
+            1 => "+",
             -1 => "-",
             _ => return 0,
-        }.to_string();
-    
-        match (&ans.last(), &self.elements.iter().nth(pos+1)) {
-            (Some(&ArithElem::Variable(_, _, _)), Some(&ArithElem::Word(_, _)))
-                                     => ans.push(ArithElem::BinaryOp(pm.clone())),
-            (_, None)
-            | (_, Some(&ArithElem::Variable(_, _, _))) => return inc,
-            (Some(&ArithElem::Integer(_)), _)
-            | (Some(&ArithElem::Float(_)), _)   => ans.push(ArithElem::BinaryOp(pm.clone())),
-            _                              => ans.push(ArithElem::UnaryOp(pm.clone())),
+        }
+        .to_string();
+
+        match (&ans.last(), &self.elements.iter().nth(pos + 1)) {
+            (Some(&ArithElem::Variable(_, _, _)), Some(&ArithElem::Word(_, _))) => {
+                ans.push(ArithElem::BinaryOp(pm.clone()))
+            }
+            (_, None) | (_, Some(&ArithElem::Variable(_, _, _))) => return inc,
+            (Some(&ArithElem::Integer(_)), _) | (Some(&ArithElem::Float(_)), _) => {
+                ans.push(ArithElem::BinaryOp(pm.clone()))
+            }
+            _ => ans.push(ArithElem::UnaryOp(pm.clone())),
         }
         ans.push(ArithElem::UnaryOp(pm));
         0
@@ -202,19 +223,20 @@ impl ArithmeticExpr {
                     }
                     ans.push(e);
                     0
-                },
+                }
                 ArithElem::Increment(n) => self.preinc_to_unarys(&mut ans, i, n),
                 _ => {
                     ans.push(self.elements[i].clone());
                     0
-                },
+                }
             };
         }
 
-        match pre_increment { //↓treated as + or - in error messages
-            1  => Err(ArithError::OperandExpected("+".to_string()).into()),
+        match pre_increment {
+            //↓treated as + or - in error messages
+            1 => Err(ArithError::OperandExpected("+".to_string()).into()),
             -1 => Err(ArithError::OperandExpected("-".to_string()).into()),
-            _  => Ok(ans),
+            _ => Ok(ans),
         }
     }
 

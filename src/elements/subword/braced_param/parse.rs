@@ -1,17 +1,21 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use super::optional_operation;
+use super::{BracedParam, Variable};
 use crate::elements::substitution::subscript::Subscript;
 use crate::error::parse::ParseError;
-use super::{BracedParam, Variable};
-use super::optional_operation;
+use crate::{Feeder, ShellCore};
 
 impl BracedParam {
-    fn eat_subscript(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<bool, ParseError> {
+    fn eat_subscript(
+        feeder: &mut Feeder,
+        ans: &mut Self,
+        core: &mut ShellCore,
+    ) -> Result<bool, ParseError> {
         if let Some(s) = Subscript::parse(feeder, core)? {
             ans.text += &s.text;
-            if s.text.contains('@') && ! ans.num {
+            if s.text.contains('@') && !ans.num {
                 ans.treat_as_array = true;
             }
             ans.param.index = Some(s);
@@ -38,7 +42,7 @@ impl BracedParam {
         if len != 0 {
             ans.param = Variable::default();
             ans.param.name = feeder.consume(len);
-            ans.treat_as_array = ans.param.name == "@" && ! ans.num;
+            ans.treat_as_array = ans.param.name == "@" && !ans.num;
             ans.text += &ans.param.name;
             return true;
         }
@@ -46,17 +50,21 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat_unknown(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> Result<(), ParseError> {
+    fn eat_unknown(
+        feeder: &mut Feeder,
+        ans: &mut Self,
+        core: &mut ShellCore,
+    ) -> Result<(), ParseError> {
         if feeder.len() == 0 {
             feeder.feed_additional_line(core)?;
         }
 
         let unknown = match feeder.starts_with("\\}") {
-            true  => feeder.consume(2),
+            true => feeder.consume(2),
             false => {
                 let len = feeder.scanner_char(); //feeder.nth(0).unwrap().len_utf8();
                 feeder.consume(len)
-            },
+            }
         };
 
         ans.unknown += &unknown.clone();
@@ -65,16 +73,16 @@ impl BracedParam {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("${") {
+        if !feeder.starts_with("${") {
             return Ok(None);
         }
         let mut ans = Self::default();
         ans.text += &feeder.consume(2);
 
-        if feeder.starts_with("#") && ! feeder.starts_with("#}") {
+        if feeder.starts_with("#") && !feeder.starts_with("#}") {
             ans.num = true;
             ans.text += &feeder.consume(1);
-        }else if feeder.starts_with("!") {
+        } else if feeder.starts_with("!") {
             ans.indirect = true;
             ans.text += &feeder.consume(1);
         }
@@ -87,7 +95,7 @@ impl BracedParam {
                 ans.optional_operation = Some(op);
             }
         }
-        while ! feeder.starts_with("}") {
+        while !feeder.starts_with("}") {
             Self::eat_unknown(feeder, &mut ans, core)?;
         }
 

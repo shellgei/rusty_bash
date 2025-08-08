@@ -25,17 +25,17 @@ pub fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 let name = args.remove(2);
                 return unset_function(core, &name);
             }
-        },
+        }
         "-v" => {
             if args.len() > 2 {
                 let name = args.remove(2);
                 return unset_var(core, &name);
             }
-        },
+        }
         name => {
             let name = name.to_string();
             args.remove(1);
-            if ! name.contains("[") {
+            if !name.contains("[") {
                 return unset_all(core, &name);
             }
 
@@ -43,7 +43,7 @@ pub fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             let mut name = name.clone();
             let mut index = name.split_off(pos);
 
-            if ! index.ends_with("]") {
+            if !index.ends_with("]") {
                 let msg = format!("{}: invalid variable", &name);
                 return super::error_exit(1, &args[0], &msg, core);
             }
@@ -54,7 +54,7 @@ pub fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 return super::error_exit(1, &args[0], &String::from(&e), core);
             }
             return 0;
-        },
+        }
     }
     0
 }

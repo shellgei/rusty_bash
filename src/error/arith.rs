@@ -27,32 +27,25 @@ impl From<ArithError> for String {
 impl From<&ArithError> for String {
     fn from(e: &ArithError) -> String {
         match e {
-            ArithError::AssignmentToNonVariable(right)
-                => error_msg("attempted assignment to non-variable", right),
-            ArithError::DivZero(token)
-                => error_msg("division by 0", token),
-            ArithError::Exponent(s)
-                => error_msg("exponent less than 0", &s.to_string()),
-            ArithError::NoColon(token)
-                => error_msg("`:' expected for conditional expression", token),
-            ArithError::ExpressionExpected(token)
-                => error_msg("expression expected", token),
-            ArithError::InvalidBase(b)
-                => error_msg("invalid arithmetic base", b),
-            ArithError::ValueTooGreatForBase(num)
-                => error_msg("value too great for base", num),
-            ArithError::InvalidNumber(name)
-                => error_msg("invalid number", name),
-            ArithError::InvalidIntConst(tok)
-                => error_msg("invalid integer constant", tok),
-            ArithError::InvalidOperator(tok)
-                => error_msg("invalid arithmetic operator", tok),
-            ArithError::OperandExpected(token)
-                => error_msg("syntax error: operand expected", token),
-            ArithError::Recursion(token)
-                => error_msg("expression recursion level exceeded", token), 
-            ArithError::SyntaxError(token)
-                => error_msg("syntax error in expression", token),
+            ArithError::AssignmentToNonVariable(right) => {
+                error_msg("attempted assignment to non-variable", right)
+            }
+            ArithError::DivZero(token) => error_msg("division by 0", token),
+            ArithError::Exponent(s) => error_msg("exponent less than 0", &s.to_string()),
+            ArithError::NoColon(token) => {
+                error_msg("`:' expected for conditional expression", token)
+            }
+            ArithError::ExpressionExpected(token) => error_msg("expression expected", token),
+            ArithError::InvalidBase(b) => error_msg("invalid arithmetic base", b),
+            ArithError::ValueTooGreatForBase(num) => error_msg("value too great for base", num),
+            ArithError::InvalidNumber(name) => error_msg("invalid number", name),
+            ArithError::InvalidIntConst(tok) => error_msg("invalid integer constant", tok),
+            ArithError::InvalidOperator(tok) => error_msg("invalid arithmetic operator", tok),
+            ArithError::OperandExpected(token) => {
+                error_msg("syntax error: operand expected", token)
+            }
+            ArithError::Recursion(token) => error_msg("expression recursion level exceeded", token),
+            ArithError::SyntaxError(token) => error_msg("syntax error in expression", token),
         }
     }
 }

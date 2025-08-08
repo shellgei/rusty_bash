@@ -1,20 +1,26 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, ShellCore};
 use crate::error::exec::ExecError;
 use crate::utils::arg;
+use crate::{error, ShellCore};
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
     let com = match core.db.position_parameters.pop() {
-        Some(layer) => if layer.len() == 0 {"".to_string() } else {layer[0].clone() },
+        Some(layer) => {
+            if layer.len() == 0 {
+                "".to_string()
+            } else {
+                layer[0].clone()
+            }
+        }
         None => return Err(ExecError::Other("empty param stack".to_string())),
     };
 
     let mut tmp = args.to_vec();
     if tmp.len() > 0 {
         tmp[0] = com;
-    }else{
+    } else {
         tmp.push(com);
     }
 
@@ -34,7 +40,9 @@ pub fn set_positions_c(core: &mut ShellCore, args: &[String]) -> Result<(), Exec
 fn check_invalid_options(args: &mut Vec<String>) -> Result<(), ExecError> {
     for a in args {
         if a.starts_with("-") {
-            return Err(ExecError::InvalidOption("set: ".to_owned() + &a.to_string()));
+            return Err(ExecError::InvalidOption(
+                "set: ".to_owned() + &a.to_string(),
+            ));
         }
     }
     Ok(())
@@ -46,23 +54,31 @@ pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), E
 }
 
 pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
-    for (short, long) in [('t', "onecmd"), ('m', "monitor"),
-                          ('C', "noclobber"), ('a', "allexport"),
-                          ('B', "braceexpand"), ('u', ""),
-                          ('e', ""), ('r', ""), ('H', ""),
-                          ('x', ""), ('v', "") ] {
+    for (short, long) in [
+        ('t', "onecmd"),
+        ('m', "monitor"),
+        ('C', "noclobber"),
+        ('a', "allexport"),
+        ('B', "braceexpand"),
+        ('u', ""),
+        ('e', ""),
+        ('r', ""),
+        ('H', ""),
+        ('x', ""),
+        ('v', ""),
+    ] {
         let minus_opt = format!("-{}", short);
         let plus_opt = format!("+{}", short);
 
         if arg::consume_option(&minus_opt, args) {
-            if ! core.db.flags.contains(short) {
+            if !core.db.flags.contains(short) {
                 core.db.flags += &minus_opt[1..];
             }
             if long != "" {
                 let _ = core.options.set(long, true);
             }
         }
-    
+
         if arg::consume_option(&plus_opt, args) {
             core.db.flags.retain(|f| f != short);
             if long != "" {
@@ -83,8 +99,11 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    if args.len() <= 1 { /* print */
-        core.db.get_keys().into_iter()
+    if args.len() <= 1 {
+        /* print */
+        core.db
+            .get_keys()
+            .into_iter()
             .for_each(|k| core.db.print(&k));
         return 0;
     }
@@ -102,8 +121,8 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             Ok(()) => 0,
             Err(e) => {
                 return super::error_exit(1, &args[0], &String::from(&e), core);
-            },
-        }
+            }
+        };
     }
 
     if args[1] == "-o" || args[1] == "+o" {
@@ -112,25 +131,25 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if args.len() == 2 {
             core.options.print_all(positive);
             return 0;
-        }else{
+        } else {
             if args[2] == "monitor" {
-                if positive && ! core.db.flags.contains('m') {
+                if positive && !core.db.flags.contains('m') {
                     core.db.flags.push('m');
-                }else if ! positive {
+                } else if !positive {
                     core.db.flags.retain(|f| f != 'm');
                 }
             }
 
             return match core.options.set(&args[2], positive) {
-                Ok(())  => 0,
+                Ok(()) => 0,
                 Err(e) => {
                     return super::error_exit(2, &args[0], &String::from(&e), core);
-                },
+                }
             };
         }
     }
 
-    if ! args[1].starts_with("-") && ! args[1].starts_with("+") {
+    if !args[1].starts_with("-") && !args[1].starts_with("+") {
         if let Err(e) = set_positions(core, &args) {
             e.print(core);
             return 2;
@@ -161,7 +180,7 @@ pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 let err = format!("shift: {}: numeric argument required", &args[1]);
                 error::print(&err, core);
                 return 1;
-            },
+            }
         };
 
         if n < 0 {
@@ -196,11 +215,11 @@ pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i
         "-s" => core.shopts.print_if(true),
         "-u" => core.shopts.print_if(false),
         "-q" => return 0,
-        opt  => res = core.shopts.print_opt(opt, false),
+        opt => res = core.shopts.print_opt(opt, false),
     }
 
     match res {
-        true  => 0,
+        true => 0,
         false => 1,
     }
 }
@@ -213,16 +232,17 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     /* print section */
     if print && o_opt {
-        if args.len() >= 2 && ! q_opt {
+        if args.len() >= 2 && !q_opt {
             core.options.print_opt(&args[1], true);
-        }else if ! q_opt {
+        } else if !q_opt {
             core.options.print_all(false);
         }
         return 0;
     }
 
-    if args.len() < 3 { // "shopt" or "shopt option"
-        if ! q_opt {
+    if args.len() < 3 {
+        // "shopt" or "shopt option"
+        if !q_opt {
             let len = args.len();
             return shopt_print(core, &mut args, len < 2);
         }
@@ -235,14 +255,16 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             "-s" => "-o",
             "-u" => "+o",
             other => other,
-        }.to_string();
+        }
+        .to_string();
         let mut args_for_set = vec!["set".to_string(), opt];
         args_for_set.append(&mut args[2..].to_vec());
 
         return set(core, &mut args_for_set);
     }
 
-    match args[1].as_str() { //TODO: args[3..] must to be set
+    match args[1].as_str() {
+        //TODO: args[3..] must to be set
         "-s" => {
             if core.shopts.implemented.contains(&args[2]) {
                 match core.shopts.set(&args[2], true) {
@@ -250,38 +272,38 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                     Err(e) => {
                         e.print(core);
                         return 1;
-                    },
+                    }
                 }
-            }else{
+            } else {
                 let msg = format!("shopt: {}: not supported yet", &args[2]);
                 error::print(&msg, core);
                 return 1;
             }
-        },
+        }
         "-q" => {
             for arg in &args[2..] {
-                if ! core.shopts.exist(arg) {
+                if !core.shopts.exist(arg) {
                     let msg = format!("shopt: {}: invalid shell option name", &arg);
                     error::print(&msg, core);
                     return 1;
                 }
-                if ! core.shopts.query(arg) {
+                if !core.shopts.query(arg) {
                     return 1;
                 }
             }
             return 0;
-        },
+        }
         "-u" => match core.shopts.set(&args[2], false) {
             Ok(()) => return 0,
             Err(e) => {
                 e.print(core);
                 return 1;
-            },
+            }
         },
-        arg  => {
+        arg => {
             eprintln!("sush: shopt: {}: invalid shell option name", arg);
             eprintln!("shopt: usage: shopt [-su] [optname ...]");
             return 1;
-        },
+        }
     }
 }

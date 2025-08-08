@@ -14,6 +14,6 @@ fn main() {
     let target_vendor = env::var("CARGO_CFG_TARGET_VENDOR").unwrap_or("unknown".to_string());
     println!("cargo:rustc-env=CARGO_CFG_TARGET_VENDOR={}", target_vendor);
     // OSTYPE, MACHTYPE, BASH_VERSINFO[5]
-    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or("unknown".to_string());    
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or("unknown".to_string());
     println!("cargo:rustc-env=CARGO_CFG_TARGET_OS={}", target_os);
 }

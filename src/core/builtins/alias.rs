@@ -15,7 +15,9 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 2 && args[1].find("=") != None {
         let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
         //core.aliases.insert(kv[0].clone(), kv[1..].join("="));
-        let _ = core.db.set_assoc_elem("BASH_ALIASES", &kv[0].clone(), &kv[1..].join("="), None);
+        let _ = core
+            .db
+            .set_assoc_elem("BASH_ALIASES", &kv[0].clone(), &kv[1..].join("="), None);
     }
 
     0
@@ -32,9 +34,9 @@ pub fn unalias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    args[1..].iter()
-        .for_each(|e| {let _ = core.db.unset_array_elem("BASH_ALIASES", e);} );
+    args[1..].iter().for_each(|e| {
+        let _ = core.db.unset_array_elem("BASH_ALIASES", e);
+    });
 
     0
 }
-

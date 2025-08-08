@@ -14,7 +14,7 @@ pub fn print(s: &str, core: &mut ShellCore) {
     let name = core.db.get_param("0").unwrap();
     if core.db.flags.contains('i') {
         eprintln!("{}: {}", &name, &s);
-    }else{
+    } else {
         let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
         eprintln!("{}: line {}: {}", &name, &lineno, s);
     }
@@ -31,8 +31,8 @@ pub fn exponent(s: &str) -> String {
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
     match coredump {
-        true  => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
+        true => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
         false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
     }
-    128+signal as i32
+    128 + signal as i32
 }

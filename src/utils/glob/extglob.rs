@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::exit;
-use super::GlobElem;
 use super::comparator;
 use super::parser;
+use super::GlobElem;
+use crate::exit;
 
 pub fn shave(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
     match prefix {
@@ -13,7 +13,7 @@ pub fn shave(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
         '+' => more_than_zero(cands, patterns),
         '@' => once(cands, patterns),
         '!' => not(cands, patterns),
-        _   => exit::internal("unknown extglob prefix"),
+        _ => exit::internal("unknown extglob prefix"),
     }
 }
 
@@ -21,7 +21,9 @@ fn question(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = cands.clone();
     for p in patterns {
         let mut tmp = cands.clone();
-        parser::parse(p, true).iter().for_each(|w| comparator::shave(&mut tmp, &w));
+        parser::parse(p, true)
+            .iter()
+            .for_each(|w| comparator::shave(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -44,12 +46,13 @@ fn zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {//TODO: buggy
+fn more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {
+    //TODO: buggy
     let mut ans: Vec<String> = vec![];
     let mut tmp: Vec<String> = cands.clone();
     let mut len = tmp.len();
 
-    while len > 0  {
+    while len > 0 {
         once(&mut tmp, patterns);
 
         for a in &ans {
@@ -65,7 +68,9 @@ fn once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
-        parser::parse(p, true).iter().for_each(|w| comparator::shave(&mut tmp, &w));
+        parser::parse(p, true)
+            .iter()
+            .for_each(|w| comparator::shave(&mut tmp, &w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -74,8 +79,8 @@ fn once(cands: &mut Vec<String>, patterns: &Vec<String>) {
 fn not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     let mut ans = vec![];
     for cand in cands.iter_mut() {
-        for prefix in make_prefix_strings(cand)  {
-            if ! once_exact_match(&prefix, patterns) {
+        for prefix in make_prefix_strings(cand) {
+            if !once_exact_match(&prefix, patterns) {
                 ans.push(cand[prefix.len()..].to_string());
             }
         }
@@ -91,12 +96,11 @@ fn once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
 
 pub fn scan(remaining: &mut String) -> (usize, Option<GlobElem>) {
     let prefix = match remaining.chars().nth(0) {
-        Some(c) => c, 
+        Some(c) => c,
         None => return (0, None),
     };
 
-    if "?*+@!".find(prefix) == None 
-    || remaining.chars().nth(1) != Some('(') {
+    if "?*+@!".find(prefix) == None || remaining.chars().nth(1) != Some('(') {
         return (0, None);
     }
 
@@ -111,7 +115,7 @@ pub fn scan(remaining: &mut String) -> (usize, Option<GlobElem>) {
         len += c.len_utf8();
 
         if escaped {
-            chars.push(c); 
+            chars.push(c);
             escaped = false;
             continue;
         }
@@ -134,10 +138,12 @@ pub fn scan(remaining: &mut String) -> (usize, Option<GlobElem>) {
 
         if c == ')' {
             match nest {
-                0 => return {
-                    patterns.push(chars.iter().collect());
-                    (len, Some(GlobElem::ExtGlob(prefix, patterns)) )
-                },
+                0 => {
+                    return {
+                        patterns.push(chars.iter().collect());
+                        (len, Some(GlobElem::ExtGlob(prefix, patterns)))
+                    }
+                }
                 _ => nest -= 1,
             }
         }

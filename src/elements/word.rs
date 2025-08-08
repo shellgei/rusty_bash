@@ -2,16 +2,16 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
-pub mod tilde_expansion;
-pub mod substitution;
 pub mod path_expansion;
 mod split;
+pub mod substitution;
+pub mod tilde_expansion;
 
-use crate::{ShellCore, Feeder, utils};
-use crate::elements::subword;
-use crate::error::parse::ParseError;
-use crate::error::exec::ExecError;
 use super::subword::Subword;
+use crate::elements::subword;
+use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
+use crate::{utils, Feeder, ShellCore};
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
@@ -47,8 +47,8 @@ impl From<&String> for Word {
     }
 }
 
-impl From<Box::<dyn Subword>> for Word {
-    fn from(subword: Box::<dyn Subword>) -> Self {
+impl From<Box<dyn Subword>> for Word {
+    fn from(subword: Box<dyn Subword>) -> Self {
         Self {
             text: subword.get_text().to_string(),
             subwords: vec![subword],
@@ -57,8 +57,8 @@ impl From<Box::<dyn Subword>> for Word {
     }
 }
 
-impl From<Vec<Box::<dyn Subword>>> for Word {
-    fn from(subwords: Vec<Box::<dyn Subword>>) -> Self {
+impl From<Vec<Box<dyn Subword>>> for Word {
+    fn from(subwords: Vec<Box<dyn Subword>>) -> Self {
         Self {
             text: subwords.iter().map(|s| s.get_text()).collect(),
             subwords: subwords,
@@ -70,16 +70,16 @@ impl From<Vec<Box::<dyn Subword>>> for Word {
 impl Word {
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<Vec<String>, ExecError> {
         let ws_after_brace_exp = match core.db.flags.contains('B') {
-            true  => brace_expansion::eval(&mut self.clone(), core.compat_bash),
+            true => brace_expansion::eval(&mut self.clone(), core.compat_bash),
             false => vec![self.clone()],
         };
 
         let mut ws = vec![];
         for w in ws_after_brace_exp {
             let expanded = w.tilde_and_dollar_expansion(core)?;
-            ws.append( &mut expanded.split_and_path_expansion(core) );
+            ws.append(&mut expanded.split_and_path_expansion(core));
         }
-        Ok( Self::make_args(&mut ws) )
+        Ok(Self::make_args(&mut ws))
     }
 
     pub fn eval_as_herestring(&self, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -90,13 +90,13 @@ impl Word {
         let w = self.tilde_and_dollar_expansion(core)?;
         let mut ws = w.path_expansion(core);
         let joint = core.db.get_ifs_head();
-        Ok( Self::make_args(&mut ws).join(&joint) )
+        Ok(Self::make_args(&mut ws).join(&joint))
     }
 
     pub fn eval_as_assoc_index(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let w = self.tilde_and_dollar_expansion(core)?;
         let joint = core.db.get_ifs_head();
-        Ok( Self::make_args(&mut vec![w]).join(&joint) )
+        Ok(Self::make_args(&mut vec![w]).join(&joint))
     }
 
     pub fn eval_as_integer(&self, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -106,10 +106,10 @@ impl Word {
     pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
         match self.tilde_and_dollar_expansion(core) {
             Ok(mut w) => w.make_unquoted_word(),
-            Err(e)    => {
+            Err(e) => {
                 e.print(core);
                 return None;
-            },
+            }
         }
     }
 
@@ -125,11 +125,11 @@ impl Word {
                 }
 
                 Some(re)
-            },
-            Err(e)    => {
+            }
+            Err(e) => {
                 e.print(core);
                 return None;
-            },
+            }
         }
     }
 
@@ -151,20 +151,20 @@ impl Word {
 
         let len = splitted.len();
         if len > 0 {
-            splitted[len-1].do_not_erase = false;
+            splitted[len - 1].do_not_erase = false;
         }
-        
+
         if core.options.query("noglob") {
             return splitted;
         }
 
         for mut w in splitted {
-            ans.append(&mut path_expansion::eval(&mut w, &core.shopts) );
+            ans.append(&mut path_expansion::eval(&mut w, &core.shopts));
         }
         ans
     }
 
-   fn path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
+    fn path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
         if core.options.query("noglob") {
             return vec![self.clone()];
         }
@@ -173,18 +173,21 @@ impl Word {
     }
 
     fn make_args(words: &mut Vec<Word>) -> Vec<String> {
-        words.iter_mut()
-              .filter_map(|w| w.make_unquoted_word())
-              .collect()
+        words
+            .iter_mut()
+            .filter_map(|w| w.make_unquoted_word())
+            .collect()
     }
 
     pub fn make_unquoted_word(&mut self) -> Option<String> {
-        let sw: Vec<Option<String>> = self.subwords.iter_mut()
+        let sw: Vec<Option<String>> = self
+            .subwords
+            .iter_mut()
             .map(|s| s.make_unquoted_string())
             .filter(|s| *s != None)
             .collect();
 
-        if sw.is_empty() && ! self.do_not_erase {
+        if sw.is_empty() && !self.do_not_erase {
             return None;
         }
 
@@ -192,7 +195,9 @@ impl Word {
     }
 
     pub fn make_regex(&mut self) -> Option<String> {
-        let sw: Vec<Option<String>> = self.subwords.iter_mut()
+        let sw: Vec<Option<String>> = self
+            .subwords
+            .iter_mut()
             .map(|s| s.make_regex())
             .filter(|s| *s != None)
             .collect();
@@ -205,7 +210,8 @@ impl Word {
     }
 
     fn make_glob_string(&mut self) -> String {
-        self.subwords.iter_mut()
+        self.subwords
+            .iter_mut()
             .map(|s| s.make_glob_string())
             .collect::<Vec<String>>()
             .concat()
@@ -216,7 +222,8 @@ impl Word {
     }
 
     fn scan_pos(&self, s: &str) -> Vec<usize> {
-        self.subwords.iter()
+        self.subwords
+            .iter()
             .enumerate()
             .filter(|e| e.1.get_text() == s)
             .map(|e| e.0)
@@ -229,8 +236,7 @@ impl Word {
     }
 
     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
-        if feeder.starts_with("#") && mode.is_none() 
-        || feeder.is_empty() {
+        if feeder.starts_with("#") && mode.is_none() || feeder.is_empty() {
             return false;
         }
 
@@ -239,43 +245,44 @@ impl Word {
                 if feeder.starts_with("}") {
                     return false;
                 }
-            },
+            }
             Some(WordMode::ParamOption(ref v)) => {
                 if feeder.starts_withs2(v) {
                     return false;
                 }
             }
-            _ => {},
+            _ => {}
         }
         true
     }
 
-    fn post_check(feeder: &mut Feeder, core: &mut ShellCore,
-                  mode: &Option<WordMode>) -> bool {
+    fn post_check(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>) -> bool {
         if feeder.len() == 0 {
             return false;
         }
 
         match mode {
             Some(WordMode::Arithmetic) | Some(WordMode::CompgenF) => {
-                if feeder.starts_withs(&["]", "}"]) 
-                || feeder.scanner_math_symbol(core) != 0 {
+                if feeder.starts_withs(&["]", "}"]) || feeder.scanner_math_symbol(core) != 0 {
                     return false;
                 }
-            },
+            }
             Some(WordMode::ParamOption(ref v)) => {
                 if feeder.starts_withs2(v) {
                     return false;
                 }
             }
-            _ => {},
+            _ => {}
         }
         true
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: Option<WordMode>)
-    -> Result<Option<Word>, ParseError> {
-        if ! Self::pre_check(feeder, &mode) {
+    pub fn parse(
+        feeder: &mut Feeder,
+        core: &mut ShellCore,
+        mode: Option<WordMode>,
+    ) -> Result<Option<Word>, ParseError> {
+        if !Self::pre_check(feeder, &mode) {
             return Ok(None);
         }
 
@@ -288,13 +295,13 @@ impl Word {
         while let Some(sw) = subword::parse(feeder, core, &mode)? {
             match sw.is_extglob() {
                 false => ans.push(&sw),
-                true  => {
+                true => {
                     ans.text += &sw.get_text();
                     ans.subwords.append(&mut sw.get_child_subwords());
-                },
+                }
             }
 
-            if ! Self::post_check(feeder, core, &mode) {
+            if !Self::post_check(feeder, core, &mode) {
                 break;
             }
         }

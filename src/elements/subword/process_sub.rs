@@ -1,14 +1,14 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
-use crate::elements::Pipe;
-use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
+use crate::elements::command::Command;
 use crate::elements::subword::Subword;
 use crate::elements::word::WordMode;
-use crate::error::parse::ParseError;
+use crate::elements::Pipe;
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
+use crate::{Feeder, ShellCore};
 use nix::unistd;
 
 #[derive(Debug, Clone, Default)]
@@ -19,8 +19,12 @@ pub struct ProcessSubstitution {
 }
 
 impl Subword for ProcessSubstitution {
-    fn get_text(&self) -> &str {&self.text.as_ref()}
-    fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
+    fn get_text(&self) -> &str {
+        &self.text.as_ref()
+    }
+    fn boxed_clone(&self) -> Box<dyn Subword> {
+        Box::new(self.clone())
+    }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.direction == '>' {
@@ -48,13 +52,16 @@ impl ProcessSubstitution {
         Ok(())
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>)
-    -> Result<Option<Self>, ParseError> {
+    pub fn parse(
+        feeder: &mut Feeder,
+        core: &mut ShellCore,
+        mode: &Option<WordMode>,
+    ) -> Result<Option<Self>, ParseError> {
         if let Some(WordMode::Arithmetic) = mode {
             return Ok(None);
         }
 
-        if ! feeder.starts_with("<(") && ! feeder.starts_with(">(") {
+        if !feeder.starts_with("<(") && !feeder.starts_with(">(") {
             return Ok(None);
         }
         let mut ans = ProcessSubstitution::default();

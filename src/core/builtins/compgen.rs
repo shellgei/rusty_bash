@@ -1,18 +1,18 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{file_check, ShellCore, Feeder};
-use crate::elements::word::{Word, WordMode};
 use crate::elements::word::{path_expansion, tilde_expansion};
+use crate::elements::word::{Word, WordMode};
 use crate::utils;
 use crate::utils::{arg, directory, glob};
+use crate::{file_check, Feeder, ShellCore};
 use faccess;
 use faccess::PathExt;
+use rev_lines::RevLines;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use rev_lines::RevLines;
 
 pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -> Vec<String> {
     if args.len() > 2 && args[2] == "--" {
@@ -22,12 +22,13 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
     let path = match args.len() {
         2 => "".to_string(),
         _ => args[2].to_string(),
-    }.replace("\\", "");
+    }
+    .replace("\\", "");
 
     let mut split: Vec<String> = path.split("/").map(|s| s.to_string()).collect();
     let key = match split.pop() {
-        Some(g) => g, 
-        _       => return vec![],
+        Some(g) => g,
+        _ => return vec![],
     };
 
     split.push("".to_string());
@@ -55,12 +56,16 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
         ans.append(&mut directory::glob(&dir, ".", &core.shopts));
         ans.append(&mut directory::glob(&dir, "..", &core.shopts));
     }
-    ans.iter_mut().for_each(|a| { a.pop(); } );
+    ans.iter_mut().for_each(|a| {
+        a.pop();
+    });
     if dir_only {
         ans.retain(|p| file_check::is_dir(&p));
     }
     ans.sort();
-    ans.iter_mut().for_each(|e| {*e = e.replacen(&dir, &org_dir, 1); });
+    ans.iter_mut().for_each(|e| {
+        *e = e.replacen(&dir, &org_dir, 1);
+    });
     ans
 }
 
@@ -90,18 +95,24 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
 }
 
 fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
-
     let mut comlist = HashSet::new();
-    for path in core.db.get_param("PATH").unwrap_or(String::new()).to_string().split(":") {
+    for path in core
+        .db
+        .get_param("PATH")
+        .unwrap_or(String::new())
+        .to_string()
+        .split(":")
+    {
         /* /mnt is ellimimated from PATH on WSL because it contains all files in Windows.*/
-        if utils::is_wsl() && path.starts_with("/mnt") { 
-            if ! path.ends_with("WINDOWS") { // We want to use explorer.exe
-                continue;    
+        if utils::is_wsl() && path.starts_with("/mnt") {
+            if !path.ends_with("WINDOWS") {
+                // We want to use explorer.exe
+                continue;
             }
         }
 
         for command in directory::files(path).iter() {
-            if ! Path::new(&(path.to_owned() + "/" + command)).executable() {
+            if !Path::new(&(path.to_owned() + "/" + command)).executable() {
                 continue;
             }
 
@@ -121,7 +132,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 1;
     }
     let mut args = arg::dissolve_options(args);
-    let exclude  = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
+    let exclude = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
     let prefix = arg::consume_with_next_arg("-P", &mut args);
     let suffix = arg::consume_with_next_arg("-S", &mut args);
 
@@ -148,23 +159,23 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 return 2;
             }
             compgen_large_w(core, &mut args)
-        },
+        }
         "-G" => {
             if args.len() < 2 {
                 eprintln!("sush: compgen: -G: option requires an argument");
                 return 2;
             }
             compgen_large_g(core, &mut args)
-        },
+        }
         _ => {
             eprintln!("sush: compgen: {}: invalid option", &args[1]);
             return 2;
-        },
+        }
     };
 
     if let Some(pattern) = exclude {
         let extglob = core.shopts.query("extglob");
-        ans.retain(|a| ! glob::parse_and_compare(&a, &pattern, extglob));
+        ans.retain(|a| !glob::parse_and_compare(&a, &pattern, extglob));
     }
 
     if let Some(p) = prefix {
@@ -180,7 +191,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     ans.iter().for_each(|a| println!("{}", &a));
     match ans.is_empty() {
-        true  => 1,
+        true => 1,
         false => 0,
     }
 }
@@ -188,9 +199,9 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 fn get_head(args: &mut Vec<String>, pos: usize) -> String {
     if args.len() > pos && args[pos] != "--" {
         args[pos].clone()
-    }else if args.len() > pos+1 {
-        args[pos+1].clone()
-    }else{
+    } else if args.len() > pos + 1 {
+        args[pos + 1].clone()
+    } else {
         "".to_string()
     }
 }
@@ -205,7 +216,12 @@ fn drop_unmatch(args: &mut Vec<String>, pos: usize, list: &mut Vec<String>) {
 pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
 
-    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").iter().map(|k| k.clone()).collect();
+    let mut aliases: Vec<String> = core
+        .db
+        .get_indexes_all("BASH_ALIASES")
+        .iter()
+        .map(|k| k.clone())
+        .collect();
     commands.append(&mut aliases);
 
     let head = get_head(args, 2);
@@ -234,7 +250,12 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     }
     commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
 
-    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").iter().map(|k| k.clone()).collect();
+    let mut aliases: Vec<String> = core
+        .db
+        .get_indexes_all("BASH_ALIASES")
+        .iter()
+        .map(|k| k.clone())
+        .collect();
     commands.append(&mut aliases);
     let mut builtins: Vec<String> = core.builtins.keys().map(|k| k.clone()).collect();
     commands.append(&mut builtins);
@@ -262,11 +283,11 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
 
     let mut ans = core.history.to_vec();
 
-    if let Ok(hist_file) = File::open(core.db.get_param("HISTFILE").unwrap_or(String::new())){
+    if let Ok(hist_file) = File::open(core.db.get_param("HISTFILE").unwrap_or(String::new())) {
         for h in RevLines::new(BufReader::new(hist_file)) {
             match h {
                 Ok(s) => ans.push(s),
-                _     => {},
+                _ => {}
             }
 
             if ans.len() >= 10 {
@@ -284,7 +305,12 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
 pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
 
-    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").iter().map(|k| k.clone()).collect();
+    let mut aliases: Vec<String> = core
+        .db
+        .get_indexes_all("BASH_ALIASES")
+        .iter()
+        .map(|k| k.clone())
+        .collect();
     commands.append(&mut aliases);
     let mut functions: Vec<String> = core.db.functions.keys().map(|k| k.clone()).collect();
     commands.append(&mut functions);
@@ -330,14 +356,14 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
     while feeder.len() != 0 {
         match Word::parse(&mut feeder, core, None) {
             Ok(Some(mut w)) => {
-                if let Ok(mut v) =  w.eval(core) {
+                if let Ok(mut v) = w.eval(core) {
                     ans.append(&mut v);
                 }
-            },
+            }
             _ => {
                 let len = feeder.scanner_multiline_blank(core);
                 feeder.consume(len);
-            },
+            }
         }
     }
 
@@ -354,7 +380,7 @@ pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
                 Ok(line) => {
                     let splits: Vec<&str> = line.split(':').collect();
                     ans.push(splits[0].to_string());
-                },
+                }
                 _ => return vec![],
             }
         }

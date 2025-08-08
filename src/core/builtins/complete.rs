@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{builtins, ShellCore};
 use crate::core::{CompletionEntry, HashMap};
 use crate::utils::arg;
+use crate::{builtins, ShellCore};
 
 fn action_to_reduce_symbol(arg: &str) -> String {
     match arg {
@@ -21,7 +21,8 @@ fn action_to_reduce_symbol(arg: &str) -> String {
         "service" => "s",
         "user" => "u",
         _ => "",
-    }.to_string()
+    }
+    .to_string()
 }
 
 fn opt_to_action(arg: &str) -> String {
@@ -38,7 +39,8 @@ fn opt_to_action(arg: &str) -> String {
         "-u" => "user",
         "-v" => "variable",
         _ => "",
-    }.to_string()
+    }
+    .to_string()
 }
 
 fn print_complete(core: &mut ShellCore) -> i32 {
@@ -49,12 +51,12 @@ fn print_complete(core: &mut ShellCore) -> i32 {
     for (name, info) in &core.completion.entries {
         if info.function != "" {
             print!("complete -F {} ", &info.function);
-        }else if info.action != "" {
+        } else if info.action != "" {
             let symbol = action_to_reduce_symbol(&info.action);
 
             if symbol == "" {
                 print!("complete -A {} ", &info.action);
-            }else{
+            } else {
                 print!("complete -{} ", &symbol);
             }
 
@@ -64,10 +66,10 @@ fn print_complete(core: &mut ShellCore) -> i32 {
             if info.options.contains_key("-S") {
                 print!("-S '{}' ", &info.options["-S"]);
             }
-        }else{
+        } else {
             print!("complete ");
         }
-        println!("{}", &name); 
+        println!("{}", &name);
     }
     0
 }
@@ -78,17 +80,19 @@ fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<Stri
     if args.len() <= 1 {
         return builtins::error_exit(2, &args[0], "-F: option requires an argument", core);
     }
- 
+
     if d_option {
         core.completion.default_function = args[1].clone();
         return 0;
-    }else {
+    } else {
         let func = args[1].clone();
         for command in &args[2..] {
-            if ! core.completion.entries.contains_key(command) {
-                core.completion.entries.insert(command.clone(), CompletionEntry::default());
+            if !core.completion.entries.contains_key(command) {
+                core.completion
+                    .entries
+                    .insert(command.clone(), CompletionEntry::default());
             }
-    
+
             let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.function = func.clone();
             info.o_options = o_options.clone();
@@ -135,10 +139,12 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let action = opt_to_action(&args[1]);
     if action != "" {
         for command in &args[2..] {
-            if ! core.completion.entries.contains_key(command) {
-                core.completion.entries.insert(command.clone(), CompletionEntry::default());
+            if !core.completion.entries.contains_key(command) {
+                core.completion
+                    .entries
+                    .insert(command.clone(), CompletionEntry::default());
             }
-    
+
             let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.action = action.clone();
             info.options = options.clone();
@@ -148,10 +154,12 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if args.len() > 3 && args[1] == "-A" {
         for command in &args[3..] {
-            if ! core.completion.entries.contains_key(command) {
-                core.completion.entries.insert(command.clone(), CompletionEntry::default());
+            if !core.completion.entries.contains_key(command) {
+                core.completion
+                    .entries
+                    .insert(command.clone(), CompletionEntry::default());
             }
-    
+
             let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.action = args[2].clone();
             info.options = options.clone();
@@ -162,7 +170,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if arg::consume_option("-F", &mut args) {
         complete_f(core, &mut args, &o_options)
-    }else{
+    } else {
         let msg = format!("{}: still unsupported", &args[1]);
         builtins::error_exit(1, &args[0], &msg, core)
     }

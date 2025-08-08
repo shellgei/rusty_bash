@@ -8,7 +8,7 @@ pub fn normal(core: &mut ShellCore) -> ! {
     run_script(core);
 
     core.write_history_to_file();
-    process::exit(core.db.exit_status%256)
+    process::exit(core.db.exit_status % 256)
 }
 
 fn run_script(core: &mut ShellCore) {
@@ -27,9 +27,11 @@ fn run_script(core: &mut ShellCore) {
             if let Err(e) = s.exec(core) {
                 e.print(core);
             }
-        },
-        Err(e) => {e.print(core);},
-        Ok(None) => {},
+        }
+        Err(e) => {
+            e.print(core);
+        }
+        Ok(None) => {}
     };
 }
 
@@ -58,9 +60,7 @@ pub fn internal(s: &str) -> ! {
 }
 
 pub fn check_e_option(core: &mut ShellCore) {
-    if core.db.exit_status != 0 
-    && core.db.flags.contains("e") 
-    && ! core.suspend_e_option {
+    if core.db.exit_status != 0 && core.db.flags.contains("e") && !core.suspend_e_option {
         normal(core);
     }
 }

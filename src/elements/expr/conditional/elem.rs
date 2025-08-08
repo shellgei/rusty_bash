@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use crate::elements::word::Word;
 use super::ConditionalExpr;
+use crate::elements::word::Word;
 use crate::error::exec::ExecError;
+use crate::ShellCore;
 
 #[derive(Debug, Clone)]
 pub enum CondElem {
@@ -16,7 +16,7 @@ pub enum CondElem {
     InParen(ConditionalExpr),
     Not, // !
     And, // &&
-    Or, // ||
+    Or,  // ||
     Ans(bool),
 }
 
@@ -35,8 +35,8 @@ impl CondElem {
             CondElem::Word(ref mut w) => {
                 let new_w = w.tilde_and_dollar_expansion(core)?;
                 *w = new_w;
-            },
-            _ => {},
+            }
+            _ => {}
         }
         Ok(())
     }
