@@ -76,7 +76,9 @@ pub struct ShellCore {
     pub exit_script: String,
     pub exit_script_run: bool,
     pub valid_assoc_expand_once: bool,
-    pub process_sub: Vec<(Pid, RawFd)>,
+    //pub process_sub: Vec<(Pid, RawFd)>,
+    pub proc_sub_pid: Vec<Pid>,
+    pub proc_sub_fd: Vec<RawFd>,
 }
 
 impl ShellCore {

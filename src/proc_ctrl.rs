@@ -15,6 +15,7 @@ use nix::unistd::Pid;
 use std::process;
 use std::ffi::CString;
 use std::sync::atomic::Ordering::Relaxed;
+use crate::elements::io;
 
 pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
                      exclamation: bool, time: bool) -> Vec<WaitStatus> {
@@ -175,4 +176,14 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
         }
     }
     exit::not_found(&arg, core)
+}
+
+pub fn close_proc_sub(core: &mut ShellCore) {
+    while let Some(fd) = core.proc_sub_fd.pop() {
+        io::close(fd, "");
+    }
+
+    while let Some(pid) = core.proc_sub_pid.pop() {
+        let _ = wait::waitpid(pid, None);
+    }
 }

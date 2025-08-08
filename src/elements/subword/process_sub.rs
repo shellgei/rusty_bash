@@ -29,7 +29,8 @@ impl Subword for ProcessSubstitution {
 
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp());
-        let _ = self.command.exec(core, &mut pipe)?;
+        let pid = self.command.exec(core, &mut pipe)?.unwrap();
+        core.proc_sub_pid.push(pid);
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
         Ok(())
     }
@@ -40,7 +41,8 @@ impl ProcessSubstitution {
         let mut pipe = Pipe::new(">()".to_string());
         pipe.set(-1, unistd::getpgrp());
         let pid = self.command.exec(core, &mut pipe)?.unwrap();
-        core.process_sub.push((pid, pipe.proc_sub_send));
+        core.proc_sub_pid.push(pid);
+        core.proc_sub_fd.push(pipe.proc_sub_send);
         self.text = "/dev/fd/".to_owned() + &pipe.proc_sub_send.to_string();
 
         Ok(())
