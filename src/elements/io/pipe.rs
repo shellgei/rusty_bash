@@ -87,6 +87,10 @@ impl Pipe {
     }
 
     pub fn connect(&mut self) -> Result<(), ExecError> {
+        if self.text == ">()" {
+            io::replace(self.proc_sub_send, 0);
+        }
+
         io::close(self.recv, "Cannot close in-pipe");
         io::replace(self.send, 1);
         io::replace(self.prev, 0);
