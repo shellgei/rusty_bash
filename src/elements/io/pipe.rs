@@ -18,8 +18,6 @@ pub struct Pipe {
     pub pgid: Pid,
     pub lastpipe: bool,
     pub lastpipe_backup: RawFd,
-    //pub proc_sub_file: Option<Box::<Pipe>>,
-//    pub proc_sub_in: bool,
     pub proc_sub_recv: RawFd,
     pub proc_sub_send: RawFd,
 }
@@ -84,12 +82,6 @@ impl Pipe {
             self.proc_sub_send = send.into_raw_fd();
             self.prev = self.proc_sub_recv;
         }
-
-        /*
-        if self.proc_sub_send != -1 {
-            //f.set(-1, unistd::getpgrp());
-            self.prev = self.proc_sub_recv;
-        }*/
 
         self.pgid = pgid;
     }
