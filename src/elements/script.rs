@@ -4,7 +4,7 @@
 use super::job::Job;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{Feeder, ShellCore, proc_ctrl};
+use crate::{Feeder, ShellCore};
 
 enum Status{
     UnexpectedSymbol(String),
@@ -22,13 +22,9 @@ pub struct Script {
 impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
-            if let Err(e) = job.exec(core, end == "&") {
-                proc_ctrl::close_proc_sub(core);
-                return Err(e);
-            }
+            job.exec(core, end == "&")?;
         }
 
-        proc_ctrl::close_proc_sub(core);
         Ok(())
     }
 

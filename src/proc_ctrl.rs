@@ -26,6 +26,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         if exclamation {
             core.flip_exit_status();
         }
+        close_proc_sub(core);
         exit::check_e_option(core);
         return vec![];
     }
@@ -62,6 +63,7 @@ pub fn wait_pipeline(core: &mut ShellCore, pids: Vec<Option<Pid>>,
         core.flip_exit_status();
     }
 
+    close_proc_sub(core);
     exit::check_e_option(core);
 
     ans
@@ -178,7 +180,7 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
     exit::not_found(&arg, core)
 }
 
-pub fn close_proc_sub(core: &mut ShellCore) {
+fn close_proc_sub(core: &mut ShellCore) {
     while let Some(fd) = core.proc_sub_fd.pop() {
         io::close(fd, "");
     }
