@@ -47,12 +47,9 @@ impl DataBase {
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
         let num = self.params.len();
-        for layer in (0..num).rev() {
-            if self.params[layer].get(name).is_some() {
-                return Some(layer);
-            }
-        }
-        None
+        (0..num)
+            .rev()
+            .find(|&layer| self.params[layer].get(name).is_some())
     }
 
     pub fn get_position_params(&self) -> Vec<String> {
@@ -143,8 +140,8 @@ impl DataBase {
 
     pub fn get_elem_or_param(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
         match index.is_empty() {
-            true => self.get_param(&name),
-            false => self.get_elem(&name, &index),
+            true => self.get_param(name),
+            false => self.get_elem(name, index),
         }
     }
 
@@ -207,7 +204,7 @@ impl DataBase {
 
         if let Some(v) = self.get_ref(name) {
             if v.is_special() {
-                return Ok(v.get_as_single()?);
+                return v.get_as_single();
             } else if v.is_single_num() {
                 let val = v.get_as_single_num()?; //.unwrap_or_default();
                 return Ok(val.to_string());
@@ -259,8 +256,8 @@ pub fn connected_position_params(db: &mut DataBase, aster: bool) -> Result<Strin
 
 pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
     let layer = db.position_parameters.len();
-    return match db.position_parameters[layer - 1].len() > pos {
+    match db.position_parameters[layer - 1].len() > pos {
         true => Ok(db.position_parameters[layer - 1][pos].to_string()),
         false => Ok(String::new()),
-    };
+    }
 }

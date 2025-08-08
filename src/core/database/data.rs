@@ -24,7 +24,7 @@ use std::fmt::Debug;
 fn to_int(s: &str) -> Result<isize, ExecError> {
     match s.parse::<isize>() {
         Ok(n) => Ok(n),
-        Err(e) => return Err(ArithError::OperandExpected(e.to_string()).into()),
+        Err(e) => Err(ArithError::OperandExpected(e.to_string()).into()),
     }
 }
 
@@ -50,21 +50,21 @@ pub trait Data {
 
     fn print_with_name(&self, name: &str, declare_print: bool) {
         if self.is_special() {
-            println!("{}", name);
+            println!("{name}");
             return;
         }
 
         let body = self.print_body(); //.replace("$", "\\$");
         if !self.is_initialized() {
-            println!("{}", name);
+            println!("{name}");
         } else if declare_print
             && self.is_single()
             && !body.starts_with("\"")
             && !body.ends_with("\"")
         {
-            println!("{}=\"{}\"", name, body);
+            println!("{name}=\"{body}\"");
         } else {
-            println!("{}={}", name, body);
+            println!("{name}={body}");
         }
     }
 
@@ -129,12 +129,12 @@ pub trait Data {
         }
 
         if pos == "0" || pos == "*" || pos == "@" {
-            return match self.get_as_single() {
+            match self.get_as_single() {
                 Ok(d) => Ok(d),
                 Err(_) => Ok("".to_string()),
-            };
+            }
         } else {
-            return Ok("".to_string());
+            Ok("".to_string())
         }
     }
 

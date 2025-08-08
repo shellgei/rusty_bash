@@ -62,7 +62,7 @@ impl ArithmeticExpr {
         let ans = match cp.eval_elems(core, true) {
             Ok(a) => a,
             Err(ExecError::ArithError(mut s, a)) => {
-                if s == "" {
+                if s.is_empty() {
                     s = cp.text.trim_start().to_string();
                 }
                 return Err(ExecError::ArithError(s, a));
@@ -73,15 +73,13 @@ impl ArithmeticExpr {
         match ans {
             ArithElem::Integer(n) => match self.ans_to_string(n) {
                 Ok(ans) => Ok(ans),
-                Err(a) => return Err(ExecError::ArithError(cp.text, a)),
+                Err(a) => Err(ExecError::ArithError(cp.text, a)),
             },
             ArithElem::Float(f) => Ok(f.to_string()),
-            e => {
-                return Err(ExecError::ArithError(
-                    cp.text,
-                    ArithError::OperandExpected(e.to_string()).into(),
-                ))
-            }
+            e => Err(ExecError::ArithError(
+                cp.text,
+                ArithError::OperandExpected(e.to_string()),
+            )),
         }
     }
 
@@ -106,10 +104,7 @@ impl ArithmeticExpr {
         if self.elements.is_empty() && !permit_empty {
             return Err(ArithError::OperandExpected("\")\"".to_string()).into());
         }
-        let es = match self.decompose_increments() {
-            Ok(data) => data,
-            Err(err_msg) => return Err(err_msg),
-        };
+        let es = self.decompose_increments()?;
 
         calculate(&es, core)
     }
@@ -153,27 +148,27 @@ impl ArithmeticExpr {
 
     fn dec_to_str(nums: &Vec<u8>, base: i128) -> String {
         let shift = if base <= 0 {
-            |n| n + '0' as u8
+            |n| n + b'0'
         } else if base <= 36 {
             |n| {
                 if n < 10 {
-                    n + '0' as u8
+                    n + b'0'
                 } else {
-                    n - 10 + 'A' as u8
+                    n - 10 + b'A'
                 }
             }
         } else {
             |n| {
                 if n < 10 {
-                    n + '0' as u8
+                    n + b'0'
                 } else if n < 36 {
-                    n - 10 + 'a' as u8
+                    n - 10 + b'a'
                 } else if n < 62 {
-                    n - 36 + 'A' as u8
+                    n - 36 + b'A'
                 } else if n == 62 {
-                    '@' as u8
+                    b'@'
                 } else {
-                    '_' as u8
+                    b'_'
                 }
             }
         };
@@ -195,7 +190,7 @@ impl ArithmeticExpr {
         }
         .to_string();
 
-        match (&ans.last(), &self.elements.iter().nth(pos + 1)) {
+        match (&ans.last(), &self.elements.get(pos + 1)) {
             (Some(&ArithElem::Variable(_, _, _)), Some(&ArithElem::Word(_, _))) => {
                 ans.push(ArithElem::BinaryOp(pm.clone()))
             }

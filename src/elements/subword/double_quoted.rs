@@ -18,7 +18,7 @@ pub struct DoubleQuoted {
 
 impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {
-        &self.text.as_ref()
+        self.text.as_ref()
     }
     fn boxed_clone(&self) -> Box<dyn Subword> {
         Box::new(self.clone())
@@ -47,8 +47,7 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_glob_string(&mut self) -> String {
-        return self
-            .text
+        self.text
             .replace("\\", "\\\\")
             .replace("*", "\\*")
             .replace("?", "\\?")
@@ -56,7 +55,7 @@ impl Subword for DoubleQuoted {
             .replace("]", "\\]")
             .replace("@", "\\@")
             .replace("+", "\\+")
-            .replace("!", "\\!");
+            .replace("!", "\\!")
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {

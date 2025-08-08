@@ -16,7 +16,7 @@ fn after_dollar(s: &str) -> bool {
 
 fn num_to_subword(n: i128) -> Box<dyn Subword> {
     Box::new(SingleQuoted {
-        text: format!("'{}'", n),
+        text: format!("'{n}'"),
     })
 }
 
@@ -36,7 +36,7 @@ fn ascii_to_subword(c: char) -> Box<dyn Subword> {
     };
 
     Box::new(SingleQuoted {
-        text: format!("'{}'", text),
+        text: format!("'{text}'"),
     })
 }
 
@@ -56,7 +56,7 @@ fn connect_minus(subwords: &mut Vec<Box<dyn Subword>>) {
         if i + 1 < subwords.len() {
             let mut num = true;
             for ch in subwords[i + 1].get_text().chars() {
-                if ch < '0' || '9' < ch {
+                if !ch.is_ascii_digit() {
                     num = false;
                     break;
                 }
@@ -72,7 +72,7 @@ fn connect_minus(subwords: &mut Vec<Box<dyn Subword>>) {
         }
     }
 
-    subwords.retain(|e| e.get_text().len() != 0);
+    subwords.retain(|e| !e.get_text().is_empty());
 }
 
 pub fn eval(word: &mut Word, compat_bash: bool) -> Vec<Word> {
@@ -122,9 +122,8 @@ fn parse(subwords: &[Box<dyn Subword>]) -> Option<(Vec<usize>, BraceType)> {
     for sw in subwords {
         stack.push(Some(sw.get_text()));
         if sw.get_text() == "}" {
-            match get_delimiters(&mut stack) {
-                Some(found) => return Some(found),
-                _ => {}
+            if let Some(found) = get_delimiters(&mut stack) {
+                return Some(found);
             }
         }
     }
@@ -147,7 +146,7 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<(Vec<usize>, BraceTyp
         }
     }
 
-    if comma_pos.len() > 0 {
+    if !comma_pos.is_empty() {
         comma_pos.reverse();
         comma_pos.insert(0, 0); // add "{" pos
         comma_pos.push(stack.len() - 1); // add "}" pos
@@ -219,7 +218,7 @@ fn expand_range_brace(
         3 => {
             let skip = subwords[delimiters[4] + 1].get_text();
             match skip.parse::<i32>() {
-                Ok(n) => n.abs() as usize,
+                Ok(n) => n.unsigned_abs() as usize,
                 _ => return subwords_to_word(subwords),
             }
         }
@@ -278,7 +277,7 @@ fn gen_nums(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
 }
 
 fn gen_chars(start: &str, end: &str, skip: usize, compat_bash: bool) -> Vec<Box<dyn Subword>> {
-    let (start_num, end_num) = match (start.chars().nth(0), end.chars().nth(0)) {
+    let (start_num, end_num) = match (start.chars().next(), end.chars().next()) {
         (Some(s), Some(e)) => (s, e),
         _ => return vec![],
     };
@@ -291,10 +290,10 @@ fn gen_chars(start: &str, end: &str, skip: usize, compat_bash: bool) -> Vec<Box<
     let max = std::cmp::max(start_num, end_num);
 
     if compat_bash {
-        if ('0' <= min && min <= '9') && !('0' <= max && max <= '9') {
+        if min.is_ascii_digit() && !max.is_ascii_digit() {
             return vec![];
         }
-        if ('0' <= max && max <= '9') && !('0' <= min && min <= '9') {
+        if max.is_ascii_digit() && !min.is_ascii_digit() {
             return vec![];
         }
     }

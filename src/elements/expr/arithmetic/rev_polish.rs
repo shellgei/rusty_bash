@@ -19,12 +19,12 @@ pub fn rearrange(elements: &[ArithElem]) -> Result<Vec<ArithElem>, ExecError> {
 
         match is_op {
             true => ans.push(e.clone()),
-            false => rev_polish_op(&e, &mut stack, &mut ans),
+            false => rev_polish_op(e, &mut stack, &mut ans),
         };
     }
 
-    while stack.len() > 0 {
-        ans.push(stack.pop().unwrap());
+    while let Some(element) = stack.pop() {
+        ans.push(element);
     }
 
     Ok(ans)

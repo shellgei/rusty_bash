@@ -7,17 +7,17 @@ use crate::exit;
 
 pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
-    pattern.iter().for_each(|w| shave(&mut candidates, &w));
+    pattern.iter().for_each(|w| shave(&mut candidates, w));
     candidates
 }
 
 pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     match w {
-        GlobElem::Normal(s) => normal(candidates, &s),
+        GlobElem::Normal(s) => normal(candidates, s),
         GlobElem::Symbol('?') => question(candidates),
         GlobElem::Symbol('*') => asterisk(candidates),
-        GlobElem::OneOf(not, cs) => one_of(candidates, &cs, *not),
-        GlobElem::ExtGlob(prefix, ps) => extglob::shave(candidates, *prefix, &ps),
+        GlobElem::OneOf(not, cs) => one_of(candidates, cs, *not),
+        GlobElem::ExtGlob(prefix, ps) => extglob::shave(candidates, *prefix, ps),
         GlobElem::Symbol(_) => exit::internal("Unknown glob symbol"),
     }
 }
@@ -30,8 +30,8 @@ fn normal(cands: &mut Vec<String>, s: &String) {
 }
 
 fn question(cands: &mut Vec<String>) {
-    cands.retain(|c| c.len() != 0);
-    let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
+    cands.retain(|c| !c.is_empty());
+    let len = |c: &String| c.chars().next().unwrap().len_utf8();
     cands.iter_mut().for_each(|c| {
         *c = c.split_off(len(c));
     });
@@ -61,20 +61,20 @@ fn one_of(cands: &mut Vec<String>, cs: &Vec<MetaChar>, not_inv: bool) {
         return;
     }
 
-    cands.retain(|cand| cand.len() != 0);
+    cands.retain(|cand| !cand.is_empty());
     cands.retain(|cand| cs.iter().any(|c| compare_head(cand, c)) == not_inv);
-    let len = |c: &String| c.chars().nth(0).unwrap().len_utf8();
+    let len = |c: &String| c.chars().next().unwrap().len_utf8();
     cands.iter_mut().for_each(|c| {
         *c = c.split_off(len(c));
     });
 }
 
 fn compare_head(cand: &String, c: &MetaChar) -> bool {
-    let head = cand.chars().nth(0).unwrap();
+    let head = cand.chars().next().unwrap();
     match c {
         MetaChar::Normal(c) => head == *c,
         MetaChar::Range(f, t) => range_check(*f, *t, head),
-        MetaChar::CharClass(cls) => charclass_check(&cls, head),
+        MetaChar::CharClass(cls) => charclass_check(cls, head),
     }
 }
 
@@ -96,7 +96,7 @@ fn charclass_check(cls: &str, c: char) -> bool {
         "[:ascii:]" => c.is_ascii(),
         "[:blank:]" => c == ' ' || c == '\t',
         "[:cntrl:]" => c.is_ascii_control(),
-        "[:digit:]" => c.is_digit(10),
+        "[:digit:]" => c.is_ascii_digit(),
         "[:graph:]" => c.is_ascii_graphic(),
         "[:lower:]" => c.is_ascii_lowercase(),
         "[:print:]" => c.is_ascii() && !c.is_ascii_control(),
@@ -104,7 +104,7 @@ fn charclass_check(cls: &str, c: char) -> bool {
         "[:space:]" => c.is_ascii_whitespace(),
         "[:upper:]" => c.is_ascii_uppercase(),
         "[:word:]" => c.is_ascii_alphanumeric() || c == '_',
-        "[:xdigit:]" => c.is_digit(16),
+        "[:xdigit:]" => c.is_ascii_hexdigit(),
         _ => false,
     }
 }

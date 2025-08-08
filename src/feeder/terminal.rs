@@ -40,14 +40,14 @@ struct Terminal {
 }
 
 fn oct_string(s: &str) -> bool {
-    if s.chars().nth(0) != Some('\\') {
+    if !s.starts_with('\\') {
         return false;
     }
 
     for i in 1..4 {
         match s.chars().nth(i) {
             Some(c) => {
-                if c < '0' || '9' < c {
+                if !c.is_ascii_digit() {
                     return false;
                 }
             }
@@ -84,7 +84,7 @@ fn oct_to_hex_in_str(from: &str) -> String {
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
-        let raw_prompt = core.db.get_param(ps).unwrap_or(String::new());
+        let raw_prompt = core.db.get_param(ps).unwrap_or_default();
         let ansi_on_prompt = oct_to_hex_in_str(&raw_prompt);
 
         let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
@@ -92,7 +92,7 @@ impl Terminal {
             .replace("\\[", "")
             .replace("\\]", "")
             .to_string();
-        print!("{}", prompt);
+        print!("{prompt}");
         io::stdout().flush().unwrap();
 
         let mut sout = io::stdout().into_raw_mode().unwrap();
@@ -118,7 +118,7 @@ impl Terminal {
 
     fn get_branch(cwd: &String) -> String {
         let mut dirs: Vec<String> = cwd.split("/").map(|s| s.to_string()).collect();
-        while dirs.len() > 0 {
+        while !dirs.is_empty() {
             let path = dirs.join("/") + "/.git/HEAD";
             dirs.pop();
 
@@ -192,7 +192,7 @@ impl Terminal {
     }
 
     fn write(&mut self, s: &str) {
-        write!(self.stdout, "{}", s).unwrap();
+        write!(self.stdout, "{s}").unwrap();
     }
 
     fn flush(&mut self) {
@@ -257,7 +257,7 @@ impl Terminal {
     fn rewrite(&mut self, erase: bool) {
         self.goto(0);
         if erase {
-            self.write(&termion::clear::AfterCursor.to_string());
+            self.write(termion::clear::AfterCursor.as_ref());
         }
         self.write(&self.get_string(0).replace("\n", "\n\r"));
         self.goto(self.head);
@@ -386,7 +386,7 @@ impl Terminal {
             | event::Key::Left
             | event::Key::Down
             | event::Key::Right
-            | event::Key::Up => return,
+            | event::Key::Up => (),
             _ => {
                 self.tab_num = 0;
                 self.completion_candidate = String::new();

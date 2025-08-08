@@ -43,13 +43,13 @@ pub fn read_(
     tail_space += delim;
 
     args.remove(0);
-    if args.len() == 0 {
+    if args.is_empty() {
         args.push("REPLY".to_string());
     }
 
     consume_ifs(&mut remaining, " \t", limit);
 
-    while args.len() > 0 && !remaining.is_empty() && *limit != 0 {
+    while !args.is_empty() && !remaining.is_empty() && *limit != 0 {
         let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
@@ -127,7 +127,7 @@ pub fn read_a(
 }
 
 pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() < 1 {
+    if args.is_empty() {
         return 0;
     }
 
@@ -191,7 +191,7 @@ pub fn eat_word(
             remaining.pop();
 
             let line = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
-            if line.len() > 0 {
+            if !line.is_empty() {
                 *remaining += &line;
                 return eat_word(core, remaining, ifs, ignore_escape, delim);
             }

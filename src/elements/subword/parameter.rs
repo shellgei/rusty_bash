@@ -14,7 +14,7 @@ pub struct Parameter {
 
 impl Subword for Parameter {
     fn get_text(&self) -> &str {
-        &self.text.as_ref()
+        self.text.as_ref()
     }
     fn boxed_clone(&self) -> Box<dyn Subword> {
         Box::new(self.clone())
@@ -38,12 +38,12 @@ impl Subword for Parameter {
     }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
-        if self.text == "" {
+        if self.text.is_empty() {
             return vec![];
         }
 
         if ifs.starts_with(" ") || self.array.is_none() {
-            return splitter::split(&self.get_text(), ifs, prev_char)
+            return splitter::split(self.get_text(), ifs, prev_char)
                 .iter()
                 .map(|s| (From::from(&s.0), s.1))
                 .collect();

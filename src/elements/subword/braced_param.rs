@@ -26,7 +26,7 @@ pub struct BracedParam {
 
 impl Subword for BracedParam {
     fn get_text(&self) -> &str {
-        &self.text.as_ref()
+        self.text.as_ref()
     }
     fn boxed_clone(&self) -> Box<dyn Subword> {
         Box::new(self.clone())
@@ -96,14 +96,14 @@ impl Subword for BracedParam {
     }
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
-        if self.text == "" {
+        if self.text.is_empty() {
             return vec![];
         }
 
         let index_is_asterisk =
             self.param.index.is_some() && self.param.index.as_ref().unwrap().text == "[*]";
 
-        if ifs == "" && (self.param.name == "*" || index_is_asterisk) {
+        if ifs.is_empty() && (self.param.name == "*" || index_is_asterisk) {
             return self.make_split();
         }
 
@@ -132,7 +132,7 @@ impl BracedParam {
         if self.param.name.is_empty() || !utils::is_param(&self.param.name) {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
-        if self.unknown.len() > 0 && !self.unknown.starts_with(",") {
+        if !self.unknown.is_empty() && !self.unknown.starts_with(",") {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
 

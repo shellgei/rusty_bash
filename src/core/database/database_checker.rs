@@ -56,7 +56,7 @@ impl DataBase {
         let num = self.params.len();
         for layer in (0..num).rev() {
             if let Some(e) = self.params[layer].get_mut(name) {
-                return Ok(e.has_key(key)?);
+                return e.has_key(key);
             }
         }
         Ok(false)
@@ -93,21 +93,21 @@ impl DataBase {
 
     pub fn is_single(&mut self, name: &str) -> bool {
         match self.get_ref(name) {
-            Some(d) => return d.is_single(),
+            Some(d) => d.is_single(),
             _ => false,
         }
     }
 
     pub fn is_single_num(&mut self, name: &str) -> bool {
         match self.get_ref(name) {
-            Some(d) => return d.is_single_num(),
+            Some(d) => d.is_single_num(),
             _ => false,
         }
     }
 
     pub fn is_array(&mut self, name: &str) -> bool {
         match self.get_ref(name) {
-            Some(d) => return d.is_array(),
+            Some(d) => d.is_array(),
             _ => false,
         }
     }

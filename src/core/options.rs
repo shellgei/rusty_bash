@@ -109,8 +109,8 @@ impl Options {
         };
 
         match opt.len() < 16 {
-            true => format!("{:16}{}", opt, onoff_str),
-            false => format!("{}\t{}", opt, onoff_str),
+            true => format!("{opt:16}{onoff_str}"),
+            false => format!("{opt}\t{onoff_str}"),
         }
     }
 
@@ -120,13 +120,13 @@ impl Options {
             false => "+",
         };
 
-        format!("set {}o {}", onoff_str, opt)
+        format!("set {onoff_str}o {opt}")
     }
 
     pub fn print_opt(&self, opt: &str, set_format: bool) -> bool {
         match self.opts.get_key_value(opt) {
             None => {
-                eprintln!("sush: shopt: {}: invalid shell option name", opt);
+                eprintln!("sush: shopt: {opt}: invalid shell option name");
                 false
             }
             Some(kv) => {
@@ -152,7 +152,7 @@ impl Options {
             .collect::<Vec<String>>();
 
         list.sort();
-        list.iter().for_each(|e| println!("{}", e));
+        list.iter().for_each(|e| println!("{e}"));
     }
 
     pub fn print_if(&self, onoff: bool) {
@@ -164,7 +164,7 @@ impl Options {
             .collect::<Vec<String>>();
 
         list.sort();
-        list.iter().for_each(|e| println!("{}", e));
+        list.iter().for_each(|e| println!("{e}"));
     }
 
     pub fn exist(&self, opt: &str) -> bool {
@@ -177,7 +177,7 @@ impl Options {
 
     pub fn set(&mut self, opt: &str, onoff: bool) -> Result<(), ExecError> {
         if !self.opts.contains_key(opt) {
-            let msg = format!("{}: invalid option name", opt);
+            let msg = format!("{opt}: invalid option name");
             return Err(ExecError::Other(msg));
         }
 

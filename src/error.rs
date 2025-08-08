@@ -21,18 +21,18 @@ pub fn print(s: &str, core: &mut ShellCore) {
 }
 
 pub fn internal(s: &str) -> String {
-    format!("SUSH INTERNAL ERROR: {}", s)
+    format!("SUSH INTERNAL ERROR: {s}")
 }
 
 pub fn exponent(s: &str) -> String {
-    format!("exponent less than 0 (error token is \"{}\")", s)
+    format!("exponent less than 0 (error token is \"{s}\")")
 }
 
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
     match coredump {
-        true => eprintln!("Pid: {:?}, Signal: {:?} (core dumped)", pid, signal),
-        false => eprintln!("Pid: {:?}, Signal: {:?}", pid, signal),
+        true => eprintln!("Pid: {pid:?}, Signal: {signal:?} (core dumped)"),
+        false => eprintln!("Pid: {pid:?}, Signal: {signal:?}"),
     }
     128 + signal as i32
 }

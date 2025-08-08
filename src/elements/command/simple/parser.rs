@@ -84,10 +84,9 @@ impl SimpleCommand {
             ans.command_name = w.text.clone();
         }
 
-        if ans.words.is_empty() || ans.continue_alias_check {
-            if alias::set(ans, &w, core, feeder)? {
-                return Ok(true);
-            }
+        if (ans.words.is_empty() || ans.continue_alias_check) && alias::set(ans, &w, core, feeder)?
+        {
+            return Ok(true);
         }
 
         ans.text += &w.text;
@@ -130,10 +129,10 @@ impl SimpleCommand {
                 return Err(e);
             }
 
-            if core.substitution_builtins.contains_key(&ans.command_name) {
-                if Self::eat_substitution_as_arg(feeder, &mut ans, core)? {
-                    continue;
-                }
+            if core.substitution_builtins.contains_key(&ans.command_name)
+                && Self::eat_substitution_as_arg(feeder, &mut ans, core)?
+            {
+                continue;
             }
 
             command::eat_blank_with_comment(feeder, core, &mut ans.text);

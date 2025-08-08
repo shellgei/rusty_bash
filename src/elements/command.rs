@@ -195,7 +195,7 @@ pub fn eat_blank_lines(
             continue;
         }
 
-        if feeder.len() == 0 {
+        if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
             continue;
         }

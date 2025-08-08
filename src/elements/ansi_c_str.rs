@@ -25,7 +25,7 @@ impl AnsiCToken {
             AnsiCToken::EmptyHex => String::new(),
             AnsiCToken::Normal(s) => s.clone(),
             AnsiCToken::Oct(s) => {
-                let mut num = u32::from_str_radix(&s, 8).unwrap();
+                let mut num = u32::from_str_radix(s, 8).unwrap();
                 if num >= 256 {
                     num -= 256;
                 }
@@ -59,17 +59,17 @@ impl AnsiCToken {
                 }
             }
             AnsiCToken::Unicode4(s) => {
-                let num = u32::from_str_radix(&s, 16).unwrap();
+                let num = u32::from_str_radix(s, 16).unwrap();
                 match char::from_u32(num) {
                     Some(c) => c.to_string(),
                     _ => "U+".to_owned() + s,
                 }
             }
             AnsiCToken::Unicode8(s) => {
-                let num = u64::from_str_radix(&s, 16).unwrap();
+                let num = u64::from_str_radix(s, 16).unwrap();
                 let mut ans = String::new();
                 for i in (0..4).rev() {
-                    let n = (((num >> i * 8) & 0xFF) + 0xE000 + ((i + 1) << 8)) as u32;
+                    let n = (((num >> (i * 8)) & 0xFF) + 0xE000 + ((i + 1) << 8)) as u32;
                     ans.push(char::from_u32(n).unwrap());
                 }
                 //unsafe { char::from_u32_unchecked(num as u32) }.to_string()
@@ -269,23 +269,21 @@ impl AnsiCString {
 
             if for_echo && txt == "\\'" {
                 ans.tokens.push(AnsiCToken::Normal(txt));
-            } else if txt != "\\c" || feeder.len() == 0 {
+            } else if txt != "\\c" || feeder.is_empty() {
                 ans.tokens
                     .push(AnsiCToken::OtherEscaped(txt[1..].to_string()));
+            } else if let Some(a) = EscapedChar::parse(feeder, core) {
+                let mut text_after = a.get_text().to_string();
+                ans.text += &text_after.clone();
+                text_after.remove(0);
+                let ctrl_c = text_after.chars().nth(0).unwrap();
+                ans.tokens.push(AnsiCToken::Control(ctrl_c));
+            } else if feeder.starts_with("'") {
+                ans.tokens.push(AnsiCToken::Normal("\\c".to_string()));
             } else {
-                if let Some(a) = EscapedChar::parse(feeder, core) {
-                    let mut text_after = a.get_text().to_string();
-                    ans.text += &text_after.clone();
-                    text_after.remove(0);
-                    let ctrl_c = text_after.chars().nth(0).unwrap();
-                    ans.tokens.push(AnsiCToken::Control(ctrl_c));
-                } else if feeder.starts_with("'") {
-                    ans.tokens.push(AnsiCToken::Normal("\\c".to_string()));
-                } else {
-                    let ctrl_c = feeder.consume(1).chars().nth(0).unwrap();
-                    ans.text += &ctrl_c.to_string();
-                    ans.tokens.push(AnsiCToken::Control(ctrl_c));
-                }
+                let ctrl_c = feeder.consume(1).chars().nth(0).unwrap();
+                ans.text += &ctrl_c.to_string();
+                ans.tokens.push(AnsiCToken::Control(ctrl_c));
             }
             true
         } else {
@@ -316,7 +314,7 @@ impl AnsiCString {
                 continue;
             }
 
-            if feeder.len() == 0 {
+            if feeder.is_empty() {
                 if for_echo {
                     break;
                 }

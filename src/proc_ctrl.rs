@@ -23,7 +23,7 @@ pub fn wait_pipeline(
     exclamation: bool,
     time: bool,
 ) -> Vec<WaitStatus> {
-    if pids.len() == 1 && pids[0] == None {
+    if pids.len() == 1 && pids[0].is_none() {
         if time {
             show_time(core);
         }
@@ -63,7 +63,7 @@ pub fn wait_pipeline(
     if core.options.query("pipefail") {
         pipestatus.retain(|e| *e != 0);
 
-        if pipestatus.len() != 0 {
+        if !pipestatus.is_empty() {
             core.db.exit_status = pipestatus[pipestatus.len() - 1];
         }
     }
@@ -90,7 +90,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
         Ok(WaitStatus::Exited(_pid, status)) => status,
         Ok(WaitStatus::Signaled(pid, signal, coredump)) => error::signaled(pid, signal, coredump),
         Ok(WaitStatus::Stopped(pid, signal)) => {
-            eprintln!("Stopped Pid: {:?}, Signal: {:?}", pid, signal);
+            eprintln!("Stopped Pid: {pid:?}, Signal: {signal:?}");
             148
         }
         Ok(unsupported) => {
@@ -98,7 +98,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
             1
         }
         Err(err) => {
-            let msg = format!("Error: {:?}", err);
+            let msg = format!("Error: {err:?}");
             exit::internal(&msg);
         }
     };
@@ -115,14 +115,16 @@ fn set_foreground(core: &ShellCore) {
         _ => return,
     };
 
-    let pgid = unistd::getpgid(Some(Pid::from_raw(0))).expect(&error::internal("cannot get pgid"));
+    let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
+        .unwrap_or_else(|_| panic!("{}", error::internal("cannot get pgid")));
 
     if unistd::tcgetpgrp(fd) == Ok(pgid) {
         return;
     }
 
     signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視
-    unistd::tcsetpgrp(fd, pgid).expect(&error::internal("cannot get the terminal"));
+    unistd::tcsetpgrp(fd, pgid)
+        .unwrap_or_else(|_| panic!("{}", error::internal("cannot get the terminal")));
     signal::restore(Signal::SIGTTOU); //SIGTTOUを受け付け
 }
 
@@ -179,7 +181,7 @@ pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String)
         Err(Errno::EACCES) => exit::permission_denied(&args[0], core),
         Err(Errno::ENOENT) => run_command_not_found(&args[0], core),
         Err(err) => {
-            eprintln!("Failed to execute. {:?}", err);
+            eprintln!("Failed to execute. {err:?}");
             process::exit(127)
         }
         _ => exit::internal("never come here"),
@@ -198,7 +200,7 @@ fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
             _ => {}
         }
     }
-    exit::not_found(&arg, core)
+    exit::not_found(arg, core)
 }
 
 fn close_proc_sub(core: &mut ShellCore) {

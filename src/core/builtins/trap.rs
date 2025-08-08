@@ -54,7 +54,7 @@ pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             continue;
         };
 
-        let msg = format!("trap: {}: invalid signal specification", n);
+        let msg = format!("trap: {n}: invalid signal specification");
         return super::error_exit(1, &args[0], &msg, core);
     }
 
@@ -110,17 +110,15 @@ fn arg_to_num(arg: &str, forbiddens: &Vec<i32>) -> Result<i32, ExecError> {
     if let Ok(n) = arg.parse::<i32>() {
         if forbiddens.contains(&n) {
             return Err(ExecError::Other(format!(
-                "trap: {}: forbidden signal for trap",
-                arg
+                "trap: {arg}: forbidden signal for trap"
             )));
         }
         return Ok(n);
     }
 
-    return Err(ExecError::Other(format!(
-        "trap: {}: invalid signal specification",
-        arg
-    )));
+    Err(ExecError::Other(format!(
+        "trap: {arg}: invalid signal specification"
+    )))
 }
 
 fn args_to_nums(args: &[String], forbiddens: &Vec<i32>) -> Result<Vec<i32>, ExecError> {

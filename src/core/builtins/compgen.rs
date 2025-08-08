@@ -42,13 +42,13 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
         }
     }
 
-    if key == "" {
+    if key.is_empty() {
         let mut files = directory::files(&dir);
         if dir_only {
-            files.retain(|p| file_check::is_dir(&(dir.clone() + &p)));
+            files.retain(|p| file_check::is_dir(&(dir.clone() + p)));
         }
         files.sort();
-        return files.iter().map(|f| org_dir.clone() + &f).collect();
+        return files.iter().map(|f| org_dir.clone() + f).collect();
     }
 
     let mut ans = directory::glob(&dir, &(key.clone() + "*"), &core.shopts);
@@ -60,7 +60,7 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
         a.pop();
     });
     if dir_only {
-        ans.retain(|p| file_check::is_dir(&p));
+        ans.retain(|p| file_check::is_dir(p));
     }
     ans.sort();
     ans.iter_mut().for_each(|e| {
@@ -99,16 +99,14 @@ fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
     for path in core
         .db
         .get_param("PATH")
-        .unwrap_or(String::new())
+        .unwrap_or_default()
         .to_string()
         .split(":")
     {
         /* /mnt is ellimimated from PATH on WSL because it contains all files in Windows.*/
-        if utils::is_wsl() && path.starts_with("/mnt") {
-            if !path.ends_with("WINDOWS") {
-                // We want to use explorer.exe
-                continue;
-            }
+        if utils::is_wsl() && path.starts_with("/mnt") && !path.ends_with("WINDOWS") {
+            // We want to use explorer.exe
+            continue;
         }
 
         for command in directory::files(path).iter() {
@@ -175,7 +173,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     if let Some(pattern) = exclude {
         let extglob = core.shopts.query("extglob");
-        ans.retain(|a| !glob::parse_and_compare(&a, &pattern, extglob));
+        ans.retain(|a| !glob::parse_and_compare(a, &pattern, extglob));
     }
 
     if let Some(p) = prefix {
@@ -208,7 +206,7 @@ fn get_head(args: &mut Vec<String>, pos: usize) -> String {
 
 fn drop_unmatch(args: &mut Vec<String>, pos: usize, list: &mut Vec<String>) {
     let head = get_head(args, pos);
-    if head != "" {
+    if !head.is_empty() {
         list.retain(|s| s.starts_with(&head));
     }
 }
@@ -216,16 +214,11 @@ fn drop_unmatch(args: &mut Vec<String>, pos: usize, list: &mut Vec<String>) {
 pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
 
-    let mut aliases: Vec<String> = core
-        .db
-        .get_indexes_all("BASH_ALIASES")
-        .iter()
-        .map(|k| k.clone())
-        .collect();
+    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").to_vec();
     commands.append(&mut aliases);
 
     let head = get_head(args, 2);
-    if head != "" {
+    if !head.is_empty() {
         commands.retain(|a: &String| a.starts_with(&head));
     }
     commands
@@ -233,11 +226,11 @@ pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
 
 pub fn compgen_b(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
-    let mut builtins: Vec<String> = core.builtins.keys().map(|k| k.clone()).collect();
+    let mut builtins: Vec<String> = core.builtins.keys().cloned().collect();
     commands.append(&mut builtins);
 
     let head = get_head(args, 2);
-    if head != "" {
+    if !head.is_empty() {
         commands.retain(|a| a.starts_with(&head));
     }
     commands
@@ -250,20 +243,15 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     }
     commands.retain(|p| Path::new(p).executable() || file_check::is_dir(p));
 
-    let mut aliases: Vec<String> = core
-        .db
-        .get_indexes_all("BASH_ALIASES")
-        .iter()
-        .map(|k| k.clone())
-        .collect();
+    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").to_vec();
     commands.append(&mut aliases);
-    let mut builtins: Vec<String> = core.builtins.keys().map(|k| k.clone()).collect();
+    let mut builtins: Vec<String> = core.builtins.keys().cloned().collect();
     commands.append(&mut builtins);
-    let mut functions: Vec<String> = core.db.functions.keys().map(|k| k.clone()).collect();
+    let mut functions: Vec<String> = core.db.functions.keys().cloned().collect();
     commands.append(&mut functions);
 
     let head = get_head(args, 2);
-    if head != "" {
+    if !head.is_empty() {
         commands.retain(|a| a.starts_with(&head));
     }
     let mut command_in_paths = command_list(&head, core);
@@ -283,11 +271,10 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
 
     let mut ans = core.history.to_vec();
 
-    if let Ok(hist_file) = File::open(core.db.get_param("HISTFILE").unwrap_or(String::new())) {
+    if let Ok(hist_file) = File::open(core.db.get_param("HISTFILE").unwrap_or_default()) {
         for h in RevLines::new(BufReader::new(hist_file)) {
-            match h {
-                Ok(s) => ans.push(s),
-                _ => {}
+            if let Ok(s) = h {
+                ans.push(s)
             }
 
             if ans.len() >= 10 {
@@ -305,20 +292,15 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
 pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut commands = vec![];
 
-    let mut aliases: Vec<String> = core
-        .db
-        .get_indexes_all("BASH_ALIASES")
-        .iter()
-        .map(|k| k.clone())
-        .collect();
+    let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").to_vec();
     commands.append(&mut aliases);
-    let mut functions: Vec<String> = core.db.functions.keys().map(|k| k.clone()).collect();
+    let mut functions: Vec<String> = core.db.functions.keys().cloned().collect();
     commands.append(&mut functions);
     let mut vars: Vec<String> = core.db.get_keys();
     commands.append(&mut vars);
 
     let head = get_head(args, 2);
-    if head != "" {
+    if !head.is_empty() {
         commands.retain(|a| a.starts_with(&head));
     }
     commands
@@ -331,7 +313,7 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     commands.append(&mut options);
 
     let head = get_head(args, 2);
-    if head != "" {
+    if !head.is_empty() {
         commands.retain(|a| a.starts_with(&head));
     }
     commands
@@ -353,7 +335,7 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
     }
 
     let mut feeder = Feeder::new(&words);
-    while feeder.len() != 0 {
+    while !feeder.is_empty() {
         match Word::parse(&mut feeder, core, None) {
             Ok(Some(mut w)) => {
                 if let Ok(mut v) = w.eval(core) {
@@ -397,7 +379,7 @@ pub fn compgen_shopt(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String
 }
 
 pub fn compgen_function(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
-    let mut ans = core.db.functions.keys().map(|k| k.clone()).collect();
+    let mut ans = core.db.functions.keys().cloned().collect();
     drop_unmatch(args, 2, &mut ans);
     ans
 }
@@ -412,7 +394,7 @@ pub fn compgen_stopped(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<Stri
 
     for job in &core.job_table {
         if job.display_status == "Stopped" {
-            ans.push(job.text.split(" ").nth(0).unwrap().to_string());
+            ans.push(job.text.split(" ").next().unwrap().to_string());
         }
     }
 
@@ -424,7 +406,7 @@ pub fn compgen_j(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     let mut ans = vec![];
 
     for job in &core.job_table {
-        ans.push(job.text.split(" ").nth(0).unwrap().to_string());
+        ans.push(job.text.split(" ").next().unwrap().to_string());
     }
 
     drop_unmatch(args, 2, &mut ans);

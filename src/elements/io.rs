@@ -25,11 +25,11 @@ pub fn replace(from: RawFd, to: RawFd) -> bool {
 
     match unistd::dup2(from, to) {
         Ok(_) => {
-            close(from, &format!("sush(fatal): {}: cannot be closed", from));
+            close(from, &format!("sush(fatal): {from}: cannot be closed"));
             true
         }
         Err(Errno::EBADF) => {
-            eprintln!("sush: {}: Bad file descriptor", to);
+            eprintln!("sush: {to}: Bad file descriptor");
             false
         }
         Err(_) => {

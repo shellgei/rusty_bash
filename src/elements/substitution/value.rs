@@ -47,7 +47,7 @@ impl Value {
         core: &mut ShellCore,
         name: &str,
     ) -> Result<(), ExecError> {
-        self.evaluated_string = match core.db.has_flag(&name, 'i') {
+        self.evaluated_string = match core.db.has_flag(name, 'i') {
             true => Some(w.eval_as_integer(core)?),
             false => Some(w.eval_as_value(core)?),
         };
@@ -64,15 +64,15 @@ impl Value {
     ) -> Result<(), ExecError> {
         let mut i = match append {
             false => 0,
-            true => core.db.index_based_len(&name) as isize,
+            true => core.db.index_based_len(name) as isize,
         };
 
         let mut hash = vec![];
         let mut vec_assoc = vec![];
-        let i_flag = core.db.has_flag(&name, 'i');
+        let i_flag = core.db.has_flag(name, 'i');
         let mut first = true;
         let mut assoc_no_index_mode = false;
-        let assoc = core.db.is_assoc(&name);
+        let assoc = core.db.is_assoc(name);
 
         for (pos, (s, append, v)) in a.eval(core, i_flag, assoc)?.into_iter().enumerate() {
             if assoc_no_index_mode {
@@ -99,7 +99,7 @@ impl Value {
             }
 
             first = false;
-            let index = match s.unwrap().eval(core, &name) {
+            let index = match s.unwrap().eval(core, name) {
                 Ok(i) => i,
                 Err(ExecError::ArithError(a, b)) => {
                     self.evaluated_array = Some(vec![]);

@@ -29,5 +29,5 @@ pub fn to_carg(arg: &String) -> CString {
 }
 
 pub fn to_cargs(args: &Vec<String>) -> Vec<CString> {
-    args.iter().map(|a| to_carg(a)).collect()
+    args.iter().map(to_carg).collect()
 }

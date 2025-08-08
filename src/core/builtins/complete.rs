@@ -44,17 +44,17 @@ fn opt_to_action(arg: &str) -> String {
 }
 
 fn print_complete(core: &mut ShellCore) -> i32 {
-    if core.completion.default_function != "" {
+    if !core.completion.default_function.is_empty() {
         println!("complete -F {} -D", &core.completion.default_function);
     }
 
     for (name, info) in &core.completion.entries {
-        if info.function != "" {
+        if !info.function.is_empty() {
             print!("complete -F {} ", &info.function);
-        } else if info.action != "" {
+        } else if !info.action.is_empty() {
             let symbol = action_to_reduce_symbol(&info.action);
 
-            if symbol == "" {
+            if symbol.is_empty() {
                 print!("complete -A {} ", &info.action);
             } else {
                 print!("complete -{} ", &symbol);
@@ -83,7 +83,7 @@ fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<Stri
 
     if d_option {
         core.completion.default_function = args[1].clone();
-        return 0;
+        0
     } else {
         let func = args[1].clone();
         for command in &args[2..] {
@@ -98,7 +98,7 @@ fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<Stri
             info.o_options = o_options.clone();
         }
 
-        return 0;
+        0
     }
 }
 
@@ -128,16 +128,16 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut options = HashMap::new();
     let prefix = arg::consume_with_next_arg("-P", &mut args);
-    if prefix != None {
+    if prefix.is_some() {
         options.insert("-P".to_string(), prefix.unwrap().clone());
     }
     let suffix = arg::consume_with_next_arg("-S", &mut args);
-    if suffix != None {
+    if suffix.is_some() {
         options.insert("-S".to_string(), suffix.unwrap().clone());
     }
 
     let action = opt_to_action(&args[1]);
-    if action != "" {
+    if !action.is_empty() {
         for command in &args[2..] {
             if !core.completion.entries.contains_key(command) {
                 core.completion

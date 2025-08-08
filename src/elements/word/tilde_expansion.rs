@@ -34,8 +34,8 @@ fn eval_single(word: &mut Word, core: &mut ShellCore) {
         .collect::<Vec<String>>()
         .concat();
 
-    let value = get_value(&text, core).unwrap_or(String::new());
-    if value == "" {
+    let value = get_value(&text, core).unwrap_or_default();
+    if value.is_empty() {
         return;
     }
     word.text = value.clone();

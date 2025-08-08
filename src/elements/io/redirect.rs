@@ -99,7 +99,7 @@ impl Redirect {
                 let fd = file.into_raw_fd();
                 let result = io::replace(fd, self.left_fd);
                 if !result {
-                    io::close(fd, &format!("sush(fatal): file does not close"));
+                    io::close(fd, "sush(fatal): file does not close");
                     self.left_fd = -1;
                     let msg = format!("{}: cannot replace", &fd);
                     return Err(ExecError::Other(msg));
@@ -168,7 +168,6 @@ impl Redirect {
         self.connect_to_file(
             OpenOptions::new()
                 .create(true)
-                .write(true)
                 .append(true)
                 .open(&self.right.text),
             restore,
@@ -244,7 +243,7 @@ impl Redirect {
             ForkResult::Child => {
                 io::close(recv, "here_data close error (child recv)");
                 let mut f = unsafe { File::from_raw_fd(send) };
-                let _ = write!(&mut f, "{}\n", &text);
+                let _ = writeln!(&mut f, "{}", &text);
                 f.flush().unwrap();
                 io::close(send, "here_data close error (child send)");
                 process::exit(0);
@@ -297,7 +296,7 @@ impl Redirect {
         }
 
         loop {
-            if feeder.len() == 0 {
+            if feeder.is_empty() {
                 feeder.feed_additional_line(core)?;
 
                 if remove_tab {
@@ -364,10 +363,7 @@ impl Redirect {
         ans.left = feeder.consume(len);
         ans.text += &ans.left.clone();
 
-        match ans.left.parse::<RawFd>() {
-            Ok(_) => true,
-            _ => false,
-        }
+        ans.left.parse::<RawFd>().is_ok()
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {

@@ -3,7 +3,7 @@
 
 pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
     //bool: true if it should remain
-    if ifs == "" {
+    if ifs.is_empty() {
         return vec![(sw.to_string(), false)];
     }
 

@@ -109,7 +109,7 @@ impl Replace {
         string_to: &String,
     ) -> Result<String, ExecError> {
         if pattern.is_empty() {
-            let ans = text.to_string() + &string_to;
+            let ans = text.to_string() + string_to;
             return Ok(ans);
         }
 
@@ -118,7 +118,7 @@ impl Replace {
             let len = glob::longest_match_length(&text[start..].to_string(), pattern);
 
             if len == text[start..].len() {
-                let ans = text[..start].to_string() + &string_to;
+                let ans = text[..start].to_string() + string_to;
                 return Ok(ans);
             }
 

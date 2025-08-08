@@ -60,7 +60,7 @@ impl JobEntry {
         id: usize,
     ) -> JobEntry {
         JobEntry {
-            id: id,
+            id,
             pids: pids.into_iter().flatten().collect(),
             proc_statuses: statuses.to_vec(),
             display_status: status.to_string(),
@@ -215,15 +215,14 @@ impl JobEntry {
 
     pub fn send_cont(&mut self) {
         for pid in &self.pids {
-            let _ = signal::kill(Pid::from_raw(-1 * i32::from(*pid)), signal::SIGCONT);
+            let _ = signal::kill(Pid::from_raw(-i32::from(*pid)), signal::SIGCONT);
         }
     }
 
     pub fn solve_pgid(&self) -> Pid {
         for pid in &self.pids {
-            match unistd::getpgid(Some(*pid)) {
-                Ok(pgid) => return pgid,
-                _ => {}
+            if let Ok(pgid) = unistd::getpgid(Some(*pid)) {
+                return pgid;
             }
         }
         Pid::from_raw(0)

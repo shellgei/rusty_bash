@@ -146,13 +146,13 @@ impl Variable {
             }
 
             if self.index.is_none() {
-                return Ok(core.db.has_key(&self.name, "0")?);
+                return core.db.has_key(&self.name, "0");
             }
         }
 
         if let Some(sub) = self.index.clone().as_mut() {
             let index = sub.eval(core, &self.name)?;
-            return Ok(core.db.has_key(&self.name, &index)?);
+            return core.db.has_key(&self.name, &index);
         }
 
         Ok(core.db.exist(&self.name))

@@ -20,7 +20,7 @@ pub struct ProcessSubstitution {
 
 impl Subword for ProcessSubstitution {
     fn get_text(&self) -> &str {
-        &self.text.as_ref()
+        self.text.as_ref()
     }
     fn boxed_clone(&self) -> Box<dyn Subword> {
         Box::new(self.clone())

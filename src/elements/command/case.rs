@@ -146,7 +146,7 @@ impl CaseCommand {
             }
         }
 
-        Ok(ans.len() != 0)
+        Ok(!ans.is_empty())
     }
 
     pub fn parse(
@@ -192,7 +192,7 @@ impl CaseCommand {
                 &mut script,
                 true,
             )? {
-                ans.text.push_str(")");
+                ans.text.push(')');
                 ans.text.push_str(&script.as_ref().unwrap().get_text());
 
                 if feeder.starts_with("esac") {
@@ -213,7 +213,7 @@ impl CaseCommand {
 
         if feeder.starts_with("esac") {
             ans.text += &feeder.consume(4);
-            if ans.patterns_script_end.len() > 0 {
+            if !ans.patterns_script_end.is_empty() {
                 command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
                 ans.lineno = feeder.lineno;
                 return Ok(Some(ans));

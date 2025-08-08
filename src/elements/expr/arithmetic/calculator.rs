@@ -105,7 +105,7 @@ fn bin_calc_operation(
         return Ok(());
     }
 
-    let ans = match (left, right) {
+    match (left, right) {
         (ArithElem::Float(fl), ArithElem::Float(fr)) => float::bin_calc(op, fl, fr, stack)?,
         (ArithElem::Float(fl), ArithElem::Integer(nr)) => {
             float::bin_calc(op, fl, nr as f64, stack)?
@@ -117,7 +117,7 @@ fn bin_calc_operation(
         _ => exit::internal("invalid operand"),
     };
 
-    Ok(ans)
+    Ok(())
 }
 
 fn unary_operation(
@@ -125,10 +125,7 @@ fn unary_operation(
     stack: &mut Vec<ArithElem>,
     core: &mut ShellCore,
 ) -> Result<(), ExecError> {
-    let operand = match pop_operand(stack, core) {
-        Ok(v) => v,
-        Err(e) => return Err(e),
-    };
+    let operand = pop_operand(stack, core)?;
 
     match operand {
         ArithElem::Float(num) => float::unary_calc(op, num, stack),
@@ -150,20 +147,16 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
 
     for e in rev_pol {
         match e {
-            ArithElem::BinaryOp(ref op) => bin_operation(&op, &mut stack, core)?,
+            ArithElem::BinaryOp(ref op) => bin_operation(op, &mut stack, core)?,
             ArithElem::UnaryOp(ref op) => match stack.is_empty() {
                 true => escaped_unaries.push(e),
                 false => {
-                    let mut ok = unary_operation(&op, &mut stack, core)?;
+                    unary_operation(op, &mut stack, core)?;
                     while !escaped_unaries.is_empty() {
-                        match escaped_unaries.pop().unwrap() {
-                            ArithElem::UnaryOp(ref op) => {
-                                ok = unary_operation(&op, &mut stack, core)?;
-                            }
-                            _ => {}
+                        if let ArithElem::UnaryOp(ref op) = escaped_unaries.pop().unwrap() {
+                            () = unary_operation(op, &mut stack, core)?;
                         }
                     }
-                    ok
                 }
             },
             ArithElem::Increment(n) => inc(n, &mut stack, core)?,

@@ -40,7 +40,7 @@ fn main() {
         return;
     }
 
-    let command = args.get(0).cloned().unwrap_or_else(|| "sush".to_string());
+    let command = args.first().cloned().unwrap_or_else(|| "sush".to_string());
     let script_parts = consume_file_and_subsequents(&mut args);
 
     let mut c_opt = false;
@@ -158,12 +158,9 @@ fn read_rc_file(core: &mut ShellCore) {
         return;
     }
 
-    let mut dir = core
-        .db
-        .get_param("CARGO_MANIFEST_DIR")
-        .unwrap_or(String::new());
-    if dir == "" {
-        dir = core.db.get_param("HOME").unwrap_or(String::new());
+    let mut dir = core.db.get_param("CARGO_MANIFEST_DIR").unwrap_or_default();
+    if dir.is_empty() {
+        dir = core.db.get_param("HOME").unwrap_or_default();
     }
 
     let rc_file = dir + "/.sushrc";
@@ -194,7 +191,7 @@ fn main_loop(core: &mut ShellCore, command: &String) {
 
     if core.script_name != "-" {
         core.db.flags.retain(|f| f != 'i');
-        if let Err(_) = feeder.set_file(&core.script_name) {
+        if feeder.set_file(&core.script_name).is_err() {
             eprintln!(
                 "{}: {}: No such file or directory",
                 command, &core.script_name

@@ -10,7 +10,7 @@ use std::io;
 use std::io::{stdout, Write};
 
 fn arg_to_c_str(arg: &String, core: &mut ShellCore) -> Result<CString, ExecError> {
-    let mut f = Feeder::new(&arg);
+    let mut f = Feeder::new(arg);
     let ans = match AnsiCString::parse(&mut f, core, true) {
         Ok(Some(mut ansi_c_str)) => c_string::to_carg(&ansi_c_str.eval()),
         Ok(None) => c_string::to_carg(arg),
@@ -26,7 +26,7 @@ pub fn echo(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut n_opt = false;
 
     if args.len() == 1 {
-        println!("");
+        println!();
         return 0;
     }
 
@@ -64,7 +64,7 @@ pub fn echo(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             },
         };
 
-        let _ = io::stdout().write_all(&bytes).unwrap();
+        io::stdout().write_all(&bytes).unwrap();
     }
 
     if !n_opt {

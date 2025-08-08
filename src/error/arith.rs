@@ -51,5 +51,5 @@ impl From<&ArithError> for String {
 }
 
 fn error_msg(msg: &str, token: &str) -> String {
-    msg.to_string() + &format!(" (error token is \"{}\")", token)
+    msg.to_string() + &format!(" (error token is \"{token}\")")
 }

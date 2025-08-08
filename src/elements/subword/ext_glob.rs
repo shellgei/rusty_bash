@@ -15,7 +15,7 @@ pub struct ExtGlob {
 
 impl Subword for ExtGlob {
     fn get_text(&self) -> &str {
-        &self.text.as_ref()
+        self.text.as_ref()
     }
     fn boxed_clone(&self) -> Box<dyn Subword> {
         Box::new(self.clone())
@@ -174,9 +174,9 @@ impl ExtGlob {
             } else if feeder.starts_with("|") {
                 ans.text += &feeder.consume(1);
                 ans.subwords.push(From::from("|"));
-            } else if feeder.len() > 0 {
+            } else if !feeder.is_empty() {
                 exit::internal("unknown chars in double quoted word");
-            } else if !feeder.feed_additional_line(core).is_ok() {
+            } else if feeder.feed_additional_line(core).is_err() {
                 return Ok(None);
             }
         }

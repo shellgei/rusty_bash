@@ -53,10 +53,10 @@ impl Command for ParenCommand {
     }
 
     fn get_one_line_text(&self) -> String {
-        return match &self.script {
+        match &self.script {
             Some(s) => format!("( {} )", s.get_one_line_text()),
             None => "()".to_string(),
-        };
+        }
     }
 }
 
@@ -79,7 +79,7 @@ impl ParenCommand {
         ans.lineno = feeder.lineno;
 
         if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, substitution)? {
-            ans.text.push_str("(");
+            ans.text.push('(');
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
 

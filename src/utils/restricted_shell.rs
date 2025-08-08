@@ -27,7 +27,7 @@ fn rsh_cmd_check(cmds: &Vec<String>) -> Result<(), ExecError> {
             return Err(ExecError::Other(msg));
         }
 
-        if file_check::is_executable(&c) {
+        if file_check::is_executable(c) {
             let msg = format!("{}: not found", &c);
             return Err(ExecError::Other(msg));
         }

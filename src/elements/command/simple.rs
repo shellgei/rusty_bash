@@ -116,14 +116,12 @@ impl SimpleCommand {
         core.db.last_arg = self.args.last().unwrap().clone();
         self.option_x_output(core);
 
-        if core.db.flags.contains('r') {
-            if self.args[0].contains('/') {
-                let msg = format!(
-                    "{}: restricted: cannot specify `/' in command names",
-                    &self.args[0]
-                );
-                return Err(ExecError::Other(msg));
-            }
+        if core.db.flags.contains('r') && self.args[0].contains('/') {
+            let msg = format!(
+                "{}: restricted: cannot specify `/' in command names",
+                &self.args[0]
+            );
+            return Err(ExecError::Other(msg));
         }
 
         if self.force_fork
@@ -239,6 +237,6 @@ impl SimpleCommand {
             }
         }
 
-        eprintln!("");
+        eprintln!();
     }
 }

@@ -71,7 +71,7 @@ fn arrow(term: &mut Terminal, core: &mut ShellCore, key: &event::Key) {
 fn char_key(term: &mut Terminal, core: &mut ShellCore, c: &char) -> Result<bool, InputError> {
     match c {
         '\n' => {
-            if term.completion_candidate.len() > 0 {
+            if !term.completion_candidate.is_empty() {
                 term.set_double_tab_completion(core);
             } else {
                 term.goto(term.chars.len());

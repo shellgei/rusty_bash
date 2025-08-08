@@ -40,14 +40,14 @@ fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -> i3
                 true => println!("{} is a shell builtin", &com),
                 false => println!("{}", &com),
             }
-        } else if let Some(path) = file::search_command(&com) {
+        } else if let Some(path) = file::search_command(com) {
             return_value = 0;
             match large_v {
                 true => println!("{} is {}", &com, &path),
                 false => println!("{}", &com),
             }
         } else if large_v {
-            let msg = format!("command: {}: not found", com);
+            let msg = format!("command: {com}: not found");
             error::print(&msg, core);
         }
     }
@@ -57,10 +57,8 @@ fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -> i3
 
 pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
-    if core.db.flags.contains('r') {
-        if arg::consume_option("-p", &mut args) {
-            return super::error_exit(1, &args[0], "-p: restricted", core);
-        }
+    if core.db.flags.contains('r') && arg::consume_option("-p", &mut args) {
+        return super::error_exit(1, &args[0], "-p: restricted", core);
     }
 
     if args.len() <= 1 {

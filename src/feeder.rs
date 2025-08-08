@@ -92,7 +92,7 @@ impl Feeder {
                 b.pop();
                 b.pop();
             }
-            *b += &line;
+            *b += line;
         }
     }
 
@@ -151,7 +151,7 @@ impl Feeder {
             }
             Err(e) => {
                 core.db.exit_status = 2;
-                return Err(ParseError::Input(e));
+                Err(ParseError::Input(e))
             }
         }
     }

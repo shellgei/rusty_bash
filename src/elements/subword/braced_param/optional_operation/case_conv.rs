@@ -54,20 +54,20 @@ impl CaseConv {
         if pattern.is_empty() {
             return ch.len_utf8();
         }
-        glob::longest_match_length(&text.to_string(), &pattern)
+        glob::longest_match_length(&text.to_string(), pattern)
     }
 
     fn conv(&self, ch: char) -> String {
-        if 'a' <= ch && ch <= 'z' {
-            if self.replace_symbol.starts_with("^") || self.replace_symbol.starts_with("~") {
-                return ch.to_string().to_uppercase();
-            }
+        if ch.is_ascii_lowercase()
+            && (self.replace_symbol.starts_with("^") || self.replace_symbol.starts_with("~"))
+        {
+            return ch.to_string().to_uppercase();
         }
 
-        if 'A' <= ch && ch <= 'Z' {
-            if self.replace_symbol.starts_with(",") || self.replace_symbol.starts_with("~") {
-                return ch.to_string().to_lowercase();
-            }
+        if ch.is_ascii_uppercase()
+            && (self.replace_symbol.starts_with(",") || self.replace_symbol.starts_with("~"))
+        {
+            return ch.to_string().to_lowercase();
         }
 
         ch.to_string()

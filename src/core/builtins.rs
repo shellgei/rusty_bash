@@ -122,7 +122,7 @@ impl ShellCore {
 
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     args.remove(0);
-    if args.len() > 0 && args[0] == "--" {
+    if !args.is_empty() && args[0] == "--" {
         args.remove(0);
     }
 

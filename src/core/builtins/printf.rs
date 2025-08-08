@@ -47,9 +47,7 @@ impl PrintfToken {
 
     //TODO: implement!
     fn padding_float(_: &mut String, fmt: &mut String) {
-        if fmt.is_empty() {
-            return;
-        }
+        if fmt.is_empty() {}
     }
 
     fn padding(s: &mut String, fmt: &mut String, is_int: bool) {
@@ -247,7 +245,7 @@ fn scanner_escaped_char(remaining: &str) -> usize {
 fn scanner_format_num(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
-        if !"-.".contains(c) && (c < '0' || c > '9') {
+        if !"-.".contains(c) && !c.is_ascii_digit() {
             break;
         }
 
@@ -333,15 +331,15 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
 
 fn arg_check(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() < 2 || args[1] == "--help" || args[1] == "-v" && args.len() == 3 {
-        let msg = format!("printf: usage: printf [-v var] format [arguments]");
+        let msg = "printf: usage: printf [-v var] format [arguments]".to_string();
         error::print(&msg, core);
         return 2;
     }
 
     if args[1] == "-v" && args.len() == 2 {
-        let msg = format!("printf: -v: option requires an argument");
+        let msg = "printf: -v: option requires an argument".to_string();
         error::print(&msg, core);
-        let msg = format!("printf: usage: printf [-v var] format [arguments]");
+        let msg = "printf: usage: printf [-v var] format [arguments]".to_string();
         error::print(&msg, core);
         return 2;
     }
@@ -379,7 +377,7 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return super::error_exit(2, "printf", &msg, core);
     }
 
-    return 0;
+    0
 }
 
 pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
@@ -395,7 +393,7 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let s = match format(&args[1], &mut args[2..].to_vec()) {
         Ok(ans) => ans,
         Err(e) => {
-            let msg = format!("printf: {:?}", e);
+            let msg = format!("printf: {e:?}");
             error::print(&msg, core);
             return 1;
         }

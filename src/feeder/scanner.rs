@@ -92,7 +92,7 @@ impl Feeder {
                 ans += 1;
                 continue;
             }
-            if '0' <= ch && ch <= '9' {
+            if ch.is_ascii_digit() {
                 ok = true;
                 ans += 1;
                 continue;
@@ -131,7 +131,7 @@ impl Feeder {
             return 0;
         }
 
-        let judge = |ch| '0' <= ch && ch <= '7';
+        let judge = |ch| ('0'..='7').contains(&ch);
         self.scanner_chars(judge, core, 1) + 1
     }
 
@@ -140,8 +140,9 @@ impl Feeder {
             return 0;
         }
 
-        let judge =
-            |ch| ('0' <= ch && ch <= '9') || ('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F');
+        let judge = |ch: char| {
+            ch.is_ascii_digit() || ('a'..='f').contains(&ch) || ('A'..='F').contains(&ch)
+        };
 
         let mut skip = 2;
         if self.starts_with("\\x{") {
@@ -159,8 +160,9 @@ impl Feeder {
             return 0;
         }
 
-        let judge =
-            |ch| ('0' <= ch && ch <= '9') || ('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F');
+        let judge = |ch: char| {
+            ch.is_ascii_digit() || ('a'..='f').contains(&ch) || ('A'..='F').contains(&ch)
+        };
         self.scanner_chars(judge, core, 2) + 2
     }
 
@@ -169,8 +171,9 @@ impl Feeder {
             return 0;
         }
 
-        let judge =
-            |ch| ('0' <= ch && ch <= '9') || ('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F');
+        let judge = |ch: char| {
+            ch.is_ascii_digit() || ('a'..='f').contains(&ch) || ('A'..='F').contains(&ch)
+        };
         self.scanner_chars(judge, core, 2) + 2
     }
 
@@ -189,7 +192,7 @@ impl Feeder {
 
         match self.remaining.chars().nth(1) {
             Some(c) => {
-                if "$?*@#-!0123456789".find(c) != None {
+                if "$?*@#-!0123456789".find(c).is_some() {
                     2
                 } else {
                     0
@@ -202,7 +205,7 @@ impl Feeder {
     pub fn scanner_special_and_positional_param(&mut self) -> usize {
         match self.remaining.chars().nth(0) {
             Some(c) => {
-                if "$?*@#-!_0123456789".find(c) != None {
+                if "$?*@#-!_0123456789".find(c).is_some() {
                     1
                 } else {
                     0
@@ -215,7 +218,7 @@ impl Feeder {
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if " \t\n;&|()<>{},\\'$/~\"*+-?@!.:=^]`%".find(ch) != None {
+            if " \t\n;&|()<>{},\\'$/~\"*+-?@!.:=^]`%".find(ch).is_some() {
                 break;
             }
             ans += ch.len_utf8();
@@ -224,12 +227,12 @@ impl Feeder {
     }
 
     pub fn scanner_double_quoted_subword(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| "`\"\\$".find(ch) == None;
+        let judge = |ch| "`\"\\$".find(ch).is_none();
         self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_extglob_subword(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| ")|,}".find(ch) == None;
+        let judge = |ch| ")|,}".find(ch).is_none();
         self.scanner_chars(judge, core, 0)
     }
 
@@ -241,21 +244,21 @@ impl Feeder {
         loop {
             if let Some(n) = self.remaining[1..].find("'") {
                 return n + 2;
-            } else if !self.feed_additional_line(core).is_ok() {
+            } else if self.feed_additional_line(core).is_err() {
                 return 0;
             }
         }
     }
 
     pub fn scanner_inner_subscript(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| "]".find(ch) == None;
+        let judge = |ch| "]".find(ch).is_none();
         self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_unknown_in_param_brace(&mut self) -> usize {
         match self.remaining.chars().nth(0) {
             Some(c) => {
-                if "'$".find(c) == None {
+                if "'$".find(c).is_none() {
                     c.len_utf8()
                 } else {
                     0
@@ -266,12 +269,12 @@ impl Feeder {
     }
 
     pub fn scanner_blank(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| " \t".find(ch) != None;
+        let judge = |ch| " \t".find(ch).is_some();
         self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| " \t\n".find(ch) != None;
+        let judge = |ch| " \t\n".find(ch).is_some();
         self.scanner_chars(judge, core, 0)
     }
 
@@ -300,15 +303,15 @@ impl Feeder {
     }
 
     pub fn scanner_uint(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| '0' <= ch && ch <= '9';
+        let judge = |ch: char| ch.is_ascii_digit();
         self.scanner_chars(judge, core, 0)
     }
 
     pub fn scanner_arith_number(&mut self, core: &mut ShellCore) -> usize {
-        let judge = |ch| {
-            ('0' <= ch && ch <= '9')
-                || ('a' <= ch && ch <= 'z')
-                || ('A' <= ch && ch <= 'Z')
+        let judge = |ch: char| {
+            ch.is_ascii_digit()
+                || ch.is_ascii_lowercase()
+                || ch.is_ascii_uppercase()
                 || ".#xX_@".contains(ch)
         };
         self.scanner_chars(judge, core, 0)
@@ -316,15 +319,12 @@ impl Feeder {
 
     pub fn scanner_name(&mut self, core: &mut ShellCore) -> usize {
         let c = self.remaining.chars().nth(0).unwrap_or('0');
-        if '0' <= c && c <= '9' {
+        if c.is_ascii_digit() {
             return 0;
         }
 
-        let judge = |ch| {
-            ch == '_'
-                || ('0' <= ch && ch <= '9')
-                || ('a' <= ch && ch <= 'z')
-                || ('A' <= ch && ch <= 'Z')
+        let judge = |ch: char| {
+            ch == '_' || ch.is_ascii_digit() || ch.is_ascii_lowercase() || ch.is_ascii_uppercase()
         };
         self.scanner_chars(judge, core, 0)
     }
@@ -368,7 +368,7 @@ impl Feeder {
 
         let mut ans = 0;
         for ch in self.remaining.chars() {
-            if "\n".find(ch) != None {
+            if "\n".find(ch).is_some() {
                 break;
             }
             ans += ch.len_utf8();
@@ -406,7 +406,7 @@ impl Feeder {
                 false => return 0,
             }
         }
-        return 0;
+        0
     }
 
     pub fn scanner_escape_directive_in_braced_param(&mut self, core: &mut ShellCore) -> usize {

@@ -32,7 +32,7 @@ impl OptionalOperation for ValueCheck {
     ) -> Result<String, ExecError> {
         let sym = self.symbol.clone().unwrap();
         let mut check_ok = match sym.starts_with(":") {
-            true => text != "",
+            true => !text.is_empty(),
             false => variable.exist(core)?,
         };
 
@@ -47,7 +47,7 @@ impl OptionalOperation for ValueCheck {
 
         match sym.as_ref() {
             "?" | ":?" => self.show_error(&variable.name, core),
-            "=" | ":=" => self.set_value(&variable, core),
+            "=" | ":=" => self.set_value(variable, core),
             _ => self.replace(core),
         }
     }
@@ -92,7 +92,7 @@ impl ValueCheck {
                 }
             }
         }
-        Ok(v.eval_as_value(core)?)
+        v.eval_as_value(core)
     }
 
     fn apply_single_quote_rule(sw: &mut Box<dyn Subword>) {

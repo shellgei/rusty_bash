@@ -12,14 +12,14 @@ enum Opt {
 impl Opt {
     fn is_single(&self, opt: &str) -> bool {
         match self {
-            Self::Single(s) => return s == opt,
+            Self::Single(s) => s == opt,
             _ => false,
         }
     }
 
     fn is_witharg(&self, opt: &str) -> bool {
         match self {
-            Self::WithArg(s) => return s == opt,
+            Self::WithArg(s) => s == opt,
             _ => false,
         }
     }
@@ -42,7 +42,7 @@ fn parse(optstring: &str) -> (Vec<Opt>, bool) {
                 _ => return (vec![], silence),
             }
         } else {
-            let opt = format!("-{}", c);
+            let opt = format!("-{c}");
             ans.push(Opt::Single(opt));
         }
     }
@@ -89,7 +89,7 @@ fn set_no_arg_option(
     core: &mut ShellCore,
     layer: Option<usize>,
 ) -> i32 {
-    let result = core.db.set_param(&name, &arg[1..], layer);
+    let result = core.db.set_param(name, &arg[1..], layer);
     let _ = core.db.set_param("OPTARG", "", layer);
 
     if !subarg || subindex + 1 == exp_args_len {
@@ -113,7 +113,7 @@ fn set_no_arg_option(
         }
         return 1;
     }
-    return 0;
+    0
 }
 
 fn set_option_with_arg(
@@ -125,9 +125,9 @@ fn set_option_with_arg(
     core: &mut ShellCore,
     layer: Option<usize>,
 ) -> i32 {
-    let result = core.db.set_param(&name, &arg[1..], layer);
+    let result = core.db.set_param(name, &arg[1..], layer);
 
-    let _ = core.db.set_param("OPTARG", &optarg, layer);
+    let _ = core.db.set_param("OPTARG", optarg, layer);
     let _ = core.db.set_param("OPTIND", &(index + 2).to_string(), layer);
     let _ = core
         .db

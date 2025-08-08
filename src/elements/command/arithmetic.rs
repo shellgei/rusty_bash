@@ -42,8 +42,7 @@ impl Command for ArithmeticCommand {
                     ExecError::ArithError(s.clone(), e.clone()).print(core);
                     Err(ExecError::ArithError(s, e))
                 } else {
-                    let err_with_com =
-                        ExecError::ArithError("((: ".to_owned() + &s.trim_start(), e);
+                    let err_with_com = ExecError::ArithError("((: ".to_owned() + s.trim_start(), e);
                     err_with_com.print(core);
                     Err(err_with_com)
                 }
@@ -106,6 +105,6 @@ impl ArithmeticCommand {
             }
         }
         feeder.rewind();
-        return Ok(None);
+        Ok(None)
     }
 }

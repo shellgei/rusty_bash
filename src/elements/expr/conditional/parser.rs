@@ -110,9 +110,8 @@ impl ConditionalExpr {
         core: &mut ShellCore,
     ) -> Result<bool, ParseError> {
         if let Some(e) = ans.elements.last() {
-            match e {
-                CondElem::UnaryOp(_) => return Ok(false),
-                _ => {}
+            if let CondElem::UnaryOp(_) = e {
+                return Ok(false);
             }
         }
 
@@ -158,8 +157,8 @@ impl ConditionalExpr {
                 ans.text += &feeder.consume(1);
                 continue;
             }
-            if feeder.len() == 0 {
-                if !feeder.feed_additional_line(core).is_ok() {
+            if feeder.is_empty() {
+                if feeder.feed_additional_line(core).is_err() {
                     return Ok(None);
                 }
                 continue;
@@ -187,10 +186,8 @@ impl ConditionalExpr {
                 _ => continue,
             }
 
-            if read_option {
-                if Self::eat_file_check_option(feeder, &mut ans, core) {
-                    continue;
-                }
+            if read_option && Self::eat_file_check_option(feeder, &mut ans, core) {
+                continue;
             }
 
             if Self::eat_not_and_or(feeder, &mut ans) {

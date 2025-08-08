@@ -25,8 +25,8 @@ pub fn history(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut number = 1;
 
-    let filename = core.db.get_param("HISTFILE").unwrap_or(String::new());
-    if filename == "" {
+    let filename = core.db.get_param("HISTFILE").unwrap_or_default();
+    if filename.is_empty() {
         return 0;
     }
 

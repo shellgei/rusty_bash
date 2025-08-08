@@ -48,7 +48,7 @@ impl DataBase {
 
         let mut data = IntData { body: 0 };
 
-        if value != "" {
+        if !value.is_empty() {
             match value.parse::<isize>() {
                 Ok(n) => data.body = n,
                 Err(e) => {
@@ -128,7 +128,7 @@ impl DataBase {
 
         if !self.flags.contains('r')
             && (self.flags.contains('a') || self.has_flag(name, 'x'))
-            && !env::var(name).is_ok()
+            && env::var(name).is_err()
         {
             env::set_var(name, "");
         }
@@ -167,17 +167,17 @@ impl DataBase {
 
         if self.is_array(name) {
             if let Ok(n) = index.parse::<isize>() {
-                self.set_array_elem(&name, val, n, layer)?;
+                self.set_array_elem(name, val, n, layer)?;
             }
         } else if self.is_assoc(name) {
-            self.set_assoc_elem(&name, &index, val, layer)?;
+            self.set_assoc_elem(name, index, val, layer)?;
         } else {
             match index.parse::<isize>() {
                 Ok(n) => {
-                    self.set_array_elem(&name, val, n, layer)?;
+                    self.set_array_elem(name, val, n, layer)?;
                 }
                 _ => {
-                    self.set_assoc_elem(&name, &index, val, layer)?;
+                    self.set_assoc_elem(name, index, val, layer)?;
                 }
             }
         }
@@ -197,17 +197,17 @@ impl DataBase {
 
         if self.is_array(name) {
             if let Ok(n) = index.parse::<isize>() {
-                self.append_to_array_elem(&name, val, n, layer)?;
+                self.append_to_array_elem(name, val, n, layer)?;
             }
         } else if self.is_assoc(name) {
-            self.append_to_assoc_elem(&name, &index, val, layer)?;
+            self.append_to_assoc_elem(name, index, val, layer)?;
         } else {
             match index.parse::<isize>() {
                 Ok(n) => {
-                    self.append_to_array_elem(&name, val, n, layer)?;
+                    self.append_to_array_elem(name, val, n, layer)?;
                 }
                 _ => {
-                    self.append_to_assoc_elem(&name, &index, val, layer)?;
+                    self.append_to_assoc_elem(name, index, val, layer)?;
                 }
             }
         }
@@ -350,7 +350,7 @@ impl DataBase {
 
         if v.is_some() {
             for (i, e) in v.unwrap().into_iter().enumerate() {
-                self.set_array_elem(&name, &e, i as isize, Some(layer))?;
+                self.set_array_elem(name, &e, i as isize, Some(layer))?;
             }
         }
 
@@ -419,9 +419,8 @@ impl DataBase {
         };
 
         let rf = &mut self.param_options[layer];
-        match rf.get_mut(name) {
-            Some(d) => d.retain(|e| e != flag),
-            None => {}
+        if let Some(d) = rf.get_mut(name) {
+            d.retain(|e| e != flag)
         }
     }
 }

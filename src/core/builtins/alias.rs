@@ -6,13 +6,13 @@ use crate::ShellCore;
 pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     if args.len() == 1 {
         for k in &core.db.get_indexes_all("BASH_ALIASES") {
-            let v = core.db.get_elem("BASH_ALIASES", &k).unwrap();
-            println!("alias {}='{}'", k, v);
+            let v = core.db.get_elem("BASH_ALIASES", k).unwrap();
+            println!("alias {k}='{v}'");
         }
         return 0;
     }
 
-    if args.len() == 2 && args[1].find("=") != None {
+    if args.len() == 2 && args[1].contains("=") {
         let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
         //core.aliases.insert(kv[0].clone(), kv[1..].join("="));
         let _ = core

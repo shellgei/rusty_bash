@@ -11,7 +11,7 @@ pub struct FillerSubword {
 
 impl Subword for FillerSubword {
     fn get_text(&self) -> &str {
-        &self.text.as_ref()
+        self.text.as_ref()
     }
     fn set_text(&mut self, text: &str) {
         self.text = text.to_string();

@@ -18,9 +18,7 @@ pub fn buf_to_name(path: &PathBuf) -> String {
 
 pub fn search_command(command: &str) -> Option<String> {
     let paths = env::var_os("PATH");
-    if paths.is_none() {
-        return None;
-    }
+    paths.as_ref()?;
 
     for path in env::split_paths(&paths.unwrap()) {
         let compath = buf_to_name(&path) + "/" + command;
@@ -42,8 +40,8 @@ pub fn make_absolute_path(core: &mut ShellCore, path_str: &str) -> PathBuf {
 
     if path.starts_with("~") {
         // tilde -> $HOME
-        let home_dir = core.db.get_param("HOME").unwrap_or(String::new());
-        if home_dir != "" {
+        let home_dir = core.db.get_param("HOME").unwrap_or_default();
+        if !home_dir.is_empty() {
             absolute.push(PathBuf::from(home_dir));
             let num = match path_str.len() > 1 && path_str.starts_with("~/") {
                 true => 2,

@@ -128,7 +128,7 @@ pub fn substitute(
     };
 
     core.db
-        .set_param2(&name, index, &new_value.to_string(), None)?;
+        .set_param2(name, index, &new_value.to_string(), None)?;
     Ok(ArithElem::Integer(new_value))
 }
 
@@ -140,11 +140,11 @@ fn parse_with_base(base: i128, s: &mut String, org: &str) -> Result<i128, ArithE
     let mut ans = 0;
     for ch in s.chars() {
         ans *= base;
-        let num = if ch >= '0' && ch <= '9' {
+        let num = if ch.is_ascii_digit() {
             ch as i128 - '0' as i128
-        } else if ch >= 'a' && ch <= 'z' {
+        } else if ch.is_ascii_lowercase() {
             ch as i128 - 'a' as i128 + 10
-        } else if ch >= 'A' && ch <= 'Z' {
+        } else if ch.is_ascii_uppercase() {
             match base <= 36 {
                 true => ch as i128 - 'A' as i128 + 10,
                 false => ch as i128 - 'A' as i128 + 36,

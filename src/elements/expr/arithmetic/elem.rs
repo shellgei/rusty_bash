@@ -123,18 +123,18 @@ impl ArithElem {
         *self = match self {
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
             ArithElem::Variable(name, s, inc) => {
-                if add != 0 && *inc != 0 || !utils::is_name(&name, core) {
+                if add != 0 && *inc != 0 || !utils::is_name(name, core) {
                     return Err(ArithError::OperandExpected(name.to_string()).into());
                 }
 
                 let index = match s {
-                    Some(sub) => sub.eval(core, &name)?,
+                    Some(sub) => sub.eval(core, name)?,
                     None => "".to_string(),
                 };
 
                 match add {
-                    0 => variable::set_and_to_value(&name, &index, core, *inc, false)?,
-                    _ => variable::set_and_to_value(&name, &index, core, add, true)?,
+                    0 => variable::set_and_to_value(name, &index, core, *inc, false)?,
+                    _ => variable::set_and_to_value(name, &index, core, add, true)?,
                 }
             }
             _ => return Ok(()),

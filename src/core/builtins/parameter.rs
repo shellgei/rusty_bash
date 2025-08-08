@@ -51,10 +51,8 @@ fn set_substitution(
         layer = 0;
     }
 
-    if arg::consume_option("+i", args) {
-        if core.db.has_flag_layer(&sub.left_hand.name, 'i', layer) {
-            core.db.int_to_str_type(&sub.left_hand.name, layer)?;
-        }
+    if arg::consume_option("+i", args) && core.db.has_flag_layer(&sub.left_hand.name, 'i', layer) {
+        core.db.int_to_str_type(&sub.left_hand.name, layer)?;
     }
 
     if (args.contains(&"-A".to_string()) || args.contains(&"-a".to_string()))
@@ -70,12 +68,11 @@ fn set_substitution(
         sub.left_hand.index = None;
     }
 
-    if sub.has_right {
-        if core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name) {
-            if !(sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'")) {
-                sub.reparse(core)?;
-            }
-        }
+    if sub.has_right
+        && (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name))
+        && !(sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'"))
+    {
+        sub.reparse(core)?;
     }
 
     if export_opt {
@@ -119,31 +116,29 @@ fn set_substitution(
 
 fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
     for n in names {
-        let mut opt = if core.db.is_assoc(&n) {
+        let mut opt = if core.db.is_assoc(n) {
             "A"
-        } else if core.db.is_array(&n) {
+        } else if core.db.is_array(n) {
             "a"
-        } else if core.db.exist(&n) {
+        } else if core.db.exist(n) {
             ""
         } else {
-            return error_exit(1, &n, "not found", core);
+            return error_exit(1, n, "not found", core);
         }
         .to_string();
 
-        if core.db.is_int(&n) {
+        if core.db.is_int(n) {
             opt += "i";
         }
-        if core.db.has_flag(&n, 'l') {
+        if core.db.has_flag(n, 'l') {
             opt += "l";
         }
-        if core.db.has_flag(&n, 'u') {
+        if core.db.has_flag(n, 'u') {
             opt += "u";
         }
 
-        if core.db.is_readonly(&n) {
-            if !opt.contains('r') && !core.options.query("posix") {
-                opt += "r";
-            }
+        if core.db.is_readonly(n) && !opt.contains('r') && !core.options.query("posix") {
+            opt += "r";
         }
 
         if opt.is_empty() {
@@ -151,11 +146,11 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
         }
 
         let prefix = match core.options.query("posix") {
-            false => format!("declare -{} ", opt),
-            true => format!("{} -{} ", com, opt),
+            false => format!("declare -{opt} "),
+            true => format!("{com} -{opt} "),
         };
-        print!("{}", prefix);
-        core.db.declare_print(&n);
+        print!("{prefix}");
+        core.db.declare_print(n);
     }
     0
 }
@@ -204,9 +199,9 @@ fn declare_print_all(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    let prefix = format!("declare -{}", options);
+    let prefix = format!("declare -{options}");
     for name in names {
-        print!("{}", prefix);
+        print!("{prefix}");
         if core.db.has_flag(&name, 'i') && !options.contains('i') {
             print!("i");
         }
@@ -224,7 +219,7 @@ fn declare_print_function(core: &mut ShellCore, subs: &mut Vec<Substitution>) ->
     names.sort();
 
     for n in &names {
-        if n == "" {
+        if n.is_empty() {
             return 1;
         }
 
@@ -290,22 +285,22 @@ pub fn readonly_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         .db
         .get_keys()
         .iter()
-        .filter(|e| core.db.is_readonly(&e))
+        .filter(|e| core.db.is_readonly(e))
         .map(|e| e.to_string())
         .collect();
 
     if array_opt {
-        names.retain(|e| core.db.is_array(&e));
+        names.retain(|e| core.db.is_array(e));
     }
     if assoc_opt {
-        names.retain(|e| core.db.is_assoc(&e));
+        names.retain(|e| core.db.is_assoc(e));
     }
     if int_opt {
-        names.retain(|e| core.db.is_single_num(&e));
+        names.retain(|e| core.db.is_single_num(e));
     }
 
     declare_print(core, &names, &args[0]);
-    return 0;
+    0
 }
 
 pub fn readonly(core: &mut ShellCore, args: &mut Vec<String>, subs: &mut Vec<Substitution>) -> i32 {

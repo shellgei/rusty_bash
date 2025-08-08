@@ -46,11 +46,11 @@ impl Command for BraceCommand {
     }
 
     fn pretty_print(&mut self, indent_num: usize) {
-        println!("{} ", "{");
+        println!("{{ ");
         for s in self.script.iter_mut() {
             s.pretty_print(indent_num + 1);
         }
-        println!("{}", "}");
+        println!("}}");
     }
 }
 
@@ -59,7 +59,7 @@ impl BraceCommand {
         let mut ans = Self::default();
         ans.lineno = feeder.lineno;
         if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.script, false)? {
-            ans.text.push_str("{");
+            ans.text.push('{');
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
 

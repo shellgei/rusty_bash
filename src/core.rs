@@ -103,24 +103,17 @@ impl ShellCore {
             self.db.flags += "h";
         }
 
-        let home = self
-            .db
-            .get_param("HOME")
-            .unwrap_or(String::new())
-            .to_string();
+        let home = self.db.get_param("HOME").unwrap_or_default().to_string();
         let _ = self
             .db
             .set_param("HISTFILE", &(home + "/.sush_history"), None);
         let _ = self.db.set_param("HISTFILESIZE", "2000", None);
 
-        match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-            Ok("1") => {
-                if self.db.flags.contains('i') {
-                    eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
-                }
-                self.compat_bash = true;
+        if let Ok("1") = env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+            if self.db.flags.contains('i') {
+                eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
             }
-            _ => {}
+            self.compat_bash = true;
         };
 
         if self.script_name != "-" {
@@ -156,9 +149,8 @@ impl ShellCore {
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
 
-        match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-            Ok("1") => self.compat_bash = true,
-            _ => {}
+        if let Ok("1") = env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+            self.compat_bash = true
         };
     }
 
@@ -168,7 +160,7 @@ impl ShellCore {
         let t_arch = env!("CARGO_CFG_TARGET_ARCH");
         let t_vendor = env!("CARGO_CFG_TARGET_VENDOR");
         let t_os = env!("CARGO_CFG_TARGET_OS");
-        let machtype = format!("{}-{}-{}", t_arch, t_vendor, t_os);
+        let machtype = format!("{t_arch}-{t_vendor}-{t_os}");
         let symbol = "rusty_bash";
         let vparts = version.split('.').collect();
         let versinfo = [vparts, vec![symbol, profile, &machtype]]
@@ -179,14 +171,14 @@ impl ShellCore {
 
         let _ = self.db.set_param(
             "BASH_VERSION",
-            &format!("{}({})-{}", version, symbol, profile),
+            &format!("{version}({symbol})-{profile}"),
             None,
         );
         let _ = self.db.set_param("MACHTYPE", &machtype, None);
-        let _ = self.db.set_param("HOSTTYPE", &t_arch, None);
-        let _ = self.db.set_param("OSTYPE", &t_os, None);
+        let _ = self.db.set_param("HOSTTYPE", t_arch, None);
+        let _ = self.db.set_param("OSTYPE", t_os, None);
         let _ = self.db.set_array("BASH_VERSINFO", Some(versinfo), None);
-        let _ = self.db.set_flag("BASH_VERSINFO", 'r', None);
+        self.db.set_flag("BASH_VERSINFO", 'r', None);
     }
 
     pub fn flip_exit_status(&mut self) {
@@ -222,7 +214,7 @@ impl ShellCore {
         match env::current_dir() {
             Ok(path) => self.current_dir = Some(path),
             Err(err) => {
-                let msg = format!("pwd: error retrieving current directory: {:?}", err);
+                let msg = format!("pwd: error retrieving current directory: {err:?}");
                 error::print(&msg, self);
             }
         }
@@ -268,15 +260,13 @@ impl ShellCore {
     }
 
     fn replace_alias_core(&mut self, word: &mut String) -> bool {
-        if !self.shopts.query("expand_aliases") {
-            if !self.db.flags.contains('i') {
-                return false;
-            }
+        if !self.shopts.query("expand_aliases") && !self.db.flags.contains('i') {
+            return false;
         }
 
         let mut ans = false;
         let mut prev_head = "".to_string();
-        let history = vec![word.clone()];
+        let history = [word.clone()];
 
         loop {
             let head = match word.replace("\n", " ").split(' ').nth(0) {

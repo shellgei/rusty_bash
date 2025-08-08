@@ -48,13 +48,13 @@ impl Script {
                 println!(";");
                 semicolon = false;
             } else if printed {
-                println!("");
+                println!();
             }
 
             let tmp = self.job_ends[i].clone();
             let job_end = tmp.trim_ascii_end();
 
-            let text = job_text.to_owned() + &job_end;
+            let text = job_text.to_owned() + job_end;
 
             for _ in 0..indent_num {
                 print!("    ");
@@ -62,7 +62,7 @@ impl Script {
             print!("{}", &text);
             printed = true;
         }
-        println!("");
+        println!();
     }
 
     pub fn get_one_line_text(&self) -> String {
@@ -103,14 +103,14 @@ impl Script {
         let len = feeder.scanner_job_end();
         let end = &feeder.consume(len);
         ans.job_ends.push(end.clone());
-        ans.text += &end;
+        ans.text += end;
         len != 0
     }
 
     fn check_nest(&self, feeder: &mut Feeder, permit_empty: bool) -> Status {
         let nest = feeder.nest.last().unwrap();
 
-        if nest.0 == "" && feeder.len() == 0 {
+        if nest.0.is_empty() && feeder.is_empty() {
             return Status::NormalEnd;
         }
 
@@ -128,7 +128,7 @@ impl Script {
             (None, _) => {}
         }
 
-        if feeder.len() > 0 {
+        if !feeder.is_empty() {
             let remaining = feeder.consume(feeder.len());
             let first_token = remaining.split(" ").nth(0).unwrap().to_string();
             return Status::UnexpectedSymbol(first_token);

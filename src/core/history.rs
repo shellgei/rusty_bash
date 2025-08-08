@@ -35,13 +35,13 @@ impl ShellCore {
         if let Ok(n) = self
             .db
             .get_param("HISTFILESIZE")
-            .unwrap_or(String::new())
+            .unwrap_or_default()
             .parse::<usize>()
         {
             file_line %= n;
         }
 
-        if let Ok(hist_file) = File::open(self.db.get_param("HISTFILE").unwrap_or(String::new())) {
+        if let Ok(hist_file) = File::open(self.db.get_param("HISTFILE").unwrap_or_default()) {
             let mut rev_lines = RevLines::new(BufReader::new(hist_file));
             if let Some(Ok(s)) = rev_lines.nth(file_line) {
                 return s;
@@ -55,18 +55,13 @@ impl ShellCore {
         if !self.db.flags.contains('i') || self.is_subshell {
             return;
         }
-        let filename = self.db.get_param("HISTFILE").unwrap_or(String::new());
-        if filename == "" {
+        let filename = self.db.get_param("HISTFILE").unwrap_or_default();
+        if filename.is_empty() {
             eprintln!("sush: HISTFILE is not set");
             return;
         }
 
-        let file = match OpenOptions::new()
-            .create(true)
-            .write(true)
-            .append(true)
-            .open(&filename)
-        {
+        let file = match OpenOptions::new().create(true).append(true).open(&filename) {
             Ok(f) => f,
             _ => {
                 eprintln!("sush: invalid history file");
@@ -76,7 +71,7 @@ impl ShellCore {
 
         let mut f = BufWriter::new(file);
         for h in self.history.iter().rev() {
-            if h == "" {
+            if h.is_empty() {
                 continue;
             }
             let _ = f.write(h.as_bytes());

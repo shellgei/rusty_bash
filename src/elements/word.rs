@@ -61,7 +61,7 @@ impl From<Vec<Box<dyn Subword>>> for Word {
     fn from(subwords: Vec<Box<dyn Subword>>) -> Self {
         Self {
             text: subwords.iter().map(|s| s.get_text()).collect(),
-            subwords: subwords,
+            subwords,
             ..Default::default()
         }
     }
@@ -108,7 +108,7 @@ impl Word {
             Ok(mut w) => w.make_unquoted_word(),
             Err(e) => {
                 e.print(core);
-                return None;
+                None
             }
         }
     }
@@ -128,7 +128,7 @@ impl Word {
             }
             Err(e) => {
                 e.print(core);
-                return None;
+                None
             }
         }
     }
@@ -184,7 +184,7 @@ impl Word {
             .subwords
             .iter_mut()
             .map(|s| s.make_unquoted_string())
-            .filter(|s| *s != None)
+            .filter(|s| s.is_some())
             .collect();
 
         if sw.is_empty() && !self.do_not_erase {
@@ -199,7 +199,7 @@ impl Word {
             .subwords
             .iter_mut()
             .map(|s| s.make_regex())
-            .filter(|s| *s != None)
+            .filter(|s| s.is_some())
             .collect();
 
         if sw.is_empty() {
@@ -231,7 +231,7 @@ impl Word {
     }
 
     fn push(&mut self, subword: &Box<dyn Subword>) {
-        self.text += &subword.get_text().to_string();
+        self.text += subword.get_text();
         self.subwords.push(subword.clone());
     }
 
@@ -257,7 +257,7 @@ impl Word {
     }
 
     fn post_check(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>) -> bool {
-        if feeder.len() == 0 {
+        if feeder.is_empty() {
             return false;
         }
 
@@ -296,7 +296,7 @@ impl Word {
             match sw.is_extglob() {
                 false => ans.push(&sw),
                 true => {
-                    ans.text += &sw.get_text();
+                    ans.text += sw.get_text();
                     ans.subwords.append(&mut sw.get_child_subwords());
                 }
             }

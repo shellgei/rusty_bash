@@ -126,8 +126,8 @@ impl ForCommand {
         }
 
         match a.clone().unwrap().eval(core) {
-            Ok(n) => return (true, n),
-            _ => return (false, "0".to_string()),
+            Ok(n) => (true, n),
+            _ => (false, "0".to_string()),
         }
     }
 

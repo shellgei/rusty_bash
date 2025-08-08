@@ -76,7 +76,7 @@ impl Data for ArrayData {
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let n = self.to_index(key)?;
         self.body.insert(n, value.to_string());
-        return Ok(());
+        Ok(())
     }
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
@@ -86,7 +86,7 @@ impl Data for ArrayData {
         } else {
             self.body.insert(n, value.to_string());
         }
-        return Ok(());
+        Ok(())
     }
 
     fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
@@ -107,7 +107,7 @@ impl Data for ArrayData {
         }
 
         let keys = self.keys();
-        let max = *keys.iter().max().unwrap() as usize;
+        let max = *keys.iter().max().unwrap();
         let mut ans = vec![];
         for i in pos..(max + 1) {
             match self.body.get(&i) {
@@ -204,14 +204,14 @@ impl ArrayData {
                     *d = ArrayData::default().boxed_clone();
                 }
 
-                return d.set_as_array(&pos.to_string(), val);
+                d.set_as_array(&pos.to_string(), val)
             } else if d.is_assoc() {
                 return d.set_as_assoc(&pos.to_string(), val);
             } else if d.is_single() {
                 let data = d.get_as_single()?;
                 ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
 
-                if data != "" {
+                if !data.is_empty() {
                     Self::set_elem(db_layer, name, 0, &data)?;
                 }
                 Self::set_elem(db_layer, name, pos, val)
@@ -237,7 +237,7 @@ impl ArrayData {
                     *d = ArrayData::default().boxed_clone();
                 }
 
-                return d.append_to_array_elem(&pos.to_string(), val);
+                d.append_to_array_elem(&pos.to_string(), val)
             } else if d.is_assoc() {
                 return d.append_to_assoc_elem(&pos.to_string(), val);
             } else {
@@ -253,13 +253,13 @@ impl ArrayData {
     }
 
     pub fn values(&self) -> Vec<String> {
-        let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
+        let mut keys: Vec<usize> = self.body.iter().map(|e| *e.0).collect();
         keys.sort();
         keys.iter().map(|i| self.body[i].clone()).collect()
     }
 
     pub fn keys(&self) -> Vec<usize> {
-        let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
+        let mut keys: Vec<usize> = self.body.iter().map(|e| *e.0).collect();
         keys.sort();
         keys
     }

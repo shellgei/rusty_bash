@@ -35,17 +35,15 @@ fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> 
     let result = unistd::execvp(&cargs[0], &cargs);
 
     match result {
-        Err(Errno::E2BIG) => return super::error_exit(126, &args[0], "Arg list too long", core),
+        Err(Errno::E2BIG) => super::error_exit(126, &args[0], "Arg list too long", core),
         Err(Errno::EACCES) => {
-            return super::error_exit(126, &args[0], "cannot execute: Permission denied", core)
+            super::error_exit(126, &args[0], "cannot execute: Permission denied", core)
         }
-        Err(Errno::ENOENT) => {
-            return super::error_exit(127, &args[0], "No such file or directory", core)
-        }
+        Err(Errno::ENOENT) => super::error_exit(127, &args[0], "No such file or directory", core),
         Err(e) => {
             let msg = format!("{:?}", &e);
-            return super::error_exit(127, &args[0], &msg, core);
+            super::error_exit(127, &args[0], &msg, core)
         }
-        _ => return 127,
+        _ => 127,
     }
 }

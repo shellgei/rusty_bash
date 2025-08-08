@@ -9,7 +9,7 @@ use std::thread_local;
 use unic_langid::LanguageIdentifier;
 
 thread_local! {
-    pub static FLUENT_BUNDLE: OnceCell<FluentBundle<FluentResource>> = OnceCell::new();
+    pub static FLUENT_BUNDLE: OnceCell<FluentBundle<FluentResource>> = const { OnceCell::new() };
 }
 
 #[cfg(feature = "lang_ar")]
@@ -252,6 +252,6 @@ pub fn fl(key: &str) -> String {
                     .format_pattern(pattern, None, &mut errors)
                     .to_string()
             })
-            .unwrap_or_else(|| format!("{{{}}}", key))
+            .unwrap_or_else(|| format!("{{{key}}}"))
     })
 }

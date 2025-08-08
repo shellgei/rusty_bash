@@ -197,8 +197,8 @@ impl ArithmeticExpr {
 
         let mut s = feeder.consume(len);
         ans.text += &s.clone();
-        ans.hide_base = s.find("##").is_some();
-        s.retain(|c| '0' <= c && c <= '9');
+        ans.hide_base = s.contains("##");
+        s.retain(|c: char| c.is_ascii_digit());
         ans.output_base = s;
         true
     }
@@ -239,7 +239,7 @@ impl ArithmeticExpr {
         ans.elements.push(ArithElem::InParen(arith.unwrap()));
 
         ans.text += &feeder.consume(1);
-        return Ok(true);
+        Ok(true)
     }
 
     fn eat_paren(
@@ -264,7 +264,7 @@ impl ArithmeticExpr {
         let paren = feeder.consume(1);
         ans.text += &paren.clone();
         ans.elements.push(ArithElem::Symbol(paren));
-        return Ok(true);
+        Ok(true)
     }
 
     fn eat_binary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
@@ -318,7 +318,7 @@ impl ArithmeticExpr {
 
             break;
         }
-        return Ok(Some(ans));
+        Ok(Some(ans))
     }
 
     pub fn parse(
@@ -353,10 +353,10 @@ impl ArithmeticExpr {
                 continue;
             }
 
-            if !addline || feeder.len() != 0 || !feeder.feed_additional_line(core).is_ok() {
+            if !addline || !feeder.is_empty() || feeder.feed_additional_line(core).is_err() {
                 break;
             }
         }
-        return Ok(Some(ans));
+        Ok(Some(ans))
     }
 }

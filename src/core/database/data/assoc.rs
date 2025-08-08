@@ -149,7 +149,7 @@ impl Data for AssocData {
         }
 
         self.body.remove(key);
-        return Ok(());
+        Ok(())
     }
 }
 

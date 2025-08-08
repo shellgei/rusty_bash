@@ -43,7 +43,7 @@ pub fn str_to_num(name: &str, sub: &String, core: &mut ShellCore) -> Result<Arit
 }
 
 fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
-    let mut f = Feeder::new(&name);
+    let mut f = Feeder::new(name);
     let mut parsed = match ArithmeticExpr::parse_after_eval(&mut f, core, "") {
         Ok(Some(p)) => p,
         _ => return Err(ArithError::OperandExpected(name.to_string()).into()),
@@ -54,10 +54,10 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
 
 fn try_parse_to_num(name: &str) -> Result<ArithElem, ExecError> {
     if name.contains('.') {
-        let f = float::parse(&name)?;
+        let f = float::parse(name)?;
         Ok(ArithElem::Float(f))
     } else {
-        let n = int::parse(&name)?;
+        let n = int::parse(name)?;
         Ok(ArithElem::Integer(n))
     }
 }
@@ -69,11 +69,11 @@ pub fn set_and_to_value(
     inc: i128,
     pre: bool,
 ) -> Result<ArithElem, ExecError> {
-    match str_to_num(&name, sub, core) {
+    match str_to_num(name, sub, core) {
         Ok(ArithElem::Integer(n)) => {
             if inc != 0 {
                 core.db
-                    .set_param2(&name, sub, &(n + inc).to_string(), None)?;
+                    .set_param2(name, sub, &(n + inc).to_string(), None)?;
             }
             match pre {
                 true => Ok(ArithElem::Integer(n + inc)),
@@ -83,7 +83,7 @@ pub fn set_and_to_value(
         Ok(ArithElem::Float(n)) => {
             if inc != 0 {
                 core.db
-                    .set_param2(&name, sub, &(n + inc as f64).to_string(), None)?;
+                    .set_param2(name, sub, &(n + inc as f64).to_string(), None)?;
             }
             match pre {
                 true => Ok(ArithElem::Float(n + inc as f64)),
@@ -91,7 +91,7 @@ pub fn set_and_to_value(
             }
         }
         Ok(_) => exit::internal("unknown element"),
-        Err(err_msg) => return Err(err_msg),
+        Err(err_msg) => Err(err_msg),
     }
 }
 
@@ -153,17 +153,14 @@ fn subs(
         }
         "+=" => {
             let mut val_str = core.db.get_elem_or_param(&name, sub)?;
-            if val_str == "" {
+            if val_str.is_empty() {
                 val_str = "0".to_string();
             }
             if let Ok(left) = val_str.parse::<i128>() {
-                match right_value {
-                    ArithElem::Integer(n) => {
-                        core.db
-                            .set_param2(&name, sub, &(left + *n).to_string(), None)?;
-                        return Ok(ArithElem::Integer(left + *n));
-                    }
-                    _ => {}
+                if let ArithElem::Integer(n) = right_value {
+                    core.db
+                        .set_param2(&name, sub, &(left + *n).to_string(), None)?;
+                    return Ok(ArithElem::Integer(left + *n));
                 }
             } else if let Ok(left) = val_str.parse::<f64>() {
                 if let ArithElem::Float(f) = right_value {

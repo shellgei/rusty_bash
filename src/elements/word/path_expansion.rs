@@ -19,7 +19,7 @@ pub fn eval(word: &mut Word, shopts: &Options) -> Vec<Word> {
         return vec![word.clone()];
     }
 
-    paths.iter().map(|p| From::from(p)).collect()
+    paths.iter().map(From::from).collect()
 }
 
 fn no_glob_symbol(pattern: &str) -> bool {
@@ -32,7 +32,7 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
     for dir_glob in pattern.split("/") {
         let mut tmp = paths
             .iter()
-            .map(|c| directory::glob(&c, &dir_glob, shopts))
+            .map(|c| directory::glob(c, dir_glob, shopts))
             .collect::<Vec<Vec<String>>>()
             .concat();
 

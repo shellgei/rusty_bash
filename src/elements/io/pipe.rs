@@ -95,7 +95,7 @@ impl Pipe {
         io::replace(self.send, 1);
         io::replace(self.prev, 0);
 
-        if &self.text == &"|&" {
+        if self.text == "|&" {
             io::share(1, 2)?;
         }
         Ok(())

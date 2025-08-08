@@ -22,7 +22,7 @@ fn compopt_set(info: &mut CompletionEntry, plus: &Vec<String>, minus: &Vec<Strin
 }
 
 fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let optlist = vec![
+    let optlist = [
         "bashdefault",
         "default",
         "dirnames",
@@ -41,8 +41,8 @@ fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         print!("compopt ");
         for opt in &optlist {
             match info.o_options.contains(opt) {
-                true => print!("-o {} ", opt),
-                false => print!("+o {} ", opt),
+                true => print!("-o {opt} "),
+                false => print!("+o {opt} "),
             }
         }
         println!("{}", &com);
@@ -122,7 +122,7 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     } else {
         return 1;
     };
-    return compopt_set(info, &plus, &minus);
+    compopt_set(info, &plus, &minus)
 
     //TODO: support of -D -E
 }

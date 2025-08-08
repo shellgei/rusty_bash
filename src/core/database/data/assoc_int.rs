@@ -136,7 +136,7 @@ impl Data for IntAssocData {
             return Ok(self.len());
         }
 
-        let s = self.body.get(key).unwrap_or(&0).clone();
+        let s = *self.body.get(key).unwrap_or(&0);
 
         Ok(s.to_string().len())
     }
@@ -177,7 +177,7 @@ impl Data for IntAssocData {
         }
 
         self.body.remove(key);
-        return Ok(());
+        Ok(())
     }
 }
 

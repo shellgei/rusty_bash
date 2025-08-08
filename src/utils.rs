@@ -88,7 +88,7 @@ pub fn split_words(s: &str) -> Vec<String> {
 pub fn is_wsl() -> bool {
     if let Ok(info) = nix::sys::utsname::uname() {
         let release = info.release().to_string_lossy().to_string();
-        return release.find("WSL").is_some();
+        return release.contains("WSL");
     };
 
     false
@@ -96,7 +96,7 @@ pub fn is_wsl() -> bool {
 
 pub fn is_name(s: &str, core: &mut ShellCore) -> bool {
     let mut f = Feeder::new(s);
-    s.len() > 0 && f.scanner_name(core) == s.len()
+    !s.is_empty() && f.scanner_name(core) == s.len()
 }
 
 pub fn is_param(s: &str) -> bool {
@@ -104,26 +104,25 @@ pub fn is_param(s: &str) -> bool {
         return false;
     }
 
-    let first_ch = s.chars().nth(0).unwrap();
+    let first_ch = s.chars().next().unwrap();
     if s.len() == 1 {
         //special or position param
-        if "$?*@#-!_0123456789".find(first_ch) != None {
+        if "$?*@#-!_0123456789".find(first_ch).is_some() {
             return true;
         }
-    } else {
-        if let Ok(n) = s.parse::<usize>() {
-            return n > 0;
-        }
+    } else if let Ok(n) = s.parse::<usize>() {
+        return n > 0;
     }
 
     /* variable */
-    if '0' <= first_ch && first_ch <= '9' {
+    if first_ch.is_ascii_digit() {
         return false;
     }
 
-    let name_c =
-        |c| ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || '_' == c;
-    s.chars().position(|c| !name_c(c)) == None
+    let name_c = |c: char| {
+        c.is_ascii_lowercase() || c.is_ascii_uppercase() || c.is_ascii_digit() || '_' == c
+    };
+    !s.chars().any(|c| !name_c(c))
 }
 
 pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
@@ -169,7 +168,7 @@ pub fn to_ansi_c(s: &String) -> String {
         match c as usize {
             bin @ 0..9 => {
                 ansi = true;
-                let alter = format!("\\{:03o}", bin);
+                let alter = format!("\\{bin:03o}");
                 ans.push_str(&alter);
             },
             9 => {
@@ -209,7 +208,7 @@ pub fn get_command_path(s: &String, core: &mut ShellCore) -> String {
     for path in core
         .db
         .get_param("PATH")
-        .unwrap_or(String::new())
+        .unwrap_or_default()
         .to_string()
         .split(":")
     {

@@ -88,7 +88,7 @@ pub fn substitute(
     };
 
     core.db
-        .set_param2(&name, index, &new_value.to_string(), None)?;
+        .set_param2(name, index, &new_value.to_string(), None)?;
     Ok(ArithElem::Float(new_value))
 }
 

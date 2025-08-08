@@ -112,7 +112,7 @@ impl Array {
                 continue;
             }
 
-            if feeder.len() != 0 {
+            if !feeder.is_empty() {
                 if feeder.starts_with(")") {
                     paren_counter -= 1;
                     if paren_counter == 0 {
@@ -131,7 +131,7 @@ impl Array {
                 ans.text += &err_char.clone();
                 ans.error_strings.push(err_char);
                 continue;
-            } else if !feeder.feed_additional_line(core).is_ok() {
+            } else if feeder.feed_additional_line(core).is_err() {
                 return Ok(None);
             }
         }

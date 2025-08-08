@@ -23,7 +23,7 @@ fn question(cands: &mut Vec<String>, patterns: &Vec<String>) {
         let mut tmp = cands.clone();
         parser::parse(p, true)
             .iter()
-            .for_each(|w| comparator::shave(&mut tmp, &w));
+            .for_each(|w| comparator::shave(&mut tmp, w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -70,7 +70,7 @@ fn once(cands: &mut Vec<String>, patterns: &Vec<String>) {
         let mut tmp = cands.clone();
         parser::parse(p, true)
             .iter()
-            .for_each(|w| comparator::shave(&mut tmp, &w));
+            .for_each(|w| comparator::shave(&mut tmp, w));
         ans.append(&mut tmp);
     }
     *cands = ans;
@@ -91,16 +91,16 @@ fn not(cands: &mut Vec<String>, patterns: &Vec<String>) {
 fn once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
     let mut tmp = vec![cand.clone()];
     once(&mut tmp, patterns);
-    tmp.iter().any(|t| t == "")
+    tmp.iter().any(|t| t.is_empty())
 }
 
 pub fn scan(remaining: &mut String) -> (usize, Option<GlobElem>) {
-    let prefix = match remaining.chars().nth(0) {
+    let prefix = match remaining.chars().next() {
         Some(c) => c,
         None => return (0, None),
     };
 
-    if "?*+@!".find(prefix) == None || remaining.chars().nth(1) != Some('(') {
+    if "?*+@!".find(prefix).is_none() || remaining.chars().nth(1) != Some('(') {
         return (0, None);
     }
 
@@ -134,7 +134,7 @@ pub fn scan(remaining: &mut String) -> (usize, Option<GlobElem>) {
             nest += 1;
         }
 
-        next_nest = "?*+@!".find(c) != None;
+        next_nest = "?*+@!".find(c).is_some();
 
         if c == ')' {
             match nest {
@@ -159,7 +159,7 @@ fn make_prefix_strings(s: &String) -> Vec<String> {
     let mut prefix = s.clone();
 
     ans.push(prefix.clone());
-    while prefix.len() > 0 {
+    while !prefix.is_empty() {
         prefix.pop();
         ans.push(prefix.clone());
     }

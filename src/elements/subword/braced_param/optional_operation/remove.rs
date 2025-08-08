@@ -94,7 +94,7 @@ impl Remove {
             length -= ch.len_utf8();
             let s = text[length..].to_string();
 
-            if glob::parse_and_compare(&s, &pattern, extglob) {
+            if glob::parse_and_compare(&s, pattern, extglob) {
                 ans_length = length;
                 if self.remove_symbol == "%" {
                     break;

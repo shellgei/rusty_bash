@@ -45,7 +45,7 @@ impl Data for SingleData {
     }
 
     fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.body += &value;
+        self.body += value;
         Ok(())
     }
 

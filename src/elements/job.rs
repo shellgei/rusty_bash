@@ -75,14 +75,14 @@ impl Job {
         pids: &Vec<Option<Pid>>,
         waitstatuses: &Vec<WaitStatus>,
     ) {
-        if core.is_subshell || pids.is_empty() || pids[0] == None {
+        if core.is_subshell || pids.is_empty() || pids[0].is_none() {
             return;
         }
 
         for ws in waitstatuses {
             if let WaitStatus::Stopped(_, _) = ws {
                 let new_job_id = core.generate_new_job_id();
-                let job = JobEntry::new(pids.to_vec(), &waitstatuses, &text, "Stopped", new_job_id);
+                let job = JobEntry::new(pids.to_vec(), waitstatuses, text, "Stopped", new_job_id);
                 core.job_table_priority.insert(0, new_job_id);
                 core.job_table.push(job);
                 return;
@@ -91,10 +91,7 @@ impl Job {
     }
 
     fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
-        let backup = match core.tty_fd.as_ref() {
-            Some(fd) => Some(fd.try_clone().unwrap()),
-            _ => None,
-        };
+        let backup = core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
         core.tty_fd = None;
 
         let pids = if self.pipelines.len() == 1 {
@@ -152,7 +149,7 @@ impl Job {
     pub fn get_one_line_text(&self) -> String {
         let mut ans = String::new();
         for (i, p) in self.pipelines.iter().enumerate() {
-            ans += &p.get_one_line_text().trim_end();
+            ans += p.get_one_line_text().trim_end();
             ans += &self.pipeline_ends[i];
         }
         ans
@@ -220,7 +217,7 @@ impl Job {
                 if Self::eat_pipeline(feeder, &mut ans, core)? {
                     break;
                 }
-                if feeder.len() == 0 {
+                if feeder.is_empty() {
                     feeder.feed_additional_line(core)?;
                 }
             }
@@ -229,7 +226,7 @@ impl Job {
         let com_num = feeder.scanner_comment();
         ans.text += &feeder.consume(com_num);
 
-        match ans.pipelines.len() > 0 {
+        match !ans.pipelines.is_empty() {
             true => Ok(Some(ans)),
             false => Ok(None),
         }

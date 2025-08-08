@@ -100,11 +100,11 @@ impl Substitution {
             if self.append {
                 return core
                     .db
-                    .append_param2(&self.left_hand.name, index, &v, Some(layer));
+                    .append_param2(&self.left_hand.name, index, v, Some(layer));
             } else {
                 return core
                     .db
-                    .set_param2(&self.left_hand.name, index, &v, Some(layer));
+                    .set_param2(&self.left_hand.name, index, v, Some(layer));
             }
         }
 

@@ -71,32 +71,32 @@ impl From<&ExecError> for String {
     fn from(e: &ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
-            ExecError::AmbiguousRedirect(name) => format!("{}: ambiguous redirect", name),
-            ExecError::ArrayIndexInvalid(name) => format!("[{}]: bad array subscript", name),
-            ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
-            ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
+            ExecError::AmbiguousRedirect(name) => format!("{name}: ambiguous redirect"),
+            ExecError::ArrayIndexInvalid(name) => format!("[{name}]: bad array subscript"),
+            ExecError::BadSubstitution(s) => format!("`{s}': bad substitution"),
+            ExecError::BadFd(fd) => format!("{fd}: bad file descriptor"),
             ExecError::CannotOverwriteExistingFile(file) => {
-                format!("{}: cannot overwrite existing file", file)
+                format!("{file}: cannot overwrite existing file")
             }
             //ExecError::InvalidName(name) => format!("`{}': invalid name", name),
-            ExecError::InvalidName(name) => format!("`{}': not a valid identifier", name),
-            ExecError::InvalidOption(opt) => format!("{}: invalid option", opt),
+            ExecError::InvalidName(name) => format!("`{name}': not a valid identifier"),
+            ExecError::InvalidOption(opt) => format!("{opt}: invalid option"),
             ExecError::Interrupted => "interrupted".to_string(),
             ExecError::ValidOnlyInFunction(com) => {
                 format!("{}: can only be used in a function", &com)
             }
-            ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
-            ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
+            ExecError::VariableReadOnly(name) => format!("{name}: readonly variable"),
+            ExecError::VariableInvalid(name) => format!("`{name}': not a valid identifier"),
             ExecError::ParseIntError(e) => e.to_string(),
             ExecError::SyntaxError(near) => {
                 format!("syntax error near unexpected token `{}'", &near)
             }
-            ExecError::Restricted(com) => format!("{}: restricted", com),
-            ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
-            ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {:?}", ws),
-            ExecError::UnboundVariable(name) => format!("{}: unbound variable", name),
-            ExecError::Errno(e) => format!("system error {:?}", e),
-            ExecError::Bug(msg) => format!("INTERNAL BUG: {}", msg),
+            ExecError::Restricted(com) => format!("{com}: restricted"),
+            ExecError::SubstringMinus(n) => format!("{n}: substring expression < 0"),
+            ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {ws:?}"),
+            ExecError::UnboundVariable(name) => format!("{name}: unbound variable"),
+            ExecError::Errno(e) => format!("system error {e:?}"),
+            ExecError::Bug(msg) => format!("INTERNAL BUG: {msg}"),
             ExecError::Other(name) => name.to_string(),
 
             ExecError::ArithError(s, a) => format!("{}: {}", s, String::from(a)),

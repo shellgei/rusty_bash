@@ -61,7 +61,7 @@ impl Substr {
     ) -> Result<(), ExecError> {
         let offset = self.offset.as_mut().unwrap();
 
-        if offset.text == "" {
+        if offset.text.is_empty() {
             return Err(ExecError::BadSubstitution(String::new()));
         }
 
@@ -79,7 +79,7 @@ impl Substr {
         }
 
         let mut start = std::cmp::max(0, n) as usize;
-        start = std::cmp::min(start, array.len()) as usize;
+        start = std::cmp::min(start, array.len());
         *array = array.split_off(start);
 
         if self.length.is_none() {
@@ -92,7 +92,7 @@ impl Substr {
             Some(ofs) => ofs,
         };
 
-        if length.text == "" {
+        if length.text.is_empty() {
             return Err(ExecError::BadSubstitution("".to_string()));
         }
 
@@ -116,7 +116,7 @@ impl Substr {
     ) -> Result<(), ExecError> {
         let offset = self.offset.as_mut().unwrap();
 
-        if offset.text == "" {
+        if offset.text.is_empty() {
             return Err(ExecError::BadSubstitution(String::new()));
         }
 
@@ -145,7 +145,7 @@ impl Substr {
             Some(ofs) => ofs,
         };
 
-        if length.text == "" {
+        if length.text.is_empty() {
             return Err(ExecError::BadSubstitution("".to_string()));
         }
 
@@ -163,7 +163,7 @@ impl Substr {
     pub fn get(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
         let offset = self.offset.as_mut().unwrap();
 
-        if offset.text == "" {
+        if offset.text.is_empty() {
             let err = ArithError::OperandExpected("".to_string());
             return Err(ExecError::ArithError("".to_string(), err));
         }

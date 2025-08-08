@@ -43,7 +43,7 @@ use std::fmt::Debug;
 
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(&self.get_text()).finish()
+        fmt.debug_struct(self.get_text()).finish()
     }
 }
 
@@ -88,7 +88,7 @@ pub trait Subword {
 
     fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
         //bool: true if it should remain
-        splitter::split(&self.get_text(), ifs, prev_char)
+        splitter::split(self.get_text(), ifs, prev_char)
             .iter()
             .map(|s| (From::from(&s.0), s.1))
             .collect()
@@ -164,7 +164,7 @@ pub fn parse_special_subword(
     match mode {
         None => Ok(None),
         Some(WordMode::ParamOption(ref v)) => {
-            if feeder.len() == 0 || feeder.starts_withs2(v) {
+            if feeder.is_empty() || feeder.starts_withs2(v) {
                 return Ok(None);
             }
 
@@ -172,13 +172,13 @@ pub fn parse_special_subword(
             let c = FillerSubword {
                 text: feeder.consume(len),
             };
-            if feeder.len() == 0 {
+            if feeder.is_empty() {
                 feeder.feed_additional_line(core)?;
             }
             Ok(Some(Box::new(c)))
         }
         Some(WordMode::ReadCommand) => {
-            if feeder.len() == 0 || feeder.starts_withs(&["\n", "\t", " "]) {
+            if feeder.is_empty() || feeder.starts_withs(&["\n", "\t", " "]) {
                 Ok(None)
             } else {
                 Ok(Some(From::from(&feeder.consume(1))))
@@ -199,7 +199,7 @@ pub fn parse_special_subword(
             }
         }
         Some(WordMode::ReparseOfValue) => {
-            if feeder.len() == 0 {
+            if feeder.is_empty() {
                 Ok(None)
             } else {
                 Ok(Some(From::from(&feeder.consume(1))))

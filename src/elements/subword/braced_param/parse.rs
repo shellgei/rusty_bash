@@ -55,7 +55,7 @@ impl BracedParam {
         ans: &mut Self,
         core: &mut ShellCore,
     ) -> Result<(), ParseError> {
-        if feeder.len() == 0 {
+        if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
         }
 

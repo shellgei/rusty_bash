@@ -195,7 +195,7 @@ impl Pipeline {
                 if Self::eat_command(feeder, &mut ans, core)? {
                     break;
                 }
-                if feeder.len() != 0 {
+                if !feeder.is_empty() {
                     return Ok(None);
                 }
                 feeder.feed_additional_line(core)?;

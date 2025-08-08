@@ -8,7 +8,7 @@ use std::fs::DirEntry;
 use std::path::Path;
 
 pub fn files(dir: &str) -> Vec<String> {
-    let dir = if dir == "" { "." } else { dir };
+    let dir = if dir.is_empty() { "." } else { dir };
 
     let entries = match Path::new(dir).read_dir() {
         Ok(es) => es,
@@ -33,12 +33,12 @@ fn globstar(dir: &str) -> Vec<String> {
     while !dirs.is_empty() {
         let mut tmp = vec![];
         for d in dirs {
-            if file_check::is_symlink(&d.trim_end_matches("/")) {
+            if file_check::is_symlink(d.trim_end_matches("/")) {
                 continue;
             }
             let mut fs = files(&d);
             fs.iter_mut().for_each(|f| {
-                *f = d.to_string() + &f + "/";
+                *f = d.to_string() + f + "/";
             });
             tmp.append(&mut fs);
         }
@@ -77,7 +77,7 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
         .iter()
         .filter(|f| !f.starts_with(".") || pattern.starts_with(".") || dotglob)
         .filter(|f| glob::compare(f, &pat))
-        .map(|f| make_path(&f))
+        .map(|f| make_path(f))
         .collect();
 
     if !shopts.query("globskipdots") {

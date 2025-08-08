@@ -23,7 +23,7 @@ fn eat_escaped_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     //ans.push( GlobElem::Normal(pattern.remove(0).to_string()) );
     pattern.remove(0);
 
-    let len = pattern.chars().nth(0).unwrap().len_utf8();
+    let len = pattern.chars().next().unwrap().len_utf8();
     ans.push(GlobElem::Normal(consume(pattern, len)));
     true
 }
@@ -67,14 +67,14 @@ fn cut_metachar(pattern: &mut String) -> Option<MetaChar> {
         && pattern.chars().nth(1) == Some('-')
         && pattern.chars().nth(2) != Some(']')
     {
-        let f = pattern.chars().nth(0).unwrap();
+        let f = pattern.chars().next().unwrap();
         let t = pattern.chars().nth(2).unwrap();
         *pattern = pattern.split_off(f.len_utf8() + 1 + t.len_utf8());
         return Some(MetaChar::Range(f, t));
     }
 
-    if pattern.len() > 0 {
-        let ch = pattern.chars().nth(0).unwrap();
+    if !pattern.is_empty() {
+        let ch = pattern.chars().next().unwrap();
         *pattern = pattern.split_off(ch.len_utf8());
         return Some(MetaChar::Normal(ch));
     }
@@ -93,7 +93,7 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     let mut inner = vec![];
 
     *pattern = pattern.split_off(len);
-    while pattern.len() > 0 {
+    while !pattern.is_empty() {
         if pattern.starts_with("]") {
             *pattern = pattern.split_off(1);
             ans.push(GlobElem::OneOf(!not, inner));
@@ -122,7 +122,7 @@ fn eat_extglob(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
 fn eat_chars(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     let mut len = 0;
     for c in pattern.chars() {
-        if "@!+*?[\\".find(c) != None {
+        if "@!+*?[\\".find(c).is_some() {
             break;
         }
         len += c.len_utf8();
@@ -142,7 +142,7 @@ pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
     let mut remaining = pattern.to_string();
     let mut ans = vec![];
 
-    while remaining.len() > 0 {
+    while !remaining.is_empty() {
         if (extglob && eat_extglob(&mut remaining, &mut ans))
             || eat_bracket(&mut remaining, &mut ans)
             || eat_one_char(&mut remaining, &mut ans)

@@ -27,7 +27,7 @@ pub fn set_parameters(c_parts: &Vec<String>, core: &mut ShellCore, command: &str
 pub fn run_and_exit(args: &Vec<String>, c_parts: &Vec<String>, core: &mut ShellCore) {
     core.configure_c_mode();
 
-    if c_parts.len() < 1 {
+    if c_parts.is_empty() {
         println!("{}: -c: option requires an argument", &args[0]);
         process::exit(2);
     }

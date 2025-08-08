@@ -118,7 +118,7 @@ impl Data for IntArrayData {
         }
 
         let keys = self.keys();
-        let max = *keys.iter().max().unwrap() as usize;
+        let max = *keys.iter().max().unwrap();
         let mut ans = vec![];
         for i in 0..(max + 1) {
             match self.body.get(&i) {
@@ -139,7 +139,7 @@ impl Data for IntArrayData {
         }
 
         let keys = self.keys();
-        let max = *keys.iter().max().unwrap() as usize;
+        let max = *keys.iter().max().unwrap();
         let mut ans = vec![];
         for i in pos..(max + 1) {
             match self.body.get(&i) {
@@ -221,14 +221,14 @@ impl IntArrayData {
                     *d = IntArrayData::default().boxed_clone();
                 }
 
-                return d.set_as_array(&pos.to_string(), val);
+                d.set_as_array(&pos.to_string(), val)
             } else if d.is_assoc() {
                 return d.set_as_assoc(&pos.to_string(), val);
             } else if d.is_single() {
                 let data = d.get_as_single()?;
                 IntArrayData::set_new_entry(db_layer, name)?;
 
-                if data != "" {
+                if !data.is_empty() {
                     Self::set_elem(db_layer, name, 0, &data)?;
                 }
                 Self::set_elem(db_layer, name, pos, val)
@@ -251,13 +251,13 @@ impl IntArrayData {
     }
 
     pub fn values(&self) -> Vec<String> {
-        let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
+        let mut keys: Vec<usize> = self.body.iter().map(|e| *e.0).collect();
         keys.sort();
         keys.iter().map(|i| self.body[i].to_string()).collect()
     }
 
     pub fn keys(&self) -> Vec<usize> {
-        let mut keys: Vec<usize> = self.body.iter().map(|e| e.0.clone()).collect();
+        let mut keys: Vec<usize> = self.body.iter().map(|e| *e.0).collect();
         keys.sort();
         keys
     }

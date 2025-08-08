@@ -39,7 +39,7 @@ fn pop_operand(
             to_operand(&mut w)
         }
         Some(elem) => Ok(elem),
-        None => return Err(ArithError::OperandExpected("".to_string()).into()),
+        None => Err(ArithError::OperandExpected("".to_string()).into()),
     }
 }
 
@@ -102,7 +102,7 @@ impl ConditionalExpr {
         let mut stack = Self::reduce(&rev_pol, core)?;
 
         match pop_operand(&mut stack, core, false) {
-            Ok(CondElem::Operand(s)) => Ok(CondElem::Ans(s.len() > 0)), //for [[ string ]]
+            Ok(CondElem::Operand(s)) => Ok(CondElem::Ans(!s.is_empty())), //for [[ string ]]
             other_ans => other_ans,
         }
     }
@@ -117,7 +117,7 @@ impl ConditionalExpr {
                     ans.push(e.clone());
                     true
                 }
-                op => Self::rev_polish_op(&op, &mut stack, &mut ans),
+                op => Self::rev_polish_op(op, &mut stack, &mut ans),
             };
 
             if !ok {
@@ -125,8 +125,8 @@ impl ConditionalExpr {
             }
         }
 
-        while stack.len() > 0 {
-            ans.push(stack.pop().unwrap());
+        while let Some(element) = stack.pop() {
+            ans.push(element);
         }
 
         Ok(ans)
@@ -141,7 +141,7 @@ impl ConditionalExpr {
                     stack.push(e.clone());
                     Ok(())
                 }
-                CondElem::UnaryOp(ref op) => Self::unary_operation(&op, &mut stack, core),
+                CondElem::UnaryOp(ref op) => Self::unary_operation(op, &mut stack, core),
                 CondElem::BinaryOp(ref op) => {
                     if stack.is_empty() {
                         return Ok(vec![CondElem::Ans(true)]); //for [[ -ot ]] [[ == ]] [[ = ]] ...
@@ -149,7 +149,7 @@ impl ConditionalExpr {
                     if op == "=~" {
                         Self::regex_operation(&mut stack, core)
                     } else {
-                        Self::bin_operation(&op, &mut stack, core)
+                        Self::bin_operation(op, &mut stack, core)
                     }
                 }
                 CondElem::Not => match pop_operand(&mut stack, core, false) {
@@ -158,7 +158,7 @@ impl ConditionalExpr {
                         Ok(())
                     }
                     Ok(CondElem::Operand(s)) => {
-                        stack.push(CondElem::Ans(s == ""));
+                        stack.push(CondElem::Ans(s.is_empty()));
                         Ok(())
                     }
                     _ => Err(ExecError::Other("no operand to negate".to_string())),
@@ -216,7 +216,7 @@ impl ConditionalExpr {
                     }
                 }
                 "-z" => operand.is_empty(),
-                "-n" => operand.len() > 0,
+                "-n" => !operand.is_empty(),
                 _ => false,
             };
 
@@ -266,11 +266,11 @@ impl ConditionalExpr {
             stack.push(CondElem::Ans(false));
         }
 
-        return Ok(());
+        Ok(())
     }
 
     fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, ArithError> {
-        let mut f = Feeder::new(&name);
+        let mut f = Feeder::new(name);
         let mut parsed = match ArithmeticExpr::parse(&mut f, core, false, "") {
             Ok(Some(p)) => p,
             _ => return Err(ArithError::OperandExpected(name.to_string())),
@@ -285,15 +285,15 @@ impl ConditionalExpr {
 
     fn single_str_to_num(name: &str, core: &mut ShellCore) -> Result<ArithElem, ArithError> {
         if name.contains('.') {
-            let f = float::parse(&name)?;
+            let f = float::parse(name)?;
             return Ok(ArithElem::Float(f));
         }
 
-        if utils::is_name(&name, core) {
+        if utils::is_name(name, core) {
             return Ok(ArithElem::Integer(0));
         }
 
-        let n = int::parse(&name)?;
+        let n = int::parse(name)?;
         Ok(ArithElem::Integer(n))
     }
 

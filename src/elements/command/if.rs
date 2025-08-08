@@ -31,9 +31,8 @@ impl Command for IfCommand {
             }
         }
 
-        match self.else_script.as_mut() {
-            Some(s) => s.exec(core)?,
-            _ => {}
+        if let Some(s) = self.else_script.as_mut() {
+            s.exec(core)?
         }
         Ok(())
     }
@@ -64,7 +63,7 @@ impl IfCommand {
             "if" | "elif" => Ok(vec!["then"]),
             "then" => Ok(vec!["fi", "else", "elif"]),
             "else" => Ok(vec!["fi"]),
-            unknown => return Err(ParseError::UnexpectedSymbol(unknown.to_string())),
+            unknown => Err(ParseError::UnexpectedSymbol(unknown.to_string())),
         }
     }
 

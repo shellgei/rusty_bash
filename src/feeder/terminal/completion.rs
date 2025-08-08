@@ -34,7 +34,7 @@ fn common_string(paths: &Vec<String>) -> String {
     let mut common_len = ref_chars.len();
 
     for path in &paths[1..] {
-        let len = common_length(&ref_chars, &path);
+        let len = common_length(&ref_chars, path);
         common_len = std::cmp::min(common_len, len);
     }
 
@@ -43,7 +43,7 @@ fn common_string(paths: &Vec<String>) -> String {
 
 fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     let tilde_prefix = "~/".to_string();
-    let tilde_path = core.db.get_param("HOME").unwrap_or(String::new()) + "/";
+    let tilde_path = core.db.get_param("HOME").unwrap_or_default() + "/";
 
     file_check::is_dir(&s.replace(&tilde_prefix, &tilde_path))
 }
@@ -77,13 +77,13 @@ impl Terminal {
         let _ = core.db.set_array("COMPREPLY", Some(vec![]), None);
         self.set_completion_info(core)?;
 
-        if !self.set_custom_compreply(core).is_ok() && !self.set_default_compreply(core).is_ok() {
+        if self.set_custom_compreply(core).is_err() && self.set_default_compreply(core).is_err() {
             self.cloop();
             return Ok(());
         }
 
         let mut cands = core.db.get_vec("COMPREPLY", true)?;
-        cands.retain(|c| c != "");
+        cands.retain(|c| !c.is_empty());
         let o_options = core.completion.current.o_options.clone();
         for cand in cands.iter_mut() {
             apply_o_options(cand, core, &o_options);
@@ -157,9 +157,9 @@ impl Terminal {
         };
 
         core.completion.current = info.clone();
-        if info.function != "" {
+        if !info.function.is_empty() {
             Self::exec_complete_function(&org_word, prev_pos, cur_pos, core)?;
-        } else if info.action != "" {
+        } else if !info.action.is_empty() {
             Self::exec_action(cur_pos, core)?;
         }
 
@@ -215,7 +215,7 @@ impl Terminal {
             let action = core.completion.entries[com].action.clone();
             let options = core.completion.entries[com].options.clone();
 
-            if action != "" {
+            if !action.is_empty() {
                 let mut cands = match action.as_ref() {
                     "alias" => compgen::compgen_a(core, args),
                     "command" => compgen::compgen_c(core, args),
@@ -248,7 +248,7 @@ impl Terminal {
                 compgen::compgen_h(core, args)
                     .to_vec()
                     .into_iter()
-                    .filter(|h| h.len() > 0)
+                    .filter(|h| !h.is_empty())
                     .collect()
             } else {
                 compgen::compgen_c(core, args)
@@ -266,7 +266,7 @@ impl Terminal {
         let pos = core.db.get_param("COMP_CWORD")?;
         let target = core.db.get_elem("COMP_WORDS", &pos)?;
 
-        let common = common_string(&cands);
+        let common = common_string(cands);
         if common.len() != target.len() && !common.is_empty() {
             self.replace_input(&common);
             return Ok(());
@@ -312,7 +312,7 @@ impl Terminal {
         let (cur_col, cur_row) = self.head_to_cursor_pos(self.head, self.prompt_row);
 
         self.check_scroll();
-        match cur_row as usize == terminal_row_num {
+        match cur_row == terminal_row_num {
             true => {
                 let back_row = std::cmp::max(cur_row as i16 - row_num as i16, 1);
                 self.write(&termion::cursor::Goto(cur_col as u16, back_row as u16).to_string());
@@ -383,7 +383,7 @@ impl Terminal {
 
         if last.starts_with("~/") {
             tilde_prefix = "~/".to_string();
-            tilde_path = core.db.get_param("HOME").unwrap_or(String::new()) + "/";
+            tilde_path = core.db.get_param("HOME").unwrap_or_default() + "/";
             last_tilde_expanded = last.replacen(&tilde_prefix, &tilde_path, 1);
         } else {
             tilde_prefix = String::new();
@@ -406,7 +406,7 @@ impl Terminal {
             1 => "\t",
             _ => "?",
         };
-        core.db.set_param("COMP_TYPE", &tp, None)?;
+        core.db.set_param("COMP_TYPE", tp, None)?;
         core.db.set_param("COMP_KEY", "9", None)?;
 
         let mut words_all = utils::split_words(&all_string);
@@ -423,9 +423,7 @@ impl Terminal {
         match left_string.chars().last() {
             Some(' ') => num -= 1,
             Some(_) => {
-                if num > 0 {
-                    num -= 1
-                }
+                num = num.saturating_sub(1);
             }
             _ => {}
         }

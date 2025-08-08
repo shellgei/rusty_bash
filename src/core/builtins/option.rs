@@ -8,7 +8,7 @@ use crate::{error, ShellCore};
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
     let com = match core.db.position_parameters.pop() {
         Some(layer) => {
-            if layer.len() == 0 {
+            if layer.is_empty() {
                 "".to_string()
             } else {
                 layer[0].clone()
@@ -18,7 +18,7 @@ pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecEr
     };
 
     let mut tmp = args.to_vec();
-    if tmp.len() > 0 {
+    if !tmp.is_empty() {
         tmp[0] = com;
     } else {
         tmp.push(com);
@@ -67,21 +67,21 @@ pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
         ('x', ""),
         ('v', ""),
     ] {
-        let minus_opt = format!("-{}", short);
-        let plus_opt = format!("+{}", short);
+        let minus_opt = format!("-{short}");
+        let plus_opt = format!("+{short}");
 
         if arg::consume_option(&minus_opt, args) {
             if !core.db.flags.contains(short) {
                 core.db.flags += &minus_opt[1..];
             }
-            if long != "" {
+            if !long.is_empty() {
                 let _ = core.options.set(long, true);
             }
         }
 
         if arg::consume_option(&plus_opt, args) {
             core.db.flags.retain(|f| f != short);
-            if long != "" {
+            if !long.is_empty() {
                 let _ = core.options.set(long, false);
             }
         }
@@ -91,12 +91,10 @@ pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
 pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if core.db.flags.contains('r') {
-        if arg::consume_option("+r", &mut args) {
-            let _ = super::error_exit(1, &args[0], "+r: invalid option", core);
-            eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
-            return 1;
-        }
+    if core.db.flags.contains('r') && arg::consume_option("+r", &mut args) {
+        let _ = super::error_exit(1, &args[0], "+r: invalid option", core);
+        eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
+        return 1;
     }
 
     if args.len() <= 1 {
@@ -268,16 +266,16 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         "-s" => {
             if core.shopts.implemented.contains(&args[2]) {
                 match core.shopts.set(&args[2], true) {
-                    Ok(()) => return 0,
+                    Ok(()) => 0,
                     Err(e) => {
                         e.print(core);
-                        return 1;
+                        1
                     }
                 }
             } else {
                 let msg = format!("shopt: {}: not supported yet", &args[2]);
                 error::print(&msg, core);
-                return 1;
+                1
             }
         }
         "-q" => {
@@ -291,19 +289,19 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                     return 1;
                 }
             }
-            return 0;
+            0
         }
         "-u" => match core.shopts.set(&args[2], false) {
-            Ok(()) => return 0,
+            Ok(()) => 0,
             Err(e) => {
                 e.print(core);
-                return 1;
+                1
             }
         },
         arg => {
-            eprintln!("sush: shopt: {}: invalid shell option name", arg);
+            eprintln!("sush: shopt: {arg}: invalid shell option name");
             eprintln!("shopt: usage: shopt [-su] [optname ...]");
-            return 1;
+            1
         }
     }
 }
