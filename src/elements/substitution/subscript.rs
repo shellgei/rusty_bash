@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
-use crate::error::exec::ExecError;
-use crate::error::parse::ParseError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::word::{Word, WordMode};
+use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
+use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
 pub struct Subscript {
@@ -23,8 +23,7 @@ enum SubscriptType {
 }
 
 impl Subscript {
-    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str)
-    -> Result<String, ExecError> {
+    pub fn eval(&mut self, core: &mut ShellCore, param_name: &str) -> Result<String, ExecError> {
         if let SubscriptType::Array(a) = &self.data {
             return Ok(a.clone());
         }
@@ -33,19 +32,18 @@ impl Subscript {
             if a.text.is_empty() {
                 return Err(ExecError::ArrayIndexInvalid(a.text.clone()));
             }
-            if ! core.db.is_assoc(param_name) {
+            if !core.db.is_assoc(param_name) {
                 return a.eval(core);
             }
 
-            if core.valid_assoc_expand_once
-            && core.shopts.query("assoc_expand_once") {
+            if core.valid_assoc_expand_once && core.shopts.query("assoc_expand_once") {
                 return Ok(a.text.clone());
             }
 
             let mut f = Feeder::new(&a.text);
             if let Some(w) = Word::parse(&mut f, core, Some(WordMode::AssocIndex))? {
                 return w.eval_as_assoc_index(core);
-            }else{
+            } else {
                 return Ok(a.text.clone());
             }
         }
@@ -53,8 +51,7 @@ impl Subscript {
         Err(ExecError::ArrayIndexInvalid("".to_string()))
     }
 
-    pub fn reparse(&mut self, core: &mut ShellCore, param_name: &str) 
-    -> Result<(), ExecError> {
+    pub fn reparse(&mut self, core: &mut ShellCore, param_name: &str) -> Result<(), ExecError> {
         if let SubscriptType::Array(_) = &self.data {
             return Ok(());
         }
@@ -72,10 +69,8 @@ impl Subscript {
         Ok(())
     }
 
-
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("[") {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        if !feeder.starts_with("[") {
             return Ok(None);
         }
 
@@ -86,12 +81,12 @@ impl Subscript {
             let s = feeder.consume(1);
             ans.text += &s.clone();
             ans.data = SubscriptType::Array(s);
-        }else if let Some(a) = ArithmeticExpr::parse(feeder, core, true, "[")? {
+        } else if let Some(a) = ArithmeticExpr::parse(feeder, core, true, "[")? {
             ans.text += &a.text.clone();
             ans.data = SubscriptType::Arith(a);
         }
 
-        if ! feeder.starts_with("]") {
+        if !feeder.starts_with("]") {
             return Ok(None);
         }
 

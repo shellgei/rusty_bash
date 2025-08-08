@@ -1,19 +1,19 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{proc_ctrl, ShellCore, Feeder};
-use crate::elements::Pipe;
-use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
+use crate::elements::command::Command;
 use crate::elements::subword::Subword;
-use crate::error::parse::ParseError;
+use crate::elements::Pipe;
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
+use crate::{proc_ctrl, Feeder, ShellCore};
 use nix::unistd;
-use std::{thread, time};
 use std::fs::File;
-use std::io::{BufReader, BufRead, Error};
+use std::io::{BufRead, BufReader, Error};
 use std::os::fd::{FromRawFd, RawFd};
 use std::sync::atomic::Ordering::Relaxed;
+use std::{thread, time};
 
 #[derive(Debug, Clone, Default)]
 pub struct CommandSubstitution {
@@ -22,8 +22,12 @@ pub struct CommandSubstitution {
 }
 
 impl Subword for CommandSubstitution {
-    fn get_text(&self) -> &str {&self.text.as_ref()}
-    fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
+    fn get_text(&self) -> &str {
+        self.text.as_ref()
+    }
+    fn boxed_clone(&self) -> Box<dyn Subword> {
+        Box::new(self.clone())
+    }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut pipe = Pipe::new("|".to_string());
@@ -48,11 +52,12 @@ impl CommandSubstitution {
     }
 
     fn interrupted(&mut self, count: usize, core: &mut ShellCore) -> Result<(), ExecError> {
-        if count%100 == 99 { //To receive Ctrl+C
+        if count % 100 == 99 {
+            //To receive Ctrl+C
             thread::sleep(time::Duration::from_millis(1));
         }
         match core.sigint.load(Relaxed) {
-            true  => Err(ExecError::Interrupted),
+            true => Err(ExecError::Interrupted),
             false => Ok(()),
         }
     }
@@ -63,7 +68,7 @@ impl CommandSubstitution {
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {
             self.interrupted(i, core)?;
-            if ! self.set_line(line) {
+            if !self.set_line(line) {
                 break;
             }
         }
@@ -72,16 +77,18 @@ impl CommandSubstitution {
         Ok(())
     }
 
-    pub fn parse_old_style(feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("`") {
+    pub fn parse_old_style(
+        feeder: &mut Feeder,
+        core: &mut ShellCore,
+    ) -> Result<Option<Self>, ParseError> {
+        if !feeder.starts_with("`") {
             return Ok(None);
         }
 
         let mut ans = Self::default();
         ans.text = feeder.consume(1);
         let mut esc = false;
-        while esc || ! feeder.starts_with("`") {
+        while esc || !feeder.starts_with("`") {
             if feeder.is_empty() {
                 feeder.feed_additional_line(core)?;
                 continue;
@@ -96,7 +103,7 @@ impl CommandSubstitution {
 
             ans.text += &c;
 
-            if ! esc && c == "\\" {
+            if !esc && c == "\\" {
                 esc = true;
                 continue;
             }
@@ -124,8 +131,8 @@ impl CommandSubstitution {
         if let Some(ans) = Self::parse_old_style(feeder, core)? {
             return Ok(Some(ans));
         }
-        
-        if ! feeder.starts_with("$(") {
+
+        if !feeder.starts_with("$(") {
             return Ok(None);
         }
         let mut ans = Self::default();
@@ -135,7 +142,7 @@ impl CommandSubstitution {
             ans.text += &pc.get_text();
             ans.command = pc;
             Ok(Some(ans))
-        }else{
+        } else {
             Ok(None)
         }
     }

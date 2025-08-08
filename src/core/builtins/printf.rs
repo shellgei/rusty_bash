@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{error, Feeder, ShellCore};
+use crate::elements::substitution::Substitution;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::elements::substitution::Substitution;
+use crate::{error, Feeder, ShellCore};
 use std::io::{stdout, Write};
 
 #[derive(Debug, Clone)]
@@ -47,9 +47,7 @@ impl PrintfToken {
 
     //TODO: implement!
     fn padding_float(_: &mut String, fmt: &mut String) {
-        if fmt.is_empty() {
-            return;
-        }
+        if fmt.is_empty() {}
     }
 
     fn padding(s: &mut String, fmt: &mut String, is_int: bool) {
@@ -68,7 +66,7 @@ impl PrintfToken {
             padding = fmt.remove(0);
         }
 
-        if ! is_int {
+        if !is_int {
             padding = ' ';
         }
 
@@ -98,7 +96,7 @@ impl PrintfToken {
                 let mut a = pop(args);
                 Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
-            },
+            }
             Self::U(fmt) => {
                 let mut a = pop(args);
                 if a.starts_with("-") {
@@ -108,50 +106,58 @@ impl PrintfToken {
                     let mut a = num.to_string();
                     Self::padding(&mut a, &mut fmt.clone(), true);
                     Ok(a)
-                }else{
+                } else {
                     Self::padding(&mut a, &mut fmt.clone(), true);
                     Ok(a)
                 }
-            },
+            }
             Self::F(fmt) => {
                 let mut a = format!("{:.6}", Self::to_float(&pop(args))?);
                 Self::padding_float(&mut a, &mut fmt.clone());
                 Ok(a)
-            },
+            }
             Self::S(fmt) => {
                 let mut a = pop(args);
                 Self::padding(&mut a, &mut fmt.clone(), false);
                 Ok(a)
-            },
+            }
             Self::B(fmt) => {
                 let mut a = replace_escape(&pop(args));
                 Self::padding(&mut a, &mut fmt.clone(), false);
                 Ok(a)
-            },
+            }
             Self::X(fmt) => {
                 let mut a = format!("{:x}", Self::to_int(&pop(args))?);
                 Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
-            },
+            }
             Self::O(fmt) => {
                 let mut a = format!("{:o}", Self::to_int(&pop(args))?);
                 Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
-            },
+            }
             Self::LargeX(fmt) => {
                 let mut a = format!("{:X}", Self::to_int(&pop(args))?);
                 Self::padding(&mut a, &mut fmt.clone(), true);
                 Ok(a)
-            },
+            }
             Self::Q => {
                 let a = pop(args);
-                let q = a.replace("\\", "\\\\").replace("$", "\\$").replace("|", "\\|")
-                    .replace("\"", "\\\"").replace("'", "\\\'").replace("~", "\\~")
-                    .replace("(", "\\(").replace(")", "\\)")
-                    .replace("{", "\\{").replace("}", "\\}")
-                    .replace("!", "\\!").replace("&", "\\&");
+                let q = a
+                    .replace("\\", "\\\\")
+                    .replace("$", "\\$")
+                    .replace("|", "\\|")
+                    .replace("\"", "\\\"")
+                    .replace("'", "\\\'")
+                    .replace("~", "\\~")
+                    .replace("(", "\\(")
+                    .replace(")", "\\)")
+                    .replace("{", "\\{")
+                    .replace("}", "\\}")
+                    .replace("!", "\\!")
+                    .replace("&", "\\&");
                 Ok(q)
-            },
+            }
             Self::Other(s) => {
                 let a = pop(args);
                 let formatted = match sprintf::sprintf!(&s, a) {
@@ -159,11 +165,11 @@ impl PrintfToken {
                     Err(e) => {
                         let msg = format!("{} {} {}", &e, &s, &a);
                         return Err(ExecError::Other(msg));
-                    },
+                    }
                 };
 
                 Ok(formatted)
-            },
+            }
             Self::EscapedChar(c) => Ok(esc_to_str(*c)),
             Self::Normal(s) => Ok(s.clone()),
         }
@@ -172,7 +178,7 @@ impl PrintfToken {
 
 fn pop(args: &mut Vec<String>) -> String {
     match args.is_empty() {
-        true  => "".to_string(),
+        true => "".to_string(),
         false => args.remove(0),
     }
 }
@@ -180,7 +186,7 @@ fn pop(args: &mut Vec<String>) -> String {
 fn esc_to_str(ch: char) -> String {
     match ch {
         'a' => char::from(7).to_string(),
-        'b' =>  char::from(8).to_string(),
+        'b' => char::from(8).to_string(),
         'e' | 'E' => char::from(27).to_string(),
         'f' => char::from(12).to_string(),
         'n' => "\n".to_string(),
@@ -203,7 +209,7 @@ fn replace_escape(s: &str) -> String {
             if esc {
                 ans.push_str(&esc_to_str(ch));
             }
-            esc = ! esc;
+            esc = !esc;
             continue;
         }
 
@@ -226,7 +232,7 @@ fn scanner_normal(remaining: &str) -> usize {
 }
 
 fn scanner_escaped_char(remaining: &str) -> usize {
-    if ! remaining.starts_with("\\") {
+    if !remaining.starts_with("\\") {
         return 0;
     }
 
@@ -239,7 +245,7 @@ fn scanner_escaped_char(remaining: &str) -> usize {
 fn scanner_format_num(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
-        if ! "-.".contains(c) && (c < '0' || c > '9') {
+        if !"-.".contains(c) && !c.is_ascii_digit() {
             break;
         }
 
@@ -252,7 +258,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
     let mut remaining = pattern.to_string();
     let mut ans = vec![];
 
-    while ! remaining.is_empty() {
+    while !remaining.is_empty() {
         let len = scanner_normal(&remaining);
         if len > 0 {
             let tail = remaining.split_off(len);
@@ -270,7 +276,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
 
         if remaining.starts_with("%") {
             remaining.remove(0); // %
-                               
+
             let mut num_part = String::new();
             let len = scanner_format_num(&remaining);
             if len > 0 {
@@ -290,8 +296,8 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
                 Some('x') => PrintfToken::X(num_part),
                 Some('X') => PrintfToken::LargeX(num_part),
                 Some('q') => PrintfToken::Q,
-                Some(c)   => PrintfToken::Other("%".to_owned() + &num_part + &c.to_string()),
-                None      => PrintfToken::Normal("%".to_string()),
+                Some(c) => PrintfToken::Other("%".to_owned() + &num_part + &c.to_string()),
+                None => PrintfToken::Normal("%".to_string()),
             };
 
             remaining.remove(0);
@@ -315,7 +321,7 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
         ans += &tok.to_string(args)?;
     }
 
-    if ! args.is_empty() && ! fin {
+    if !args.is_empty() && !fin {
         if let Ok(s) = format(pattern, args) {
             ans += &s;
         }
@@ -324,17 +330,16 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
 }
 
 fn arg_check(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() < 2 || args[1] == "--help"
-    || args[1] == "-v" && args.len() == 3 {
-        let msg = format!("printf: usage: printf [-v var] format [arguments]");
+    if args.len() < 2 || args[1] == "--help" || args[1] == "-v" && args.len() == 3 {
+        let msg = "printf: usage: printf [-v var] format [arguments]".to_string();
         error::print(&msg, core);
         return 2;
     }
 
     if args[1] == "-v" && args.len() == 2 {
-        let msg = format!("printf: -v: option requires an argument");
+        let msg = "printf: -v: option requires an argument".to_string();
         error::print(&msg, core);
-        let msg = format!("printf: usage: printf [-v var] format [arguments]");
+        let msg = "printf: usage: printf [-v var] format [arguments]".to_string();
         error::print(&msg, core);
         return 2;
     }
@@ -352,7 +357,7 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         Err(e) => {
             let msg = String::from(&e);
             return super::error_exit(1, "printf", &msg, core);
-        },
+        }
     };
 
     if args[2].contains("[") {
@@ -362,7 +367,7 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 let msg = String::from(&e);
                 return super::error_exit(2, "printf", &msg, core);
             }
-        }else{
+        } else {
             return 1;
         }
         return 0;
@@ -372,12 +377,12 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return super::error_exit(2, "printf", &msg, core);
     }
 
-    return 0;
+    0
 }
 
 pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     match arg_check(core, args) {
-        0 => {},
+        0 => {}
         n => return n,
     }
 
@@ -388,10 +393,10 @@ pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let s = match format(&args[1], &mut args[2..].to_vec()) {
         Ok(ans) => ans,
         Err(e) => {
-            let msg = format!("printf: {:?}", e);
+            let msg = format!("printf: {e:?}");
             error::print(&msg, core);
             return 1;
-        },
+        }
     };
     print!("{}", &s);
     stdout().flush().unwrap();

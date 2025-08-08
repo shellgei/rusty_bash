@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
 use crate::utils::arg;
+use crate::ShellCore;
 
 fn print_all(core: &mut ShellCore) -> i32 {
     println!("hits	command");
@@ -11,7 +11,7 @@ fn print_all(core: &mut ShellCore) -> i32 {
         if let Ok(path) = core.db.get_elem("BASH_CMDS", &com) {
             if let Some(n) = core.db.hash_counter.get(&com) {
                 println!("{:4}\t{}", &n, &path);
-            }else {
+            } else {
                 core.db.hash_counter.insert(com, 0);
                 println!("   0\t{}", &path);
             }
@@ -36,7 +36,10 @@ pub fn hash(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             return super::error_exit(1, "hash", "still not implemented", core);
         }
 
-        if let Err(e) = core.db.set_assoc_elem("BASH_CMDS", &args[2], &args[1], Some(0)) {
+        if let Err(e) = core
+            .db
+            .set_assoc_elem("BASH_CMDS", &args[2], &args[1], Some(0))
+        {
             let msg = String::from(&e);
             return super::error_exit(1, "hash", &msg, core);
         }

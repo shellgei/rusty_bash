@@ -8,7 +8,7 @@ pub fn normal(core: &mut ShellCore) -> ! {
     run_script(core);
 
     core.write_history_to_file();
-    process::exit(core.db.exit_status%256)
+    process::exit(core.db.exit_status % 256)
 }
 
 fn run_script(core: &mut ShellCore) {
@@ -27,15 +27,17 @@ fn run_script(core: &mut ShellCore) {
             if let Err(e) = s.exec(core) {
                 e.print(core);
             }
-        },
-        Err(e) => {e.print(core);},
-        Ok(None) => {},
+        }
+        Err(e) => {
+            e.print(core);
+        }
+        Ok(None) => {}
     };
 }
 
 /* error at exec */
 fn command_error_exit(name: &str, core: &mut ShellCore, msg: &str, exit_status: i32) -> ! {
-    let msg = format!("{}: {}", name, msg);
+    let msg = format!("{name}: {msg}");
     error::print(&msg, core);
     process::exit(exit_status)
 }
@@ -50,17 +52,15 @@ pub fn permission_denied(command_name: &str, core: &mut ShellCore) -> ! {
 
 pub fn not_found(command_name: &str, core: &mut ShellCore) -> ! {
     let msg = "command not found";
-    command_error_exit(command_name, core, &msg, 127)
+    command_error_exit(command_name, core, msg, 127)
 }
 
 pub fn internal(s: &str) -> ! {
-    panic!("SUSH INTERNAL ERROR: {}", s)
+    panic!("SUSH INTERNAL ERROR: {s}")
 }
 
 pub fn check_e_option(core: &mut ShellCore) {
-    if core.db.exit_status != 0 
-    && core.db.flags.contains("e") 
-    && ! core.suspend_e_option {
+    if core.db.exit_status != 0 && core.db.flags.contains("e") && !core.suspend_e_option {
         normal(core);
     }
 }

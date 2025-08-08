@@ -4,18 +4,19 @@
 
 mod alias;
 mod cd;
+mod command;
 pub mod compgen;
 pub mod complete;
 mod compopt;
-mod command;
 mod echo;
 mod exec;
 mod getopts;
 mod hash;
 mod history;
 mod job_commands;
-pub mod parameter;
+mod loop_control;
 pub mod option;
+pub mod parameter;
 mod printf;
 mod pwd;
 mod read;
@@ -24,19 +25,18 @@ mod trap;
 mod type_;
 #[cfg(not(target_os = "macos"))]
 mod ulimit;
-mod loop_control;
 mod unset;
 
-use crate::{exit, Feeder, Script, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::parse::ParseError;
+use crate::{exit, Feeder, Script, ShellCore};
 //#[cfg(not(target_os = "macos"))]
 
 pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
     if core.db.flags.contains('i') {
         eprintln!("{}: {}: {}", &shellname, name, msg);
-    }else{
+    } else {
         let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
         eprintln!("{}: line {}: {}: {}", &shellname, &lineno, name, msg);
     }
@@ -49,32 +49,43 @@ impl ShellCore {
         self.builtins.insert("alias".to_string(), alias::alias);
         self.builtins.insert("bg".to_string(), job_commands::bg);
         self.builtins.insert("bind".to_string(), bind);
-        self.builtins.insert("break".to_string(), loop_control::break_);
-        self.builtins.insert("builtin".to_string(), command::builtin);
+        self.builtins
+            .insert("break".to_string(), loop_control::break_);
+        self.builtins
+            .insert("builtin".to_string(), command::builtin);
         self.builtins.insert("cd".to_string(), cd::cd);
-        self.builtins.insert("command".to_string(), command::command);
-        self.builtins.insert("compgen".to_string(), compgen::compgen);
-        self.builtins.insert("complete".to_string(), complete::complete);
-        self.builtins.insert("compopt".to_string(), compopt::compopt);
-        self.builtins.insert("continue".to_string(), loop_control::continue_);
+        self.builtins
+            .insert("command".to_string(), command::command);
+        self.builtins
+            .insert("compgen".to_string(), compgen::compgen);
+        self.builtins
+            .insert("complete".to_string(), complete::complete);
+        self.builtins
+            .insert("compopt".to_string(), compopt::compopt);
+        self.builtins
+            .insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("debug".to_string(), debug);
-        self.builtins.insert("disown".to_string(), job_commands::disown);
+        self.builtins
+            .insert("disown".to_string(), job_commands::disown);
         self.builtins.insert("echo".to_string(), echo::echo);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
         self.builtins.insert("fg".to_string(), job_commands::fg);
-        self.builtins.insert("getopts".to_string(), getopts::getopts);
+        self.builtins
+            .insert("getopts".to_string(), getopts::getopts);
         self.builtins.insert("hash".to_string(), hash::hash);
-        self.builtins.insert("history".to_string(), history::history);
+        self.builtins
+            .insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
         self.builtins.insert("kill".to_string(), job_commands::kill);
         self.builtins.insert("let".to_string(), let_);
         self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("read".to_string(), read::read);
-        self.builtins.insert("return".to_string(), loop_control::return_);
+        self.builtins
+            .insert("return".to_string(), loop_control::return_);
         self.builtins.insert("set".to_string(), option::set);
         self.builtins.insert("trap".to_string(), trap::trap);
         self.builtins.insert("type".to_string(), type_::type_);
@@ -82,12 +93,12 @@ impl ShellCore {
         self.builtins.insert("shopt".to_string(), option::shopt);
 
         //if file::search_command("ulimit").is_none() {
-#[cfg(not(target_os = "macos"))]
-            self.builtins.insert("ulimit".to_string(), ulimit::ulimit);
-            /*
-#[cfg(target_os = "macos")]
-            self.builtins.insert("ulimit".to_string(), ulimit_mac::ulimit);
-        }*/
+        #[cfg(not(target_os = "macos"))]
+        self.builtins.insert("ulimit".to_string(), ulimit::ulimit);
+        /*
+        #[cfg(target_os = "macos")]
+                    self.builtins.insert("ulimit".to_string(), ulimit_mac::ulimit);
+                }*/
 
         self.builtins.insert("unalias".to_string(), alias::unalias);
         self.builtins.insert("unset".to_string(), unset::unset);
@@ -96,17 +107,22 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("wait".to_string(), job_commands::wait);
 
-        self.substitution_builtins.insert("export".to_string(), parameter::export);
-        self.substitution_builtins.insert("readonly".to_string(), parameter::readonly);
-        self.substitution_builtins.insert("typeset".to_string(), parameter::declare);
-        self.substitution_builtins.insert("declare".to_string(), parameter::declare);
-        self.substitution_builtins.insert("local".to_string(), parameter::local);
+        self.substitution_builtins
+            .insert("export".to_string(), parameter::export);
+        self.substitution_builtins
+            .insert("readonly".to_string(), parameter::readonly);
+        self.substitution_builtins
+            .insert("typeset".to_string(), parameter::declare);
+        self.substitution_builtins
+            .insert("declare".to_string(), parameter::declare);
+        self.substitution_builtins
+            .insert("local".to_string(), parameter::local);
     }
 }
 
 pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     args.remove(0);
-    if args.len() > 0 && args[0] == "--" {
+    if !args.is_empty() && args[0] == "--" {
         args.remove(0);
     }
 
@@ -118,21 +134,24 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     };
     feeder.lineno += lineno - 1;
 
-    match Script::parse(&mut feeder, core, false){
+    match Script::parse(&mut feeder, core, false) {
         Ok(Some(mut s)) => {
             core.eval_level += 1;
             let _ = s.exec(core);
             core.eval_level -= 1;
-        },
+        }
         Err(ParseError::UnexpectedSymbol(t)) => {
             let lineno = core.db.get_param("LINENO").unwrap_or("0".to_string());
             let com = &core.db.position_parameters[0][0];
-            eprintln!("{}: eval: line {}: syntax error near unexpected token `{}'", com, &lineno, &t);
+            eprintln!(
+                "{}: eval: line {}: syntax error near unexpected token `{}'",
+                com, &lineno, &t
+            );
             eprintln!("{}: eval: line {}: `{}'", com, &lineno, &script);
             return 2;
-        },
+        }
         Err(e) => e.print(core),
-        _        => {},
+        _ => {}
     }
 
     core.db.exit_status
@@ -175,19 +194,17 @@ pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     for a in &args[1..] {
         match ArithmeticExpr::parse(&mut Feeder::new(&a.replace("$", "\\$")), core, false, "") {
-            Ok(Some(mut a)) => {
-                match a.eval(core) {
-                    Ok(s) => last_result = if s == "0" {1} else {0},
-                    Err(e) => {
-                        core.valid_assoc_expand_once = false;
-                        return error_exit(1, &args[0], &String::from(&e), core);
-                    },
+            Ok(Some(mut a)) => match a.eval(core) {
+                Ok(s) => last_result = if s == "0" { 1 } else { 0 },
+                Err(e) => {
+                    core.valid_assoc_expand_once = false;
+                    return error_exit(1, &args[0], &String::from(&e), core);
                 }
             },
             Ok(None) => {
                 core.valid_assoc_expand_once = false;
                 return error_exit(1, &args[0], "expression expected", core);
-            },
+            }
             Err(e) => {
                 core.valid_assoc_expand_once = false;
                 return error_exit(1, &args[0], &String::from(&e), core);
@@ -198,4 +215,3 @@ pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.valid_assoc_expand_once = false;
     last_result
 }
-
