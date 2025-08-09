@@ -13,7 +13,7 @@ impl From<&InputError> for String {
     fn from(e: &InputError) -> String {
         match e {
             InputError::NotUtf8 => "input error: illegal utf-8 character".to_string(),
-            InputError::NoSuchFile(filename) => format!("{}: No such file or directory", filename),
+            InputError::NoSuchFile(filename) => format!("{filename}: No such file or directory"),
             InputError::Eof => "syntax error: unexpected end of file".to_string(),
             InputError::Interrupt => "interrupted".to_string(),
         }

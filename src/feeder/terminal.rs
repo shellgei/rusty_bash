@@ -4,21 +4,21 @@
 mod completion;
 mod key;
 
-use crate::{file_check, ShellCore};
-use crate::utils::file;
 use crate::error::input::InputError;
-use std::io;
-use std::fs::File;
-use std::io::{Write, Stdout};
-use std::sync::atomic::Ordering::Relaxed;
-use std::path::Path;
+use crate::utils::file;
+use crate::{file_check, ShellCore};
 use nix::unistd;
 use nix::unistd::User;
-use termion::event;
+use std::fs::File;
+use std::io;
+use std::io::{Stdout, Write};
+use std::path::Path;
+use std::sync::atomic::Ordering::Relaxed;
 use termion::cursor::DetectCursorPos;
+use termion::event;
 use termion::event::Key;
-use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
+use termion::raw::{IntoRawMode, RawTerminal};
 use unicode_width::UnicodeWidthChar;
 
 struct Terminal {
@@ -40,17 +40,17 @@ struct Terminal {
 }
 
 fn oct_string(s: &str) -> bool {
-    if s.chars().nth(0) != Some('\\') {
+    if !s.starts_with('\\') {
         return false;
     }
 
     for i in 1..4 {
         match s.chars().nth(i) {
             Some(c) => {
-                if c < '0' || '9' < c {
+                if !c.is_ascii_digit() {
                     return false;
                 }
-            },
+            }
             _ => return false,
         }
     }
@@ -73,10 +73,10 @@ fn oct_to_hex_in_str(from: &str) -> String {
     let mut ans = String::new();
     for p in pos {
         ans += &from[prev..p];
-        if let Ok(n) = u32::from_str_radix(&from[p+1..p+4], 8) {
+        if let Ok(n) = u32::from_str_radix(&from[p + 1..p + 4], 8) {
             ans += &char::from_u32(n).unwrap().to_string();
         }
-        prev = p+4;
+        prev = p + 4;
     }
     ans += &from[prev..];
     ans
@@ -84,16 +84,19 @@ fn oct_to_hex_in_str(from: &str) -> String {
 
 impl Terminal {
     pub fn new(core: &mut ShellCore, ps: &str) -> Self {
-        let raw_prompt = core.db.get_param(ps).unwrap_or(String::new());
+        let raw_prompt = core.db.get_param(ps).unwrap_or_default();
         let ansi_on_prompt = oct_to_hex_in_str(&raw_prompt);
 
         let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
-        let prompt = replaced_prompt.replace("\\[", "").replace("\\]", "").to_string();
-        print!("{}", prompt);
+        let prompt = replaced_prompt
+            .replace("\\[", "")
+            .replace("\\]", "")
+            .to_string();
+        print!("{prompt}");
         io::stdout().flush().unwrap();
 
         let mut sout = io::stdout().into_raw_mode().unwrap();
-        let row = sout.cursor_pos().unwrap_or((1,1)).1;
+        let row = sout.cursor_pos().unwrap_or((1, 1)).1;
 
         Terminal {
             prompt: prompt.to_string(),
@@ -115,17 +118,17 @@ impl Terminal {
 
     fn get_branch(cwd: &String) -> String {
         let mut dirs: Vec<String> = cwd.split("/").map(|s| s.to_string()).collect();
-        while dirs.len() > 0 {
+        while !dirs.is_empty() {
             let path = dirs.join("/") + "/.git/HEAD";
             dirs.pop();
 
-            if ! file_check::is_regular_file(&path) {
+            if !file_check::is_regular_file(&path) {
                 continue;
             }
 
-            if let Ok(mut f) = File::open(Path::new(&path)){
+            if let Ok(mut f) = File::open(Path::new(&path)) {
                 return match f.read_line() {
-                    Ok(Some(s)) => s.replace("ref: refs/heads/","") + "🌵",
+                    Ok(Some(s)) => s.replace("ref: refs/heads/", "") + "🌵",
                     _ => "".to_string(),
                 };
             }
@@ -160,14 +163,17 @@ impl Terminal {
         }
 
         raw.replace("\\u", &user)
-           .replace("\\h", &hostname)
-           .replace("\\w", &cwd)
-           .replace("\\b", &branch)
-           .to_string()
+            .replace("\\h", &hostname)
+            .replace("\\w", &cwd)
+            .replace("\\b", &branch)
+            .to_string()
     }
 
     fn make_width_map(prompt: &str) -> Vec<usize> {
-        let tmp = prompt.replace("\\[", "\x01").replace("\\]", "\x02").to_string();
+        let tmp = prompt
+            .replace("\\[", "\x01")
+            .replace("\\]", "\x02")
+            .to_string();
         let mut in_escape = false;
         let mut ans = vec![];
         for c in tmp.chars() {
@@ -177,7 +183,7 @@ impl Terminal {
             }
 
             let wid = match in_escape {
-                true  => 0,
+                true => 0,
                 false => UnicodeWidthChar::width(c).unwrap_or(0),
             };
             ans.push(wid);
@@ -186,7 +192,7 @@ impl Terminal {
     }
 
     fn write(&mut self, s: &str) {
-        write!(self.stdout, "{}", s).unwrap();
+        write!(self.stdout, "{s}").unwrap();
     }
 
     fn flush(&mut self) {
@@ -207,9 +213,13 @@ impl Terminal {
     }
 
     fn shift_in_range(x: &mut usize, shift: i32, min: usize, max: usize) {
-        *x = if      shift < 0 && *x < min + (- shift as usize) { min }
-             else if shift > 0 && *x + (shift as usize) > max   { max }
-             else           { (*x as isize + shift as isize) as usize };
+        *x = if shift < 0 && *x < min + (-shift as usize) {
+            min
+        } else if shift > 0 && *x + (shift as usize) > max {
+            max
+        } else {
+            (*x as isize + shift as isize) as usize
+        };
     }
 
     fn head_to_cursor_pos(&self, head: usize, y_origin: usize) -> (usize, usize) {
@@ -227,7 +237,7 @@ impl Terminal {
             if x + w > col {
                 y += 1;
                 x = w;
-            }else{
+            } else {
                 x += w;
             }
         }
@@ -247,7 +257,7 @@ impl Terminal {
     fn rewrite(&mut self, erase: bool) {
         self.goto(0);
         if erase {
-            self.write(&termion::clear::AfterCursor.to_string());
+            self.write(termion::clear::AfterCursor.as_ref());
         }
         self.write(&self.get_string(0).replace("\n", "\n\r"));
         self.goto(self.head);
@@ -295,9 +305,12 @@ impl Terminal {
 
     pub fn shift_cursor(&mut self, shift: i32) {
         let prev = self.head;
-        Self::shift_in_range(&mut self.head, shift, 
-                             self.prompt.chars().count(),
-                             self.chars.len());
+        Self::shift_in_range(
+            &mut self.head,
+            shift,
+            self.prompt.chars().count(),
+            self.chars.len(),
+        );
 
         if prev == self.head {
             self.cloop();
@@ -318,7 +331,7 @@ impl Terminal {
         }
     }
 
-    pub fn check_terminal_size(&mut self/*, prev_size: &mut (usize, usize)*/) {
+    pub fn check_terminal_size(&mut self /*, prev_size: &mut (usize, usize)*/) {
         //if *prev_size == Terminal::size() {
         if self.size == Terminal::size() {
             return;
@@ -332,20 +345,29 @@ impl Terminal {
         self.prompt_row = std::cmp::max(cur_row, 1) as usize;
     }
 
-    pub fn call_history(&mut self, inc: i32, core: &mut ShellCore){
+    pub fn call_history(&mut self, inc: i32, core: &mut ShellCore) {
         let prev = self.hist_ptr;
         let prev_str = self.get_string(self.prompt.chars().count());
         Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::isize::MAX as usize);
 
         self.chars = self.prompt.chars().collect();
-        self.chars.extend(core.fetch_history(self.hist_ptr, prev, prev_str).replace("↵ \0", "\n").chars());
+        self.chars.extend(
+            core.fetch_history(self.hist_ptr, prev, prev_str)
+                .replace("↵ \0", "\n")
+                .chars(),
+        );
         self.head = self.chars.len();
         self.rewrite(true);
     }
 
     pub fn set_double_tab_completion(&mut self, core: &ShellCore) {
-        let tail = match core.completion.current.o_options.contains(&"nospace".to_string()) {
-            true  => "",
+        let tail = match core
+            .completion
+            .current
+            .o_options
+            .contains(&"nospace".to_string())
+        {
+            true => "",
             false => " ",
         };
 
@@ -360,27 +382,28 @@ impl Terminal {
 
     fn completion_finish_check(&mut self) {
         match self.prev_key {
-            event::Key::Char('\t') 
-                | event::Key::Left | event::Key::Down
-                | event::Key::Right | event::Key::Up => return,
+            event::Key::Char('\t')
+            | event::Key::Left
+            | event::Key::Down
+            | event::Key::Right
+            | event::Key::Up => (),
             _ => {
                 self.tab_num = 0;
                 self.completion_candidate = String::new();
-            },
+            }
         }
     }
 }
 
 fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, InputError> {
-    if core.sigint.load(Relaxed) 
-    || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
+    if core.sigint.load(Relaxed) || core.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
         term.write("\r\n");
         return Err(InputError::Interrupt);
     }
     Ok(true)
 }
 
-pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{
+pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError> {
     let mut term = Terminal::new(core, prompt);
     signal_check(core, &mut term)?;
 
@@ -400,8 +423,8 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
             Ok(false) => term.prev_key = c,
             Err(e) => {
                 core.history.remove(0);
-                return Err(e)
-            },
+                return Err(e);
+            }
         }
 
         term.completion_finish_check();
@@ -416,7 +439,7 @@ pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputErro
 /*TODO: The following version uses async_stdin and enables
  * the shell be interrupted by signals. However, some bugs
  * found around cursor control. Moreover, this implementation
- * causes a SIGTTIN signal after a command runs. 
+ * causes a SIGTTIN signal after a command runs.
  */
 /*
 pub fn read_line(core: &mut ShellCore, prompt: &str) -> Result<String, InputError>{

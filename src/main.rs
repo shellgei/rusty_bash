@@ -1,29 +1,29 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod i18n;
 mod core;
+mod elements;
 mod error;
 mod feeder;
-mod elements;
+mod i18n;
 mod main_c_option;
-mod signal;
 mod proc_ctrl;
+mod signal;
 mod utils;
 
 // Externals crates
-use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
+use std::{env, process};
 
 // Internals crates
-use crate::i18n::FLUENT_BUNDLE;
-use crate::core::{builtins, ShellCore};
 use crate::core::builtins::source;
+use crate::core::{builtins, ShellCore};
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
+use crate::i18n::FLUENT_BUNDLE;
+use builtins::option;
 use error::input::InputError;
 use utils::{arg, exit, file_check};
-use builtins::option;
 
 ///// Main program entry point /////
 
@@ -40,7 +40,7 @@ fn main() {
         return;
     }
 
-    let command = args.get(0).cloned().unwrap_or_else(|| "sush".to_string());
+    let command = args.first().cloned().unwrap_or_else(|| "sush".to_string());
     let script_parts = consume_file_and_subsequents(&mut args);
 
     let mut c_opt = false;
@@ -52,7 +52,7 @@ fn main() {
     }
 
     let mut core = ShellCore::new();
-    
+
     let bundle = match i18n::load_fluent_bundle() {
         Some(b) => b,
         None => {
@@ -60,17 +60,17 @@ fn main() {
             std::process::exit(1);
         }
     };
-    
+
     FLUENT_BUNDLE.with(|cell| {
         cell.set(bundle).ok();
     });
-    
+
     set_o_options(&mut args, &mut core);
     set_short_options(&mut args, &mut core);
 
-    if ! c_opt {
+    if !c_opt {
         set_parameters(script_parts, &mut core, &command);
-    }else{
+    } else {
         main_c_option::set_parameters(&script_parts, &mut core, &args[0]);
         main_c_option::run_and_exit(&args, &script_parts, &mut core);
     }
@@ -154,13 +154,13 @@ fn set_short_options(args: &mut Vec<String>, core: &mut ShellCore) {
 }
 
 fn read_rc_file(core: &mut ShellCore) {
-    if ! core.db.flags.contains("i") {
+    if !core.db.flags.contains("i") {
         return;
     }
 
-    let mut dir = core.db.get_param("CARGO_MANIFEST_DIR").unwrap_or(String::new());
-    if dir == "" {
-        dir = core.db.get_param("HOME").unwrap_or(String::new());
+    let mut dir = core.db.get_param("CARGO_MANIFEST_DIR").unwrap_or_default();
+    if dir.is_empty() {
+        dir = core.db.get_param("HOME").unwrap_or_default();
     }
 
     let rc_file = dir + "/.sushrc";
@@ -172,14 +172,14 @@ fn read_rc_file(core: &mut ShellCore) {
 
 fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str) {
     match script_parts.is_empty() {
-        true  => {
+        true => {
             core.db.position_parameters[0] = vec![command.to_string()];
             core.script_name = "-".to_string();
-        },
+        }
         false => {
             core.db.position_parameters[0] = script_parts;
             core.script_name = core.db.position_parameters[0][0].clone();
-        },
+        }
     }
 }
 
@@ -191,8 +191,11 @@ fn main_loop(core: &mut ShellCore, command: &String) {
 
     if core.script_name != "-" {
         core.db.flags.retain(|f| f != 'i');
-        if let Err(_) = feeder.set_file(&core.script_name) {
-            eprintln!("{}: {}: No such file or directory", command, &core.script_name); 
+        if feeder.set_file(&core.script_name).is_err() {
+            eprintln!(
+                "{}: {}: No such file or directory",
+                command, &core.script_name
+            );
             process::exit(2);
         }
     }
@@ -203,7 +206,7 @@ fn main_loop(core: &mut ShellCore, command: &String) {
 
     loop {
         match feed_script(&mut feeder, core) {
-            (true, false) => {},
+            (true, false) => {}
             (false, true) => break,
             _ => parse_and_exec(&mut feeder, core, true),
         }
@@ -217,7 +220,8 @@ fn main_loop(core: &mut ShellCore, command: &String) {
 }
 
 fn feed_script(feeder: &mut Feeder, core: &mut ShellCore) -> (bool, bool) {
-    if let Err(e) = core.jobtable_check_status() {          //(continue, break)
+    if let Err(e) = core.jobtable_check_status() {
+        //(continue, break)
         e.print(core);
     }
 
@@ -231,14 +235,14 @@ fn feed_script(feeder: &mut Feeder, core: &mut ShellCore) -> (bool, bool) {
             signal::input_interrupt_check(feeder, core);
             signal::check_trap(core);
             (true, false)
-        },
+        }
         _ => (false, true),
     }
 }
 
 fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
     core.sigint.store(false, Relaxed);
-    match Script::parse(feeder, core, false){
+    match Script::parse(feeder, core, false) {
         Ok(Some(mut s)) => {
             if let Err(e) = s.exec(core) {
                 e.print(core);
@@ -246,16 +250,16 @@ fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
             if set_hist {
                 set_history(core, &s.get_text());
             }
-        },
+        }
         Err(e) => {
             e.print(core);
             feeder.consume(feeder.len());
             feeder.nest = vec![("".to_string(), vec![])];
-        },
+        }
         _ => {
             feeder.consume(feeder.len());
             feeder.nest = vec![("".to_string(), vec![])];
-        },
+        }
     }
     core.sigint.store(false, Relaxed);
 }
@@ -266,8 +270,8 @@ fn set_history(core: &mut ShellCore, s: &str) {
     }
 
     core.history[0] = s.trim_end().replace("\n", "↵ \0").to_string();
-    if core.history[0].is_empty()
-    || (core.history.len() > 1 && core.history[0] == core.history[1]) {
+    if core.history[0].is_empty() || (core.history.len() > 1 && core.history[0] == core.history[1])
+    {
         core.history.remove(0);
     }
 }
@@ -300,19 +304,20 @@ fn show_version() {
 }
 
 fn show_help() {
-    eprintln!("Sushi shell (a.k.a. Sush), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n\n{}",
-    i18n::fl("version"),
-    env!("CARGO_PKG_VERSION"),
-    env!("CARGO_BUILD_PROFILE"),
-    i18n::fl("usage"),
-    i18n::fl("options"),
-    i18n::fl("comp-commands"),
-    i18n::fl("builtins"),
-    i18n::fl("parameters"),
-    i18n::fl("shopt"),
-    i18n::fl("variables-born"),
-    i18n::fl("variables-bash"),
-    i18n::fl("text-help")
+    eprintln!(
+        "Sushi shell (a.k.a. Sush), {} {} - {}\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n\n{}",
+        i18n::fl("version"),
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_BUILD_PROFILE"),
+        i18n::fl("usage"),
+        i18n::fl("options"),
+        i18n::fl("comp-commands"),
+        i18n::fl("builtins"),
+        i18n::fl("parameters"),
+        i18n::fl("shopt"),
+        i18n::fl("variables-born"),
+        i18n::fl("variables-bash"),
+        i18n::fl("text-help")
     );
     process::exit(0);
 }
