@@ -138,6 +138,12 @@ impl Word {
         Ok(w.make_glob_string())
     }
 
+    pub fn set_pipe(&mut self, _: &mut ShellCore) {
+        for sw in self.subwords.iter_mut() {
+            sw.set_pipe();
+        }
+    }
+
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
         let mut w = self.clone();
         tilde_expansion::eval(&mut w, core);

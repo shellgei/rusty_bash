@@ -105,6 +105,8 @@ pub trait Subword {
     fn is_extglob(&self) -> bool {false}
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> { vec![] }
     fn set_heredoc_flag(&mut self) {}
+
+    fn set_pipe(&mut self) {}
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
