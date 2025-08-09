@@ -40,10 +40,14 @@ impl Subword for ProcessSubstitution {
         Ok(())
     }
 
-    fn set_pipe(&mut self) {
+    fn set_pipe(&mut self, is_end: bool) {
         if self.direction == '>' {
             self.pipe = Some(Pipe::new(">()".to_string()));
             self.pipe.as_mut().unwrap().set(-1, unistd::getpgrp());
+            if ! is_end {
+                self.pipe.as_mut().unwrap().set_proc_sub_outer_pipe(unistd::getpgrp());
+            }
+
         }
     }
 }

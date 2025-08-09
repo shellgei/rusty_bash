@@ -138,9 +138,9 @@ impl Word {
         Ok(w.make_glob_string())
     }
 
-    pub fn set_pipe(&mut self, _: &mut ShellCore) {
+    pub fn set_pipe(&mut self, is_end: bool) {
         for sw in self.subwords.iter_mut() {
-            sw.set_pipe();
+            sw.set_pipe(is_end);
         }
     }
 

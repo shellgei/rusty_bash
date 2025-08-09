@@ -20,6 +20,9 @@ pub struct Pipe {
     pub lastpipe_backup: RawFd,
     pub proc_sub_recv: RawFd,
     pub proc_sub_send: RawFd,
+    pub proc_sub_outer_recv: RawFd,
+    pub proc_sub_outer_send: RawFd,
+    pub is_end: bool,
 }
 
 impl Pipe {
@@ -34,6 +37,9 @@ impl Pipe {
             lastpipe_backup: -1,
             proc_sub_recv: -1,
             proc_sub_send: -1,
+            proc_sub_outer_recv: -1,
+            proc_sub_outer_send: -1,
+            is_end: false,
         }
     }
 
@@ -42,6 +48,7 @@ impl Pipe {
         p.lastpipe = lastpipe;
         p.prev = prev;
         p.pgid = pgid;
+        p.is_end = true;
         p
     }
 
@@ -66,6 +73,13 @@ impl Pipe {
         } else {
             None
         }
+    }
+
+    pub fn set_proc_sub_outer_pipe(&mut self, pgid: Pid) {
+        let (recv, send) = unistd::pipe().expect("Cannot open pipe");
+        self.proc_sub_outer_recv = recv.into_raw_fd();
+        self.proc_sub_outer_send = send.into_raw_fd();
+        self.pgid = pgid;
     }
 
     pub fn set(&mut self, prev: RawFd, pgid: Pid) {

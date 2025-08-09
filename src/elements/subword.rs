@@ -129,7 +129,7 @@ pub trait Subword {
     }
     fn set_heredoc_flag(&mut self) {}
 
-    fn set_pipe(&mut self) {}
+    fn set_pipe(&mut self, _: bool) {}
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {

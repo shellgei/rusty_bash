@@ -52,7 +52,7 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
         for w in words.iter_mut() {
-            w.set_pipe(core); //for >()
+            w.set_pipe(pipe.is_end); //for >()
             self.set_arg(w, core)?;
         }
 
