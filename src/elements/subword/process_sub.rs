@@ -10,6 +10,7 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 use nix::unistd;
+use std::os::fd::RawFd;
 
 #[derive(Debug, Clone, Default)]
 pub struct ProcessSubstitution {
@@ -40,15 +41,19 @@ impl Subword for ProcessSubstitution {
         Ok(())
     }
 
-    fn set_pipe(&mut self, is_end: bool) {
-        if self.direction == '>' {
-            self.pipe = Some(Pipe::new(">()".to_string()));
-            self.pipe.as_mut().unwrap().set(-1, unistd::getpgrp());
-            if ! is_end {
-                self.pipe.as_mut().unwrap().set_proc_sub_outer_pipe(unistd::getpgrp());
-            }
-
+    fn set_pipe(&mut self, is_end: bool) -> Option<RawFd> {
+        if self.direction == '<' {
+            return None;
         }
+
+        self.pipe = Some(Pipe::new(">()".to_string()));
+        let pipe = self.pipe.as_mut().unwrap();
+        pipe.set(-1, unistd::getpgrp());
+        if ! is_end {
+            pipe.set_proc_sub_outer_pipe(unistd::getpgrp());
+            return Some(pipe.proc_sub_outer_recv);
+        }
+        return None;
     }
 }
 

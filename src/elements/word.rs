@@ -12,6 +12,7 @@ use crate::elements::subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{utils, Feeder, ShellCore};
+use std::os::fd::RawFd;
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
@@ -138,10 +139,12 @@ impl Word {
         Ok(w.make_glob_string())
     }
 
-    pub fn set_pipe(&mut self, is_end: bool) {
-        for sw in self.subwords.iter_mut() {
-            sw.set_pipe(is_end);
-        }
+    pub fn set_pipe(&mut self, is_end: bool) -> Vec<RawFd> {
+        self.subwords
+            .iter_mut()
+            .map(|sw| sw.set_pipe(is_end))
+            .flatten()
+            .collect()
     }
 
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {

@@ -15,6 +15,7 @@ pub struct Pipe {
     pub recv: RawFd,
     pub send: RawFd,
     pub prev: RawFd,
+    pub aux_prevs: Vec<RawFd>,
     pub pgid: Pid,
     pub lastpipe: bool,
     pub lastpipe_backup: RawFd,
@@ -40,6 +41,7 @@ impl Pipe {
             proc_sub_outer_recv: -1,
             proc_sub_outer_send: -1,
             is_end: false,
+            aux_prevs: vec![],
         }
     }
 
@@ -75,11 +77,13 @@ impl Pipe {
         }
     }
 
-    pub fn set_proc_sub_outer_pipe(&mut self, pgid: Pid) {
+    pub fn set_proc_sub_outer_pipe(&mut self, pgid: Pid) -> RawFd {
         let (recv, send) = unistd::pipe().expect("Cannot open pipe");
         self.proc_sub_outer_recv = recv.into_raw_fd();
         self.proc_sub_outer_send = send.into_raw_fd();
         self.pgid = pgid;
+
+        self.proc_sub_outer_recv
     }
 
     pub fn set(&mut self, prev: RawFd, pgid: Pid) {
@@ -103,11 +107,17 @@ impl Pipe {
     pub fn connect(&mut self) -> Result<(), ExecError> {
         if self.text == ">()" {
             io::replace(self.proc_sub_send, 0);
+            io::close(self.proc_sub_outer_recv, "Cannot close in-pipe");
+            io::replace(self.proc_sub_outer_send, 1);
         }
 
         io::close(self.recv, "Cannot close in-pipe");
         io::replace(self.send, 1);
         io::replace(self.prev, 0);
+
+        for fd in &self.aux_prevs {
+            io::replace(*fd, 0);
+        }
 
         if self.text == "|&" {
             io::share(1, 2)?;
@@ -118,6 +128,11 @@ impl Pipe {
     pub fn parent_close(&mut self) {
         io::close(self.send, "Cannot close parent pipe out");
         io::close(self.prev, "Cannot close parent prev pipe out");
+
+        io::close(self.proc_sub_outer_send, "Cannot close parent pipe out");
+        for fd in &self.aux_prevs {
+            io::close(*fd, "");
+        }
     }
 
     pub fn is_connected(&self) -> bool {

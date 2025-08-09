@@ -40,6 +40,7 @@ use self::single_quoted::SingleQuoted;
 use self::varname::VarName;
 use std::fmt;
 use std::fmt::Debug;
+use std::os::fd::RawFd;
 
 impl Debug for dyn Subword {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -129,7 +130,7 @@ pub trait Subword {
     }
     fn set_heredoc_flag(&mut self) {}
 
-    fn set_pipe(&mut self, _: bool) {}
+    fn set_pipe(&mut self, _: bool) -> Option<RawFd> {None}
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {

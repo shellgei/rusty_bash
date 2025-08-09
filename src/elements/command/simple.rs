@@ -16,6 +16,7 @@ use crate::error::exec::ExecError;
 use crate::utils::exit;
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
+use std::os::fd::RawFd;
 
 #[derive(Debug, Clone)]
 enum SubsArgType {
@@ -37,6 +38,7 @@ pub struct SimpleCommand {
     continue_alias_check: bool,
     invalid_alias: bool,
     command_path: String,
+    aux_fds: Vec<RawFd>,
 }
 
 impl Command for SimpleCommand {
@@ -51,8 +53,9 @@ impl Command for SimpleCommand {
 
         self.args.clear();
         let mut words = self.words.to_vec();
+        self.aux_fds.clear();
         for w in words.iter_mut() {
-            w.set_pipe(pipe.is_end); //for >()
+            self.aux_fds.append(&mut w.set_pipe(pipe.is_end)); //for >()
             self.set_arg(w, core)?;
         }
 
@@ -99,6 +102,10 @@ impl Command for SimpleCommand {
     }
     fn force_fork(&self) -> bool {
         self.force_fork
+    }
+
+    fn get_prev_fds(&self) -> Vec<RawFd> {
+        self.aux_fds.clone()
     }
 }
 

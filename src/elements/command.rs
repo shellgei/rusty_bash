@@ -34,6 +34,7 @@ use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
 use std::fmt;
 use std::fmt::Debug;
+use std::os::fd::RawFd;
 
 impl Debug for dyn Command {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -143,6 +144,8 @@ pub trait Command {
         }
         println!("{}", &self.get_text());
     }
+
+    fn get_prev_fds(&self) -> Vec<RawFd> { vec![] }
 }
 
 pub fn eat_inner_script(

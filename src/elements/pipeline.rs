@@ -34,6 +34,7 @@ impl Pipeline {
         }
 
         let mut prev = -1;
+        let mut prevs = vec![];
         let mut pids = vec![];
         let mut pgid = pgid;
 
@@ -41,6 +42,7 @@ impl Pipeline {
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
+            p.aux_prevs = prevs;
 
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
@@ -52,10 +54,12 @@ impl Pipeline {
                 pgid = pids[0].unwrap();
             }
             prev = p.recv;
+            prevs = self.commands[i].get_prev_fds();
         }
 
         let lastpipe = (!core.db.flags.contains('m')) && core.shopts.query("lastpipe");
         let mut lastp = Pipe::end(prev, pgid, lastpipe);
+        lastp.aux_prevs = prevs;
         let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
         if lastpipe {
             lastp.restore_lastpipe();
