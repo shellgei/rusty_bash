@@ -12,8 +12,9 @@ pub fn history_c(core: &mut ShellCore) -> i32 {
     0
 }
 
-pub fn history(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut args = arg::dissolve_options(args);
+pub fn history(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
+    let mut args = arg::dissolve_options(&args);
     if arg::consume_option("-c", &mut args) {
         return history_c(core);
     }

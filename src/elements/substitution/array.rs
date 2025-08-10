@@ -72,10 +72,7 @@ impl Array {
         ans: &mut Self,
     ) -> Result<Option<Subscript>, ParseError> {
         if let Some(s) = Subscript::parse(feeder, core)? {
-            if feeder.starts_with("=") {
-                ans.text += &s.text.clone();
-                return Ok(Some(s));
-            } else if feeder.starts_with("+=") {
+            if feeder.starts_with("=") || feeder.starts_with("+=") {
                 ans.text += &s.text.clone();
                 return Ok(Some(s));
             } else {
@@ -90,8 +87,10 @@ impl Array {
             return Ok(None);
         }
 
-        let mut ans = Self::default();
-        ans.text = feeder.consume(1);
+        let mut ans = Self {
+            text: feeder.consume(1),
+            ..Default::default()
+        };
         let mut paren_counter = 1;
         loop {
             let mut append = false;

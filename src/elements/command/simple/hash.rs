@@ -23,7 +23,7 @@ pub fn get_and_regist(com: &mut SimpleCommand, core: &mut ShellCore) -> Result<S
     Ok(path)
 }
 
-fn resolve_path(arg: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+fn resolve_path(arg: &str, core: &mut ShellCore) -> Result<String, ExecError> {
     let path = utils::get_command_path(arg, core);
     if path.is_empty() {
         return Ok(path);
@@ -39,7 +39,7 @@ fn resolve_path(arg: &String, core: &mut ShellCore) -> Result<String, ExecError>
     Ok(path)
 }
 
-fn count_up(arg: &String, core: &mut ShellCore) {
+fn count_up(arg: &str, core: &mut ShellCore) {
     match core.db.hash_counter.get_mut(arg) {
         Some(v) => *v += 1,
         None => {

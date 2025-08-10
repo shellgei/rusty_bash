@@ -14,9 +14,7 @@ pub struct ArrayData {
 
 impl From<HashMap<usize, String>> for ArrayData {
     fn from(h: HashMap<usize, String>) -> Self {
-        let mut ans = Self::default();
-        ans.body = h;
-        ans
+        Self { body: h }
     }
 }
 
@@ -74,13 +72,13 @@ impl Data for ArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let n = self.to_index(key)?;
+        let n = self.index_of(key)?;
         self.body.insert(n, value.to_string());
         Ok(())
     }
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let n = self.to_index(key)?;
+        let n = self.index_of(key)?;
         if let Some(v) = self.body.get(&n) {
             self.body.insert(n, v.to_owned() + value);
         } else {
@@ -97,7 +95,7 @@ impl Data for ArrayData {
             return Ok(self.values().join(ifs));
         }
 
-        let n = self.to_index(key)?;
+        let n = self.index_of(key)?;
         Ok(self.body.get(&n).unwrap_or(&"".to_string()).clone())
     }
 
@@ -144,7 +142,7 @@ impl Data for ArrayData {
         if key == "@" || key == "*" {
             return Ok(true);
         }
-        let n = self.to_index(key)?;
+        let n = self.index_of(key)?;
         Ok(self.body.contains_key(&n))
     }
 
@@ -160,7 +158,7 @@ impl Data for ArrayData {
             return Ok(self.len());
         }
 
-        let n = self.to_index(key)?;
+        let n = self.index_of(key)?;
         let s = self.body.get(&n).unwrap_or(&"".to_string()).clone();
 
         Ok(s.chars().count())
@@ -172,7 +170,7 @@ impl Data for ArrayData {
             return Ok(());
         }
 
-        let index = self.to_index(key)?;
+        let index = self.index_of(key)?;
         self.body.remove(&index);
         Ok(())
     }
@@ -264,7 +262,7 @@ impl ArrayData {
         keys
     }
 
-    fn to_index(&mut self, key: &str) -> Result<usize, ExecError> {
+    fn index_of(&mut self, key: &str) -> Result<usize, ExecError> {
         let mut index = match key.parse::<isize>() {
             Ok(i) => i,
             _ => return Err(ExecError::ArrayIndexInvalid(key.to_string())),

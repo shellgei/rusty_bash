@@ -22,7 +22,7 @@ impl OptionalOperation for Substr {
     fn exec(
         &mut self,
         _: &Variable,
-        text: &String,
+        text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
         self.get(text, core)
@@ -160,7 +160,7 @@ impl Substr {
         Ok(())
     }
 
-    pub fn get(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn get(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let offset = self.offset.as_mut().unwrap();
 
         if offset.text.is_empty() {
@@ -168,7 +168,7 @@ impl Substr {
             return Err(ExecError::ArithError("".to_string(), err));
         }
 
-        let mut ans;
+        let mut ans: String;
         let mut n = offset.eval_as_int(core)?;
         let len = text.chars().count();
 
@@ -193,7 +193,7 @@ impl Substr {
         Ok(ans)
     }
 
-    fn length(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn length(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let n = self.length.as_mut().unwrap().eval_as_int(core)?;
         Ok(text
             .chars()

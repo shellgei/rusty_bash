@@ -37,8 +37,8 @@ pub struct Word {
     pub mode: Option<WordMode>,
 }
 
-impl From<&String> for Word {
-    fn from(s: &String) -> Self {
+impl From<&str> for Word {
+    fn from(s: &str) -> Self {
         Self {
             text: s.to_string(),
             subwords: vec![From::from(s)],
@@ -96,7 +96,7 @@ impl Word {
     pub fn eval_as_assoc_index(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let w = self.tilde_and_dollar_expansion(core)?;
         let joint = core.db.get_ifs_head();
-        Ok(Self::make_args(&mut vec![w]).join(&joint))
+        Ok(Self::make_args(&mut [w]).join(&joint))
     }
 
     pub fn eval_as_integer(&self, core: &mut ShellCore) -> Result<String, ExecError> {
@@ -178,7 +178,7 @@ impl Word {
         path_expansion::eval(&mut self.clone(), &core.shopts)
     }
 
-    fn make_args(words: &mut Vec<Word>) -> Vec<String> {
+    fn make_args(words: &mut [Word]) -> Vec<String> {
         words
             .iter_mut()
             .filter_map(|w| w.make_unquoted_word())
@@ -236,9 +236,9 @@ impl Word {
             .collect()
     }
 
-    fn push(&mut self, subword: &Box<dyn Subword>) {
+    fn push(&mut self, subword: Box<dyn Subword>) {
         self.text += subword.get_text();
-        self.subwords.push(subword.clone());
+        self.subwords.push(subword);
     }
 
     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
@@ -253,7 +253,7 @@ impl Word {
                 }
             }
             Some(WordMode::ParamOption(ref v)) => {
-                if feeder.starts_withs2(v) {
+                if feeder.starts_withs(v) {
                     return false;
                 }
             }
@@ -274,7 +274,7 @@ impl Word {
                 }
             }
             Some(WordMode::ParamOption(ref v)) => {
-                if feeder.starts_withs2(v) {
+                if feeder.starts_withs(v) {
                     return false;
                 }
             }
@@ -300,7 +300,7 @@ impl Word {
 
         while let Some(sw) = subword::parse(feeder, core, &mode)? {
             match sw.is_extglob() {
-                false => ans.push(&sw),
+                false => ans.push(sw),
                 true => {
                     ans.text += sw.get_text();
                     ans.subwords.append(&mut sw.get_child_subwords());

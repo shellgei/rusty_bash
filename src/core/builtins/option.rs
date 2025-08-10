@@ -37,7 +37,7 @@ pub fn set_positions_c(core: &mut ShellCore, args: &[String]) -> Result<(), Exec
     Ok(())
 }
 
-fn check_invalid_options(args: &mut Vec<String>) -> Result<(), ExecError> {
+fn check_invalid_options(args: &[String]) -> Result<(), ExecError> {
     for a in args {
         if a.starts_with("-") {
             return Err(ExecError::InvalidOption(
@@ -88,7 +88,7 @@ pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
     }
 }
 
-pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
     if core.db.flags.contains('r') && arg::consume_option("+r", &mut args) {
@@ -154,14 +154,15 @@ pub fn set(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    if let Err(e) = check_invalid_options(&mut args) {
+    if let Err(e) = check_invalid_options(&args) {
         e.print(core);
         return 2;
     }
     0
 }
 
-pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn shift(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if args.len() == 1 {
         let mut last = core.db.position_parameters.pop().unwrap();
         if last.len() > 1 {
@@ -202,7 +203,7 @@ pub fn shift(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     1
 }
 
-pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i32 {
+pub fn shopt_print(core: &mut ShellCore, args: &[String], all: bool) -> i32 {
     if all {
         core.shopts.print_all(true);
         return 0;
@@ -222,7 +223,7 @@ pub fn shopt_print(core: &mut ShellCore, args: &mut Vec<String>, all: bool) -> i
     }
 }
 
-pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn shopt(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     let print = arg::consume_option("-p", &mut args);
     let o_opt = arg::consume_option("-o", &mut args);
@@ -242,7 +243,7 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         // "shopt" or "shopt option"
         if !q_opt {
             let len = args.len();
-            return shopt_print(core, &mut args, len < 2);
+            return shopt_print(core, &args, len < 2);
         }
         return 0;
     }
@@ -258,7 +259,7 @@ pub fn shopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         let mut args_for_set = vec!["set".to_string(), opt];
         args_for_set.append(&mut args[2..].to_vec());
 
-        return set(core, &mut args_for_set);
+        return set(core, &args_for_set);
     }
 
     match args[1].as_str() {

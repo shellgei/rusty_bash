@@ -16,7 +16,7 @@ impl OptionalOperation for Remove {
     fn exec(
         &mut self,
         _: &Variable,
-        text: &String,
+        text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
         self.set(text, core)
@@ -38,8 +38,8 @@ impl OptionalOperation for Remove {
             _ => core.db.get_vec(&param.name, true)?,
         };
 
-        for i in 0..array.len() {
-            array[i] = self.set(&array[i], core)?;
+        for item in array.iter_mut() {
+            *item = self.set(item, core)?;
         }
 
         *text = array.join(" ");
@@ -59,8 +59,8 @@ pub struct Remove {
 }
 
 impl Remove {
-    pub fn set(&mut self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
-        let mut text = text.clone();
+    pub fn set(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
+        let mut text = text.to_string();
         let pattern = self
             .remove_pattern
             .as_mut()
@@ -86,7 +86,7 @@ impl Remove {
         Ok(text)
     }
 
-    pub fn percent(&self, text: &mut String, pattern: &String, extglob: bool) {
+    pub fn percent(&self, text: &mut String, pattern: &str, extglob: bool) {
         let mut length = text.len();
         let mut ans_length = length;
 
@@ -111,9 +111,10 @@ impl Remove {
             return Ok(None);
         }
 
-        let mut ans = Remove::default();
-
-        ans.remove_symbol = feeder.consume(len);
+        let mut ans = Remove {
+            remove_symbol: feeder.consume(len),
+            ..Default::default()
+        };
         ans.text += &ans.remove_symbol.clone();
 
         if let Some(w) = Word::parse(

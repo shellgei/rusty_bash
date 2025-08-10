@@ -3,7 +3,7 @@
 
 use crate::ShellCore;
 
-pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn alias(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() == 1 {
         for k in &core.db.get_indexes_all("BASH_ALIASES") {
             let v = core.db.get_elem("BASH_ALIASES", k).unwrap();
@@ -13,22 +13,22 @@ pub fn alias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if args.len() == 2 && args[1].contains("=") {
-        let kv: Vec<String> = args[1].split("=").map(|t| t.to_string()).collect();
+        let kv: Vec<String> = args[1].split('=').map(|t| t.to_string()).collect();
         //core.aliases.insert(kv[0].clone(), kv[1..].join("="));
         let _ = core
             .db
-            .set_assoc_elem("BASH_ALIASES", &kv[0].clone(), &kv[1..].join("="), None);
+            .set_assoc_elem("BASH_ALIASES", &kv[0], &kv[1..].join("="), None);
     }
 
     0
 }
 
-pub fn unalias(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn unalias(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
         println!("unalias: usage: unalias [-a] name [name ...]");
     }
 
-    if args.contains(&"-a".to_string()) {
+    if args.iter().any(|s| s == "-a") {
         core.db.unset("BASH_ALIASES");
         let _ = core.db.set_assoc("BASH_ALIASES", None, true);
         return 0;

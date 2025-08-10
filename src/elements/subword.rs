@@ -166,7 +166,7 @@ pub fn parse_special_subword(
     match mode {
         None => Ok(None),
         Some(WordMode::ParamOption(ref v)) => {
-            if feeder.is_empty() || feeder.starts_withs2(v) {
+            if feeder.is_empty() || feeder.starts_withs(v) {
                 return Ok(None);
             }
 

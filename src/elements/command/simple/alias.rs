@@ -20,7 +20,7 @@ pub fn set(
     }
 
     com.continue_alias_check = w.ends_with(" ");
-    let mut feeder_local = Feeder::new(&mut w);
+    let mut feeder_local = Feeder::new(&w);
 
     while SimpleCommand::eat_substitution(&mut feeder_local, com, core)? {
         command::eat_blank_with_comment(&mut feeder_local, core, &mut com.text);

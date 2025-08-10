@@ -11,7 +11,7 @@ impl DataBase {
     pub fn get_ref(&mut self, name: &str) -> Option<&mut Box<dyn Data>> {
         let num = self.params.len();
         for layer in (0..num).rev() {
-            if self.params[layer].get_mut(name).is_some() {
+            if self.params[layer].contains_key(name) {
                 return self.params[layer].get_mut(name);
             }
         }
@@ -49,7 +49,7 @@ impl DataBase {
         let num = self.params.len();
         (0..num)
             .rev()
-            .find(|&layer| self.params[layer].get(name).is_some())
+            .find(|&layer| self.params[layer].contains_key(name))
     }
 
     pub fn get_position_params(&self) -> Vec<String> {
@@ -66,10 +66,7 @@ impl DataBase {
         }
 
         match self.get_ref(name) {
-            Some(d) => match d.get_all_indexes_as_array() {
-                Ok(v) => v,
-                _ => vec![],
-            },
+            Some(d) => d.get_all_indexes_as_array().unwrap_or_default(),
             None => vec![],
         }
     }
@@ -138,7 +135,7 @@ impl DataBase {
             .get_as_array_or_assoc(pos, &ifs)
     }
 
-    pub fn get_elem_or_param(&mut self, name: &str, index: &String) -> Result<String, ExecError> {
+    pub fn get_elem_or_param(&mut self, name: &str, index: &str) -> Result<String, ExecError> {
         match index.is_empty() {
             true => self.get_param(name),
             false => self.get_elem(name, index),

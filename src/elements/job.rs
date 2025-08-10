@@ -57,8 +57,8 @@ impl Job {
 
                 Self::check_stop(core, &pipeline.get_one_line_text(), &pids, &waitstatuses);
 
-                if err.is_some() {
-                    return Err(err.unwrap());
+                if let Some(e) = err {
+                    return Err(e);
                 }
             }
 
@@ -72,8 +72,8 @@ impl Job {
     fn check_stop(
         core: &mut ShellCore,
         text: &str,
-        pids: &Vec<Option<Pid>>,
-        waitstatuses: &Vec<WaitStatus>,
+        pids: &[Option<Pid>],
+        waitstatuses: &[WaitStatus],
     ) {
         if core.is_subshell || pids.is_empty() || pids[0].is_none() {
             return;

@@ -183,20 +183,18 @@ impl Feeder {
         self.remaining = to.to_string() + &self.remaining;
     }
 
-    pub fn starts_withs(&self, vs: &[&str]) -> bool {
-        vs.iter().any(|s| self.remaining.starts_with(s))
-    }
-
-    pub fn starts_withs2(&self, vs: &Vec<String>) -> bool {
-        vs.iter().any(|s| self.remaining.starts_with(s))
-    }
-
     pub fn starts_with(&self, s: &str) -> bool {
         self.remaining.starts_with(s)
     }
+
+    pub fn starts_withs<T: AsRef<str>>(&self, vs: &[T]) -> bool {
+        vs.iter().any(|s| self.remaining.starts_with(s.as_ref()))
+    }
+
     pub fn len(&self) -> usize {
         self.remaining.len()
     }
+
     pub fn is_empty(&self) -> bool {
         self.remaining.is_empty()
     }

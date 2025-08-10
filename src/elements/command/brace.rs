@@ -56,8 +56,10 @@ impl Command for BraceCommand {
 
 impl BraceCommand {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            ..Default::default()
+        };
         if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.script, false)? {
             ans.text.push('{');
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());

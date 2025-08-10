@@ -171,8 +171,8 @@ impl AssocData {
     pub fn append_elem(
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,
-        key: &String,
-        val: &String,
+        key: &str,
+        val: &str,
     ) -> Result<(), ExecError> {
         match db_layer.get_mut(name) {
             Some(v) => v.append_to_assoc_elem(key, val),

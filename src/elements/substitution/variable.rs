@@ -62,7 +62,7 @@ impl Variable {
         sub == "[*]" || sub == "[@]"
     }
 
-    pub fn set_value(&mut self, value: &String, core: &mut ShellCore) -> Result<(), ExecError> {
+    pub fn set_value(&mut self, value: &str, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.index.is_none() {
             return core.db.set_param(&self.name, value, None);
         }
@@ -78,7 +78,7 @@ impl Variable {
                 if !f.is_empty() {
                     return Err(ExecError::InvalidName(arg.to_string()));
                 }
-                v.set_value(&value.to_string(), core)
+                v.set_value(value, core)
             }
             None => Err(ExecError::InvalidName(arg.to_string())),
         }
@@ -92,16 +92,18 @@ impl Variable {
     ) -> Result<(), ExecError> {
         let mut prev = vec![];
 
-        if (layer.is_none() && core.db.exist(&self.name))
-            || core.db.params[layer.unwrap()].get(&self.name).is_some()
-        {
+        let exists_in_layer = if let Some(l) = layer {
+            core.db.params[l].contains_key(&self.name)
+        } else {
+            false
+        };
+        if (layer.is_none() && core.db.exist(&self.name)) || exists_in_layer {
             prev = vec![core.db.get_param(&self.name)?];
         }
 
         let i_opt = arg::consume_option("-i", args);
-        if arg::consume_option("-a", args)
-            || (!args.contains(&"-A".to_string()) && self.index.is_some())
-        {
+        let a_opt = arg::consume_option("-a", args);
+        if a_opt || (!arg::has_option("-A", args) && self.index.is_some()) {
             if prev.is_empty() {
                 //TODO: ^ Maybe, there is a case where an assoc must be
                 //prepared.
@@ -121,8 +123,7 @@ impl Variable {
                 false => core.db.set_assoc(&self.name, layer, false)?,
             }
             if !prev.is_empty() {
-                core.db
-                    .set_assoc_elem(&self.name, &"0".to_string(), &prev[0], layer)?;
+                core.db.set_assoc_elem(&self.name, "0", &prev[0], layer)?;
             }
             return Ok(());
         }
@@ -164,8 +165,10 @@ impl Variable {
             return Ok(None);
         }
 
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            ..Default::default()
+        };
 
         let name = feeder.consume(len);
         ans.name = name.clone();

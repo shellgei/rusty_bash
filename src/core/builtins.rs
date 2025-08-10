@@ -120,7 +120,8 @@ impl ShellCore {
     }
 }
 
-pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn eval(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut args = args.to_owned();
     args.remove(0);
     if !args.is_empty() && args[0] == "--" {
         args.remove(0);
@@ -157,7 +158,7 @@ pub fn eval(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     core.db.exit_status
 }
 
-pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn exit(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.db.flags.contains('i') {
         eprintln!("exit");
     }
@@ -170,25 +171,25 @@ pub fn exit(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     exit::normal(core)
 }
 
-pub fn false_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+pub fn false_(_: &mut ShellCore, _: &[String]) -> i32 {
     1
 }
 
-pub fn true_(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+pub fn true_(_: &mut ShellCore, _: &[String]) -> i32 {
     0
 }
 
-pub fn bind(_: &mut ShellCore, _: &mut Vec<String>) -> i32 {
+pub fn bind(_: &mut ShellCore, _: &[String]) -> i32 {
     0
 }
 
-pub fn debug(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn debug(core: &mut ShellCore, args: &[String]) -> i32 {
     dbg!("{:?}", &args);
     dbg!("{:?}", &core.db.get_param("depth"));
     0
 }
 
-pub fn let_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn let_(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut last_result = 0;
     core.valid_assoc_expand_once = true;
 

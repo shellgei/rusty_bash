@@ -40,7 +40,7 @@ impl Data for IntArrayData {
         if key == "@" || key == "*" {
             return Ok(true);
         }
-        let n = self.to_index(key)?;
+        let n = self.index_of(key)?;
         Ok(self.body.contains_key(&n))
     }
 
@@ -65,7 +65,7 @@ impl Data for IntArrayData {
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let key = self.to_index(key)?;
+        let key = self.index_of(key)?;
         let n = super::to_int(value)?;
         self.body.insert(key, n);
         Ok(())
@@ -86,7 +86,7 @@ impl Data for IntArrayData {
     }*/
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        let key = self.to_index(key)?;
+        let key = self.index_of(key)?;
         let n = super::to_int(value)?;
 
         if let Some(prev) = self.body.get(&key) {
@@ -262,7 +262,7 @@ impl IntArrayData {
         keys
     }
 
-    fn to_index(&mut self, key: &str) -> Result<usize, ExecError> {
+    fn index_of(&mut self, key: &str) -> Result<usize, ExecError> {
         let mut index = match key.parse::<isize>() {
             Ok(i) => i,
             _ => return Err(ExecError::ArrayIndexInvalid(key.to_string())),

@@ -82,7 +82,7 @@ pub fn read_(
 
 pub fn read_a(
     core: &mut ShellCore,
-    name: &String,
+    name: &str,
     ignore_escape: bool,
     limit: &mut usize,
     delim: &String,
@@ -126,14 +126,14 @@ pub fn read_a(
     0
 }
 
-pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.is_empty() {
         return 0;
     }
 
     let mut args = arg::dissolve_options(args);
     let r_opt = arg::consume_option("-r", &mut args);
-    let mut limit = std::usize::MAX;
+    let mut limit = usize::MAX;
     let limit_str = arg::consume_with_next_arg("-n", &mut args);
     let delim = match arg::consume_with_next_arg("-d", &mut args) {
         Some(c) => c,
@@ -159,7 +159,7 @@ pub fn read(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 pub fn eat_word(
-    core: &mut ShellCore,
+    _core: &mut ShellCore,
     remaining: &mut String,
     ifs: &str,
     ignore_escape: bool,
@@ -193,7 +193,7 @@ pub fn eat_word(
             let line = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
             if !line.is_empty() {
                 *remaining += &line;
-                return eat_word(core, remaining, ifs, ignore_escape, delim);
+                return eat_word(_core, remaining, ifs, ignore_escape, delim);
             }
         }
     }

@@ -87,22 +87,21 @@ fn main() {
 ///// Parses arguments and sets up shell options, parameters, and config. /////
 
 fn consume_file_and_subsequents(args: &mut Vec<String>) -> Vec<String> {
-    let len = args.len();
     let mut skip = false;
     let mut pos = None;
 
-    for i in 1..len {
+    for (i, a) in args.iter().enumerate().skip(1) {
         if skip {
             skip = false;
             continue;
         }
 
-        if args[i].starts_with("-o") || args[i].starts_with("+o") {
+        if a.starts_with("-o") || a.starts_with("+o") {
             skip = true;
             continue;
         }
 
-        if args[i].starts_with("-") || args[i].starts_with("+") {
+        if a.starts_with('-') || a.starts_with('+') {
             continue;
         }
 
@@ -166,7 +165,7 @@ fn read_rc_file(core: &mut ShellCore) {
     let rc_file = dir + "/.sushrc";
 
     if file_check::is_regular_file(&rc_file) {
-        core.db.exit_status = source::source(core, &mut vec![".".to_string(), rc_file]);
+        core.db.exit_status = source::source(core, &[".".to_string(), rc_file]);
     }
 }
 
@@ -185,7 +184,7 @@ fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str
 
 ///// Core shell flow: input, parsing, execution, and history. /////
 
-fn main_loop(core: &mut ShellCore, command: &String) {
+fn main_loop(core: &mut ShellCore, command: &str) {
     let mut feeder = Feeder::new("");
     feeder.main_feeder = true;
 

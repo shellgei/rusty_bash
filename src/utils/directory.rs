@@ -81,10 +81,10 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
         .collect();
 
     if !shopts.query("globskipdots") {
-        if glob::compare(&"..".to_string(), &pat) {
+        if glob::compare("..", &pat) {
             ans.push(make_path(".."));
         }
-        if glob::compare(&".".to_string(), &pat) {
+        if glob::compare(".", &pat) {
             ans.push(make_path("."));
         }
     }

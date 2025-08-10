@@ -274,8 +274,8 @@ impl BracedParam {
         if arr.len() <= 1 || self.has_value_check() {
             self.text = self.optional_operation(self.text.clone(), core)?;
         } else {
-            for i in 0..arr.len() {
-                arr[i] = self.optional_operation(arr[i].clone(), core)?;
+            for item in arr.iter_mut() {
+                *item = self.optional_operation(item.clone(), core)?;
             }
             self.text = arr.join(ifs);
             self.array = Some(arr);

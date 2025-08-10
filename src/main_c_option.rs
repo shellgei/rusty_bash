@@ -10,7 +10,7 @@ use crate::utils::exit;
 use builtins::option;
 use std::process;
 
-pub fn set_parameters(c_parts: &Vec<String>, core: &mut ShellCore, command: &str) {
+pub fn set_parameters(c_parts: &[String], core: &mut ShellCore, command: &str) {
     let parameters = if c_parts.len() > 1 {
         c_parts[1..].to_vec()
     } else {
@@ -24,7 +24,7 @@ pub fn set_parameters(c_parts: &Vec<String>, core: &mut ShellCore, command: &str
     }
 }
 
-pub fn run_and_exit(args: &Vec<String>, c_parts: &Vec<String>, core: &mut ShellCore) {
+pub fn run_and_exit(args: &[String], c_parts: &[String], core: &mut ShellCore) {
     core.configure_c_mode();
 
     if c_parts.is_empty() {

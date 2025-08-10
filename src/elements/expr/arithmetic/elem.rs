@@ -12,6 +12,7 @@ use crate::elements::substitution::subscript::Subscript;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::{utils, ShellCore};
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub enum ArithElem {
@@ -60,65 +61,72 @@ impl ArithElem {
             _ => 1,
         }
     }
+}
 
-    pub fn to_string(&self) -> String {
+impl fmt::Display for ArithElem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ArithElem::Space(s) => s.to_string(),
-            ArithElem::Symbol(s) => s.to_string(),
-            ArithElem::InParen(a) => a.text.to_string(),
-            ArithElem::Integer(n) => n.to_string(),
-            ArithElem::Float(f) => {
-                let mut ans = f.to_string();
-                if !ans.contains('.') {
-                    ans += ".0";
+            ArithElem::Space(s) | ArithElem::Symbol(s) => write!(f, "{s}"),
+            ArithElem::InParen(a) => write!(f, "{}", a.text),
+            ArithElem::Integer(n) => write!(f, "{n}"),
+            ArithElem::Float(val) => {
+                let mut s = val.to_string();
+                if !s.contains('.') {
+                    s.push_str(".0");
                 }
-                ans
+                write!(f, "{s}")
             }
             ArithElem::Word(w, inc) => match inc {
-                1 => w.text.clone() + "++",
-                -1 => w.text.clone() + "--",
-                _ => w.text.clone(),
+                1 => write!(f, "{}++", w.text),
+                -1 => write!(f, "{}--", w.text),
+                _ => write!(f, "{}", w.text),
             },
             ArithElem::Variable(w, sub, inc) => {
-                let mut ans = w.clone();
                 if let Some(s) = sub {
-                    ans += &s.text.clone();
+                    match inc {
+                        1 => write!(f, "{}{}++", w, s.text),
+                        -1 => write!(f, "{}{}--", w, s.text),
+                        _ => write!(f, "{}{}", w, s.text),
+                    }
+                } else {
+                    match inc {
+                        1 => write!(f, "{w}++"),
+                        -1 => write!(f, "{w}--"),
+                        _ => write!(f, "{w}"),
+                    }
                 }
-                match inc {
-                    1 => ans += "++",
-                    -1 => ans += "--",
-                    _ => {}
-                }
-                ans
             }
             ArithElem::Ternary(left, right) => {
-                let mut ans = "?".to_string();
+                let mut s = String::from("?");
                 if let Some(e) = *left.clone() {
-                    ans += &e.text.clone();
+                    s += &e.text;
                 }
-                ans += ":";
+                s.push(':');
                 if let Some(e) = *right.clone() {
-                    ans += &e.text.clone();
+                    s += &e.text;
                 }
-                ans
+                write!(f, "{s}")
             }
-            ArithElem::UnaryOp(s) => s.clone(),
-            ArithElem::BinaryOp(s) => s.clone(),
-            ArithElem::Increment(1) => "++".to_string(),
-            ArithElem::Increment(-1) => "--".to_string(),
-            ArithElem::ArrayElem(name, subs, inc) => {
-                let mut arr = name.clone() + &subs.text;
-                match inc {
-                    1 => arr += "++",
-                    -1 => arr += "--",
-                    _ => {}
+            ArithElem::UnaryOp(s) | ArithElem::BinaryOp(s) => write!(f, "{s}"),
+            ArithElem::Increment(n) => {
+                if *n > 0 {
+                    write!(f, "++")
+                } else if *n < 0 {
+                    write!(f, "--")
+                } else {
+                    write!(f, "")
                 }
-                arr
             }
-            _ => "".to_string(),
+            ArithElem::ArrayElem(name, subs, inc) => match inc {
+                1 => write!(f, "{}{}++", name, subs.text),
+                -1 => write!(f, "{}{}--", name, subs.text),
+                _ => write!(f, "{}{}", name, subs.text),
+            },
         }
     }
+}
 
+impl ArithElem {
     pub fn change_to_value(&mut self, add: i128, core: &mut ShellCore) -> Result<(), ExecError> {
         *self = match self {
             ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
@@ -143,14 +151,14 @@ impl ArithElem {
     }
 
     pub fn is_operand(&self) -> bool {
-        match &self {
+        matches!(
+            self,
             ArithElem::Float(_)
-            | ArithElem::Integer(_)
-            | ArithElem::ArrayElem(_, _, _)
-            | ArithElem::Word(_, _)
-            | ArithElem::Variable(_, _, _)
-            | ArithElem::InParen(_) => true,
-            _ => false,
-        }
+                | ArithElem::Integer(_)
+                | ArithElem::ArrayElem(_, _, _)
+                | ArithElem::Word(_, _)
+                | ArithElem::Variable(_, _, _)
+                | ArithElem::InParen(_)
+        )
     }
 }

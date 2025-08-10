@@ -8,6 +8,7 @@ use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;
 use crate::error::exec::ExecError;
 use crate::feeder::terminal::Terminal;
+use crate::utils::arg;
 use crate::{file_check, utils, Feeder, ShellCore};
 use unicode_width::UnicodeWidthStr;
 
@@ -15,7 +16,7 @@ fn str_width(s: &str) -> usize {
     UnicodeWidthStr::width(s)
 }
 
-fn common_length(chars: &Vec<char>, s: &String) -> usize {
+fn common_length(chars: &[char], s: &str) -> usize {
     let max_len = chars.len();
     for (i, c) in s.chars().enumerate() {
         if i >= max_len || chars[i] != c {
@@ -25,7 +26,7 @@ fn common_length(chars: &Vec<char>, s: &String) -> usize {
     max_len
 }
 
-fn common_string(paths: &Vec<String>) -> String {
+fn common_string(paths: &[String]) -> String {
     if paths.is_empty() {
         return "".to_string();
     }
@@ -48,7 +49,7 @@ fn is_dir(s: &str, core: &mut ShellCore) -> bool {
     file_check::is_dir(&s.replace(&tilde_prefix, &tilde_path))
 }
 
-fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &Vec<String>) {
+fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &[String]) {
     let mut tail = " ";
     if is_dir(cand, core) {
         tail = "/";
@@ -64,7 +65,7 @@ fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &Vec<Stri
         }
     }
 
-    if o_options.contains(&"nospace".to_string()) {
+    if arg::has_option("nospace", o_options) {
         tail = tail.trim_end();
     }
 
@@ -91,7 +92,7 @@ impl Terminal {
 
         match self.tab_num {
             1 => self.try_completion(&mut cands, core).unwrap(),
-            _ => self.show_list(&mut cands),
+            _ => self.show_list(&cands),
         }
         Ok(())
     }
@@ -149,11 +150,10 @@ impl Terminal {
 
         let info = match core.completion.entries.get(&org_word) {
             Some(i) => i.clone(),
-            None => {
-                let mut tmp = CompletionEntry::default();
-                tmp.function = core.completion.default_function.clone();
-                tmp
-            }
+            None => CompletionEntry {
+                function: core.completion.default_function.clone(),
+                ..Default::default()
+            },
         };
 
         core.completion.current = info.clone();
@@ -186,13 +186,13 @@ impl Terminal {
         let (tilde_prefix, tilde_path, last_tilde_expanded) =
             Self::set_tilde_transform(&last, core);
 
-        let mut args = vec![
+        let args = vec![
             "".to_string(),
             "".to_string(),
             last_tilde_expanded.to_string(),
         ];
 
-        let list = self.make_default_compreply(core, &mut args, &com, &pos);
+        let list = self.make_default_compreply(core, &args, &com, &pos);
         if list.is_empty() {
             return Err(ExecError::Other("empty list".to_string()));
         }
@@ -207,7 +207,7 @@ impl Terminal {
     fn make_default_compreply(
         &mut self,
         core: &mut ShellCore,
-        args: &mut Vec<String>,
+        args: &[String],
         com: &str,
         pos: &str,
     ) -> Vec<String> {
@@ -260,7 +260,7 @@ impl Terminal {
 
     pub fn try_completion(
         &mut self,
-        cands: &mut Vec<String>,
+        cands: &mut [String],
         core: &mut ShellCore,
     ) -> Result<(), String> {
         let pos = core.db.get_param("COMP_CWORD")?;
@@ -281,7 +281,7 @@ impl Terminal {
         self.tab_row = i % row_num;
     }
 
-    fn show_list(&mut self, list: &Vec<String>) {
+    fn show_list(&mut self, list: &[String]) {
         if list.is_empty() {
             return;
         }
@@ -325,8 +325,8 @@ impl Terminal {
 
     fn print_an_entry(
         &mut self,
-        list: &Vec<String>,
-        widths: &Vec<usize>,
+        list: &[String],
+        widths: &[usize],
         row: usize,
         col: usize,
         row_num: usize,
@@ -366,7 +366,7 @@ impl Terminal {
         }
     }
 
-    pub fn replace_input(&mut self, to: &String) {
+    pub fn replace_input(&mut self, to: &str) {
         self.shave_existing_word();
         let to_modified = to.replace("↵ \0", "\n");
         for c in to_modified.chars() {
@@ -433,7 +433,7 @@ impl Terminal {
     }
 }
 
-fn completion_from(ws: &Vec<String>, core: &mut ShellCore) -> usize {
+fn completion_from(ws: &[String], core: &mut ShellCore) -> usize {
     for i in 0..ws.len() {
         if utils::reserved(&ws[i]) {
             continue;

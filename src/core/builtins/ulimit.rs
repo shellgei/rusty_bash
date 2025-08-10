@@ -114,7 +114,7 @@ fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
     ]
 }
 
-fn print_items(args: &Vec<String>, soft: bool) -> i32 {
+fn print_items(args: &[String], soft: bool) -> i32 {
     for a in args {
         for (item, unit, opt, key) in items() {
             if a == opt {
@@ -221,7 +221,7 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
     0
 }
 
-pub fn ulimit(_: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn ulimit(_: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     let mut soft = arg::consume_option("-S", &mut args);
     let mut hard = arg::consume_option("-H", &mut args);

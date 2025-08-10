@@ -5,6 +5,7 @@ use super::ConditionalExpr;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
 use crate::ShellCore;
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub enum CondElem {
@@ -37,20 +38,21 @@ impl CondElem {
         }
         Ok(())
     }
+}
 
-    pub fn to_string(&self) -> String {
+impl fmt::Display for CondElem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            CondElem::UnaryOp(op) => op.to_string(),
-            CondElem::BinaryOp(op) => op.to_string(),
-            CondElem::InParen(expr) => expr.text.clone(),
-            CondElem::Word(w) => w.text.clone(),
-            CondElem::Regex(w) => w.text.clone(),
-            CondElem::Operand(op) => op.to_string(),
-            CondElem::Not => "!".to_string(),
-            CondElem::And => "&&".to_string(),
-            CondElem::Or => "||".to_string(),
-            CondElem::Ans(true) => "true".to_string(),
-            CondElem::Ans(false) => "false".to_string(),
+            CondElem::UnaryOp(op) | CondElem::BinaryOp(op) | CondElem::Operand(op) => {
+                write!(f, "{op}")
+            }
+            CondElem::InParen(expr) => write!(f, "{}", expr.text),
+            CondElem::Word(w) | CondElem::Regex(w) => write!(f, "{}", w.text),
+            CondElem::Not => write!(f, "!"),
+            CondElem::And => write!(f, "&&"),
+            CondElem::Or => write!(f, "||"),
+            CondElem::Ans(true) => write!(f, "true"),
+            CondElem::Ans(false) => write!(f, "false"),
         }
     }
 }

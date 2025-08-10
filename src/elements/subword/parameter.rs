@@ -62,8 +62,10 @@ impl Parameter {
         match feeder.scanner_dollar_special_and_positional_param(core) {
             0 => None,
             n => {
-                let mut ans = Self::default();
-                ans.text = feeder.consume(n);
+                let ans = Self {
+                    text: feeder.consume(n),
+                    ..Default::default()
+                };
                 Some(ans)
             }
         }

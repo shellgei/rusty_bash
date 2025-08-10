@@ -5,7 +5,7 @@ mod completion;
 mod key;
 
 use crate::error::input::InputError;
-use crate::utils::file;
+use crate::utils::{arg, file};
 use crate::{file_check, ShellCore};
 use nix::unistd;
 use nix::unistd::User;
@@ -116,7 +116,7 @@ impl Terminal {
         }
     }
 
-    fn get_branch(cwd: &String) -> String {
+    fn get_branch(cwd: &str) -> String {
         let mut dirs: Vec<String> = cwd.split("/").map(|s| s.to_string()).collect();
         while !dirs.is_empty() {
             let path = dirs.join("/") + "/.git/HEAD";
@@ -348,7 +348,7 @@ impl Terminal {
     pub fn call_history(&mut self, inc: i32, core: &mut ShellCore) {
         let prev = self.hist_ptr;
         let prev_str = self.get_string(self.prompt.chars().count());
-        Self::shift_in_range(&mut self.hist_ptr, inc, 0, std::isize::MAX as usize);
+        Self::shift_in_range(&mut self.hist_ptr, inc, 0, isize::MAX as usize);
 
         self.chars = self.prompt.chars().collect();
         self.chars.extend(
@@ -361,12 +361,7 @@ impl Terminal {
     }
 
     pub fn set_double_tab_completion(&mut self, core: &ShellCore) {
-        let tail = match core
-            .completion
-            .current
-            .o_options
-            .contains(&"nospace".to_string())
-        {
+        let tail = match arg::has_option("nospace", &core.completion.current.o_options) {
             true => "",
             false => " ",
         };

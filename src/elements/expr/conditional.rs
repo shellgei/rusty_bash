@@ -365,7 +365,7 @@ impl ConditionalExpr {
         Ok(())
     }
 
-    fn unary_file_check(op: &str, s: &String, stack: &mut Vec<CondElem>) -> Result<(), ExecError> {
+    fn unary_file_check(op: &str, s: &str, stack: &mut Vec<CondElem>) -> Result<(), ExecError> {
         let result = match op {
             "-a" | "-e" => file_check::exists(s),
             "-d" => file_check::is_dir(s),

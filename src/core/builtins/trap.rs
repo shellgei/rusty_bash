@@ -13,7 +13,8 @@ use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 use std::{thread, time};
 
-pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if args.len() == 1 {
         for e in &core.traplist {
             if e.0 == 0 {
@@ -73,9 +74,9 @@ pub fn trap(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-fn run_thread(signal_nums: Vec<i32>, script: &String, core: &mut ShellCore) {
+fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
     core.trapped
-        .push((Arc::new(AtomicBool::new(false)), script.clone()));
+        .push((Arc::new(AtomicBool::new(false)), script.to_string()));
 
     let trap = Arc::clone(&core.trapped.last().unwrap().0);
 
@@ -94,7 +95,7 @@ fn run_thread(signal_nums: Vec<i32>, script: &String, core: &mut ShellCore) {
     });
 }
 
-fn arg_to_num(arg: &str, forbiddens: &Vec<i32>) -> Result<i32, ExecError> {
+fn arg_to_num(arg: &str, forbiddens: &[i32]) -> Result<i32, ExecError> {
     if arg == "EXIT" || arg == "0" {
         return Ok(0);
     }
@@ -121,7 +122,7 @@ fn arg_to_num(arg: &str, forbiddens: &Vec<i32>) -> Result<i32, ExecError> {
     )))
 }
 
-fn args_to_nums(args: &[String], forbiddens: &Vec<i32>) -> Result<Vec<i32>, ExecError> {
+fn args_to_nums(args: &[String], forbiddens: &[i32]) -> Result<Vec<i32>, ExecError> {
     let mut ans = vec![];
     for a in args {
         let n = arg_to_num(a, forbiddens)?;

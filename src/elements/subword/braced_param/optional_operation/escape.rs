@@ -10,12 +10,7 @@ impl OptionalOperation for Escape {
     fn get_text(&self) -> String {
         self.text.clone()
     }
-    fn exec(
-        &mut self,
-        _: &Variable,
-        text: &String,
-        _: &mut ShellCore,
-    ) -> Result<String, ExecError> {
+    fn exec(&mut self, _: &Variable, text: &str, _: &mut ShellCore) -> Result<String, ExecError> {
         self.replace_single_data(text)
     }
 
@@ -28,8 +23,8 @@ impl OptionalOperation for Escape {
     ) -> Result<(), ExecError> {
         if param.name == "@" || param.name == "*" {
             *array = core.db.get_position_params();
-            for i in 0..array.len() {
-                array[i] = self.replace_single_data(&array[i])?;
+            for elem in array.iter_mut() {
+                *elem = self.replace_single_data(elem)?;
             }
             return Ok(());
         }
@@ -44,8 +39,8 @@ impl OptionalOperation for Escape {
         }
 
         *array = core.db.get_vec(&param.name, true)?;
-        for i in 0..array.len() {
-            array[i] = self.replace_array_elem(&i.to_string(), &array[i])?;
+        for (i, elem) in array.iter_mut().enumerate() {
+            *elem = self.replace_array_elem(&i.to_string(), elem)?;
         }
 
         /*
@@ -76,34 +71,34 @@ pub struct Escape {
 }
 
 impl Escape {
-    pub fn replace_single_data(&self, text: &String) -> Result<String, ExecError> {
+    pub fn replace_single_data(&self, text: &str) -> Result<String, ExecError> {
         match self.symbol.as_ref() {
             "k" | "K" | "Q" => {
-                let text = format!("'{}'", &text);
+                let text = format!("'{text}'");
                 return Ok(text);
             }
             _ => {}
         }
-        Ok(text.clone())
+        Ok(text.to_string())
     }
 
-    pub fn replace_array_elem(&self, pos: &String, text: &String) -> Result<String, ExecError> {
+    pub fn replace_array_elem(&self, pos: &str, text: &str) -> Result<String, ExecError> {
         match self.symbol.as_ref() {
             "k" => {
-                let text = format!("{} {}", &pos, &text);
+                let text = format!("{pos} {text}");
                 return Ok(text);
             }
             "K" => {
-                let text = format!("{} \"{}\"", &pos, &text);
+                let text = format!("{pos} \"{text}\"");
                 return Ok(text);
             }
             "Q" => {
-                let text = format!("'{}'", &text);
+                let text = format!("'{text}'");
                 return Ok(text);
             }
             _ => {}
         }
-        Ok(text.clone())
+        Ok(text.to_string())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {

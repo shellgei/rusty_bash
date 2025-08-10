@@ -20,7 +20,7 @@ pub enum AnsiCToken {
 }
 
 impl AnsiCToken {
-    pub fn to_string(&mut self) -> String {
+    pub fn render(&mut self) -> String {
         match &self {
             AnsiCToken::EmptyHex => String::new(),
             AnsiCToken::Normal(s) => s.clone(),
@@ -90,11 +90,11 @@ impl AnsiCToken {
                     31
                 } else if *c == '?' {
                     127
-                } else if '0' <= *c && *c <= '9' {
+                } else if c.is_ascii_digit() {
                     *c as u32 - 32
-                } else if 'a' <= *c && *c <= 'z' {
+                } else if c.is_ascii_lowercase() {
                     *c as u32 - 96
-                } else if 'A' <= *c && *c <= 'Z' {
+                } else if c.is_ascii_uppercase() {
                     *c as u32 - 64
                 } else if *c as u32 >= 32 {
                     *c as u32 - 32
@@ -135,7 +135,7 @@ impl AnsiCString {
             if let AnsiCToken::EmptyHex = t {
                 break;
             }
-            ans += &t.to_string();
+            ans += &t.render();
         }
         ans
     }
@@ -276,12 +276,12 @@ impl AnsiCString {
                 let mut text_after = a.get_text().to_string();
                 ans.text += &text_after.clone();
                 text_after.remove(0);
-                let ctrl_c = text_after.chars().nth(0).unwrap();
+                let ctrl_c = text_after.chars().next().unwrap();
                 ans.tokens.push(AnsiCToken::Control(ctrl_c));
             } else if feeder.starts_with("'") {
                 ans.tokens.push(AnsiCToken::Normal("\\c".to_string()));
             } else {
-                let ctrl_c = feeder.consume(1).chars().nth(0).unwrap();
+                let ctrl_c = feeder.consume(1).chars().next().unwrap();
                 ans.text += &ctrl_c.to_string();
                 ans.tokens.push(AnsiCToken::Control(ctrl_c));
             }

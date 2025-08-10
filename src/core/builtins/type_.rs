@@ -146,25 +146,28 @@ fn type_large_p_sub(core: &mut ShellCore, com: &String) -> i32 {
     es
 }
 
-pub fn type_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn type_(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() < 2 {
         return 0;
     }
 
     let mut args = arg::dissolve_options(args);
-    if arg::consume_option("-t", &mut args) {
+    let t_option = arg::consume_option("-t", &mut args);
+    if t_option {
         if args[1] == "--" {
             args.remove(1);
         }
         return type_t(core, &args[1..]);
     }
-    if arg::consume_option("-p", &mut args) {
+    let p_option = arg::consume_option("-p", &mut args);
+    if p_option {
         if args[1] == "--" {
             args.remove(1);
         }
         return type_p(core, &args[1..]);
     }
-    if arg::consume_option("-P", &mut args) {
+    let large_p_option = arg::consume_option("-P", &mut args);
+    if large_p_option {
         if args[1] == "--" {
             args.remove(1);
         }

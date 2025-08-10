@@ -4,6 +4,7 @@
 use crate::elements::subword::Subword;
 use crate::elements::word::Word;
 use crate::ShellCore;
+type SplitResult = (usize, Vec<(Box<dyn Subword>, bool)>);
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     if !core.db.exist("IFS") {
@@ -42,7 +43,7 @@ fn gen_word(sws: Vec<Box<dyn Subword>>, remain: bool) -> Word {
     }
 }
 
-pub fn find_pos(word: &Word, ifs: &str) -> (usize, Vec<(Box<dyn Subword>, bool)>) {
+pub fn find_pos(word: &Word, ifs: &str) -> SplitResult {
     let mut prev_char = None;
     for (i, sw) in word.subwords.iter().enumerate() {
         let split = sw.split(ifs, prev_char);

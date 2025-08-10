@@ -59,9 +59,10 @@ impl FileInput {
             return Ok(None);
         }
         feeder.set_backup();
-        let mut ans = Self::default();
-
-        ans.text = feeder.consume(2);
+        let mut ans = Self {
+            text: feeder.consume(2),
+            ..Default::default()
+        };
 
         if let Err(e) = command::eat_blank_lines(feeder, core, &mut ans.text) {
             feeder.rewind();

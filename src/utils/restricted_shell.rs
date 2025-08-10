@@ -20,7 +20,7 @@ pub fn check(db: &mut DataBase, name: &str, value: &Option<Vec<String>>) -> Resu
     Ok(())
 }
 
-fn rsh_cmd_check(cmds: &Vec<String>) -> Result<(), ExecError> {
+fn rsh_cmd_check(cmds: &[String]) -> Result<(), ExecError> {
     for c in cmds {
         if c.contains('/') {
             let msg = format!("{}: restricted", &c);

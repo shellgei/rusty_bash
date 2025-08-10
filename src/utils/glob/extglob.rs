@@ -6,7 +6,7 @@ use super::parser;
 use super::GlobElem;
 use crate::exit;
 
-pub fn shave(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
+pub fn shave(cands: &mut Vec<String>, prefix: char, patterns: &[String]) {
     match prefix {
         '?' => question(cands, patterns),
         '*' => zero_or_more(cands, patterns),
@@ -17,7 +17,7 @@ pub fn shave(cands: &mut Vec<String>, prefix: char, patterns: &Vec<String>) {
     }
 }
 
-fn question(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn question(cands: &mut Vec<String>, patterns: &[String]) {
     let mut ans = cands.clone();
     for p in patterns {
         let mut tmp = cands.clone();
@@ -29,7 +29,7 @@ fn question(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn zero_or_more(cands: &mut Vec<String>, patterns: &[String]) {
     let mut ans = vec![];
     let mut tmp = cands.clone();
     let mut len = tmp.len();
@@ -46,7 +46,7 @@ fn zero_or_more(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn more_than_zero(cands: &mut Vec<String>, patterns: &[String]) {
     //TODO: buggy
     let mut ans: Vec<String> = vec![];
     let mut tmp: Vec<String> = cands.clone();
@@ -64,7 +64,7 @@ fn more_than_zero(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn once(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn once(cands: &mut Vec<String>, patterns: &[String]) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
@@ -76,7 +76,7 @@ fn once(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn not(cands: &mut Vec<String>, patterns: &Vec<String>) {
+fn not(cands: &mut Vec<String>, patterns: &[String]) {
     let mut ans = vec![];
     for cand in cands.iter_mut() {
         for prefix in make_prefix_strings(cand) {
@@ -88,13 +88,13 @@ fn not(cands: &mut Vec<String>, patterns: &Vec<String>) {
     *cands = ans;
 }
 
-fn once_exact_match(cand: &String, patterns: &Vec<String>) -> bool {
-    let mut tmp = vec![cand.clone()];
+fn once_exact_match(cand: &str, patterns: &[String]) -> bool {
+    let mut tmp = vec![cand.to_string()];
     once(&mut tmp, patterns);
     tmp.iter().any(|t| t.is_empty())
 }
 
-pub fn scan(remaining: &mut String) -> (usize, Option<GlobElem>) {
+pub fn scan(remaining: &str) -> (usize, Option<GlobElem>) {
     let prefix = match remaining.chars().next() {
         Some(c) => c,
         None => return (0, None),
@@ -154,9 +154,9 @@ pub fn scan(remaining: &mut String) -> (usize, Option<GlobElem>) {
     (0, None)
 }
 
-fn make_prefix_strings(s: &String) -> Vec<String> {
+fn make_prefix_strings(s: &str) -> Vec<String> {
     let mut ans = vec![];
-    let mut prefix = s.clone();
+    let mut prefix = s.to_string();
 
     ans.push(prefix.clone());
     while !prefix.is_empty() {

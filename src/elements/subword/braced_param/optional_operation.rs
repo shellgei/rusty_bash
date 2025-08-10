@@ -23,7 +23,7 @@ use core::fmt;
 use core::fmt::Debug;
 
 pub trait OptionalOperation {
-    fn exec(&mut self, _: &Variable, _: &String, _: &mut ShellCore) -> Result<String, ExecError>;
+    fn exec(&mut self, _: &Variable, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
     fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
     fn get_text(&self) -> String;
     fn has_array_replace(&self) -> bool {

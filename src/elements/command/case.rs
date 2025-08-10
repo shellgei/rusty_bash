@@ -157,9 +157,11 @@ impl CaseCommand {
             return Ok(None);
         }
 
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
-        ans.text = feeder.consume(4);
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            text: feeder.consume(4),
+            ..Default::default()
+        };
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
         if !Self::eat_word(feeder, &mut ans, core)? {

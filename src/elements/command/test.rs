@@ -66,9 +66,11 @@ impl TestCommand {
             return Ok(None);
         }
 
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
-        ans.text = feeder.consume(2);
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            text: feeder.consume(2),
+            ..Default::default()
+        };
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
 

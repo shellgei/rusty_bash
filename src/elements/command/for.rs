@@ -110,7 +110,9 @@ impl ForCommand {
                 continue;
             }
 
-            let _ = self.do_script.clone().as_mut().unwrap().exec(core);
+            if let Some(mut s) = self.do_script.clone() {
+                let _ = s.exec(core);
+            }
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;
@@ -121,13 +123,12 @@ impl ForCommand {
     }
 
     fn eval_arithmetic(a: &mut Option<ArithmeticExpr>, core: &mut ShellCore) -> (bool, String) {
-        if a.is_none() {
-            return (true, "1".to_string());
-        }
-
-        match a.clone().unwrap().eval(core) {
-            Ok(n) => (true, n),
-            _ => (false, "0".to_string()),
+        match a {
+            None => (true, "1".to_string()),
+            Some(ref mut arith) => match arith.eval(core) {
+                Ok(n) => (true, n),
+                _ => (false, "0".to_string()),
+            },
         }
     }
 
@@ -147,7 +148,9 @@ impl ForCommand {
                 return ok;
             }
 
-            let _ = self.do_script.clone().as_mut().unwrap().exec(core);
+            if let Some(mut s) = self.do_script.clone() {
+                let _ = s.exec(core);
+            }
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;
@@ -191,8 +194,8 @@ impl ForCommand {
             command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
             let a = ArithmeticExpr::parse(feeder, core, true, "((")?;
-            if a.is_some() {
-                ans.text += &a.as_ref().unwrap().text.clone();
+            if let Some(ref arith) = a {
+                ans.text += &arith.text;
             }
             ans.arithmetics.push(a);
 
@@ -253,9 +256,11 @@ impl ForCommand {
         if !feeder.starts_with("for") {
             return Ok(None);
         }
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
-        ans.text = feeder.consume(3);
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            text: feeder.consume(3),
+            ..Default::default()
+        };
 
         if Self::eat_name(feeder, &mut ans, core) {
             Self::eat_in_part(feeder, &mut ans, core)?;
@@ -271,8 +276,9 @@ impl ForCommand {
 
         if command::eat_inner_script(feeder, core, "do", vec!["done"], &mut ans.do_script, false)? {
             ans.text.push_str("do");
-            ans.text
-                .push_str(&ans.do_script.as_mut().unwrap().get_text());
+            if let Some(ref mut s) = ans.do_script {
+                ans.text.push_str(&s.get_text());
+            }
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;

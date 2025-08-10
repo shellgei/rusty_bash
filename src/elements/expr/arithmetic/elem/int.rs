@@ -88,8 +88,8 @@ pub fn bin_calc(
 
 pub fn substitute(
     op: &str,
-    name: &String,
-    index: &String,
+    name: &str,
+    index: &str,
     cur: i128,
     right: i128,
     core: &mut ShellCore,
@@ -132,7 +132,7 @@ pub fn substitute(
     Ok(ArithElem::Integer(new_value))
 }
 
-fn parse_with_base(base: i128, s: &mut String, org: &str) -> Result<i128, ArithError> {
+fn parse_with_base(base: i128, s: &str, org: &str) -> Result<i128, ArithError> {
     if s.is_empty() {
         return Err(ArithError::InvalidIntConst(org.to_string()));
     }
@@ -208,7 +208,7 @@ pub fn parse(s: &str) -> Result<i128, ArithError> {
     let mut sw = s.to_string();
     let sign = variable::get_sign(&mut sw);
     let base = get_base(&mut sw)?;
-    let n = parse_with_base(base, &mut sw, s)?;
+    let n = parse_with_base(base, &sw, s)?;
 
     match sign.as_str() {
         "-" => Ok(-n),

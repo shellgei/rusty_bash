@@ -14,14 +14,16 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
-pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -> Vec<String> {
+pub fn compgen_f(core: &mut ShellCore, args: &[String], dir_only: bool) -> Vec<String> {
+    let mut arg_index = 2;
     if args.len() > 2 && args[2] == "--" {
-        args.remove(2);
+        arg_index = 3;
     }
 
-    let path = match args.len() {
-        2 => "".to_string(),
-        _ => args[2].to_string(),
+    let path = if arg_index < args.len() {
+        args[arg_index].to_string()
+    } else {
+        "".to_string()
     }
     .replace("\\", "");
 
@@ -69,13 +71,14 @@ pub fn compgen_f(core: &mut ShellCore, args: &mut Vec<String>, dir_only: bool) -
     ans
 }
 
-fn replace_args_compgen(args: &mut Vec<String>) -> bool {
+fn normalize_compgen_args(args: &[String]) -> Vec<String> {
     if args.len() < 3 || args[1] != "-A" {
-        return true;
+        return args.to_vec();
     }
 
-    args.remove(1);
-    let replace = match args[1].as_str() {
+    let mut result = args.to_vec();
+    result.remove(1);
+    let replace = match result[1].as_str() {
         "command" => "-c",
         "directory" => "-d",
         "file" => "-f",
@@ -90,19 +93,13 @@ fn replace_args_compgen(args: &mut Vec<String>) -> bool {
         a => a,
     };
 
-    args[1] = replace.to_string();
-    true
+    result[1] = replace.to_string();
+    result
 }
 
 fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
     let mut comlist = HashSet::new();
-    for path in core
-        .db
-        .get_param("PATH")
-        .unwrap_or_default()
-        .to_string()
-        .split(":")
-    {
+    for path in core.db.get_param("PATH").unwrap_or_default().split(':') {
         /* /mnt is ellimimated from PATH on WSL because it contains all files in Windows.*/
         if utils::is_wsl() && path.starts_with("/mnt") && !path.ends_with("WINDOWS") {
             // We want to use explorer.exe
@@ -124,46 +121,47 @@ fn command_list(target: &String, core: &mut ShellCore) -> Vec<String> {
     ans
 }
 
-pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn compgen(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if args.len() <= 1 {
         eprintln!("sush: {}: still unsupported", &args[0]);
         return 1;
     }
-    let mut args = arg::dissolve_options(args);
+    let mut args = arg::dissolve_options(&args);
     let exclude = arg::consume_with_next_arg("-X", &mut args); //TODO: implement X pattern
     let prefix = arg::consume_with_next_arg("-P", &mut args);
     let suffix = arg::consume_with_next_arg("-S", &mut args);
 
-    replace_args_compgen(&mut args);
+    let args = normalize_compgen_args(&args);
 
     let mut ans = match args[1].as_str() {
-        "-a" => compgen_a(core, &mut args),
-        "-b" => compgen_b(core, &mut args),
-        "-c" => compgen_c(core, &mut args),
-        "-d" => compgen_d(core, &mut args),
-        "-f" => compgen_f(core, &mut args, false),
-        "-h" => compgen_h(core, &mut args), //history (sush original)
-        "-j" => compgen_j(core, &mut args),
-        "-o" => compgen_o(core, &mut args),
-        "-u" => compgen_u(core, &mut args),
-        "-v" => compgen_v(core, &mut args),
-        "-A function" => compgen_function(core, &mut args),
-        "-A hostname" => compgen_hostname(core, &mut args),
-        "-A shopt" => compgen_shopt(core, &mut args),
-        "-A stopped" => compgen_stopped(core, &mut args),
+        "-a" => compgen_a(core, &args),
+        "-b" => compgen_b(core, &args),
+        "-c" => compgen_c(core, &args),
+        "-d" => compgen_d(core, &args),
+        "-f" => compgen_f(core, &args, false),
+        "-h" => compgen_h(core, &args), //history (sush original)
+        "-j" => compgen_j(core, &args),
+        "-o" => compgen_o(core, &args),
+        "-u" => compgen_u(core, &args),
+        "-v" => compgen_v(core, &args),
+        "-A function" => compgen_function(core, &args),
+        "-A hostname" => compgen_hostname(core, &args),
+        "-A shopt" => compgen_shopt(core, &args),
+        "-A stopped" => compgen_stopped(core, &args),
         "-W" => {
             if args.len() < 2 {
                 eprintln!("sush: compgen: -W: option requires an argument");
                 return 2;
             }
-            compgen_large_w(core, &mut args)
+            compgen_large_w(core, &args)
         }
         "-G" => {
             if args.len() < 2 {
                 eprintln!("sush: compgen: -G: option requires an argument");
                 return 2;
             }
-            compgen_large_g(core, &mut args)
+            compgen_large_g(core, &args)
         }
         _ => {
             eprintln!("sush: compgen: {}: invalid option", &args[1]);
@@ -194,7 +192,7 @@ pub fn compgen(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 }
 
-fn get_head(args: &mut Vec<String>, pos: usize) -> String {
+fn get_head(args: &[String], pos: usize) -> String {
     if args.len() > pos && args[pos] != "--" {
         args[pos].clone()
     } else if args.len() > pos + 1 {
@@ -204,14 +202,14 @@ fn get_head(args: &mut Vec<String>, pos: usize) -> String {
     }
 }
 
-fn drop_unmatch(args: &mut Vec<String>, pos: usize, list: &mut Vec<String>) {
+fn drop_unmatch(args: &[String], pos: usize, list: &mut Vec<String>) {
     let head = get_head(args, pos);
     if !head.is_empty() {
         list.retain(|s| s.starts_with(&head));
     }
 }
 
-pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_a(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut commands = vec![];
 
     let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").to_vec();
@@ -224,7 +222,7 @@ pub fn compgen_a(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     commands
 }
 
-pub fn compgen_b(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_b(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut commands = vec![];
     let mut builtins: Vec<String> = core.builtins.keys().cloned().collect();
     commands.append(&mut builtins);
@@ -236,7 +234,7 @@ pub fn compgen_b(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     commands
 }
 
-pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_c(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut commands = vec![];
     if args.len() > 2 {
         commands.extend(compgen_f(core, args, false));
@@ -259,11 +257,11 @@ pub fn compgen_c(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     commands
 }
 
-fn compgen_d(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+fn compgen_d(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     compgen_f(core, args, true)
 }
 
-pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_h(core: &mut ShellCore, _: &[String]) -> Vec<String> {
     let len = core.history.len();
     if len >= 10 {
         return core.history[0..10].to_vec();
@@ -289,7 +287,7 @@ pub fn compgen_h(core: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
     ans
 }
 
-pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_v(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut commands = vec![];
 
     let mut aliases: Vec<String> = core.db.get_indexes_all("BASH_ALIASES").to_vec();
@@ -306,7 +304,7 @@ pub fn compgen_v(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     commands
 }
 
-pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_o(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut commands = vec![];
 
     let mut options: Vec<String> = core.options.get_keys();
@@ -319,12 +317,12 @@ pub fn compgen_o(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     commands
 }
 
-fn compgen_large_g(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+fn compgen_large_g(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let glob = args[2].to_string();
     path_expansion::expand(&glob, &core.shopts)
 }
 
-fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+fn compgen_large_w(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
     let mut words = args[2].to_string();
 
@@ -353,7 +351,7 @@ fn compgen_large_w(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> 
     ans
 }
 
-pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_u(_: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans = vec![];
 
     if let Ok(f) = File::open("/etc/passwd") {
@@ -372,29 +370,29 @@ pub fn compgen_u(_: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
     ans
 }
 
-pub fn compgen_shopt(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_shopt(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans = core.shopts.get_keys();
     drop_unmatch(args, 2, &mut ans);
     ans
 }
 
-pub fn compgen_function(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_function(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans = core.db.functions.keys().cloned().collect();
     drop_unmatch(args, 2, &mut ans);
     ans
 }
 
-pub fn compgen_hostname(_: &mut ShellCore, _: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_hostname(_: &mut ShellCore, _: &[String]) -> Vec<String> {
     //TODO: Implement!
     vec![]
 }
 
-pub fn compgen_stopped(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_stopped(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans = vec![];
 
     for job in &core.job_table {
         if job.display_status == "Stopped" {
-            ans.push(job.text.split(" ").next().unwrap().to_string());
+            ans.push(job.text.split(' ').next().unwrap().to_string());
         }
     }
 
@@ -402,11 +400,11 @@ pub fn compgen_stopped(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<Stri
     ans
 }
 
-pub fn compgen_j(core: &mut ShellCore, args: &mut Vec<String>) -> Vec<String> {
+pub fn compgen_j(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans = vec![];
 
     for job in &core.job_table {
-        ans.push(job.text.split(" ").next().unwrap().to_string());
+        ans.push(job.text.split(' ').next().unwrap().to_string());
     }
 
     drop_unmatch(args, 2, &mut ans);

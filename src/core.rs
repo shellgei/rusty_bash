@@ -42,6 +42,9 @@ impl Default for MeasuredTime {
     }
 }
 
+type BuiltinFn = fn(&mut ShellCore, &[String]) -> i32;
+type SubstBuiltinFn = fn(&mut ShellCore, &[String], &mut [Substitution]) -> i32;
+
 #[derive(Default)]
 pub struct ShellCore {
     pub db: DataBase,
@@ -49,9 +52,8 @@ pub struct ShellCore {
     pub alias_memo: Vec<(String, String)>,
     pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
-    pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
-    pub substitution_builtins:
-        HashMap<String, fn(&mut ShellCore, &mut Vec<String>, &mut Vec<Substitution>) -> i32>,
+    pub builtins: HashMap<String, BuiltinFn>,
+    pub substitution_builtins: HashMap<String, SubstBuiltinFn>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
     pub traplist: Vec<(i32, String)>,

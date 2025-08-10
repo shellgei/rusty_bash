@@ -60,7 +60,6 @@ pub static FTL_ZH: &str = include_str!("../i18n/zh.ftl");
 #[derive(Debug)]
 struct LangEntry {
     code: &'static str,
-    #[allow(dead_code)]
     #[cfg(any(
         feature = "lang_ar",
         feature = "lang_da",
