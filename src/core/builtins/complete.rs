@@ -123,7 +123,7 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut o_options = vec![];
     let mut args = arg::dissolve_options(&args);
 
-    if arg::consume_option("-r", &mut args) {
+    if arg::consume_arg("-r", &mut args) {
         return complete_r(core, &args);
     }
 
@@ -173,7 +173,7 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
-    if arg::consume_option("-F", &mut args) {
+    if arg::consume_arg("-F", &mut args) {
         complete_f(core, &args, &o_options)
     } else {
         let msg = format!("{}: still unsupported", &args[1]);

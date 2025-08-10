@@ -152,21 +152,21 @@ pub fn type_(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
-    let t_option = arg::consume_option("-t", &mut args);
+    let t_option = arg::consume_arg("-t", &mut args);
     if t_option {
         if args[1] == "--" {
             args.remove(1);
         }
         return type_t(core, &args[1..]);
     }
-    let p_option = arg::consume_option("-p", &mut args);
+    let p_option = arg::consume_arg("-p", &mut args);
     if p_option {
         if args[1] == "--" {
             args.remove(1);
         }
         return type_p(core, &args[1..]);
     }
-    let large_p_option = arg::consume_option("-P", &mut args);
+    let large_p_option = arg::consume_arg("-P", &mut args);
     if large_p_option {
         if args[1] == "--" {
             args.remove(1);

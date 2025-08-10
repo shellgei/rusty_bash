@@ -101,8 +101,8 @@ impl Variable {
             prev = vec![core.db.get_param(&self.name)?];
         }
 
-        let i_opt = arg::consume_option("-i", args);
-        let a_opt = arg::consume_option("-a", args);
+        let i_opt = arg::consume_arg("-i", args);
+        let a_opt = arg::consume_arg("-a", args);
         if a_opt || (!arg::has_option("-A", args) && self.index.is_some()) {
             if prev.is_empty() {
                 //TODO: ^ Maybe, there is a case where an assoc must be
@@ -117,7 +117,7 @@ impl Variable {
                 true => core.db.set_int_array(&self.name, Some(prev), layer),
                 false => core.db.set_array(&self.name, Some(prev), layer),
             };
-        } else if arg::consume_option("-A", args) {
+        } else if arg::consume_arg("-A", args) {
             match i_opt {
                 true => core.db.set_int_assoc(&self.name, layer)?,
                 false => core.db.set_assoc(&self.name, layer, false)?,

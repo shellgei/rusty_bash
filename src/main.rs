@@ -140,7 +140,7 @@ fn set_o_options(args: &mut Vec<String>, core: &mut ShellCore) {
 }
 
 fn set_short_options(args: &mut Vec<String>, core: &mut ShellCore) {
-    if arg::consume_option("-b", args) {
+    if arg::consume_arg("-b", args) {
         core.compat_bash = true;
         core.db.flags += "b";
     }

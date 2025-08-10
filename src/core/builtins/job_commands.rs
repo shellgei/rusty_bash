@@ -34,7 +34,7 @@ pub fn bg(core: &mut ShellCore, args: &[String]) -> i32 {
         return super::error_exit(1, &args[0], "no job control", core);
     }
 
-    if arg::consume_option("-s", &mut args) {
+    if arg::consume_arg("-s", &mut args) {
         return super::error_exit(1, &args[0], "-s: invalid option", core);
     }
 
@@ -82,7 +82,7 @@ pub fn fg(core: &mut ShellCore, args: &[String]) -> i32 {
         return super::error_exit(1, &args[0], "no job control", core);
     }
 
-    if arg::consume_option("-s", &mut args) {
+    if arg::consume_arg("-s", &mut args) {
         return super::error_exit(1, &args[0], "-s: invalid option", core);
     }
 
@@ -211,7 +211,7 @@ fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
 
 pub fn jobs(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
-    if arg::consume_option("-n", &mut args) {
+    if arg::consume_arg("-n", &mut args) {
         core.jobtable_print_status_change();
         return 0;
     }
@@ -242,7 +242,7 @@ pub fn jobs(core: &mut ShellCore, args: &[String]) -> i32 {
         return super::error_exit(127, "jobs", &msg, core);
     }
 
-    if arg::consume_option("-p", &mut args) {
+    if arg::consume_arg("-p", &mut args) {
         for id in poss {
             core.job_table[id].print_p();
         }
@@ -250,9 +250,9 @@ pub fn jobs(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if !jobspec.is_empty() {
-        let l_opt = arg::consume_option("-l", &mut args);
-        let r_opt = arg::consume_option("-r", &mut args);
-        let s_opt = arg::consume_option("-s", &mut args);
+        let l_opt = arg::consume_arg("-l", &mut args);
+        let r_opt = arg::consume_arg("-r", &mut args);
+        let s_opt = arg::consume_arg("-s", &mut args);
         if core.job_table[poss[0]].print(&core.job_table_priority, l_opt, r_opt, s_opt, true) {
             remove(core, poss[0]);
         }
@@ -511,7 +511,7 @@ pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut args = arg::dissolve_options(&args);
     let var_name = arg::consume_with_next_arg("-p", &mut args);
-    let f_opt = arg::consume_option("-f", &mut args);
+    let f_opt = arg::consume_arg("-f", &mut args);
 
     if args.len() > 1 && args[1] == "-n" {
         return wait_n(core, &mut args, &var_name, f_opt);
@@ -562,8 +562,8 @@ pub fn kill(core: &mut ShellCore, args: &[String]) -> i32 {
 
 pub fn disown(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
-    let h_opt = arg::consume_option("-h", &mut args);
-    let _r_opt = arg::consume_option("-r", &mut args); //TODO: implement
+    let h_opt = arg::consume_arg("-h", &mut args);
+    let _r_opt = arg::consume_arg("-r", &mut args); //TODO: implement
 
     if args.len() == 1 {
         let ids = jobspec_to_array_poss(core, "%%");

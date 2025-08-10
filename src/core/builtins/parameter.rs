@@ -237,7 +237,7 @@ fn declare_print_function(core: &mut ShellCore, subs: &mut [Substitution]) -> i3
 }
 
 pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
-    let args = arg::dissolve_options(args);
+    let mut args = arg::dissolve_options(args);
 
     if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
         return declare_print_all(core, &args);
@@ -247,12 +247,12 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
         return declare_print_function(core, subs);
     }
 
-    if arg::has_option("-p", &args) {
+    if arg::consume_arg("-p", &mut args) {
         let mut print_args = args.to_vec();
         for sub in subs {
             print_args.push(sub.text.clone());
         }
-        return declare_print(core, &print_args[1..], &print_args[0]);
+        return declare_print(core, &print_args[1..], &args[0]);
     }
 
     let layer = core.db.get_layer_num() - 2;

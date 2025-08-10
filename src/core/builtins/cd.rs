@@ -11,7 +11,7 @@ pub fn cd(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut args = args.to_owned();
-    arg::consume_option("--", &mut args);
+    arg::consume_arg("--", &mut args);
 
     if args.len() > 2 {
         eprintln!("sush: cd: too many arguments");

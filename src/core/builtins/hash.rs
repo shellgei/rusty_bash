@@ -29,7 +29,7 @@ pub fn hash(core: &mut ShellCore, args: &[String]) -> i32 {
         return print_all(core);
     }
 
-    if arg::consume_option("-p", &mut args) {
+    if arg::consume_arg("-p", &mut args) {
         if args.len() == 1 {
             return super::error_exit(1, "hash", "-p: option requires an argument", core);
         }

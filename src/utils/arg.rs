@@ -5,12 +5,27 @@ pub fn has_option(option: &str, args: &[String]) -> bool {
     args.iter().any(|arg| arg == option)
 }
 
-pub fn consume_option(option: &str, args: &mut Vec<String>) -> bool {
+pub fn consume_arg(option: &str, args: &mut Vec<String>) -> bool {
     let found = args.iter().any(|arg| arg == option);
     if found {
         args.retain(|arg| arg != option);
     }
     found
+}
+
+pub fn consume_option(option: &str, args: &mut Vec<String>) -> bool {
+    for (i, a) in args.iter().enumerate() {
+        if a.starts_with("--") {
+            return false;
+        }
+
+        if a == option {
+            args.remove(i);
+            return true;
+        }
+    }
+
+    false
 }
 
 pub fn consume_starts_with(s: &str, args: &mut Vec<String>) -> Vec<String> {

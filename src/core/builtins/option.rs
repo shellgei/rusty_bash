@@ -91,7 +91,7 @@ pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
 pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if core.db.flags.contains('r') && arg::consume_option("+r", &mut args) {
+    if core.db.flags.contains('r') && arg::consume_arg("+r", &mut args) {
         let _ = super::error_exit(1, &args[0], "+r: invalid option", core);
         eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
         return 1;
@@ -115,12 +115,13 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
     if args[1].starts_with("--") {
         args[1] = core.db.position_parameters[0][0].clone();
         args.remove(0);
-        return match set_positions(core, &args) {
-            Ok(()) => 0,
+        dbg!("{:?}", &args);
+        match set_positions(core, &args) {
+            Ok(()) => return 0,
             Err(e) => {
                 return super::error_exit(1, &args[0], &String::from(&e), core);
             }
-        };
+        }
     }
 
     if args[1] == "-o" || args[1] == "+o" {
@@ -225,9 +226,9 @@ pub fn shopt_print(core: &mut ShellCore, args: &[String], all: bool) -> i32 {
 
 pub fn shopt(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
-    let print = arg::consume_option("-p", &mut args);
-    let o_opt = arg::consume_option("-o", &mut args);
-    let q_opt = arg::consume_option("-q", &mut args);
+    let print = arg::consume_arg("-p", &mut args);
+    let o_opt = arg::consume_arg("-o", &mut args);
+    let q_opt = arg::consume_arg("-q", &mut args);
 
     /* print section */
     if print && o_opt {

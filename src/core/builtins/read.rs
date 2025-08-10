@@ -132,7 +132,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
-    let r_opt = arg::consume_option("-r", &mut args);
+    let r_opt = arg::consume_arg("-r", &mut args);
     let mut limit = usize::MAX;
     let limit_str = arg::consume_with_next_arg("-n", &mut args);
     let delim = match arg::consume_with_next_arg("-d", &mut args) {

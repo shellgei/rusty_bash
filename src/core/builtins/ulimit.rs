@@ -223,8 +223,8 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
 
 pub fn ulimit(_: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
-    let mut soft = arg::consume_option("-S", &mut args);
-    let mut hard = arg::consume_option("-H", &mut args);
+    let mut soft = arg::consume_arg("-S", &mut args);
+    let mut hard = arg::consume_arg("-H", &mut args);
 
     if args.iter().any(|a| a == "-a") {
         return print_all(!hard);
