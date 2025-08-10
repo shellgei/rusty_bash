@@ -5,7 +5,7 @@ use crate::core::CompletionEntry;
 use crate::utils::arg;
 use crate::ShellCore;
 
-fn compopt_set(info: &mut CompletionEntry, plus: &Vec<String>, minus: &Vec<String>) -> i32 {
+fn compopt_set(info: &mut CompletionEntry, plus: &[String], minus: &[String]) -> i32 {
     for opt in minus {
         //add
         if !info.o_options.contains(opt) {
@@ -21,7 +21,7 @@ fn compopt_set(info: &mut CompletionEntry, plus: &Vec<String>, minus: &Vec<Strin
     0
 }
 
-fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn compopt_print(core: &mut ShellCore, args: &[String]) -> i32 {
     let optlist = [
         "bashdefault",
         "default",
@@ -54,14 +54,15 @@ fn compopt_print(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn compopt(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut args = args.to_owned();
     if args.len() < 2 {
         dbg!("{:?}", &core.completion.entries);
         return 1;
     }
 
     if !args[1].starts_with("-") && !args[1].starts_with("+") {
-        return compopt_print(core, args);
+        return compopt_print(core, &args);
     }
 
     let mut flag = "".to_string();
@@ -80,7 +81,7 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
 
         if args[1] == "-o" {
-            let opt = arg::consume_with_next_arg("-o", args);
+            let opt = arg::consume_with_next_arg("-o", &mut args);
             if opt.is_none() {
                 return 1;
             }
@@ -95,7 +96,7 @@ pub fn compopt(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
 
         if args[1] == "+o" {
-            let opt = arg::consume_with_next_arg("+o", args);
+            let opt = arg::consume_with_next_arg("+o", &mut args);
             if opt.is_none() {
                 return 1;
             }

@@ -148,7 +148,8 @@ fn set_option_with_arg(
     0
 }
 
-pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn getopts(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     let layer = core.db.get_layer_pos("OPTIND").unwrap_or(0);
     let layer_sub = core.db.get_layer_pos("OPTIND_SUB").unwrap_or(0);
     let layer_prev = core.db.get_layer_pos("OPTIND_PREV").unwrap_or(0);
@@ -186,7 +187,7 @@ pub fn getopts(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     let mut arg = args[index].clone();
-    let exp_args = arg::dissolve_options(&vec![arg.clone()]);
+    let exp_args = arg::dissolve_options(&[arg.clone()]);
     let subarg = exp_args.len() > 1;
     if subarg {
         if exp_args.len() <= subindex {

@@ -25,10 +25,7 @@ enum PrintfToken {
 
 impl PrintfToken {
     fn continue_(&self) -> bool {
-        match self {
-            Self::Normal(_) | Self::EscapedChar(_) => false,
-            _ => true,
-        }
+        !matches!(self, Self::Normal(_) | Self::EscapedChar(_))
     }
 
     fn to_int(s: &String) -> Result<isize, ExecError> {
@@ -46,11 +43,11 @@ impl PrintfToken {
     }
 
     //TODO: implement!
-    fn padding_float(_: &mut String, fmt: &mut String) {
-        if fmt.is_empty() {}
+    fn padding_float(_: &mut String, mut _fmt: String) {
+        if _fmt.is_empty() {}
     }
 
-    fn padding(s: &mut String, fmt: &mut String, is_int: bool) {
+    fn padding(s: &mut String, mut fmt: String, is_int: bool) {
         if fmt.is_empty() {
             return;
         }
@@ -90,11 +87,11 @@ impl PrintfToken {
         }
     }
 
-    fn to_string(&mut self, args: &mut Vec<String>) -> Result<String, ExecError> {
+    fn render_value(&mut self, args: &mut Vec<String>) -> Result<String, ExecError> {
         match self {
             Self::DI(fmt) => {
                 let mut a = pop(args);
-                Self::padding(&mut a, &mut fmt.clone(), true);
+                Self::padding(&mut a, fmt.clone(), true);
                 Ok(a)
             }
             Self::U(fmt) => {
@@ -102,43 +99,43 @@ impl PrintfToken {
                 if a.starts_with("-") {
                     a.remove(0);
                     let mut num = a.parse::<u64>()?;
-                    num = std::u64::MAX - num + 1;
+                    num = u64::MAX - num + 1;
                     let mut a = num.to_string();
-                    Self::padding(&mut a, &mut fmt.clone(), true);
+                    Self::padding(&mut a, fmt.clone(), true);
                     Ok(a)
                 } else {
-                    Self::padding(&mut a, &mut fmt.clone(), true);
+                    Self::padding(&mut a, fmt.clone(), true);
                     Ok(a)
                 }
             }
             Self::F(fmt) => {
                 let mut a = format!("{:.6}", Self::to_float(&pop(args))?);
-                Self::padding_float(&mut a, &mut fmt.clone());
+                Self::padding_float(&mut a, fmt.clone());
                 Ok(a)
             }
             Self::S(fmt) => {
                 let mut a = pop(args);
-                Self::padding(&mut a, &mut fmt.clone(), false);
+                Self::padding(&mut a, fmt.clone(), false);
                 Ok(a)
             }
             Self::B(fmt) => {
                 let mut a = replace_escape(&pop(args));
-                Self::padding(&mut a, &mut fmt.clone(), false);
+                Self::padding(&mut a, fmt.clone(), false);
                 Ok(a)
             }
             Self::X(fmt) => {
                 let mut a = format!("{:x}", Self::to_int(&pop(args))?);
-                Self::padding(&mut a, &mut fmt.clone(), true);
+                Self::padding(&mut a, fmt.clone(), true);
                 Ok(a)
             }
             Self::O(fmt) => {
                 let mut a = format!("{:o}", Self::to_int(&pop(args))?);
-                Self::padding(&mut a, &mut fmt.clone(), true);
+                Self::padding(&mut a, fmt.clone(), true);
                 Ok(a)
             }
             Self::LargeX(fmt) => {
                 let mut a = format!("{:X}", Self::to_int(&pop(args))?);
-                Self::padding(&mut a, &mut fmt.clone(), true);
+                Self::padding(&mut a, fmt.clone(), true);
                 Ok(a)
             }
             Self::Q => {
@@ -318,7 +315,7 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
         if tok.continue_() {
             fin = false;
         }
-        ans += &tok.to_string(args)?;
+        ans += &tok.render_value(args)?;
     }
 
     if !args.is_empty() && !fin {
@@ -329,7 +326,7 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
     Ok(ans)
 }
 
-fn arg_check(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn arg_check(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() < 2 || args[1] == "--help" || args[1] == "-v" && args.len() == 3 {
         let msg = "printf: usage: printf [-v var] format [arguments]".to_string();
         error::print(&msg, core);
@@ -380,14 +377,15 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn printf(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    match arg_check(core, args) {
+pub fn printf(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut args = args.to_owned();
+    match arg_check(core, &args) {
         0 => {}
         n => return n,
     }
 
     if args[1] == "-v" {
-        return printf_v(core, args);
+        return printf_v(core, &mut args);
     }
 
     let s = match format(&args[1], &mut args[2..].to_vec()) {

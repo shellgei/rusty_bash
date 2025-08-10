@@ -43,8 +43,10 @@ fn connect_names(subwords: &mut [Box<dyn Subword>]) {
     }
 
     if pos > 1 {
-        let mut sw = Parameter::default();
-        sw.text = text;
+        let sw = Parameter {
+            text,
+            ..Default::default()
+        };
         subwords[0] = Box::new(sw);
         subwords[1..pos].iter_mut().for_each(|s| s.set_text(""));
     }

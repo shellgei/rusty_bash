@@ -35,7 +35,7 @@ impl ArithmeticExpr {
                         return Err(ExecError::ArithError(arith_txt, err));
                     }
                     let text = w.eval_as_value(core)?;
-                    let word = ArithElem::Word(Word::from(&text), *inc);
+                    let word = ArithElem::Word(Word::from(text.as_str()), *inc);
                     txt += &word.to_string();
                 }
                 e => txt += &e.to_string(),
@@ -146,7 +146,7 @@ impl ArithmeticExpr {
         Ok(ans)
     }
 
-    fn dec_to_str(nums: &Vec<u8>, base: i128) -> String {
+    fn dec_to_str(nums: &[u8], base: i128) -> String {
         let shift = if base <= 0 {
             |n| n + b'0'
         } else if base <= 36 {

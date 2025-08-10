@@ -10,7 +10,7 @@ use crate::utils;
 use crate::utils::exit;
 use crate::{Feeder, ShellCore};
 
-fn to_num(w: &str, sub: &String, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+fn to_num(w: &str, sub: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if w.find('\'').is_some() {
         return Err(ArithError::OperandExpected(w.to_string()).into());
     }
@@ -19,7 +19,7 @@ fn to_num(w: &str, sub: &String, core: &mut ShellCore) -> Result<ArithElem, Exec
     str_to_num(&name, sub, core)
 }
 
-pub fn str_to_num(name: &str, sub: &String, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+pub fn str_to_num(name: &str, sub: &str, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     let mut name = name.to_string();
 
     const RESOLVE_LIMIT: i32 = 100; //000;
@@ -64,7 +64,7 @@ fn try_parse_to_num(name: &str) -> Result<ArithElem, ExecError> {
 
 pub fn set_and_to_value(
     name: &str,
-    sub: &String,
+    sub: &str,
     core: &mut ShellCore,
     inc: i128,
     pre: bool,
@@ -135,7 +135,7 @@ pub fn substitution(
 fn subs(
     op: &str,
     w: &str,
-    sub: &String,
+    sub: &str,
     right_value: &mut ArithElem,
     core: &mut ShellCore,
 ) -> Result<ArithElem, ExecError> {

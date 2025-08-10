@@ -157,8 +157,8 @@ impl DataBase {
     pub fn set_param2(
         &mut self,
         name: &str,
-        index: &String,
-        val: &String,
+        index: &str,
+        val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
         if index.is_empty() {
@@ -187,8 +187,8 @@ impl DataBase {
     pub fn append_param2(
         &mut self,
         name: &str,
-        index: &String,
-        val: &String,
+        index: &str,
+        val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
         if index.is_empty() {
@@ -217,7 +217,7 @@ impl DataBase {
     pub fn set_array_elem(
         &mut self,
         name: &str,
-        val: &String,
+        val: &str,
         pos: isize,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
@@ -238,7 +238,7 @@ impl DataBase {
     pub fn append_to_array_elem(
         &mut self,
         name: &str,
-        val: &String,
+        val: &str,
         pos: isize,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
@@ -254,8 +254,8 @@ impl DataBase {
     pub fn set_assoc_elem(
         &mut self,
         name: &str,
-        key: &String,
-        val: &String,
+        key: &str,
+        val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
@@ -285,8 +285,8 @@ impl DataBase {
     pub fn append_to_assoc_elem(
         &mut self,
         name: &str,
-        key: &String,
-        val: &String,
+        key: &str,
+        val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;

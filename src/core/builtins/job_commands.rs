@@ -10,11 +10,11 @@ use nix::unistd;
 use nix::unistd::Pid;
 use std::{thread, time};
 
-fn pid_to_array_pos(pid: i32, jobs: &Vec<JobEntry>) -> Option<usize> {
+fn pid_to_array_pos(pid: i32, jobs: &[JobEntry]) -> Option<usize> {
     (0..jobs.len()).find(|&i| jobs[i].pids[0].as_raw() == pid)
 }
 
-fn jobid_to_pos(id: usize, jobs: &mut Vec<JobEntry>) -> Option<usize> {
+fn jobid_to_pos(id: usize, jobs: &mut [JobEntry]) -> Option<usize> {
     for (i, job) in jobs.iter_mut().enumerate() {
         if job.id == id {
             return Some(i);
@@ -23,12 +23,13 @@ fn jobid_to_pos(id: usize, jobs: &mut Vec<JobEntry>) -> Option<usize> {
     None
 }
 
-pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn bg(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if core.job_table.is_empty() {
         return 1;
     }
 
-    let mut args = arg::dissolve_options(args);
+    let mut args = arg::dissolve_options(&args);
     if !core.db.flags.contains('m') {
         return super::error_exit(1, &args[0], "no job control", core);
     }
@@ -74,8 +75,9 @@ pub fn bg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn fg(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut args = arg::dissolve_options(args);
+pub fn fg(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
+    let mut args = arg::dissolve_options(&args);
     if !core.db.flags.contains('m') {
         return super::error_exit(1, &args[0], "no job control", core);
     }
@@ -145,7 +147,10 @@ fn jobspec_to_array_pos(core: &mut ShellCore, com: &str, jobspec: &str) -> Optio
         super::error_exit(127, com, &msg, core);
         return None;
     } else if poss.len() > 1 {
-        let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
+        let msg = format!(
+            "{}: ambiguous job spec",
+            jobspec.strip_prefix('%').unwrap_or(jobspec)
+        );
         super::error_exit(127, com, &msg, core);
         return None;
     }
@@ -187,9 +192,9 @@ fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
                 ans.push(i);
             }
         }
-    } else if s.starts_with("?") {
+    } else if let Some(stripped) = s.strip_prefix('?') {
         for (i, job) in core.job_table.iter_mut().enumerate() {
-            if job.text.contains(&s[1..]) {
+            if job.text.contains(stripped) {
                 ans.push(i);
             }
         }
@@ -204,7 +209,7 @@ fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
     ans
 }
 
-pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn jobs(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     if arg::consume_option("-n", &mut args) {
         core.jobtable_print_status_change();
@@ -228,7 +233,10 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return super::error_exit(127, "jobs", &msg, core);
     }
     if poss.len() > 1 && !jobspec.is_empty() {
-        let msg = format!("{}: ambiguous job spec", &jobspec[1..]);
+        let msg = format!(
+            "{}: ambiguous job spec",
+            jobspec.strip_prefix('%').unwrap_or(&jobspec)
+        );
         super::error_exit(127, "jobs", &msg, core);
         let msg = format!("{}: no such job", &jobspec);
         return super::error_exit(127, "jobs", &msg, core);
@@ -251,7 +259,7 @@ pub fn jobs(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return 0;
     }
 
-    print(core, &mut args);
+    print(core, &args);
     0
 }
 
@@ -266,10 +274,10 @@ fn get_priority(core: &mut ShellCore, pos: usize) -> usize {
     core.job_table.len()
 }
 
-fn print(core: &mut ShellCore, args: &mut Vec<String>) {
-    let l_opt = arg::consume_option("-l", args);
-    let r_opt = arg::consume_option("-r", args);
-    let s_opt = arg::consume_option("-s", args);
+fn print(core: &mut ShellCore, args: &[String]) {
+    let l_opt = arg::has_option("-l", args);
+    let r_opt = arg::has_option("-r", args);
+    let s_opt = arg::has_option("-s", args);
 
     let mut rem = vec![];
     for id in 0..core.job_table.len() {
@@ -304,7 +312,7 @@ fn wait_jobspec(
 
 fn wait_next(
     core: &mut ShellCore,
-    ids: &Vec<usize>,
+    ids: &[usize],
     var_name: &Option<String>,
     f_opt: bool,
 ) -> (i32, bool) {
@@ -407,7 +415,7 @@ fn wait_a_job(
 fn wait_arg_job(
     core: &mut ShellCore,
     com: &str,
-    arg: &String,
+    arg: &str,
     var_name: &Option<String>,
     f_opt: bool,
 ) -> (i32, bool) {
@@ -459,7 +467,7 @@ fn wait_n(
     let mut jobs = arg::consume_with_subsequents("-n", args);
     jobs.remove(0);
     if jobs.is_empty() {
-        return wait_next(core, &vec![], var_name, f_opt).0;
+        return wait_next(core, &[], var_name, f_opt).0;
     }
 
     let mut ids = vec![];
@@ -491,7 +499,8 @@ fn wait_n(
     ans
 }
 
-pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if core.is_subshell {
         super::error_exit(127, &args[0], "called from subshell", core);
     }
@@ -500,7 +509,7 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return wait_all(core);
     }
 
-    let mut args = arg::dissolve_options(args);
+    let mut args = arg::dissolve_options(&args);
     let var_name = arg::consume_with_next_arg("-p", &mut args);
     let f_opt = arg::consume_option("-f", &mut args);
 
@@ -515,7 +524,8 @@ pub fn wait(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 }
 
 /* TODO: implement original kill */
-pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn kill(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut args = args.to_owned();
     //let mut args = arg::dissolve_options(args);
     let path = utils::get_command_path(&args[0], core);
 
@@ -547,10 +557,10 @@ pub fn kill(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     args.insert(0, "eval".to_string());
-    super::eval(core, args)
+    super::eval(core, &args)
 }
 
-pub fn disown(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn disown(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     let h_opt = arg::consume_option("-h", &mut args);
     let _r_opt = arg::consume_option("-r", &mut args); //TODO: implement

@@ -102,8 +102,8 @@ impl ArithmeticExpr {
 
         ans.text += &feeder.consume(1);
         let left = Self::parse_after_eval(feeder, core, "?")?;
-        if left.is_some() {
-            ans.text += &left.as_ref().unwrap().text;
+        if let Some(ref l) = left {
+            ans.text += &l.text;
         }
 
         if !feeder.starts_with(":") {
@@ -114,8 +114,8 @@ impl ArithmeticExpr {
 
         ans.text += &feeder.consume(1);
         let right = Self::parse_after_eval(feeder, core, ":")?;
-        if right.is_some() {
-            ans.text += &right.as_ref().unwrap().text;
+        if let Some(ref r) = right {
+            ans.text += &r.text;
         }
 
         ans.elements
@@ -148,8 +148,10 @@ impl ArithmeticExpr {
                 ans.elements
                     .push(ArithElem::ArrayElem(name.clone(), s, suffix));
             }
-            if !internal && sp.is_some() {
-                ans.elements.push(sp.unwrap());
+            if !internal {
+                if let Some(s) = sp {
+                    ans.elements.push(s);
+                }
             }
         } else {
             let sp = Self::eat_space(feeder, ans, core);
@@ -158,10 +160,13 @@ impl ArithmeticExpr {
                 ans.elements
                     .push(ArithElem::Variable(name.clone(), None, suffix));
             } else {
-                ans.elements.push(ArithElem::Word(Word::from(name), suffix));
+                ans.elements
+                    .push(ArithElem::Word(Word::from(name.as_str()), suffix));
             }
-            if !internal && sp.is_some() {
-                ans.elements.push(sp.unwrap());
+            if !internal {
+                if let Some(s) = sp {
+                    ans.elements.push(s);
+                }
             }
         };
 
@@ -231,12 +236,13 @@ impl ArithmeticExpr {
 
         ans.text += &feeder.consume(1);
         let arith = Self::parse_after_eval(feeder, core, "(")?;
-        if arith.is_none() || !feeder.starts_with(")") {
-            return Ok(false);
+        match arith {
+            Some(a) if feeder.starts_with(")") => {
+                ans.text += &a.text;
+                ans.elements.push(ArithElem::InParen(a));
+            }
+            _ => return Ok(false),
         }
-
-        ans.text += &arith.as_ref().unwrap().text;
-        ans.elements.push(ArithElem::InParen(arith.unwrap()));
 
         ans.text += &feeder.consume(1);
         Ok(true)
@@ -255,11 +261,13 @@ impl ArithmeticExpr {
         ans.text += &paren.clone();
         ans.elements.push(ArithElem::Symbol(paren));
         let arith = Self::parse(feeder, core, true, "(")?;
-        if arith.is_none() || !feeder.starts_with(")") {
-            return Ok(false);
+        match arith {
+            Some(mut a) if feeder.starts_with(")") => {
+                ans.text += &a.text;
+                ans.elements.append(&mut a.elements);
+            }
+            _ => return Ok(false),
         }
-        ans.text += &arith.as_ref().unwrap().text;
-        ans.elements.append(&mut arith.unwrap().elements);
 
         let paren = feeder.consume(1);
         ans.text += &paren.clone();

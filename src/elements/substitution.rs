@@ -91,7 +91,7 @@ impl Substitution {
         &mut self,
         core: &mut ShellCore,
         layer: usize,
-        index: &String,
+        index: &str,
     ) -> Result<(), ExecError> {
         if index.is_empty() {
             return Err(ExecError::ArrayIndexInvalid(self.left_hand.text.clone()));

@@ -6,7 +6,7 @@ use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
 use crate::{error, proc_ctrl, ShellCore};
 
-pub fn builtin(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
         return 0;
     }
@@ -16,10 +16,10 @@ pub fn builtin(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         return super::error_exit(1, &args[0], &msg, core);
     }
 
-    core.builtins[&args[1]](core, &mut args[1..].to_vec())
+    core.builtins[&args[1]](core, &args[1..])
 }
 
-fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -> i32 {
+fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
     if words.is_empty() {
         return 0;
     }
@@ -55,7 +55,7 @@ fn command_v(words: &mut Vec<String>, core: &mut ShellCore, large_v: bool) -> i3
     return_value
 }
 
-pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     if core.db.flags.contains('r') && arg::consume_option("-p", &mut args) {
         return super::error_exit(1, &args[0], "-p: restricted", core);
@@ -73,7 +73,7 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         }
     }
 
-    let mut words = args[pos..].to_vec();
+    let words = args[pos..].to_vec();
     if words.is_empty() {
         return 0;
     }
@@ -83,9 +83,9 @@ pub fn command(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let last_option = args.last().unwrap();
     if last_option == "-V" || last_option == "-v" {
-        return command_v(&mut words, core, last_option == "-V");
+        return command_v(&words, core, last_option == "-V");
     } else if core.builtins.contains_key(&words[0]) {
-        return core.builtins[&words[0]](core, &mut words);
+        return core.builtins[&words[0]](core, &words[..]);
     }
 
     let mut command = SimpleCommand::default();

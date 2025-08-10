@@ -63,9 +63,11 @@ impl RepeatCommand {
             return Ok(None);
         }
 
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
-        ans.text = feeder.consume(6);
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            text: feeder.consume(6),
+            ..Default::default()
+        };
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
         ans.times = match Word::parse(feeder, core, None)? {

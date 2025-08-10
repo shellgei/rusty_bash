@@ -109,10 +109,8 @@ impl ConditionalExpr {
         ans: &mut Self,
         core: &mut ShellCore,
     ) -> Result<bool, ParseError> {
-        if let Some(e) = ans.elements.last() {
-            if let CondElem::UnaryOp(_) = e {
-                return Ok(false);
-            }
+        if let Some(CondElem::UnaryOp(_)) = ans.elements.last() {
+            return Ok(false);
         }
 
         if !feeder.starts_with("(") {

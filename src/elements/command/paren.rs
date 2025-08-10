@@ -75,8 +75,10 @@ impl ParenCommand {
         core: &mut ShellCore,
         substitution: bool,
     ) -> Result<Option<Self>, ParseError> {
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            ..Default::default()
+        };
 
         if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, substitution)? {
             ans.text.push('(');

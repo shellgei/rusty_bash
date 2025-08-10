@@ -12,7 +12,7 @@ pub fn oss_to_name(oss: &OsString) -> String {
     oss.to_string_lossy().to_string()
 }
 
-pub fn buf_to_name(path: &PathBuf) -> String {
+pub fn buf_to_name(path: &Path) -> String {
     path.to_string_lossy().to_string()
 }
 

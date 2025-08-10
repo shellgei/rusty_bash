@@ -21,8 +21,9 @@ fn print_all(core: &mut ShellCore) -> i32 {
     0
 }
 
-pub fn hash(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let mut args = arg::dissolve_options(args);
+pub fn hash(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
+    let mut args = arg::dissolve_options(&args);
 
     if args.len() == 1 {
         return print_all(core);

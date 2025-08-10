@@ -1,22 +1,16 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub fn consume_option(opt: &str, args: &mut Vec<String>) -> bool {
-    let end = args.iter().position(|a| a == "--");
+pub fn has_option(option: &str, args: &[String]) -> bool {
+    args.iter().any(|arg| arg == option)
+}
 
-    match args.iter().position(|a| a == opt) {
-        Some(pos) => {
-            if let Some(e) = end {
-                if e < pos {
-                    return false;
-                }
-            }
-
-            args.remove(pos);
-            true
-        }
-        None => false,
+pub fn consume_option(option: &str, args: &mut Vec<String>) -> bool {
+    let found = args.iter().any(|arg| arg == option);
+    if found {
+        args.retain(|arg| arg != option);
     }
+    found
 }
 
 pub fn consume_starts_with(s: &str, args: &mut Vec<String>) -> Vec<String> {
@@ -53,13 +47,13 @@ pub fn consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<S
 pub fn dissolve_option(opt: &str) -> Vec<String> {
     if opt.starts_with("--") {
         vec![opt.to_string()]
-    } else if opt.starts_with("-") {
-        opt[1..]
+    } else if let Some(stripped) = opt.strip_prefix('-') {
+        stripped
             .chars()
             .map(|c| ("-".to_owned() + &c.to_string()).to_string())
             .collect()
-    } else if opt.starts_with("+") {
-        opt[1..]
+    } else if let Some(stripped) = opt.strip_prefix('+') {
+        stripped
             .chars()
             .map(|c| ("+".to_owned() + &c.to_string()).to_string())
             .collect()
@@ -68,7 +62,7 @@ pub fn dissolve_option(opt: &str) -> Vec<String> {
     }
 }
 
-pub fn dissolve_options(args: &Vec<String>) -> Vec<String> {
+pub fn dissolve_options(args: &[String]) -> Vec<String> {
     let mut ans = vec![];
     let mut stop = false;
     for a in args {

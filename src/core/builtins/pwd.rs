@@ -4,7 +4,7 @@
 
 use crate::ShellCore;
 
-pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn pwd(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() == 1 || &args[1][..1] != "-" {
         // $ pwd, $ pwd aaa
         return show_pwd(core, false);

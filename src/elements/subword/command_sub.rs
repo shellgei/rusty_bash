@@ -85,8 +85,10 @@ impl CommandSubstitution {
             return Ok(None);
         }
 
-        let mut ans = Self::default();
-        ans.text = feeder.consume(1);
+        let mut ans = Self {
+            text: feeder.consume(1),
+            ..Default::default()
+        };
         let mut esc = false;
         while esc || !feeder.starts_with("`") {
             if feeder.is_empty() {
@@ -135,8 +137,10 @@ impl CommandSubstitution {
         if !feeder.starts_with("$(") {
             return Ok(None);
         }
-        let mut ans = Self::default();
-        ans.text = feeder.consume(1);
+        let mut ans = Self {
+            text: feeder.consume(1),
+            ..Default::default()
+        };
 
         if let Some(pc) = ParenCommand::parse(feeder, core, true)? {
             ans.text += &pc.get_text();

@@ -52,8 +52,7 @@ pub fn bin_calc(
         }
         "**" => {
             if right >= 0.0 {
-                let r = right.try_into().unwrap();
-                stack.push(ArithElem::Float(left.powf(r)));
+                stack.push(ArithElem::Float(left.powf(right)));
             } else {
                 return Err(ExecError::Other(error::exponent(&right.to_string())));
             }
@@ -70,8 +69,8 @@ pub fn bin_calc(
 
 pub fn substitute(
     op: &str,
-    name: &String,
-    index: &String,
+    name: &str,
+    index: &str,
     cur: f64,
     right: f64,
     core: &mut ShellCore,

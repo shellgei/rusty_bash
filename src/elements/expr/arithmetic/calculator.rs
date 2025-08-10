@@ -134,7 +134,7 @@ fn unary_operation(
     }
 }
 
-pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
+pub fn calculate(elements: &[ArithElem], core: &mut ShellCore) -> Result<ArithElem, ExecError> {
     if elements.is_empty() {
         return Ok(ArithElem::Integer(0));
     }
@@ -174,7 +174,7 @@ pub fn calculate(elements: &Vec<ArithElem>, core: &mut ShellCore) -> Result<Arit
     pop_operand(&mut stack, core)
 }
 
-fn dry_run(rev_pol: &Vec<ArithElem>) -> Result<(), ArithError> {
+fn dry_run(rev_pol: &[ArithElem]) -> Result<(), ArithError> {
     let mut stack = vec![];
     let mut last = None;
 

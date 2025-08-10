@@ -18,7 +18,7 @@ fn unset_function(core: &mut ShellCore, name: &str) -> i32 {
     0
 }
 
-pub fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     match args[1].as_ref() {
         "-f" => {
             if args.len() > 2 {
@@ -59,7 +59,8 @@ pub fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn unset(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut args = args.to_owned();
     let mut exit_status = 0;
 
     loop {
@@ -71,7 +72,7 @@ pub fn unset(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             break;
         }
 
-        exit_status = unset_one(core, args);
+        exit_status = unset_one(core, &mut args);
     }
     exit_status
 }

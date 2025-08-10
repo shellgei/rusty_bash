@@ -14,12 +14,12 @@ pub fn eval(word: &mut Word, shopts: &Options) -> Vec<Word> {
     let paths = expand(&globstr, shopts);
     if paths.is_empty() {
         if shopts.query("nullglob") {
-            return vec![Word::from(&String::new())];
+            return vec![Word::from("")];
         }
         return vec![word.clone()];
     }
 
-    paths.iter().map(From::from).collect()
+    paths.iter().map(|s| Word::from(s.as_str())).collect()
 }
 
 fn no_glob_symbol(pattern: &str) -> bool {

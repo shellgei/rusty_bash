@@ -14,7 +14,7 @@ pub fn run(com: &mut SimpleCommand, core: &mut ShellCore) -> Result<bool, ExecEr
     Ok(ans)
 }
 
-fn run_function(args: &mut Vec<String>, core: &mut ShellCore) -> bool {
+fn run_function(args: &mut [String], core: &mut ShellCore) -> bool {
     match core.db.functions.get_mut(&args[0]) {
         Some(f) => {
             f.clone().run_as_command(args, core);
@@ -35,7 +35,7 @@ pub fn run_builtin(com: &mut SimpleCommand, core: &mut ShellCore) -> Result<bool
     }
 
     let func = core.builtins[&com.args[0]];
-    core.db.exit_status = func(core, &mut com.args);
+    core.db.exit_status = func(core, &com.args[..]);
     Ok(true)
 }
 
@@ -56,7 +56,7 @@ pub fn run_substitution_builtin(
     let mut subs = vec![];
     for sub in com.substitutions_as_args.iter_mut() {
         match sub {
-            SubsArgType::Subs(s) => subs.push(s.clone()),
+            SubsArgType::Subs(s) => subs.push((**s).clone()),
             SubsArgType::Other(w) => {
                 for arg in w.eval(core)? {
                     if arg.starts_with("-") || arg.starts_with("+") {
@@ -79,6 +79,6 @@ pub fn run_substitution_builtin(
         }
     }
 
-    core.db.exit_status = func(core, &mut com.args, &mut subs);
+    core.db.exit_status = func(core, &com.args[..], &mut subs[..]);
     Ok(true)
 }

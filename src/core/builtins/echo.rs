@@ -9,7 +9,7 @@ use std::ffi::CString;
 use std::io;
 use std::io::{stdout, Write};
 
-fn arg_to_c_str(arg: &String, core: &mut ShellCore) -> Result<CString, ExecError> {
+fn arg_to_c_str(arg: &str, core: &mut ShellCore) -> Result<CString, ExecError> {
     let mut f = Feeder::new(arg);
     let ans = match AnsiCString::parse(&mut f, core, true) {
         Ok(Some(mut ansi_c_str)) => c_string::to_carg(&ansi_c_str.eval()),
@@ -20,7 +20,8 @@ fn arg_to_c_str(arg: &String, core: &mut ShellCore) -> Result<CString, ExecError
     Ok(ans)
 }
 
-pub fn echo(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn echo(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut args = args.to_owned();
     let mut first = true;
     let mut e_opt = false;
     let mut n_opt = false;

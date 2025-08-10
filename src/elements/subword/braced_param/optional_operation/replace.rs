@@ -28,7 +28,7 @@ impl OptionalOperation for Replace {
     fn exec(
         &mut self,
         param: &Variable,
-        text: &String,
+        text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
         match core.db.exist(&param.name) {
@@ -53,8 +53,8 @@ impl OptionalOperation for Replace {
             _ => core.db.get_vec(&param.name, true)?,
         };
 
-        for i in 0..array.len() {
-            array[i] = self.get_text(&array[i], core)?;
+        for item in array.iter_mut() {
+            *item = self.get_text(item, core)?;
         }
 
         if param.name == "@"
@@ -90,23 +90,23 @@ impl Replace {
     }
 
     fn get_text_head(
-        text: &String,
-        pattern: &Vec<GlobElem>,
-        string_to: &String,
+        text: &str,
+        pattern: &[GlobElem],
+        string_to: &str,
     ) -> Result<String, ExecError> {
         let len = glob::longest_match_length(text, pattern);
         if len == 0 && !pattern.is_empty() {
-            return Ok(text.clone());
+            return Ok(text.to_string());
         }
 
-        let ans = string_to.clone() + &text[len..];
+        let ans = string_to.to_string() + &text[len..];
         Ok(ans)
     }
 
     fn get_text_tail(
-        text: &String,
-        pattern: &Vec<GlobElem>,
-        string_to: &String,
+        text: &str,
+        pattern: &[GlobElem],
+        string_to: &str,
     ) -> Result<String, ExecError> {
         if pattern.is_empty() {
             let ans = text.to_string() + string_to;
@@ -115,7 +115,7 @@ impl Replace {
 
         let mut start = 0;
         for ch in text.chars() {
-            let len = glob::longest_match_length(&text[start..].to_string(), pattern);
+            let len = glob::longest_match_length(&text[start..], pattern);
 
             if len == text[start..].len() {
                 let ans = text[..start].to_string() + string_to;
@@ -128,7 +128,7 @@ impl Replace {
         Ok(text.to_string())
     }
 
-    pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn get_text(&self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let extglob = core.shopts.query("extglob");
         let tmp = self.to_string(&self.replace_from, core)?;
         let pattern = glob::parse(&tmp, extglob);
@@ -150,7 +150,7 @@ impl Replace {
                 continue;
             }
 
-            let len = glob::longest_match_length(&text[start..].to_string(), &pattern);
+            let len = glob::longest_match_length(&text[start..], &pattern);
             if len != 0 && self.tail_only_replace {
                 if len == text[start..].len() {
                     return Ok([&text[..start], &string_to[0..]].concat());

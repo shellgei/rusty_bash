@@ -22,11 +22,24 @@ use std::io::Read;
 use std::path::Path;
 
 pub fn reserved(w: &str) -> bool {
-    match w {
-        "[[" | "]]" | "{" | "}" | "while" | "for" | "do" | "done" | "if" | "then" | "elif"
-        | "else" | "fi" | "case" | "esac" | "repeat" => true,
-        _ => false,
-    }
+    matches!(
+        w,
+        "[[" | "]]"
+            | "{"
+            | "}"
+            | "while"
+            | "for"
+            | "do"
+            | "done"
+            | "if"
+            | "then"
+            | "elif"
+            | "else"
+            | "fi"
+            | "case"
+            | "esac"
+            | "repeat"
+    )
 }
 
 pub fn split_words(s: &str) -> Vec<String> {
@@ -159,7 +172,7 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     }
 }
 
-pub fn to_ansi_c(s: &String) -> String {
+pub fn to_ansi_c(s: &str) -> String {
     let mut ans = String::new();
     let mut ansi = false;
     let mut double_quote = false;
@@ -204,14 +217,8 @@ pub fn to_ansi_c(s: &String) -> String {
     ans
 }
 
-pub fn get_command_path(s: &String, core: &mut ShellCore) -> String {
-    for path in core
-        .db
-        .get_param("PATH")
-        .unwrap_or_default()
-        .to_string()
-        .split(":")
-    {
+pub fn get_command_path(s: &str, core: &mut ShellCore) -> String {
+    for path in core.db.get_param("PATH").unwrap_or_default().split(":") {
         for command in directory::files(path).iter() {
             let fullpath = path.to_owned() + "/" + command;
             if !Path::new(&fullpath).executable() {

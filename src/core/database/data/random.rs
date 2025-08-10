@@ -33,7 +33,7 @@ impl Data for RandomVar {
     }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        let seed = u64::from_str_radix(value, 10).unwrap_or(0);
+        let seed = value.parse::<u64>().unwrap_or(0);
         self.rng = ChaCha20Rng::seed_from_u64(seed + 4011); //4011: for bash test
         Ok(())
     }

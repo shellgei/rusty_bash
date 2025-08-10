@@ -39,7 +39,8 @@ pub fn wait_pipeline(
     let mut pipestatus = vec![];
     let mut ans = vec![];
     for pid in &pids {
-        if pid.is_some() { //None: lastpipe
+        if pid.is_some() {
+            //None: lastpipe
             let ws = wait_process(core, pid.unwrap());
             ans.push(ws);
             pipestatus.push(core.db.exit_status);
@@ -166,7 +167,7 @@ fn show_time(core: &ShellCore) {
     );
 }
 
-pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String) -> ! {
+pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! {
     let cargs = c_string::to_cargs(args);
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
@@ -187,9 +188,9 @@ pub fn exec_command(args: &Vec<String>, core: &mut ShellCore, fullpath: &String)
     }
 }
 
-fn run_command_not_found(arg: &String, core: &mut ShellCore) -> ! {
+fn run_command_not_found(arg: &str, core: &mut ShellCore) -> ! {
     if core.db.functions.contains_key("command_not_found_handle") {
-        let s = "command_not_found_handle ".to_owned() + &arg.clone();
+        let s = "command_not_found_handle ".to_owned() + arg;
         let mut f = Feeder::new(&s);
         match Script::parse(&mut f, core, false) {
             Ok(Some(mut script)) => {

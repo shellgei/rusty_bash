@@ -60,7 +60,7 @@ pub fn backup(from: RawFd) -> RawFd {
 
 pub fn connect(
     pipe: &mut Pipe,
-    rs: &mut Vec<Redirect>,
+    rs: &mut [Redirect],
     core: &mut ShellCore,
 ) -> Result<(), ExecError> {
     pipe.connect()?;

@@ -20,18 +20,18 @@ pub enum MetaChar {
     CharClass(String),
 }
 
-pub fn parse_and_compare(word: &String, pattern: &str, extglob: bool) -> bool {
+pub fn parse_and_compare(word: &str, pattern: &str, extglob: bool) -> bool {
     let pat = parser::parse(pattern, extglob);
     compare(word, &pat)
 }
 
-pub fn compare(word: &String, pattern: &Vec<GlobElem>) -> bool {
+pub fn compare(word: &str, pattern: &[GlobElem]) -> bool {
     comparator::shave_word(word, pattern)
         .iter()
         .any(|c| c.is_empty())
 }
 
-pub fn longest_match_length(word: &String, pattern: &Vec<GlobElem>) -> usize {
+pub fn longest_match_length(word: &str, pattern: &[GlobElem]) -> usize {
     word.len()
         - comparator::shave_word(word, pattern)
             .iter()
@@ -40,7 +40,7 @@ pub fn longest_match_length(word: &String, pattern: &Vec<GlobElem>) -> usize {
             .unwrap_or(word.len())
 }
 
-pub fn shortest_match_length(word: &String, pattern: &Vec<GlobElem>) -> usize {
+pub fn shortest_match_length(word: &str, pattern: &[GlobElem]) -> usize {
     word.len()
         - comparator::shave_word(word, pattern)
             .iter()

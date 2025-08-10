@@ -36,7 +36,8 @@ impl SimpleCommand {
         if let Some(s) = Substitution::parse_as_arg(feeder, core)? {
             //Ok(Some(s)) => {
             ans.text += &s.text;
-            ans.substitutions_as_args.push(SubsArgType::Subs(s));
+            ans.substitutions_as_args
+                .push(SubsArgType::Subs(Box::new(s)));
             return Ok(true);
             /*},
             Ok(None) => Ok(false),

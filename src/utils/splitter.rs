@@ -14,7 +14,7 @@ pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)
     }
 }
 
-fn scanner_blank(s: &str, blank: &Vec<char>) -> usize {
+fn scanner_blank(s: &str, blank: &[char]) -> usize {
     let mut ans = 0;
     let mut esc = false;
 
@@ -35,7 +35,7 @@ fn scanner_blank(s: &str, blank: &Vec<char>) -> usize {
     ans
 }
 
-fn scanner_ifs_blank(s: &str, blank: &Vec<char>, delim: &Vec<char>) -> usize {
+fn scanner_ifs_blank(s: &str, blank: &[char], delim: &[char]) -> usize {
     let mut ans = 0;
     let mut esc = false;
 

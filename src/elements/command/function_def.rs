@@ -64,7 +64,7 @@ impl FunctionDefinition {
         }
     }
 
-    pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+    pub fn run_as_command(&mut self, args: &mut [String], core: &mut ShellCore) {
         let mut array = core.db.get_vec("FUNCNAME", false).unwrap();
         array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
         let _ = core.db.set_array("FUNCNAME", Some(array.clone()), None);

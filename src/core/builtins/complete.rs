@@ -74,19 +74,23 @@ fn print_complete(core: &mut ShellCore) -> i32 {
     0
 }
 
-fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<String>) -> i32 {
-    let d_option = arg::consume_option("-D", args);
+fn complete_f(core: &mut ShellCore, args: &[String], o_options: &[String]) -> i32 {
+    let d_option = arg::has_option("-D", args);
+    let mut arg_index = 1;
+    if d_option {
+        arg_index = 2;
+    }
 
-    if args.len() <= 1 {
+    if args.len() <= arg_index {
         return builtins::error_exit(2, &args[0], "-F: option requires an argument", core);
     }
 
     if d_option {
-        core.completion.default_function = args[1].clone();
+        core.completion.default_function = args[arg_index].clone();
         0
     } else {
-        let func = args[1].clone();
-        for command in &args[2..] {
+        let func = args[arg_index].clone();
+        for command in &args[arg_index + 1..] {
             if !core.completion.entries.contains_key(command) {
                 core.completion
                     .entries
@@ -95,31 +99,32 @@ fn complete_f(core: &mut ShellCore, args: &mut Vec<String>, o_options: &Vec<Stri
 
             let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.function = func.clone();
-            info.o_options = o_options.clone();
+            info.o_options = o_options.to_owned();
         }
 
         0
     }
 }
 
-fn complete_r(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    for command in &mut args[1..] {
+fn complete_r(core: &mut ShellCore, args: &[String]) -> i32 {
+    for command in &args[1..] {
         core.completion.entries.remove(command);
     }
 
     0
 }
 
-pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if args.len() <= 1 || args[1] == "-p" {
         return print_complete(core);
     }
 
     let mut o_options = vec![];
-    let mut args = arg::dissolve_options(args);
+    let mut args = arg::dissolve_options(&args);
 
     if arg::consume_option("-r", &mut args) {
-        return complete_r(core, &mut args);
+        return complete_r(core, &args);
     }
 
     while let Some(v) = arg::consume_with_next_arg("-o", &mut args) {
@@ -128,12 +133,12 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
     let mut options = HashMap::new();
     let prefix = arg::consume_with_next_arg("-P", &mut args);
-    if prefix.is_some() {
-        options.insert("-P".to_string(), prefix.unwrap().clone());
+    if let Some(prefix) = prefix {
+        options.insert("-P".to_string(), prefix.clone());
     }
     let suffix = arg::consume_with_next_arg("-S", &mut args);
-    if suffix.is_some() {
-        options.insert("-S".to_string(), suffix.unwrap().clone());
+    if let Some(suffix) = suffix {
+        options.insert("-S".to_string(), suffix.clone());
     }
 
     let action = opt_to_action(&args[1]);
@@ -169,7 +174,7 @@ pub fn complete(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
 
     if arg::consume_option("-F", &mut args) {
-        complete_f(core, &mut args, &o_options)
+        complete_f(core, &args, &o_options)
     } else {
         let msg = format!("{}: still unsupported", &args[1]);
         builtins::error_exit(1, &args[0], &msg, core)

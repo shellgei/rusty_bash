@@ -3,7 +3,8 @@
 
 use crate::ShellCore;
 
-pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn return_(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if core.source_function_level <= 0 {
         eprintln!("sush: return: can only `return' from a function or sourced script");
         return 2;
@@ -20,7 +21,8 @@ pub fn return_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     2
 }
 
-pub fn break_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn break_(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if core.loop_level <= 0 {
         eprintln!("sush: break: only meaningful in a `for', `while', or `until' loop");
         return 0;
@@ -48,7 +50,8 @@ pub fn break_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn continue_(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
+pub fn continue_(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
     if core.loop_level <= 0 {
         eprintln!("sush: continue: only meaningful in a `for', `while', or `until' loop");
         return 0;

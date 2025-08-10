@@ -27,7 +27,7 @@ impl OptionalOperation for ValueCheck {
     fn exec(
         &mut self,
         variable: &Variable,
-        text: &String,
+        text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
         let sym = self.symbol.clone().unwrap();
@@ -42,7 +42,7 @@ impl OptionalOperation for ValueCheck {
 
         if check_ok {
             self.alternative_value = None;
-            return Ok(text.clone());
+            return Ok(text.to_string());
         }
 
         match sym.as_ref() {
@@ -142,7 +142,7 @@ impl ValueCheck {
         Ok(value)
     }
 
-    fn show_error(&mut self, name: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    fn show_error(&mut self, name: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let value = self.set_alter_word(core)?;
         let msg = format!("{}: {}", &name, &value);
         Err(ExecError::Other(msg))

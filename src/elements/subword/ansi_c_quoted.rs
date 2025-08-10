@@ -35,7 +35,7 @@ impl Subword for AnsiCQuoted {
             if let AnsiCToken::EmptyHex = t {
                 break;
             }
-            ans += &t.to_string();
+            ans += &t.render();
         }
 
         ans

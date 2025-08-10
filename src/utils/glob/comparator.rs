@@ -5,7 +5,7 @@ use super::extglob;
 use super::{GlobElem, MetaChar};
 use crate::exit;
 
-pub fn shave_word(word: &String, pattern: &Vec<GlobElem>) -> Vec<String> {
+pub fn shave_word(word: &str, pattern: &[GlobElem]) -> Vec<String> {
     let mut candidates = vec![word.to_string()];
     pattern.iter().for_each(|w| shave(&mut candidates, w));
     candidates
@@ -22,7 +22,7 @@ pub fn shave(candidates: &mut Vec<String>, w: &GlobElem) {
     }
 }
 
-fn normal(cands: &mut Vec<String>, s: &String) {
+fn normal(cands: &mut Vec<String>, s: &str) {
     cands.retain(|c| c.starts_with(s));
     cands.iter_mut().for_each(|c| {
         *c = c.split_off(s.len());
@@ -53,7 +53,7 @@ fn asterisk(cands: &mut Vec<String>) {
     *cands = ans;
 }
 
-fn one_of(cands: &mut Vec<String>, cs: &Vec<MetaChar>, not_inv: bool) {
+fn one_of(cands: &mut Vec<String>, cs: &[MetaChar], not_inv: bool) {
     if cs.is_empty() {
         if !not_inv {
             cands.clear();
@@ -69,7 +69,7 @@ fn one_of(cands: &mut Vec<String>, cs: &Vec<MetaChar>, not_inv: bool) {
     });
 }
 
-fn compare_head(cand: &String, c: &MetaChar) -> bool {
+fn compare_head(cand: &str, c: &MetaChar) -> bool {
     let head = cand.chars().next().unwrap();
     match c {
         MetaChar::Normal(c) => head == *c,

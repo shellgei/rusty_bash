@@ -95,8 +95,10 @@ impl IfCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            ..Default::default()
+        };
 
         let mut if_or_elif = "if";
         while Self::eat_word_and_script(if_or_elif, feeder, &mut ans, core)?

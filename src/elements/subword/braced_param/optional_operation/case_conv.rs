@@ -17,7 +17,7 @@ impl OptionalOperation for CaseConv {
     fn exec(
         &mut self,
         _: &Variable,
-        text: &String,
+        text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
         self.get_text(text, core)
@@ -50,11 +50,11 @@ impl CaseConv {
         Ok("".to_string())
     }
 
-    fn get_match_length(&self, text: &str, pattern: &Vec<GlobElem>, ch: char) -> usize {
+    fn get_match_length(&self, text: &str, pattern: &[GlobElem], ch: char) -> usize {
         if pattern.is_empty() {
             return ch.len_utf8();
         }
-        glob::longest_match_length(&text.to_string(), pattern)
+        glob::longest_match_length(text, pattern)
     }
 
     fn conv(&self, ch: char) -> String {
@@ -73,7 +73,7 @@ impl CaseConv {
         ch.to_string()
     }
 
-    pub fn get_text(&self, text: &String, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn get_text(&self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let tmp = self.to_string(&self.pattern, core)?;
         let extglob = core.shopts.query("extglob");
         let pattern = glob::parse(&tmp, extglob);

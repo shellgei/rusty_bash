@@ -19,7 +19,7 @@ use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone)]
 enum SubsArgType {
-    Subs(Substitution),
+    Subs(Box<Substitution>),
     Other(Word),
 }
 

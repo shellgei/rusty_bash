@@ -130,7 +130,7 @@ fn parse(subwords: &[Box<dyn Subword>]) -> Option<(Vec<usize>, BraceType)> {
     None
 }
 
-fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<(Vec<usize>, BraceType)> {
+fn get_delimiters(stack: &mut [Option<&str>]) -> Option<(Vec<usize>, BraceType)> {
     let mut comma_pos = vec![];
     let mut period_pos = vec![];
 
@@ -174,8 +174,8 @@ fn get_delimiters(stack: &mut Vec<Option<&str>>) -> Option<(Vec<usize>, BraceTyp
 }
 
 fn comma_brace_to_subwords(
-    subwords: &Vec<Box<dyn Subword>>,
-    delimiters: &Vec<usize>,
+    subwords: &[Box<dyn Subword>],
+    delimiters: &[usize],
 ) -> Vec<Vec<Box<dyn Subword>>> {
     let mut ans = vec![];
     let mut from = delimiters[0] + 1;
@@ -187,8 +187,8 @@ fn comma_brace_to_subwords(
 }
 
 fn expand_comma_brace(
-    subwords: &Vec<Box<dyn Subword>>,
-    delimiters: &Vec<usize>,
+    subwords: &[Box<dyn Subword>],
+    delimiters: &[usize],
     compat_bash: bool,
 ) -> Vec<Word> {
     let left = subwords[..delimiters[0]].to_vec();
@@ -201,7 +201,7 @@ fn expand_comma_brace(
 
 fn expand_range_brace(
     subwords: &mut Vec<Box<dyn Subword>>,
-    delimiters: &Vec<usize>,
+    delimiters: &[usize],
     operand_num: usize,
     compat_bash: bool,
 ) -> Vec<Word> {
@@ -312,7 +312,7 @@ fn gen_chars(start: &str, end: &str, skip: usize, compat_bash: bool) -> Vec<Box<
 }
 
 fn subword_sets_to_words(
-    series: &Vec<Vec<Box<dyn Subword>>>,
+    series: &[Vec<Box<dyn Subword>>],
     left: &[Box<dyn Subword>],
     right: &[Box<dyn Subword>],
     compat_bash: bool,
@@ -332,7 +332,7 @@ fn subword_sets_to_words(
     ans
 }
 
-fn subwords_to_word(subwords: &Vec<Box<dyn Subword>>) -> Vec<Word> {
+fn subwords_to_word(subwords: &[Box<dyn Subword>]) -> Vec<Word> {
     let mut w = Word::default();
     w.subwords = subwords.to_vec();
     w.text = w.subwords.iter().map(|s| s.get_text()).collect();

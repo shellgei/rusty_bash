@@ -91,9 +91,11 @@ impl ArithmeticCommand {
         }
         feeder.set_backup();
 
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
-        ans.text = feeder.consume(2);
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            text: feeder.consume(2),
+            ..Default::default()
+        };
 
         if let Some(c) = ArithmeticExpr::parse(feeder, core, true, "((")? {
             if feeder.starts_with("))") {

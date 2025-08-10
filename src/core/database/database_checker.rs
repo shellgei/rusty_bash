@@ -45,7 +45,7 @@ impl DataBase {
 
         let num = self.params.len();
         for layer in (0..num).rev() {
-            if self.params[layer].get(name).is_some() {
+            if self.params[layer].contains_key(name) {
                 return true;
             }
         }

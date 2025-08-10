@@ -43,18 +43,16 @@ fn wait_block(pid: &Pid, status: &mut WaitStatus) -> Result<i32, ExecError> {
 }
 
 fn still(status: &WaitStatus) -> bool {
-    match &status {
-        WaitStatus::StillAlive => true,
-        WaitStatus::Stopped(_, _) => true,
-        WaitStatus::Continued(__) => true,
-        _ => false,
-    }
+    matches!(
+        status,
+        WaitStatus::StillAlive | WaitStatus::Stopped(_, _) | WaitStatus::Continued(_)
+    )
 }
 
 impl JobEntry {
     pub fn new(
         pids: Vec<Option<Pid>>,
-        statuses: &Vec<WaitStatus>,
+        statuses: &[WaitStatus],
         text: &str,
         status: &str,
         id: usize,
@@ -120,7 +118,7 @@ impl JobEntry {
 
     pub fn print(
         &self,
-        priority: &Vec<usize>,
+        priority: &[usize],
         l_opt: bool,
         r_opt: bool,
         s_opt: bool,
@@ -282,7 +280,7 @@ impl ShellCore {
     pub fn get_stopped_job_commands(&self) -> Vec<String> {
         self.job_table
             .iter()
-            .map(|j| j.text.split(' ').nth(0).unwrap().to_string())
+            .map(|j| j.text.split(' ').next().unwrap().to_string())
             .collect()
     }
 }

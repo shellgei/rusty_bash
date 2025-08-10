@@ -74,8 +74,10 @@ impl Command for WhileCommand {
 
 impl WhileCommand {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            ..Default::default()
+        };
 
         if !command::eat_inner_script(
             feeder,
