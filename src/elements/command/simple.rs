@@ -17,6 +17,7 @@ use crate::utils::exit;
 use nix::unistd::Pid;
 use std::sync::atomic::Ordering::Relaxed;
 use std::os::fd::RawFd;
+use crate::elements::io;
 
 #[derive(Debug, Clone)]
 enum SubsArgType {
@@ -53,11 +54,17 @@ impl Command for SimpleCommand {
 
         self.args.clear();
         let mut words = self.words.to_vec();
-        self.aux_fds.clear();
+        //self.aux_fds.clear();
+        let mut prevs = vec![];
         for w in words.iter_mut() {
-            self.aux_fds.append(&mut w.set_pipe(pipe.is_end)); //for >()
+            prevs.append(&mut w.set_pipe(pipe.is_end)); //for >()
             self.set_arg(w, core)?;
         }
+
+        /*
+        for fd in prevs {
+            io::replace(fd, pipe.recv);
+        }*/
 
         if !self.args.is_empty() && self.args[0].starts_with("%") {
             self.redirects.clear();

@@ -39,7 +39,7 @@ pub fn replace(from: RawFd, to: RawFd) -> bool {
     }
 }
 
-fn share(from: RawFd, to: RawFd) -> Result<(), ExecError> {
+pub fn share(from: RawFd, to: RawFd) -> Result<(), ExecError> {
     if from < 0 || to < 0 {
         return Err(ExecError::Other("minus fd number".to_string()));
     }

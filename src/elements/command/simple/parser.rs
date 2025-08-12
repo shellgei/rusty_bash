@@ -34,17 +34,9 @@ impl SimpleCommand {
         core: &mut ShellCore,
     ) -> Result<bool, ParseError> {
         if let Some(s) = Substitution::parse_as_arg(feeder, core)? {
-            //Ok(Some(s)) => {
             ans.text += &s.text;
             ans.substitutions_as_args.push(SubsArgType::Subs(s));
             return Ok(true);
-            /*},
-            Ok(None) => Ok(false),
-            Err(e) => {
-                feeder.rewind();
-                Err(e)
-            },
-            */
         }
 
         if let Some(w) = Word::parse(feeder, core, None)? {

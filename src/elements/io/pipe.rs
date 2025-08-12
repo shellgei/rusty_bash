@@ -115,9 +115,10 @@ impl Pipe {
         io::replace(self.send, 1);
         io::replace(self.prev, 0);
 
+        /*
         for fd in &self.aux_prevs {
             io::replace(*fd, 0);
-        }
+        }*/
 
         if self.text == "|&" {
             io::share(1, 2)?;
