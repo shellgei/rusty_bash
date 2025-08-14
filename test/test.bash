@@ -803,7 +803,7 @@ res=$($com <<< 'A={a,b}; echo $A')
 
 ### local substitution ###
 
-res=$($com <<< 'A=ABC cd')
+res=$($com <<< 'A=ABC cd; echo $A')
 [ "$res" == "" ] || err $LINENO
 
 echo OK $0
