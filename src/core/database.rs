@@ -31,6 +31,12 @@ impl DataBase {
             return Ok("".to_string());
         }
 
+        for params in self.parameters.iter_mut().rev() {
+            if params.contains_key(name) {
+                return Ok(params[name].clone());
+            }
+        }
+
         if ! self.parameters[0].contains_key(name) {
             if let Ok(val) = env::var(name) {
                 self.set_param(name, &val, None)?;
@@ -47,20 +53,22 @@ impl DataBase {
 
     pub fn set_param(&mut self, name: &str, val: &str,
                      layer: Option<usize>) -> Result<(), ExecError> {
-        if layer.is_some() {
-            self.parameters[layer.unwrap()]
-                .insert(name.to_string(), val.to_string());
+        let name = name.to_string();
+        let val = val.to_string();
 
+        if layer.is_some() {
+            self.parameters[layer.unwrap()].insert(name, val);
             return Ok(());
         }
 
-        for ly in (1..self.get_layer_num()-1).rev() {
-            if self.parameters[ly].contains_key(name) {
+        for params in self.parameters.iter_mut().rev() {
+            if params.contains_key(&name) {
+                params.insert(name, val);
+                return Ok(());
             }
         }
 
-        self.parameters[0]
-            .insert(name.to_string(), val.to_string());
+        self.parameters[0].insert(name, val);
 
         Ok(())
     }
