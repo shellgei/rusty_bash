@@ -24,6 +24,7 @@ impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {
         self.text.clone()
     }
+
     fn exec(
         &mut self,
         variable: &Variable,
@@ -84,7 +85,11 @@ impl ValueCheck {
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
 
-        self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);
+        if self.in_double_quoted {
+            self.alternative_value = Some(v.dollar_expansion(core)?);
+        }else{
+            self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);
+        }
         if self.in_double_quoted {
             for sw in self.alternative_value.as_mut().unwrap().subwords.iter_mut() {
                 if sw.get_text().starts_with("'") {
@@ -93,7 +98,7 @@ impl ValueCheck {
             }
         }
 
-        if v.text.starts_with("~") {
+        if v.text.starts_with("~") && ! self.in_double_quoted {
             v.eval_as_value(core)
         }else{
             v.eval_as_alter(core)
