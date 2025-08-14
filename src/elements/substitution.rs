@@ -25,10 +25,6 @@ impl Substitution {
                           &self.right_hand.evaluated_string, layer)
     }
 
-    pub fn get_name(&self) -> String {
-        return self.left_hand.text.clone();
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();

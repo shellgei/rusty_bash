@@ -112,10 +112,10 @@ impl SimpleCommand {
     }
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        for s in self.substitutions.iter_mut() {
-            env::set_var(s.get_name(), "");
-            s.eval(core, Some(0))?;
-        }   
+        let layer = core.db.get_layer_num() - 1;
+        for entry in core.db.get_param_layer(layer) {
+            env::set_var(entry.0, entry.1);
+        }
         Ok(())
     } 
 

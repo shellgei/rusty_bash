@@ -75,6 +75,10 @@ impl DataBase {
         Ok(())
     }
 
+    pub fn get_param_layer(&self, layer: usize) -> &HashMap<String, String> {
+        &self.parameters[layer]
+    }
+
     pub fn push_local(&mut self) {
         self.parameters.push(HashMap::new());
     }   

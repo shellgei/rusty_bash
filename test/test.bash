@@ -806,4 +806,10 @@ res=$($com <<< 'A={a,b}; echo $A')
 res=$($com <<< 'A=ABC cd; echo $A')
 [ "$res" == "" ] || err $LINENO
 
+res=$($com <<< 'TZ=GMT date | grep GMT')
+[ $? -eq 0 ] || err $LINENO
+
+res=$($com <<< 'TZ=UTC date | grep UTC')
+[ $? -eq 0 ] || err $LINENO
+
 echo OK $0
