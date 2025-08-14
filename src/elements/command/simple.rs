@@ -69,8 +69,7 @@ impl Command for SimpleCommand {
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
         core.db.push_local();
-        let layer = core.db.get_layer_num() - 1;
-        let _ = self.set_local_params(core, layer);
+        let _ = self.set_local_params(core);
 
         if !run_internal::run(self, core)? {
             self.set_environment_variables(core)?;
@@ -181,8 +180,8 @@ impl SimpleCommand {
         Ok(None)
     }
 
-    fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        let mut layer = Some(layer);
+    fn set_local_params(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut layer = Some(core.db.get_layer_num() - 1);
         if core.options.query("posix") {
             layer = None;
         }
