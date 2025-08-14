@@ -12,7 +12,7 @@ use crate::utils;
 use crate::utils::exit;
 use nix::unistd;
 use std::ffi::CString;
-use std::process;
+use std::{env, process};
 
 use nix::unistd::Pid;
 use nix::errno::Errno;
@@ -64,6 +64,7 @@ impl Command for SimpleCommand {
 
         if ! core.run_function(&mut self.args) 
         && ! core.run_builtin(&mut self.args) {
+            self.set_environment_variables(core)?;
             Self::exec_external_command(&mut self.args)
         }
 
@@ -109,6 +110,14 @@ impl SimpleCommand {
         }   
         Ok(())
     }
+
+    fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        for s in self.substitutions.iter_mut() {
+            env::set_var(s.get_name(), "");
+            s.eval(core, None)?;
+        }   
+        Ok(())
+    } 
 
     fn to_cargs(args: &mut [String]) -> Vec<CString> {
         args.iter()
