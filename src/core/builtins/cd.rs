@@ -57,7 +57,7 @@ fn change_directory(core: &mut ShellCore, args: &mut [String]) -> i32 {
         0
     }else{
         let msg = match core.db.get_param("LANG").as_deref() {
-            Ok("ja_JP.UTF8") => "そのようなファイルやディレクトリはありません",
+            Ok("ja_JP.UTF-8") => "そのようなファイルやディレクトリはありません",
             _  => "No such file or directory",
         };
 
