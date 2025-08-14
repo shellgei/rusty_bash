@@ -103,7 +103,7 @@ impl SimpleCommand {
     }
 
     fn set_local_params(&mut self,core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut layer = Some(core.db.get_layer_num() - 1);
+        let layer = Some(core.db.get_layer_num() - 1);
         for s in self.substitutions.iter_mut() {
             s.eval(core, layer)?;
         }   
