@@ -31,7 +31,7 @@ impl DataBase {
             return Ok("".to_string());
         }
 
-        for params in self.parameters.iter_mut().rev() {
+        for params in self.parameters.iter().rev() {
             if params.contains_key(name) {
                 return Ok(params[name].clone());
             }
