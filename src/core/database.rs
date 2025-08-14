@@ -51,25 +51,24 @@ impl DataBase {
         Ok(ans)
     }
 
-    pub fn set_param(&mut self, name: &str, val: &str,
-                     layer: Option<usize>) -> Result<(), ExecError> {
-        let name = name.to_string();
-        let val = val.to_string();
-
+    fn solve_set_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
         if layer.is_some() {
-            self.parameters[layer.unwrap()].insert(name, val);
-            return Ok(());
+            return layer.unwrap();
         }
 
-        for params in self.parameters.iter_mut().rev() {
-            if params.contains_key(&name) {
-                params.insert(name, val);
-                return Ok(());
+        for (i, params) in self.parameters.iter().enumerate().rev() {
+            if params.contains_key(name) {
+                return i;
             }
         }
 
-        self.parameters[0].insert(name, val);
+        return 0;
+    }
 
+    pub fn set_param(&mut self, name: &str, val: &str,
+                     layer: Option<usize>) -> Result<(), ExecError> {
+        let layer = self.solve_set_layer(name, layer);
+        self.parameters[layer].insert(name.to_string(), val.to_string());
         Ok(())
     }
 
