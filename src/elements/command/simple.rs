@@ -39,7 +39,7 @@ impl Command for SimpleCommand {
 
         if self.args.is_empty() {
             for sub in &self.substitutions {
-                sub.clone().eval(core)?;
+                sub.clone().eval(core, None)?;
             }
 
             return Ok(None);
@@ -104,7 +104,7 @@ impl SimpleCommand {
                         layer: usize) -> Result<(), ExecError> {
         let mut layer = Some(layer);
         for s in self.substitutions.iter_mut() {
-            s.eval(core, layer, false)?;
+            s.eval(core, layer)?;
         }   
         Ok(())
     }
