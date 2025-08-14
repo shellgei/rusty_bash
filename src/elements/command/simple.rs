@@ -39,7 +39,7 @@ impl Command for SimpleCommand {
 
         if self.args.is_empty() {
             for sub in &self.substitutions {
-                sub.clone().eval(core)?;
+                sub.clone().eval(core, None)?;
             }
 
             return Ok(None);
