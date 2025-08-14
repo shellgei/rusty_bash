@@ -47,7 +47,21 @@ impl DataBase {
 
     pub fn set_param(&mut self, name: &str, val: &str,
                      layer: Option<usize>) -> Result<(), ExecError> {
-        self.parameters[0].insert(name.to_string(), val.to_string());
+        if layer.is_some() {
+            self.parameters[layer.unwrap()]
+                .insert(name.to_string(), val.to_string());
+
+            return Ok(());
+        }
+
+        for ly in (1..self.get_layer_num()-1).rev() {
+            if self.parameters[ly].contains_key(name) {
+            }
+        }
+
+        self.parameters[0]
+            .insert(name.to_string(), val.to_string());
+
         Ok(())
     }
 
