@@ -84,7 +84,7 @@ impl ValueCheck {
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
 
-        self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);
+        self.alternative_value = Some(v.dollar_expansion(core)?);
         if self.in_double_quoted {
             for sw in self.alternative_value.as_mut().unwrap().subwords.iter_mut() {
                 if sw.get_text().starts_with("'") {
@@ -92,7 +92,7 @@ impl ValueCheck {
                 }
             }
         }
-        v.eval_as_value(core)
+        v.eval_as_alter(core)
     }
 
     fn apply_single_quote_rule(sw: &mut Box<dyn Subword>) {
