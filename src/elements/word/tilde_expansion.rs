@@ -11,8 +11,7 @@ use nix::unistd::User;
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
     if word.subwords.len() > 1
         && word.subwords[1..].iter().any(|sw| sw.get_text() == "=")
-        && !core.options.query("posix")
-    {
+        && !core.options.query("posix") {
         return eval_multi(word, core);
     }
     if let Some(WordMode::RightOfSubstitution) = word.mode {
@@ -80,10 +79,17 @@ fn prefix_length(word: &Word) -> usize {
         return 0;
     }
 
-    match word.subwords.iter().position(|e| e.get_text() == "/") {
+    let len_colon = match word.subwords.iter().position(|e| e.get_text() == ":") {
         None => word.subwords.len(),
         Some(n) => n,
-    }
+    };
+
+    let len_slash = match word.subwords.iter().position(|e| e.get_text() == "/") {
+        None => word.subwords.len(),
+        Some(n) => n,
+    };
+
+    std::cmp::min(len_colon, len_slash)
 }
 
 fn get_value(text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
