@@ -55,10 +55,13 @@ impl Command for SimpleCommand {
         }
     }
 
-    fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
+    fn run(&mut self, core: &mut ShellCore,
+           fork: bool) -> Result<(), ExecError> {
         core.db.push_local();
         let layer = core.db.get_layer_num() - 1;
-        let _ = self.set_local_params(core, layer);
+        if let Err(e) = self.set_local_params(core, layer) {
+            e.print(core);
+        }
 
         if ! core.run_function(&mut self.args) 
         && ! core.run_builtin(&mut self.args) {
