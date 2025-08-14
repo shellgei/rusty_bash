@@ -48,13 +48,8 @@ fn eval_single(word: &mut Word, core: &mut ShellCore) {
 pub fn eval_multi(word: &mut Word, core: &mut ShellCore) {
     let mut ans_sws = vec![];
     let mut tmp = vec![];
-    let mut equal = 0;
     for sw in &word.subwords {
-        if sw.get_text() == "=" {
-            equal += 1;
-        }
-
-        if sw.get_text() == ":" || (sw.get_text() == "=" && equal < 2) {
+        if sw.get_text() == ":" {
             let mut w = Word::from(tmp.clone());
             eval_single(&mut w, core);
             ans_sws.append(&mut w.subwords);
