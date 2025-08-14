@@ -56,7 +56,12 @@ fn change_directory(core: &mut ShellCore, args: &mut [String]) -> i32 {
         let _ = core.db.set_param("PWD", &path.display().to_string(), None);
         0
     }else{
-        eprintln!("sush: cd: {:?}: No such file or directory", &path);
+        let msg = match core.db.get_param("LANG").as_deref() {
+            Ok("ja_JP.UTF8") => "そのようなファイルやディレクトリはありません",
+            _  => "No such file or directory",
+        };
+
+        eprintln!("sush: cd: {:?}: {}", &path, msg);
         1
     }
 }
