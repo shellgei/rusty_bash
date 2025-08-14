@@ -12,7 +12,7 @@ use crate::utils;
 use crate::utils::exit;
 use nix::unistd;
 use std::ffi::CString;
-use std::{env, process};
+use std::process;
 
 use nix::unistd::Pid;
 use nix::errno::Errno;
@@ -114,7 +114,7 @@ impl SimpleCommand {
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let layer = core.db.get_layer_num() - 1;
         for entry in core.db.get_param_layer_ref(layer) {
-            env::set_var(entry.0, entry.1);
+            std::env::set_var(entry.0, entry.1);
         }
         Ok(())
     } 
