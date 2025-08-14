@@ -56,10 +56,16 @@ impl Command for SimpleCommand {
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
+        core.db.push_local();
+        let layer = core.db.get_layer_num() - 1;
+        let _ = self.set_local_params(core, layer);
+
         if ! core.run_function(&mut self.args) 
         && ! core.run_builtin(&mut self.args) {
             Self::exec_external_command(&mut self.args)
         }
+
+        core.db.pop_local();
 
         match fork {
             true  => exit::normal(core),
@@ -92,6 +98,15 @@ impl SimpleCommand {
             }
             _ => panic!("SUSH INTERNAL ERROR (never come here)")
         }
+    }
+
+    fn set_local_params(&mut self, core: &mut ShellCore,
+                        layer: usize) -> Result<(), ExecError> {
+        let mut layer = Some(layer);
+        for s in self.substitutions.iter_mut() {
+            s.eval(core, layer, false)?;
+        }   
+        Ok(())
     }
 
     fn to_cargs(args: &mut [String]) -> Vec<CString> {
