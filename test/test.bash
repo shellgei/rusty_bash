@@ -801,4 +801,9 @@ res=$($com <<< 'A=A$(echo BBB)C; echo $A')
 res=$($com <<< 'A={a,b}; echo $A')
 [ "$res" == "{a,b}" ] || err $LINENO
 
+### local substitution ###
+
+#res=$($com <<< 'A=ABC cd; echo A')
+#[ "$res" == "" ] || err $LINENO
+
 echo OK $0
