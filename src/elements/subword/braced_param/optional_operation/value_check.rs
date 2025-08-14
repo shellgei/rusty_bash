@@ -11,6 +11,7 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
+use crate::elements::subword::SimpleSubword;
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
@@ -80,12 +81,24 @@ impl OptionalOperation for ValueCheck {
 
 impl ValueCheck {
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let v = match &self.alternative_value {
+        let mut v = match &self.alternative_value {
             Some(av) => av.clone(),
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
 
         if self.in_double_quoted {
+            for e in v.subwords.iter_mut() {
+                if e.is_escaped_char() {
+                    match e.get_text() {
+                        "\\$" | "\\\\" | "\\\"" | "\\`" => {},
+                        txt => {
+                            let sw = SimpleSubword { text: txt.to_string() };
+                            *e = Box::new(sw);
+                        },
+                    }
+                }
+            }
+
             self.alternative_value = Some(v.dollar_expansion(core)?);
         }else{
             self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);

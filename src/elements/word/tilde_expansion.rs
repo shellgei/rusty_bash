@@ -12,10 +12,11 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) {
     if word.subwords.len() > 1
         && word.subwords[1..].iter().any(|sw| sw.get_text() == "=")
         && !core.options.query("posix") {
-        return eval_multi(word, core);
+            let permit_equal = word.mode.is_none();
+            return eval_multi(word, core, permit_equal);
     }
     if let Some(WordMode::RightOfSubstitution) = word.mode {
-        return eval_multi(word, core);
+        return eval_multi(word, core, false);
     }
 
     eval_single(word, core)
@@ -44,11 +45,16 @@ fn eval_single(word: &mut Word, core: &mut ShellCore) {
         .for_each(|w| w.set_text(""));
 }
 
-pub fn eval_multi(word: &mut Word, core: &mut ShellCore) {
+pub fn eval_multi(word: &mut Word, core: &mut ShellCore, permit_equal: bool) {
     let mut ans_sws = vec![];
     let mut tmp = vec![];
+    let mut equal = 0;
     for sw in &word.subwords {
-        if sw.get_text() == ":" {
+        if sw.get_text() == "=" {
+            equal += 1;
+        }
+
+        if sw.get_text() == ":" || (permit_equal && sw.get_text() == "=" && equal < 2) {
             let mut w = Word::from(tmp.clone());
             eval_single(&mut w, core);
             ans_sws.append(&mut w.subwords);
