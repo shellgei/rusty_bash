@@ -75,7 +75,7 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn get_param_layer(&self, layer: usize) -> &HashMap<String, String> {
+    pub fn get_param_layer_ref(&self, layer: usize) -> &HashMap<String, String> {
         &self.parameters[layer]
     }
 
