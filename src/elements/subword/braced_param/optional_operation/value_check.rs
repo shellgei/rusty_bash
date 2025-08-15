@@ -35,7 +35,7 @@ impl OptionalOperation for ValueCheck {
         let sym = self.symbol.clone().unwrap();
         let mut check_ok = match sym.starts_with(":") {
             true => !text.is_empty(),
-            false => variable.exist(core)?,
+            false => variable.name =="*" || variable.name == "@" || variable.exist(core)?,
         };
 
         if sym.ends_with("+") {
