@@ -24,6 +24,9 @@ impl Command for WhileCommand {
         }
         core.loop_level += 1;
         while !core.return_flag {
+            if core.continue_counter > 0 {
+                core.continue_counter -= 1;
+            }
             core.suspend_e_option = true;
             self.while_script.clone().as_mut().unwrap().exec(core)?;
 
@@ -33,12 +36,11 @@ impl Command for WhileCommand {
                 break;
             }
 
-            if core.continue_counter > 0 {
-                core.continue_counter -= 1;
-                continue;
-            }
-
             self.do_script.clone().as_mut().unwrap().exec(core)?;
+
+            if core.continue_counter > 1 {
+                break;
+            }
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;
@@ -48,6 +50,10 @@ impl Command for WhileCommand {
         core.loop_level -= 1;
         if core.loop_level == 0 {
             core.break_counter = 0;
+        }
+
+        if core.continue_counter > 0 {
+            core.continue_counter -= 1;
         }
         Ok(())
     }
