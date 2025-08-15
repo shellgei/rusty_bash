@@ -148,6 +148,11 @@ impl ForCommand {
                 return ok;
             }
 
+            if core.continue_counter > 0 {
+                core.continue_counter -= 1;
+                continue;
+            }
+
             if let Some(mut s) = self.do_script.clone() {
                 let _ = s.exec(core);
             }
