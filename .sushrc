@@ -30,34 +30,6 @@ alias ll='ls -l'
 alias git-writing='git add -A ; git commit -m Writing ; git push'
 
 
-# completion test
-# thanks to: https://blog.cybozu.io/entry/2016/09/26/080000
-
-#_dummy () {
-#	COMPREPLY=( $(compgen -W "one two" -- "${cur}" ) ) 
-#} && complete -F _dummy hoge
-#
-#_git_comp () {
-#	if [ "$COMP_CWORD" = 1 ] ; then 
-#		CANDS=( $( git |& grep '^  *[a-z]' | awk '{print $1}') ) 
-#		COMPREPLY=( $(compgen -W "${CANDS[@]}" -- "${cur}") ) 
-#	elif [ "$COMP_CWORD" = 2 -a "$prev" = switch ] ; then
-#		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' )" -- "${cur}" ) ) 
-#	elif [ "$COMP_CWORD" = 2 -a "$prev" = merge ] ; then
-#		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' )" -- "${cur}" ) ) 
-#	elif [ "$COMP_CWORD" = 2 -a "$prev" = diff ] ; then
-#		COMPREPLY=( $(compgen -W "$( git branch | tr -d '*' ) $(compgen -f)" -- "${cur}" ) ) 
-#	fi
-#} && complete -F _git_comp git
-#
-#_colcon_comp () {
-#        if [ "$COMP_CWORD" = 1 ] ; then 
-#                CANDS=( $( colcon |& sed -n 2p | tr , \\n | tr -d '{} ' ) ) 
-#                COMPREPLY=( $(compgen -W "${CANDS[@]}" -- "${cur}") ) 
-#        fi
-#} && complete -F _colcon_comp colcon
-
-
 command_not_found_handle() { #command_not_found should be loaded before bash-completion in this stage
 	if [ -e /usr/lib/command-not-found ] ; then
 		/usr/lib/command-not-found -- "$1"
@@ -78,6 +50,3 @@ elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
     complete -d cd
 fi
-
-
-
