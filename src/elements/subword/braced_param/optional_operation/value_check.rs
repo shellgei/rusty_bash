@@ -13,6 +13,11 @@ use crate::utils;
 use crate::{Feeder, ShellCore};
 use crate::elements::subword::SimpleSubword;
 
+fn is_special_param(name: &str) -> bool {
+   //"$?*@#-!0123456789".contains(name) 
+   "*@".contains(name) 
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
     pub text: String,
@@ -35,7 +40,7 @@ impl OptionalOperation for ValueCheck {
         let sym = self.symbol.clone().unwrap();
         let mut check_ok = match sym.starts_with(":") {
             true => !text.is_empty(),
-            false => variable.name =="*" || variable.name == "@" || variable.exist(core)?,
+            false => is_special_param(&variable.name) || variable.exist(core)?,
         };
 
         if sym.ends_with("+") {
