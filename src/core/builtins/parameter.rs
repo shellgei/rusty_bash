@@ -141,6 +141,9 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
         if core.db.has_flag(n, 'u') {
             opt += "u";
         }
+        if core.db.has_flag(n, 'x') {
+            opt += "x";
+        }
 
         if core.db.is_readonly(n) && !opt.contains('r') && !core.options.query("posix") {
             opt += "r";
@@ -210,6 +213,9 @@ fn declare_print_all(core: &mut ShellCore, args: &[String]) -> i32 {
         if core.db.has_flag(&name, 'i') && !options.contains('i') {
             print!("i");
         }
+        if core.db.has_flag(&name, 'x') && !options.contains('x') {
+            print!("x");
+        }
         if core.db.is_readonly(&name) && !options.contains('r') && !core.options.query("posix") {
             print!("r");
         }
@@ -265,9 +271,10 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
 }
 
 pub fn export(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
-    let args = args.to_owned();
+    let mut args = args.to_owned();
     for sub in subs.iter_mut() {
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
+        args.push("-x".to_string());
         if let Err(e) = set_substitution(core, sub, &args, layer) {
             e.print(core);
             return 1;
