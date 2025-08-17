@@ -63,6 +63,7 @@ fn scanner_ifs_blank(s: &str, blank: &[char], delim: &[char]) -> usize {
 fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
     let mut ans = vec![];
     let mut remaining = s.to_string();
+    let mut shaved = false;
 
     let shave_prev = match prev_char {
         None => true,
@@ -74,6 +75,7 @@ fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String
 
     if shave_prev {
         let len = scanner_blank(&remaining, &blank);
+        shaved = len > 0;
         let tail = remaining.split_off(len);
         remaining = tail;
     }
@@ -98,6 +100,11 @@ fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String
         ans.push(("".to_string(), false));
         ans.push(("".to_string(), false));
     }
+
+    if shaved && ans.len() < 2 { //if the string is modified, the splitting is applied.
+        ans.push(("".to_string(), false));
+    }
+
     ans
 }
 

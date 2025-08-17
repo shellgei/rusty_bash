@@ -19,12 +19,13 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     }
 
     if split.len() == 1 {
+        /*
         if word.subwords[pos].get_text() != split[0].0.get_text() {
             let mut w = word.clone();
             w.subwords[pos] = split[0].0.clone();
             w.do_not_erase = split[0].1;
             return vec![w];
-        }
+        }*/
 
         return vec![word.clone()];
     }
@@ -58,7 +59,7 @@ pub fn find_pos(word: &Word, ifs: &str) -> SplitResult {
     let mut prev_char = None;
     for (i, sw) in word.subwords.iter().enumerate() {
         let split = sw.split(ifs, prev_char);
-        if split.len() >= 1 {
+        if split.len() >= 2 {
             return (i, split);
         }
 
