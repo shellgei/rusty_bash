@@ -77,6 +77,9 @@ The following behavior of Bash will not be imitated by `sush`. So we alter the r
     🍣 (( 1++     ))
     sush: ((: 1++     : syntax error: operand expected (error token is "+")
     ```
+* error messages of `readonly`
+    * We added `readonly: ` to the messages in `attr.right`.
+        * e.g.: `./attr.tests: line 17: a: readonly variable` -> `./attr.tests: line 17: readonly: a: readonly variable`
 
 ## Contribution
 
