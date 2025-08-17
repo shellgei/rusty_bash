@@ -113,12 +113,12 @@ impl ForCommand {
                 let _ = s.exec(core);
             }
 
-            if core.continue_counter > 1 {
-                break;
-            }
 
             if core.break_counter > 0 {
                 core.break_counter -= 1;
+                break;
+            }
+            if core.continue_counter > 1 {
                 break;
             }
         }
@@ -162,12 +162,11 @@ impl ForCommand {
                 let _ = s.exec(core);
             }
 
-            if core.continue_counter > 1 {
-                break;
-            }
-
             if core.break_counter > 0 {
                 core.break_counter -= 1;
+                break;
+            }
+            if core.continue_counter > 1 {
                 break;
             }
 
