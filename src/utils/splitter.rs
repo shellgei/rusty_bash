@@ -98,7 +98,6 @@ fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String
         ans.push(("".to_string(), false));
         ans.push(("".to_string(), false));
     }
-
     ans
 }
 
