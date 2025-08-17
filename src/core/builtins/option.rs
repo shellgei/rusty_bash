@@ -151,6 +151,8 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
         if let Err(e) = set_positions(core, &args) {
             e.print(core);
             return 2;
+        }else{
+            return 0;
         }
     }
 
