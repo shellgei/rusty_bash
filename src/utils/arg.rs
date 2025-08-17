@@ -72,6 +72,10 @@ pub fn dissolve_option(opt: &str) -> Vec<String> {
             .map(|c| ("-".to_owned() + &c.to_string()).to_string())
             .collect()
     } else if let Some(stripped) = opt.strip_prefix('+') {
+        if stripped == "" {
+            return vec!["+".to_string()];
+        }
+
         stripped
             .chars()
             .map(|c| ("+".to_owned() + &c.to_string()).to_string())
