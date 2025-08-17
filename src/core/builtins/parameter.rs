@@ -70,9 +70,19 @@ fn set_substitution(
         sub.left_hand.index = None;
     }
 
+    let treat_as_array = core.db.is_array(&sub.left_hand.name)
+                         || core.db.is_assoc(&sub.left_hand.name);
+    let option_indicate_array = arg::has_option("-A", args)
+                         || arg::has_option("-a", args);
+    let treat_as_export = core.db.has_flag(&sub.left_hand.name, 'x')
+                         || export_opt;
+    let subs_elem_quoted_string = sub.left_hand.index.is_some()
+                         && sub.right_hand.text.starts_with("'");
+
     if sub.has_right
-        && (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name))
-        && !(sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'"))
+        && treat_as_array
+        && !subs_elem_quoted_string
+        && (!treat_as_export || option_indicate_array)
     {
         sub.reparse(core)?;
     }
@@ -335,6 +345,10 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
 
         if let Err(e) = set_substitution(core, sub, &args, layer) {
+            /*
+            if ! sub.text.contains("(") {
+                return super::error_exit(1, &args[0], &String::from(&e), core);
+            }*/
             e.print(core);
             return 1;
         }

@@ -158,12 +158,19 @@ impl Value {
         Ok(())
     }
 
-    pub fn reparse(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    pub fn reparse(&mut self, core: &mut ShellCore, quoted: bool) -> Result<(), ExecError> {
         let v = self.value.clone();
 
         match v {
             ParsedDataType::Single(mut w) => self.reparse_word(&mut w, core),
-            ParsedDataType::Array(_) => Ok(()),
+            ParsedDataType::Array(a) => {
+                if ! quoted {
+                    return Ok(());
+                }
+                let txt = "'".to_owned() + &a.text + "'";
+                let mut w = Word::from(txt.as_str());
+                return self.reparse_word(&mut w, core);
+            },
             ParsedDataType::None => Ok(()),
         }
     }
