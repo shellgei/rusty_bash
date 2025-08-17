@@ -344,18 +344,12 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
         if sub.left_hand.index.is_some() {
             let msg = ExecError::VariableInvalid(sub.left_hand.text.clone());
             return super::error_exit(1, &args[0], &String::from(&msg), core);
-            //return 1;
         }
 
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
 
         if let Err(e) = set_substitution(core, sub, &args, layer) {
-            /*
-            if ! sub.text.contains("(") {
-                return super::error_exit(1, &args[0], &String::from(&e), core);
-            }*/
-            e.print(core);
-            return 1;
+            return super::error_exit(1, &args[0], &String::from(&e), core);
         }
         core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
     }
