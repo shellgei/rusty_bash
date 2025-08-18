@@ -146,7 +146,9 @@ impl Job {
         }
     }
 
-    pub fn pretty_print(&mut self, indent_num: usize,semicolon: &mut bool, printed: &mut bool, job_end: &str) {
+    pub fn pretty_print(&mut self, indent_num: usize,
+                        semicolon: &mut bool,
+                        printed: &mut bool, job_end: &str) {
         let tmp = self.text.clone();
         let job_text = tmp.trim_ascii();
 
