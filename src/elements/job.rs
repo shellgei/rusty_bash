@@ -147,17 +147,17 @@ impl Job {
     }
 
     pub fn pretty_print(&mut self, indent_num: usize,
-                        semicolon: &mut bool,
-                        printed: &mut bool, job_end: &str) {
+                        semicolon: &mut bool, printed: &mut bool,
+                        job_end: &str, end: bool) -> bool {
         let tmp = self.text.clone();
         let job_text = tmp.trim_ascii();
 
         if job_text.is_empty() {
             *semicolon = *printed;
-            return;
+            return false;
         }
 
-        if *semicolon {
+        if *semicolon && !end {
             println!(";");
             *semicolon = false;
         } else if *printed {
@@ -167,13 +167,17 @@ impl Job {
         let tmp = job_end.to_string();
         let job_end = tmp.trim_ascii_end();
 
-        let text = job_text.to_owned() + job_end;
+        let text = match end {
+            false => job_text.to_owned() + job_end,
+            true  => job_text.to_owned(),
+        };
 
         for _ in 0..indent_num {
             print!("    ");
         }
         print!("{}", &text);
         *printed = true;
+        true
     }
 
     pub fn get_one_line_text(&self) -> String {

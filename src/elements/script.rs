@@ -35,8 +35,18 @@ impl Script {
     pub fn pretty_print(&mut self, indent_num: usize) {
         let mut semicolon = false;
         let mut printed = false;
+        let mut end_pos = self.jobs.len()-1;
+
+        for job in self.jobs.iter_mut().rev() {
+            if job.pipelines.is_empty() {
+                end_pos -= 1;
+                break;
+            }
+        }
+
         for (i, job) in self.jobs.iter_mut().enumerate() {
-            job.pretty_print(indent_num, &mut semicolon, &mut printed, &self.job_ends[i]);
+            job.pretty_print(indent_num, &mut semicolon, &mut printed,
+                             &self.job_ends[i], i==end_pos);
         }
         println!();
     }
