@@ -154,6 +154,7 @@ pub fn type_(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
+
     let t_option = arg::consume_arg("-t", &mut args);
     if t_option {
         if args.len() > 1 && args[1] == "--" {

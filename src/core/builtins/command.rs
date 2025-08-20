@@ -40,6 +40,15 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
                 true => println!("{} is a shell builtin", &com),
                 false => println!("{}", &com),
             }
+        } else if core.db.functions.contains_key(com) {
+            return_value = 0;
+            match large_v {
+                true => {
+                    println!("{} is a function", &com);
+                    core.db.functions.get_mut(com).unwrap().pretty_print(0);
+                },
+                false => println!("{}", &com),
+            }
         } else if let Some(path) = file::search_command(com) {
             return_value = 0;
             match large_v {
