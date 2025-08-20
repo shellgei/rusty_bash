@@ -13,7 +13,7 @@ fn type_no_opt_sub(core: &mut ShellCore, com: &String) -> i32 {
         return 0;
     }
     if utils::reserved(com) {
-        println!("{} is reserved", &com);
+        println!("{} is a shell keyword", &com);
         return 0;
     }
     if core.db.functions.contains_key(com) {
