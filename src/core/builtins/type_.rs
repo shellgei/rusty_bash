@@ -61,10 +61,11 @@ fn type_t(core: &mut ShellCore, args: &[String]) -> i32 {
 }
 
 fn type_t_sub(core: &mut ShellCore, com: &String) -> i32 {
+    /*
     if core.db.has_array_value("BASH_ALIASES", com) {
         println!("alias");
         return 0;
-    }
+    }*/
     if utils::reserved(com) {
         println!("keyword");
         return 0;

@@ -4,7 +4,7 @@
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
-use crate::{error, proc_ctrl, ShellCore};
+use crate::{error, proc_ctrl, ShellCore, utils};
 
 pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
@@ -27,7 +27,14 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
     let mut return_value = 1;
 
     for com in words.iter() {
-        if core.db.has_array_value("BASH_ALIASES", com) {
+        if utils::reserved(com) {
+            return_value = 0;
+            match large_v {
+                true => println!("{} is a shell keyword", &com),
+                false => println!("{}", &com),
+            }
+        } else if core.db.has_array_value("BASH_ALIASES", com) {
+            return_value = 0;
             let alias = core.db.get_elem("BASH_ALIASES", com).unwrap();
             match large_v {
                 true => println!("{} is aliased to `{}'", &com, &alias),
