@@ -4,7 +4,11 @@
 use crate::ShellCore;
 
 pub fn alias(core: &mut ShellCore, args: &[String]) -> i32 {
-    if args.len() == 1 {
+    if args.len() == 1 
+    || args.len() == 2 && args[1] == "-p" {
+        if ! core.shopts.query("expand_aliases") {
+            return 0;
+        }
         for k in &core.db.get_indexes_all("BASH_ALIASES") {
             let v = core.db.get_elem("BASH_ALIASES", k).unwrap();
             println!("alias {k}='{v}'");
@@ -14,10 +18,17 @@ pub fn alias(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if args.len() == 2 && args[1].contains("=") {
         let kv: Vec<String> = args[1].split('=').map(|t| t.to_string()).collect();
-        //core.aliases.insert(kv[0].clone(), kv[1..].join("="));
         let _ = core
             .db
             .set_assoc_elem("BASH_ALIASES", &kv[0], &kv[1..].join("="), None);
+        return 0;
+    }
+
+    if args.len() == 2
+        && core.db.has_array_value("BASH_ALIASES", &args[1]) {
+        let alias = core.db.get_elem("BASH_ALIASES", &args[1]).unwrap();
+        println!("alias {}='{}'", &args[1], &alias);
+        return 0;
     }
 
     0
