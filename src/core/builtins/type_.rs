@@ -120,8 +120,10 @@ fn type_p_sub(core: &mut ShellCore, com: &String) -> i32 {
     }
 
     if let Ok(path) = core.db.get_elem("BASH_CMDS", &com) {
-        println!("{}", &path);
-        return 0;
+        if ! path.is_empty() {
+            println!("{}", &path);
+            return 0;
+        }
     }
 
     if let Some(path) = file::search_command(com) {
