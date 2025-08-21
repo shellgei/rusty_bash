@@ -4,7 +4,7 @@
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
-use crate::{error, proc_ctrl, ShellCore, utils};
+use crate::{error, file_check, proc_ctrl, ShellCore, utils};
 
 pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
@@ -60,6 +60,12 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
             return_value = 0;
             match large_v {
                 true => println!("{} is {}", &com, &path),
+                false => println!("{}", &com),
+            }
+        } else if file_check::is_executable(com) {
+            return_value = 0;
+            match large_v {
+                true => println!("{} is {}", &com, &com),
                 false => println!("{}", &com),
             }
         } else if large_v {

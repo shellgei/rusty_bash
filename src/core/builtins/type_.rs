@@ -119,6 +119,11 @@ fn type_p_sub(core: &mut ShellCore, com: &String) -> i32 {
         return 0;
     }
 
+    if let Ok(path) = core.db.get_elem("BASH_CMDS", &com) {
+        println!("{}", &path);
+        return 0;
+    }
+
     if let Some(path) = file::search_command(com) {
         println!("{}", &path);
         return 0;
@@ -168,7 +173,7 @@ pub fn type_(core: &mut ShellCore, args: &[String]) -> i32 {
     }
     let p_option = arg::consume_arg("-p", &mut args);
     if p_option {
-        if args[1] == "--" {
+        if args.len() > 1 && args[1] == "--" {
             args.remove(1);
         }
         return type_p(core, &args[1..]);
