@@ -134,7 +134,7 @@ impl DoubleQuoted {
             self.split_points.pop();
         }
 
-        if ! flg {
+        if !flg {
             self.split_points.clear();
             return Ok(self.subwords.clone());
         }

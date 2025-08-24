@@ -71,14 +71,12 @@ fn set_substitution(
     }
 
     /* TODO: chaos!!!! */
-    let treat_as_array = core.db.is_array(&sub.left_hand.name)
-                         || core.db.is_assoc(&sub.left_hand.name);
-    let option_indicate_array = arg::has_option("-A", args)
-                         || arg::has_option("-a", args);
-    let treat_as_export = core.db.has_flag(&sub.left_hand.name, 'x')
-                         || export_opt;
-    let subs_elem_quoted_string = sub.left_hand.index.is_some()
-                         && sub.right_hand.text.starts_with("'");
+    let treat_as_array =
+        core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name);
+    let option_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
+    let treat_as_export = core.db.has_flag(&sub.left_hand.name, 'x') || export_opt;
+    let subs_elem_quoted_string =
+        sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'");
 
     if option_indicate_array {
         sub.quoted = false;

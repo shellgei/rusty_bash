@@ -67,7 +67,7 @@ pub fn run_substitution_builtin(
                             Some(mut s) => {
                                 s.quoted = true;
                                 subs.push(s);
-                            },
+                            }
                             _ => {
                                 let mut s = Substitution::default();
                                 s.text = arg;

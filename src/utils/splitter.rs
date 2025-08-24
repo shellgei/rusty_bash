@@ -101,7 +101,8 @@ fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String
         ans.push(("".to_string(), false));
     }
 
-    if shaved && ans.len() < 2 { //if the string is modified, the splitting is applied.
+    if shaved && ans.len() < 2 {
+        //if the string is modified, the splitting is applied.
         ans.push(("".to_string(), false));
     }
 
