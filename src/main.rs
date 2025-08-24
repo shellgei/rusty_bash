@@ -167,6 +167,8 @@ fn read_rc_file(core: &mut ShellCore) {
     if file_check::is_regular_file(&rc_file) {
         core.db.exit_status = source::source(core, &[".".to_string(), rc_file]);
     }
+
+    core.continue_counter = 0; //patch for Ubuntu 25.04 bash completion
 }
 
 fn set_parameters(script_parts: Vec<String>, core: &mut ShellCore, command: &str) {

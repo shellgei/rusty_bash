@@ -69,8 +69,7 @@ impl Command for SimpleCommand {
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
         core.db.push_local();
-        let layer = core.db.get_layer_num() - 1;
-        let _ = self.set_local_params(core, layer);
+        let _ = self.set_local_params(core);
 
         if !run_internal::run(self, core)? {
             self.set_environment_variables(core)?;
@@ -181,21 +180,24 @@ impl SimpleCommand {
         Ok(None)
     }
 
-    fn set_local_params(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        let mut layer = Some(layer);
+    fn set_local_params(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let layer = core.db.get_layer_num() - 1;
         if core.options.query("posix") {
-            layer = None;
+            for s in self.substitutions.clone().iter_mut() {
+                s.eval(core, None, false)?;
+            }
         }
         for s in self.substitutions.iter_mut() {
-            s.eval(core, layer, false)?;
+            s.eval(core, Some(layer), false)?;
         }
+
         Ok(())
     }
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        for s in self.substitutions.iter_mut() {
-            env::set_var(&s.left_hand.name, "");
-            s.eval(core, None, false)?;
+        let layer = core.db.get_layer_num() - 1;
+        for (k, v) in &mut core.db.params[layer] {
+            env::set_var(&k, v.get_as_single().unwrap_or("".to_string()));
         }
         Ok(())
     }

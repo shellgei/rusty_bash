@@ -202,7 +202,7 @@ impl Redirect {
         let quoted = right != self.right.text;
 
         let text = match quoted {
-            false => self.here_data.eval_as_value(core)?, // TODO: make it precise
+            false => self.here_data.eval_as_alter(core)?, // TODO: make it precise
             true => self.here_data.text.clone(),
         };
 

@@ -23,6 +23,10 @@ pub struct FunctionDefinition {
 
 impl Command for FunctionDefinition {
     fn exec(&mut self, core: &mut ShellCore, _: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+        if core.break_counter > 0 || core.continue_counter > 0 {
+            return Ok(None);
+        }
+
         core.db
             .functions
             .insert(self.name.to_string(), self.clone());

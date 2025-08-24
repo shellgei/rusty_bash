@@ -49,6 +49,10 @@ impl Clone for Box<dyn Command> {
 
 pub trait Command {
     fn exec(&mut self, core: &mut ShellCore, pipe: &mut Pipe) -> Result<Option<Pid>, ExecError> {
+        if core.break_counter > 0 || core.continue_counter > 0 {
+            return Ok(None);
+        }
+
         core.db
             .set_param("LINENO", &self.get_lineno().to_string(), None)?;
         if self.force_fork() || (!pipe.lastpipe && pipe.is_connected()) {

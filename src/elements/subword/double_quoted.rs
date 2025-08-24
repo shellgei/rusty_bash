@@ -59,15 +59,6 @@ impl Subword for DoubleQuoted {
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
-        /*
-        if self.quote_substitution
-        && self.text.starts_with("[")
-        && self.text.contains("]=") {
-            self.text.insert(0, '"');
-            self.text.push('"');
-            return Some(self.text.clone());
-        }*/
-
         let mut text = String::new();
 
         for (i, sw) in self.subwords.iter_mut().enumerate() {
@@ -114,6 +105,7 @@ impl DoubleQuoted {
 
     fn replace_array(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut ans = vec![];
+        let mut flg = false;
 
         for sw in &mut self.subwords {
             if !sw.is_array() {
@@ -129,11 +121,22 @@ impl DoubleQuoted {
                 }
             };
 
+            if array.len() == 1 {
+                ans.push(sw.boxed_clone());
+                continue;
+            }
+
+            flg = true;
             for text in array {
                 ans.push(From::from(&text));
                 self.split_points.push(ans.len());
             }
             self.split_points.pop();
+        }
+
+        if ! flg {
+            self.split_points.clear();
+            return Ok(self.subwords.clone());
         }
 
         self.split_points.push(ans.len());

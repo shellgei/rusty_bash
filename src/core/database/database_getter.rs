@@ -258,3 +258,4 @@ pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
         false => Ok(String::new()),
     }
 }
+

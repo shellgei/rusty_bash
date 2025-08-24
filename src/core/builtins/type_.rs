@@ -6,19 +6,21 @@ use crate::utils::{arg, file};
 use crate::{file_check, utils, ShellCore};
 
 fn type_no_opt_sub(core: &mut ShellCore, com: &String) -> i32 {
-    //if core.aliases.contains_key(com) {
-    if core.db.has_array_value("BASH_ALIASES", com) {
+    if core.shopts.query("expand_aliases") 
+    && core.db.has_array_value("BASH_ALIASES", com) {
         let alias = core.db.get_elem("BASH_ALIASES", com).unwrap();
         println!("{} is aliased to `{}'", &com, &alias);
         return 0;
     }
     if utils::reserved(com) {
-        println!("{} is reserved", &com);
+        println!("{} is a shell keyword", &com);
         return 0;
     }
     if core.db.functions.contains_key(com) {
         println!("{} is a function", &com);
-        println!("{}", &core.db.functions[com].text);
+        if let Some(val) = core.db.functions.get_mut(com) {
+            val.pretty_print(0);
+        };
         return 0;
     }
     if core.builtins.contains_key(com) {
@@ -33,7 +35,9 @@ fn type_no_opt_sub(core: &mut ShellCore, com: &String) -> i32 {
         println!("{com} is {com}");
         return 0;
     }
-    1
+
+    let s = format!("{}: not found", &com);
+    return super::error_exit(1, "type", &s, core);
 }
 
 fn type_no_opt(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -59,7 +63,8 @@ fn type_t(core: &mut ShellCore, args: &[String]) -> i32 {
 }
 
 fn type_t_sub(core: &mut ShellCore, com: &String) -> i32 {
-    if core.db.has_array_value("BASH_ALIASES", com) {
+    if core.shopts.query("expand_aliases") 
+    && core.db.has_array_value("BASH_ALIASES", com) {
         println!("alias");
         return 0;
     }
@@ -114,6 +119,13 @@ fn type_p_sub(core: &mut ShellCore, com: &String) -> i32 {
         return 0;
     }
 
+    if let Ok(path) = core.db.get_elem("BASH_CMDS", &com) {
+        if ! path.is_empty() {
+            println!("{}", &path);
+            return 0;
+        }
+    }
+
     if let Some(path) = file::search_command(com) {
         println!("{}", &path);
         return 0;
@@ -143,6 +155,7 @@ fn type_large_p_sub(core: &mut ShellCore, com: &String) -> i32 {
         println!("{com}");
         return 0;
     }
+            
     es
 }
 
@@ -152,16 +165,17 @@ pub fn type_(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
+
     let t_option = arg::consume_arg("-t", &mut args);
     if t_option {
-        if args[1] == "--" {
+        if args.len() > 1 && args[1] == "--" {
             args.remove(1);
         }
         return type_t(core, &args[1..]);
     }
     let p_option = arg::consume_arg("-p", &mut args);
     if p_option {
-        if args[1] == "--" {
+        if args.len() > 1 && args[1] == "--" {
             args.remove(1);
         }
         return type_p(core, &args[1..]);

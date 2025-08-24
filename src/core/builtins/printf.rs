@@ -12,11 +12,11 @@ enum PrintfToken {
     B(String),
     DI(String),
     F(String),
-    O(String),
+    O(String, bool),
     S(String),
     U(String),
-    X(String),
-    LargeX(String),
+    X(String, bool),
+    LargeX(String, bool),
     Q,
     Other(String),
     Normal(String),
@@ -29,6 +29,14 @@ impl PrintfToken {
     }
 
     fn to_int(s: &String) -> Result<isize, ExecError> {
+        if s.starts_with("'") && s.len() > 1 {
+            let ch = match s.chars().nth(1) {
+                Some(n) => n,
+                None => return Err(ExecError::Other("Invalid char: ".to_owned() + s)),
+            };
+            return Ok(ch as isize);
+        }
+
         match s.parse::<isize>() {
             Ok(n) => Ok(n),
             Err(_) => Err(ArithError::InvalidNumber(s.to_string()).into()),
@@ -123,18 +131,30 @@ impl PrintfToken {
                 Self::padding(&mut a, fmt.clone(), false);
                 Ok(a)
             }
-            Self::X(fmt) => {
+            Self::X(fmt, hash) => {
                 let mut a = format!("{:x}", Self::to_int(&pop(args))?);
+                if *hash {
+                    a = "0x".to_owned() + &a;
+                }
+
                 Self::padding(&mut a, fmt.clone(), true);
                 Ok(a)
             }
-            Self::O(fmt) => {
+            Self::O(fmt, hash) => {
                 let mut a = format!("{:o}", Self::to_int(&pop(args))?);
+                if *hash {
+                    a.insert(0, '0');
+                }
+
                 Self::padding(&mut a, fmt.clone(), true);
                 Ok(a)
             }
-            Self::LargeX(fmt) => {
+            Self::LargeX(fmt, hash) => {
                 let mut a = format!("{:X}", Self::to_int(&pop(args))?);
+                if *hash {
+                    a = "0X".to_owned() + &a;
+                }
+
                 Self::padding(&mut a, fmt.clone(), true);
                 Ok(a)
             }
@@ -239,6 +259,17 @@ fn scanner_escaped_char(remaining: &str) -> usize {
     }
 }
 
+fn scanner_hash(remaining: &str) -> usize {
+    let mut ans = 0;
+    for c in remaining.chars() {
+        if c != '#' {
+            break;
+        }
+        ans += 1;
+    }
+    ans
+}
+
 fn scanner_format_num(remaining: &str) -> usize {
     let mut ans = 0;
     for c in remaining.chars() {
@@ -274,7 +305,15 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
         if remaining.starts_with("%") {
             remaining.remove(0); // %
 
+            let mut has_hash = false;
             let mut num_part = String::new();
+            let len = scanner_hash(&remaining);
+            if len > 0 {
+                let tail = remaining.split_off(len);
+                has_hash = true;
+                remaining = tail;
+            }
+
             let len = scanner_format_num(&remaining);
             if len > 0 {
                 let tail = remaining.split_off(len);
@@ -287,11 +326,11 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
                 Some('d') => PrintfToken::DI(num_part),
                 Some('i') => PrintfToken::DI(num_part),
                 Some('f') => PrintfToken::F(num_part),
-                Some('o') => PrintfToken::O(num_part),
+                Some('o') => PrintfToken::O(num_part, has_hash),
                 Some('s') => PrintfToken::S(num_part),
                 Some('u') => PrintfToken::U(num_part),
-                Some('x') => PrintfToken::X(num_part),
-                Some('X') => PrintfToken::LargeX(num_part),
+                Some('x') => PrintfToken::X(num_part, has_hash),
+                Some('X') => PrintfToken::LargeX(num_part, has_hash),
                 Some('q') => PrintfToken::Q,
                 Some(c) => PrintfToken::Other("%".to_owned() + &num_part + &c.to_string()),
                 None => PrintfToken::Normal("%".to_string()),
