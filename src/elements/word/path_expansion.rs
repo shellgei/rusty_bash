@@ -14,26 +14,27 @@ pub fn eval(word: &mut Word, shopts: &Options) -> Vec<Word> {
     let paths = expand(&globstr, shopts);
     if paths.is_empty() {
         if shopts.query("nullglob") {
-            return vec![Word::from(&String::new())];
+            return vec![Word::from("")];
         }
         return vec![word.clone()];
     }
 
-    paths.iter().map(|p| From::from(p) ).collect()
+    paths.iter().map(|s| Word::from(s.as_str())).collect()
 }
 
 fn no_glob_symbol(pattern: &str) -> bool {
-    "*?@+![".chars().all(|c| ! pattern.contains(c))
+    "*?@+![".chars().all(|c| !pattern.contains(c))
 }
 
 pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
     let mut paths = vec!["".to_string()];
 
     for dir_glob in pattern.split("/") {
-        let mut tmp = paths.iter()
-                .map(|c| directory::glob(&c, &dir_glob, shopts) )
-                .collect::<Vec<Vec<String>>>()
-                .concat();
+        let mut tmp = paths
+            .iter()
+            .map(|c| directory::glob(c, dir_glob, shopts))
+            .collect::<Vec<Vec<String>>>()
+            .concat();
 
         if dir_glob == "**" && shopts.query("globstar") {
             tmp.append(&mut paths);
@@ -44,11 +45,17 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
         paths.dedup();
     }
 
-    paths.iter_mut().for_each(|e| {e.pop();} );
+    paths.iter_mut().for_each(|e| {
+        e.pop();
+    });
 
     if shopts.query("globstar") {
         if let Some(ptn) = pattern.strip_suffix("/**") {
-            paths.iter_mut().for_each(|p| if p == ptn {*p += "/";} );
+            paths.iter_mut().for_each(|p| {
+                if p == ptn {
+                    *p += "/";
+                }
+            });
         }
     }
 

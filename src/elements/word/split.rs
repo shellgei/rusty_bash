@@ -1,12 +1,13 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
-use crate::elements::word::Word;
 use crate::elements::subword::Subword;
+use crate::elements::word::Word;
+use crate::ShellCore;
+type SplitResult = (usize, Vec<(Box<dyn Subword>, bool)>);
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
-    if ! core.db.exist("IFS") {
+    if !core.db.exist("IFS") {
         let _ = core.db.set_param("IFS", " \t\n", None);
     }
 
@@ -28,10 +29,10 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     }
 
     let remain = split[0].1;
-    let mut right = gen_word(word.subwords[pos+1..].to_vec(), remain);
+    let mut right = gen_word(word.subwords[pos + 1..].to_vec(), remain);
     right.subwords.insert(0, split.remove(0).0);
 
-    [ ans, eval(&right, core) ].concat()
+    [ans, eval(&right, core)].concat()
 }
 
 fn gen_word(sws: Vec<Box<dyn Subword>>, remain: bool) -> Word {
@@ -42,7 +43,7 @@ fn gen_word(sws: Vec<Box<dyn Subword>>, remain: bool) -> Word {
     }
 }
 
-pub fn find_pos(word: &Word, ifs: &str) -> (usize, Vec<(Box<dyn Subword>, bool)>) {
+pub fn find_pos(word: &Word, ifs: &str) -> SplitResult {
     let mut prev_char = None;
     for (i, sw) in word.subwords.iter().enumerate() {
         let split = sw.split(ifs, prev_char);
@@ -50,7 +51,7 @@ pub fn find_pos(word: &Word, ifs: &str) -> (usize, Vec<(Box<dyn Subword>, bool)>
             return (i, split);
         }
 
-        if ! sw.get_text().is_empty() {
+        if !sw.get_text().is_empty() {
             prev_char = sw.get_text().chars().last();
         }
     }

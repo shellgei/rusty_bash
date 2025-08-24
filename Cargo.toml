@@ -1,6 +1,6 @@
 [package]
 name = "sush"
-version = "1.2.0"
+version = "1.2.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -18,9 +18,51 @@ rand = "0.9"
 rand_chacha = { version = "0.9.0", features = [ "os_rng" ]}
 time = "0.3"
 sprintf = "0.4"
-widestring = "1.2.0"
+
+# Internationalization
+fluent-bundle = "0.16"
+unic-langid = "0.9"
+once_cell = "1"
+locale_config = "0.3"
+
+
+# Compile-time feature
+[features]
+lang_ar = []
+lang_da = []
+lang_de = []
+lang_el = []
+lang_en = []
+lang_es = []
+lang_fi = []
+lang_fr = []
+lang_hi = []
+lang_it = []
+lang_ja = []
+lang_ko = []
+lang_nl = []
+lang_no = []
+lang_pl = []
+lang_pt = []
+lang_ru = []
+lang_sl = []
+lang_sv = []
+lang_sw = []
+lang_uk = []
+lang_zh = []
+
+default = ["0", "1", "2", "3", "4", "5", "6"]               # All
+0 = ["lang_en", "lang_fr", "lang_ja"]                       # Dev Pack
+1 = ["0", "lang_es", "lang_fr", "lang_it", "lang_pt"]       # Latin
+2 = ["0", "lang_nl", "lang_de", "lang_sl", "lang_el"]       # Central Europe
+3 = ["0", "lang_da", "lang_fi", "lang_no", "lang_sv"]       # Northern Europe
+4 = ["0", "lang_ru", "lang_uk", "lang_pl"]                  # Eastern Europe
+5 = ["0", "lang_hi", "lang_ja", "lang_ko", "lang_zh"]       # Asia
+6 = ["0", "lang_ar", "lang_sw"]                             # Africa / Middle East
+
 
 [profile.release]
 opt-level = 3
 codegen-units = 1
 lto = true
+panic = "abort"

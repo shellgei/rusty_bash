@@ -1,22 +1,26 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
 use super::SimpleCommand;
 use crate::elements::command;
+use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
-use crate::elements::word::{WordMode, Word};
+use crate::{Feeder, ShellCore};
 
-pub fn set(com: &mut SimpleCommand, word: &Word,
-             core: &mut ShellCore, feeder: &mut Feeder) -> Result<bool, ParseError> {
+pub fn set(
+    com: &mut SimpleCommand,
+    word: &Word,
+    core: &mut ShellCore,
+    feeder: &mut Feeder,
+) -> Result<bool, ParseError> {
     com.continue_alias_check = false;
     let mut w = word.text.clone();
-    if ! core.replace_alias(&mut w) {
+    if !core.replace_alias(&mut w) {
         return Ok(false);
     }
 
     com.continue_alias_check = w.ends_with(" ");
-    let mut feeder_local = Feeder::new(&mut w);
+    let mut feeder_local = Feeder::new(&w);
 
     while SimpleCommand::eat_substitution(&mut feeder_local, com, core)? {
         command::eat_blank_with_comment(&mut feeder_local, core, &mut com.text);
@@ -30,8 +34,8 @@ pub fn set(com: &mut SimpleCommand, word: &Word,
                 }
                 com.text.push_str(&w.text);
                 com.words.push(w);
-            },
-            _    => break,
+            }
+            _ => break,
         }
         command::eat_blank_with_comment(&mut feeder_local, core, &mut com.text);
     }

@@ -1,12 +1,12 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder, Script};
+use super::{Command, Redirect};
+use crate::elements::command;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::elements::command;
 use crate::utils::exit;
-use super::{Command, Redirect};
+use crate::{Feeder, Script, ShellCore};
 
 #[derive(Debug, Clone, Default)]
 pub struct IfCommand {
@@ -26,24 +26,35 @@ impl Command for IfCommand {
             if core.db.exit_status == 0 {
                 let _ = self.then_scripts[i].exec(core);
                 return Ok(());
-            }else {
+            } else {
                 core.db.exit_status = 0;
             }
         }
 
-        match self.else_script.as_mut() {
-            Some(s) => s.exec(core)?,
-            _ => {},
+        if let Some(s) = self.else_script.as_mut() {
+            s.exec(core)?
         }
         Ok(())
     }
 
-    fn get_text(&self) -> String { self.text.clone() }
-    fn get_redirects(&mut self) -> &mut Vec<Redirect> { &mut self.redirects }
-    fn get_lineno(&mut self) -> usize { self.lineno }
-    fn set_force_fork(&mut self) { self.force_fork = true; }
-    fn boxed_clone(&self) -> Box<dyn Command> {Box::new(self.clone())}
-    fn force_fork(&self) -> bool { self.force_fork }
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
+    fn get_redirects(&mut self) -> &mut Vec<Redirect> {
+        &mut self.redirects
+    }
+    fn get_lineno(&mut self) -> usize {
+        self.lineno
+    }
+    fn set_force_fork(&mut self) {
+        self.force_fork = true;
+    }
+    fn boxed_clone(&self) -> Box<dyn Command> {
+        Box::new(self.clone())
+    }
+    fn force_fork(&self) -> bool {
+        self.force_fork
+    }
 }
 
 impl IfCommand {
@@ -52,24 +63,28 @@ impl IfCommand {
             "if" | "elif" => Ok(vec!["then"]),
             "then" => Ok(vec!["fi", "else", "elif"]),
             "else" => Ok(vec!["fi"]),
-            unknown => return Err(ParseError::UnexpectedSymbol(unknown.to_string())),
+            unknown => Err(ParseError::UnexpectedSymbol(unknown.to_string())),
         }
     }
 
     fn set_script(word: &str, ans: &mut IfCommand, script: Option<Script>) {
         match word {
             "if" | "elif" => ans.if_elif_scripts.push(script.unwrap()),
-            "then"        => ans.then_scripts.push(script.unwrap()),
-            "else"        => ans.else_script = script,
+            "then" => ans.then_scripts.push(script.unwrap()),
+            "else" => ans.else_script = script,
             _ => exit::internal(" (if parse error)"),
         };
     }
 
-    fn eat_word_and_script(word: &str, feeder: &mut Feeder,
-                           ans: &mut IfCommand, core: &mut ShellCore) -> Result<bool, ParseError> {
+    fn eat_word_and_script(
+        word: &str,
+        feeder: &mut Feeder,
+        ans: &mut IfCommand,
+        core: &mut ShellCore,
+    ) -> Result<bool, ParseError> {
         let mut s = None;
         let ends = Self::end_words(word)?;
-        if ! command::eat_inner_script(feeder, core, word, ends, &mut s, false)? {
+        if !command::eat_inner_script(feeder, core, word, ends, &mut s, false)? {
             return Ok(false);
         }
 
@@ -80,16 +95,19 @@ impl IfCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
- 
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            ..Default::default()
+        };
+
         let mut if_or_elif = "if";
         while Self::eat_word_and_script(if_or_elif, feeder, &mut ans, core)?
-           && Self::eat_word_and_script("then", feeder, &mut ans, core)? {
-
+            && Self::eat_word_and_script("then", feeder, &mut ans, core)?
+        {
             Self::eat_word_and_script("else", feeder, &mut ans, core)?; //optional
 
-            if feeder.starts_with("fi") { // If "else" exists, always it comes here.
+            if feeder.starts_with("fi") {
+                // If "else" exists, always it comes here.
                 ans.text.push_str(&feeder.consume(2));
                 break;
             }

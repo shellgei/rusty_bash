@@ -9,47 +9,51 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 
-use crate::{error, proc_ctrl, signal};
-use crate::elements::substitution::Substitution;
+use self::completion::{Completion, CompletionEntry};
 use self::database::DataBase;
 use self::options::Options;
-use self::completion::{Completion, CompletionEntry};
-use std::collections::HashMap;
-use std::os::fd::{FromRawFd, OwnedFd};
-use std::{io, env, path};
-use nix::{fcntl, unistd};
+use crate::core::jobtable::JobEntry;
+use crate::elements::substitution::Substitution;
+use crate::{error, proc_ctrl, signal};
 use nix::sys::signal::Signal;
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::unistd::Pid;
-use crate::core::jobtable::JobEntry;
-use std::sync::Arc;
+use nix::{fcntl, unistd};
+use std::collections::HashMap;
+use std::os::fd::RawFd;
+use std::os::fd::{FromRawFd, OwnedFd};
 use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
+use std::{env, io, path};
 
 pub struct MeasuredTime {
-    pub real: TimeSpec, 
-    pub user: TimeVal, 
-    pub sys: TimeVal, 
+    pub real: TimeSpec,
+    pub user: TimeVal,
+    pub sys: TimeVal,
 }
 
 impl Default for MeasuredTime {
     fn default() -> Self {
         Self {
-            real: TimeSpec::new(0,0),
-            user: TimeVal::new(0,0),
-            sys: TimeVal::new(0,0),
+            real: TimeSpec::new(0, 0),
+            user: TimeVal::new(0, 0),
+            sys: TimeVal::new(0, 0),
         }
     }
 }
 
+type BuiltinFn = fn(&mut ShellCore, &[String]) -> i32;
+type SubstBuiltinFn = fn(&mut ShellCore, &[String], &mut [Substitution]) -> i32;
+
 #[derive(Default)]
 pub struct ShellCore {
     pub db: DataBase,
-    pub aliases: HashMap<String, String>,
+    //pub aliases: HashMap<String, String>,
     pub alias_memo: Vec<(String, String)>,
     pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
-    pub builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>) -> i32>,
-    pub substitution_builtins: HashMap<String, fn(&mut ShellCore, &mut Vec<String>, &mut Vec<Substitution>) -> i32>,
+    pub builtins: HashMap<String, BuiltinFn>,
+    pub substitution_builtins: HashMap<String, SubstBuiltinFn>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
     pub traplist: Vec<(i32, String)>,
@@ -75,6 +79,9 @@ pub struct ShellCore {
     pub exit_script: String,
     pub exit_script_run: bool,
     pub valid_assoc_expand_once: bool,
+    //pub process_sub: Vec<(Pid, RawFd)>,
+    pub proc_sub_pid: Vec<Pid>,
+    pub proc_sub_fd: Vec<RawFd>,
 }
 
 impl ShellCore {
@@ -93,34 +100,35 @@ impl ShellCore {
             let _ = self.db.set_param("PS2", "> ", None);
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
-            self.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
-        }else{
+            self.tty_fd = Some(unsafe { OwnedFd::from_raw_fd(fd) });
+        } else {
             self.db.flags += "h";
         }
 
-        let home = self.db.get_param("HOME").unwrap_or(String::new()).to_string();
-        let _ = self.db.set_param("HISTFILE", &(home + "/.sush_history"), None);
+        let home = self.db.get_param("HOME").unwrap_or_default().to_string();
+        let _ = self
+            .db
+            .set_param("HISTFILE", &(home + "/.sush_history"), None);
         let _ = self.db.set_param("HISTFILESIZE", "2000", None);
 
-        match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-            Ok("1") => {
-                if self.db.flags.contains('i') {
-                    eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
-                }
-                self.compat_bash = true;
-            },
-            _ => {},
+        if let Ok("1") = env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+            if self.db.flags.contains('i') {
+                eprintln!("THIS IS BASH COMPATIBILITY TEST MODE");
+            }
+            self.compat_bash = true;
         };
 
         if self.script_name != "-" {
             let zero = "0".to_string();
             let _ = self.db.set_param2("BASH_LINENO", &zero, &zero, None);
-            let _ = self.db.set_param2("BASH_SOURCE", &zero, &self.script_name, None);
+            let _ = self
+                .db
+                .set_param2("BASH_SOURCE", &zero, &self.script_name, None);
         }
     }
 
     pub fn new() -> Self {
-        ShellCore{
+        ShellCore {
             db: DataBase::new(),
             sigint: Arc::new(AtomicBool::new(false)),
             options: Options::new_as_basic_opts(),
@@ -134,7 +142,7 @@ impl ShellCore {
         if unistd::isatty(0) == Ok(true) {
             let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
-            self.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+            self.tty_fd = Some(unsafe { OwnedFd::from_raw_fd(fd) });
         }
 
         self.init_current_directory();
@@ -143,9 +151,8 @@ impl ShellCore {
         signal::ignore(Signal::SIGPIPE);
         signal::ignore(Signal::SIGTSTP);
 
-        match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-            Ok("1") => self.compat_bash = true,
-            _ => {},
+        if let Ok("1") = env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+            self.compat_bash = true
         };
     }
 
@@ -155,18 +162,25 @@ impl ShellCore {
         let t_arch = env!("CARGO_CFG_TARGET_ARCH");
         let t_vendor = env!("CARGO_CFG_TARGET_VENDOR");
         let t_os = env!("CARGO_CFG_TARGET_OS");
-        let machtype = format!("{}-{}-{}", t_arch, t_vendor, t_os);
+        let machtype = format!("{t_arch}-{t_vendor}-{t_os}");
         let symbol = "rusty_bash";
         let vparts = version.split('.').collect();
-        let versinfo = [vparts, vec![symbol, profile, &machtype]].concat()
-                       .iter().map(|e| e.to_string()).collect();
+        let versinfo = [vparts, vec![symbol, profile, &machtype]]
+            .concat()
+            .iter()
+            .map(|e| e.to_string())
+            .collect();
 
-        let _ = self.db.set_param("BASH_VERSION", &format!("{}({})-{}", version, symbol, profile), None);
+        let _ = self.db.set_param(
+            "BASH_VERSION",
+            &format!("{version}({symbol})-{profile}"),
+            None,
+        );
         let _ = self.db.set_param("MACHTYPE", &machtype, None);
-        let _ = self.db.set_param("HOSTTYPE", &t_arch, None);
-        let _ = self.db.set_param("OSTYPE", &t_os, None);
+        let _ = self.db.set_param("HOSTTYPE", t_arch, None);
+        let _ = self.db.set_param("OSTYPE", t_os, None);
         let _ = self.db.set_array("BASH_VERSINFO", Some(versinfo), None);
-        let _ = self.db.set_flag("BASH_VERSINFO", 'r', None);
+        self.db.set_flag("BASH_VERSINFO", 'r', None);
     }
 
     pub fn flip_exit_status(&mut self) {
@@ -177,13 +191,15 @@ impl ShellCore {
         let pid = nix::unistd::getpid();
         self.db.init_as_num("BASHPID", &pid.to_string(), Some(0))?;
         match self.db.get_param("BASH_SUBSHELL").unwrap().parse::<usize>() {
-            Ok(num) => self.db.set_param("BASH_SUBSHELL", &(num+1).to_string(), Some(0))?,
-            Err(_) =>  self.db.set_param("BASH_SUBSHELL", "0", Some(0))?,
+            Ok(num) => self
+                .db
+                .set_param("BASH_SUBSHELL", &(num + 1).to_string(), Some(0))?,
+            Err(_) => self.db.set_param("BASH_SUBSHELL", "0", Some(0))?,
         }
         Ok(())
     }
 
-    pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
+    pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid) {
         signal::restore(Signal::SIGINT);
         signal::restore(Signal::SIGTSTP);
         signal::restore(Signal::SIGPIPE);
@@ -200,9 +216,9 @@ impl ShellCore {
         match env::current_dir() {
             Ok(path) => self.current_dir = Some(path),
             Err(err) => {
-                let msg = format!("pwd: error retrieving current directory: {:?}", err);
+                let msg = format!("pwd: error retrieving current directory: {err:?}");
                 error::print(&msg, self);
-            },
+            }
         }
     }
 
@@ -213,7 +229,6 @@ impl ShellCore {
         self.current_dir.clone()
     }
 
-
     pub fn set_current_directory(&mut self, path: &path::PathBuf) -> Result<(), io::Error> {
         env::set_current_dir(path)?;
         self.current_dir = Some(path.clone());
@@ -221,7 +236,12 @@ impl ShellCore {
     }
 
     pub fn get_ps4(&mut self) -> String {
-        let ps4 = self.db.get_param("PS4").unwrap_or_default().trim_end().to_string();
+        let ps4 = self
+            .db
+            .get_param("PS4")
+            .unwrap_or_default()
+            .trim_end()
+            .to_string();
         let mut multi_ps4 = ps4.to_string();
         for _ in 0..(self.source_files.len() as i32 + self.eval_level) {
             multi_ps4 += &ps4;
@@ -234,23 +254,21 @@ impl ShellCore {
         let before = word.clone();
         match self.replace_alias_core(word) {
             true => {
-                self.alias_memo.push( (before, word.clone()) );
+                self.alias_memo.push((before, word.clone()));
                 true
-            },
+            }
             false => false,
         }
     }
 
-    fn replace_alias_core(&self, word: &mut String) -> bool {
-        if ! self.shopts.query("expand_aliases") {
-            if ! self.db.flags.contains('i') {
-                return false;
-            }
+    fn replace_alias_core(&mut self, word: &mut String) -> bool {
+        if !self.shopts.query("expand_aliases") && !self.db.flags.contains('i') {
+            return false;
         }
 
         let mut ans = false;
         let mut prev_head = "".to_string();
-        let history = vec![word.clone()];
+        let history = [word.clone()];
 
         loop {
             let head = match word.replace("\n", " ").split(' ').nth(0) {
@@ -261,9 +279,11 @@ impl ShellCore {
             if prev_head == head {
                 return ans;
             }
-    
-            if let Some(value) = self.aliases.get(&head) {
-                *word = word.replacen(&head, value, 1);
+
+            //if let Some(value) = self.aliases.get(&head) {
+            if self.db.has_array_value("BASH_ALIASES", &head) {
+                let value = self.db.get_elem("BASH_ALIASES", &head).unwrap_or_default();
+                *word = word.replacen(&head, &value, 1);
                 if history.contains(word) {
                     return false;
                 }

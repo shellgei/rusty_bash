@@ -4,19 +4,21 @@
 
 use crate::ShellCore;
 
-pub fn pwd(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if args.len() == 1 || &args[1][..1] != "-" { // $ pwd, $ pwd aaa
+pub fn pwd(core: &mut ShellCore, args: &[String]) -> i32 {
+    if args.len() == 1 || &args[1][..1] != "-" {
+        // $ pwd, $ pwd aaa
         return show_pwd(core, false);
     }
 
-    match args[1].as_str() { //$pwd -L, pwd -P, pwd -aaaa
+    match args[1].as_str() {
+        //$pwd -L, pwd -P, pwd -aaaa
         "-P" => show_pwd(core, true), // シンボリックリンク名を解決して表示
         "-L" => show_pwd(core, false), // シンボリックリンク名をそのまま表示（bash default）
         _ => {
             eprintln!("sush: pwd: {}: invalid option", &args[1]);
             eprintln!("pwd: usage: pwd [-LP]");
             1
-        },
+        }
     }
 }
 

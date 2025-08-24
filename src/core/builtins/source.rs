@@ -1,15 +1,13 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{file_check, Script, ShellCore, Feeder};
 use crate::error::parse::ParseError;
+use crate::{file_check, Feeder, Script, ShellCore};
 
-fn check_error(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    if core.db.flags.contains('r') {
-        if args[1].contains('/') {
-            let msg = format!("{}: restricted", &args[1]);
-            return super::error_exit(1, &args[0], &msg, core);
-        }
+fn check_error(core: &mut ShellCore, args: &[String]) -> i32 {
+    if core.db.flags.contains('r') && args[1].contains('/') {
+        let msg = format!("{}: restricted", &args[1]);
+        return super::error_exit(1, &args[0], &msg, core);
     }
 
     if args.len() < 2 {
@@ -25,8 +23,9 @@ fn check_error(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     0
 }
 
-pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
-    let check = check_error(core, args);
+pub fn source(core: &mut ShellCore, args: &[String]) -> i32 {
+    let args = args.to_owned();
+    let check = check_error(core, &args);
     if check != 0 {
         return check;
     }
@@ -42,7 +41,7 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         Err(e) => {
             e.print(core);
             return 1;
-        },
+        }
     };
 
     core.source_function_level += 1;
@@ -52,20 +51,17 @@ pub fn source(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     let _ = core.db.set_array("BASH_SOURCE", Some(source.clone()), None);
 
     feeder.main_feeder = true;
-    loop {
-        match feeder.feed_line(core) {
-            Ok(()) => {}, 
-            _ => break,
-        }
-
+    while let Ok(()) = feeder.feed_line(core) {
         if core.return_flag {
             feeder.consume(feeder.len());
         }
 
-        match Script::parse(&mut feeder, core, false){
-            Ok(Some(mut s)) => {let _ = s.exec(core); },
+        match Script::parse(&mut feeder, core, false) {
+            Ok(Some(mut s)) => {
+                let _ = s.exec(core);
+            }
             Err(e) => e.print(core),
-            _ => { },
+            _ => {}
         }
     }
 
