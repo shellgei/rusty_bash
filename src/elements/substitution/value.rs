@@ -169,7 +169,7 @@ impl Value {
                 }
                 let txt = "'".to_owned() + &a.text + "'";
                 let mut w = Word::from(txt.as_str());
-                return self.reparse_word(&mut w, core);
+                self.reparse_word(&mut w, core)
             }
             ParsedDataType::None => Ok(()),
         }
