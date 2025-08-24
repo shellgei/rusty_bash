@@ -4,7 +4,7 @@
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
-use crate::{error, file_check, proc_ctrl, ShellCore, utils};
+use crate::{error, file_check, proc_ctrl, utils, ShellCore};
 
 pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
@@ -53,7 +53,7 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
                 true => {
                     println!("{} is a function", &com);
                     core.db.functions.get_mut(com).unwrap().pretty_print(0);
-                },
+                }
                 false => println!("{}", &com),
             }
         } else if let Some(path) = file::search_command(com) {
