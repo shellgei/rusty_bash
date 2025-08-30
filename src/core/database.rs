@@ -69,9 +69,6 @@ impl DataBase {
                      layer: Option<usize>) -> Result<(), ExecError> {
         let layer = self.solve_set_layer(name, layer);
         self.parameters[layer].insert(name.to_string(), val.to_string());
-        if layer == 0 && env::var(name).is_ok() {
-            env::set_var(name, val.to_string());
-        }
         Ok(())
     }
 
