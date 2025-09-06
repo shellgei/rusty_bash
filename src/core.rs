@@ -14,11 +14,13 @@ use nix::{fcntl, unistd};
 use nix::sys::signal::Signal;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
+use crate::elements::substitution::Substitution;
 use crate::{proc_ctrl, signal};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
 type BuiltinFunc = fn(&mut ShellCore, &[String]) -> i32;
+type SubstBuiltinFn = fn(&mut ShellCore, &[String], &mut [Substitution]) -> i32;
 
 #[derive(Default)]
 pub struct ShellCore {
@@ -27,6 +29,7 @@ pub struct ShellCore {
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, BuiltinFunc>,
+    pub subst_builtins: HashMap<String, SubstBuiltinFn>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
     pub source_function_level: i32,

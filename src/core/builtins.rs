@@ -3,6 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod cd;
+mod parameter;
 mod pwd;
 mod utils;
 
@@ -18,6 +19,9 @@ impl ShellCore {
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("return".to_string(), return_);
         self.builtins.insert("true".to_string(), true_);
+
+        self.subst_builtins
+            .insert("local".to_string(), parameter::local);
     }
 }
 
