@@ -3,7 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod cd;
-mod parameter;
+mod variable;
 mod pwd;
 mod utils;
 
@@ -21,7 +21,7 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
 
         self.subst_builtins
-            .insert("local".to_string(), parameter::local);
+            .insert("local".to_string(), variable::local);
     }
 }
 
