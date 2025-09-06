@@ -16,7 +16,7 @@ mod history;
 mod job_commands;
 mod loop_control;
 pub mod option;
-pub mod parameter;
+pub mod variable;
 mod printf;
 mod pwd;
 mod read;
@@ -108,15 +108,15 @@ impl ShellCore {
         self.builtins.insert("wait".to_string(), job_commands::wait);
 
         self.substitution_builtins
-            .insert("export".to_string(), parameter::export);
+            .insert("export".to_string(), variable::export);
         self.substitution_builtins
-            .insert("readonly".to_string(), parameter::readonly);
+            .insert("readonly".to_string(), variable::readonly);
         self.substitution_builtins
-            .insert("typeset".to_string(), parameter::declare);
+            .insert("typeset".to_string(), variable::declare);
         self.substitution_builtins
-            .insert("declare".to_string(), parameter::declare);
+            .insert("declare".to_string(), variable::declare);
         self.substitution_builtins
-            .insert("local".to_string(), parameter::local);
+            .insert("local".to_string(), variable::local);
     }
 }
 
