@@ -18,7 +18,7 @@ use crate::{proc_ctrl, signal};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
-type BuiltinFunc = fn(&mut ShellCore, &mut [String]) -> i32;
+type BuiltinFunc = fn(&mut ShellCore, &[String]) -> i32;
 
 #[derive(Default)]
 pub struct ShellCore {

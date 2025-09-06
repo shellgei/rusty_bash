@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod parser;
+mod run_internal;
 
 use crate::{ShellCore, proc_ctrl};
 use crate::error::exec::ExecError;
@@ -56,10 +57,9 @@ impl Command for SimpleCommand {
             e.print(core);
         }
 
-        if ! core.run_function(&mut self.args) 
-        && ! core.run_builtin(&mut self.args) {
+        if !run_internal::run(self, core)? {
             self.set_environment_variables(core)?;
-            proc_ctrl::exec_command(&mut self.args)
+            proc_ctrl::exec_command(&self.args);
         }
 
         core.db.pop_local();

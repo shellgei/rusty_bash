@@ -21,7 +21,7 @@ impl ShellCore {
     }
 }
 
-pub fn exit(core: &mut ShellCore, args: &mut [String]) -> i32 {
+pub fn exit(core: &mut ShellCore, args: &[String]) -> i32 {
     eprintln!("exit");
     if args.len() > 1 {
         let _ = core.db.set_param("?", &args[1], None);
@@ -29,11 +29,11 @@ pub fn exit(core: &mut ShellCore, args: &mut [String]) -> i32 {
     exit::normal(core)
 }
 
-pub fn false_(_: &mut ShellCore, _: &mut [String]) -> i32 {
+pub fn false_(_: &mut ShellCore, _: &[String]) -> i32 {
     1
 }
 
-pub fn return_(core: &mut ShellCore, args: &mut[String]) -> i32 {
+pub fn return_(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.source_function_level <= 0 {
         eprintln!("sush: return: can only `return' from a function or sourced script");
         return 2;
@@ -50,6 +50,6 @@ pub fn return_(core: &mut ShellCore, args: &mut[String]) -> i32 {
     2
 }
 
-pub fn true_(_: &mut ShellCore, _: &mut [String]) -> i32 {
+pub fn true_(_: &mut ShellCore, _: &[String]) -> i32 {
     0
 }

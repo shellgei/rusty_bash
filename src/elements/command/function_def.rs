@@ -34,7 +34,7 @@ impl Command for FunctionDefinition {
 }
 
 impl FunctionDefinition {
-    pub fn run_as_command(&mut self, args: &mut Vec<String>, core: &mut ShellCore) {
+    pub fn run_as_command(&mut self, args: &mut [String], core: &mut ShellCore) {
         args[0] = core.db.position_parameters[0][0].clone();
         core.db.position_parameters.push(args.to_vec());
 

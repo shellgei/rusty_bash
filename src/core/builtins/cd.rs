@@ -5,7 +5,7 @@
 use crate::ShellCore;
 use super::utils;
 
-pub fn cd(core: &mut ShellCore, args: &mut [String]) -> i32 {
+pub fn cd(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() > 2 {
         eprintln!("sush: cd: too many arguments");
         return 1;
@@ -23,7 +23,7 @@ pub fn cd(core: &mut ShellCore, args: &mut [String]) -> i32 {
     }
 }
 
-fn cd_1arg(core: &mut ShellCore, args: &mut [String]) -> i32 {
+fn cd_1arg(core: &mut ShellCore, args: &[String]) -> i32 {
     let var = "~".to_string();
     let mut args = args.to_vec();
     args.push(var);
@@ -31,7 +31,8 @@ fn cd_1arg(core: &mut ShellCore, args: &mut [String]) -> i32 {
     change_directory(core, &mut args)
 }
 
-fn cd_oldpwd(core: &mut ShellCore, args: &mut [String]) -> i32 {
+fn cd_oldpwd(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut args = args.to_vec();
     if let Ok(old) = core.db.get_param("OLDPWD") {
         println!("{}", &old);
         args[1] = old.to_string();
@@ -41,7 +42,7 @@ fn cd_oldpwd(core: &mut ShellCore, args: &mut [String]) -> i32 {
     }
 
     set_oldpwd(core);
-    change_directory(core, args)
+    change_directory(core, &mut args)
 }
 
 fn set_oldpwd(core: &mut ShellCore) {
@@ -50,7 +51,7 @@ fn set_oldpwd(core: &mut ShellCore) {
     };
 }
 
-fn change_directory(core: &mut ShellCore, args: &mut [String]) -> i32 {
+fn change_directory(core: &mut ShellCore, args: &[String]) -> i32 {
     let path = utils::make_canonical_path(core, &args[1]);
     if core.set_current_directory(&path).is_ok() {
         let _ = core.db.set_param("PWD", &path.display().to_string(), None);
