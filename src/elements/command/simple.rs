@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, proc_ctrl};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::{Command, Pipe, Redirect};
@@ -10,12 +10,7 @@ use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use crate::utils;
 use crate::utils::exit;
-use nix::unistd;
-use std::ffi::CString;
-use std::process;
-
 use nix::unistd::Pid;
-use nix::errno::Errno;
 
 #[derive(Debug, Default, Clone)]
 pub struct SimpleCommand {
@@ -65,7 +60,7 @@ impl Command for SimpleCommand {
         if ! core.run_function(&mut self.args) 
         && ! core.run_builtin(&mut self.args) {
             self.set_environment_variables(core)?;
-            Self::exec_external_command(&mut self.args)
+            proc_ctrl::exec_command(&mut self.args)
         }
 
         core.db.pop_local();
@@ -84,25 +79,6 @@ impl Command for SimpleCommand {
 }
 
 impl SimpleCommand {
-    fn exec_external_command(args: &mut [String]) -> ! {
-        let cargs = Self::to_cargs(args);
-        match unistd::execvp(&cargs[0], &cargs) {
-            Err(Errno::EACCES) => {
-                println!("sush: {}: Permission denied", &args[0]);
-                process::exit(126)
-            },
-            Err(Errno::ENOENT) => {
-                println!("{}: command not found", &args[0]);
-                process::exit(127)
-            },
-            Err(err) => {
-                println!("Failed to execute. {:?}", err);
-                process::exit(127)
-            }
-            _ => panic!("SUSH INTERNAL ERROR (never come here)")
-        }
-    }
-
     fn set_local_params(&mut self,core: &mut ShellCore) -> Result<(), ExecError> {
         let layer = Some(core.db.get_layer_num() - 1);
         for s in self.substitutions.iter_mut() {
@@ -118,12 +94,6 @@ impl SimpleCommand {
         }
         Ok(())
     } 
-
-    fn to_cargs(args: &mut [String]) -> Vec<CString> {
-        args.iter()
-            .map(|a| CString::new(a.to_string()).unwrap())
-            .collect()
-    }
 
     pub fn eat_substitution(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<bool, ParseError> {
