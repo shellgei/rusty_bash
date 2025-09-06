@@ -11,15 +11,12 @@ use std::collections::HashMap;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::{io, env, path, process};
 use nix::{fcntl, unistd};
-use nix::sys::wait;
 use nix::sys::signal::Signal;
-use nix::sys::wait::WaitStatus;
 use nix::unistd::Pid;
 use crate::core::jobtable::JobEntry;
-use crate::signal;
+use crate::{proc_ctrl, signal};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering::Relaxed;
 
 type BuiltinFunc = fn(&mut ShellCore, &mut [String]) -> i32;
 
@@ -85,59 +82,6 @@ impl ShellCore {
         self.flags.contains(flag)
     }
 
-    pub fn wait_process(&mut self, child: Pid) {
-        let exit_status = match wait::waitpid(child, None) {
-            Ok(WaitStatus::Exited(_pid, status)) => {
-                status
-            },
-            Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
-                eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
-                128+signal as i32
-            },
-            Ok(unsupported) => {
-                eprintln!("Unsupported: {:?}", unsupported);
-                1
-            },
-            Err(err) => {
-                panic!("Error: {:?}", err);
-            },
-        };
-
-        if exit_status == 130 {
-            self.sigint.store(true, Relaxed);
-        }
-        let _ = self.db.set_param("?", &exit_status.to_string(), None);
-    } 
-
-    fn set_foreground(&self) {
-        let fd = match self.tty_fd.as_ref() {
-            Some(fd) => fd,
-            _        => return,
-        };
-        let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
-                   .expect("sush(fatal): cannot get pgid");
-
-        if unistd::tcgetpgrp(fd) == Ok(pgid) {
-            return;
-        }
-
-        signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視
-        unistd::tcsetpgrp(fd, pgid)
-            .expect("sush(fatal): cannot get the terminal");
-        signal::restore(Signal::SIGTTOU); //SIGTTOUを受け付け
-    }
-
-    pub fn wait_pipeline(&mut self, pids: Vec<Option<Pid>>) {
-        if pids.len() == 1 && pids[0].is_none() {
-            return;
-        }
-
-        for pid in pids {
-            self.wait_process(pid.expect("SUSHI INTERNAL ERROR (no pid)"));
-        }
-        self.set_foreground();
-    }
-
     pub fn run_builtin(&mut self, args: &mut [String]) -> bool {
         if args.is_empty() {
             panic!("SUSH INTERNAL ERROR (no arg for builtins)");
@@ -169,18 +113,11 @@ impl ShellCore {
         };
     }
 
-    pub fn set_pgid(&self, pid: Pid, pgid: Pid) {
-        unistd::setpgid(pid, pgid).expect("sush(fatal): cannot set pgid");
-        if pid.as_raw() == 0 && pgid.as_raw() == 0 { //以下3行追加
-            self.set_foreground();
-        }
-    }
-
     pub fn initialize_as_subshell(&mut self, pid: Pid, pgid: Pid){
         signal::restore(Signal::SIGINT);
 
         self.is_subshell = true;
-        self.set_pgid(pid, pgid);
+        proc_ctrl::set_pgid(self, pid, pgid);
         self.set_subshell_parameters();
         self.job_table.clear();
     }

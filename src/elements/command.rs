@@ -8,7 +8,7 @@ pub mod brace;
 pub mod r#while;
 pub mod r#if;
 
-use crate::{ShellCore, Feeder, Script};
+use crate::{ShellCore, Feeder, proc_ctrl, Script};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
@@ -62,7 +62,7 @@ pub trait Command {
                 exit::normal(core)
             },
             ForkResult::Parent { child } => {
-                core.set_pgid(child, pipe.pgid);
+                proc_ctrl::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close();
                 Ok(Some(child))
             },

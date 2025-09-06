@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
-use crate::{Feeder, ShellCore};
+use crate::{Feeder, proc_ctrl, ShellCore};
 use crate::core::jobtable::JobEntry;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -41,7 +41,8 @@ impl Job {
             if do_next {
                 core.jobtable_check_status();
                 let (pids, err) = pipeline.exec(core, pgid);
-                core.wait_pipeline(pids);
+                //core.wait_pipeline(pids);
+                proc_ctrl::wait_pipeline(core, pids);
 
                 if let Some(e) = err {
                     return Err(e);
@@ -81,7 +82,7 @@ impl Job {
                 exit::normal(core)
             },
             Ok(ForkResult::Parent { child } ) => {
-                core.set_pgid(child, pgid);
+                proc_ctrl::set_pgid(core, child, pgid);
                 Some(child) 
             },
             Err(err) => panic!("sush(fatal): Failed to fork. {}", err),

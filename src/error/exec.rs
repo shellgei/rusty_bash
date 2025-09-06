@@ -5,6 +5,7 @@ use crate::ShellCore;
 use crate::error::parse::ParseError;
 use std::os::fd::RawFd;
 use nix::errno::Errno;
+use nix::sys::wait::WaitStatus;
 
 #[derive(Debug, Clone)]
 pub enum ExecError {
@@ -27,6 +28,7 @@ pub enum ExecError {
     ParseError(ParseError),
     Recursion(String),
     SubstringMinus(i64),
+    UnsupportedWaitStatus(WaitStatus),
     Errno(Errno),
     Other(String),
 }
@@ -65,6 +67,7 @@ impl From<&ExecError> for String {
             ExecError::ParseError(p) => From::from(p),
             ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
             ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
+            ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {ws:?}"),
             ExecError::Errno(e) => format!("system error {:?}", e),
             ExecError::Other(name) => name.to_string(),
         }

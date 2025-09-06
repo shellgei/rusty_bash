@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, Feeder};
+use crate::{ShellCore, Feeder, proc_ctrl};
 use crate::elements::Pipe;
 use crate::elements::command::Command;
 use crate::elements::command::paren::ParenCommand;
@@ -30,7 +30,7 @@ impl Subword for CommandSubstitution {
         pipe.set(-1, unistd::getpgrp());
         let pid = self.command.exec(core, &mut pipe)?;
         let result = self.read(pipe.recv, core);
-        core.wait_pipeline(vec![pid]);
+        proc_ctrl::wait_pipeline(core, vec![pid]);
         result
     }
 }
