@@ -18,7 +18,7 @@ use crate::{proc_ctrl, signal};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
-type BuiltinFunc = fn(&mut ShellCore, &[String]) -> i32;
+type BuiltinFn = fn(&mut ShellCore, &[String]) -> i32;
 
 #[derive(Default)]
 pub struct ShellCore {
@@ -26,7 +26,7 @@ pub struct ShellCore {
     pub db: DataBase,
     rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
-    pub builtins: HashMap<String, BuiltinFunc>,
+    pub builtins: HashMap<String, BuiltinFn>,
     pub sigint: Arc<AtomicBool>,
     pub is_subshell: bool,
     pub source_function_level: i32,
