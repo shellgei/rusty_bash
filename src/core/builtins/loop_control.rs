@@ -57,7 +57,8 @@ pub fn continue_(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
-    core.continue_counter += 1;
+    //core.continue_counter += 1;
+    core.continue_counter = 1;
     if args.len() < 2 {
         return 0;
     }
@@ -65,7 +66,8 @@ pub fn continue_(core: &mut ShellCore, args: &[String]) -> i32 {
     match args[1].parse::<i32>() {
         Ok(n) => {
             if n > 0 {
-                core.continue_counter += n - 1;
+                //core.continue_counter += n - 1;
+                core.continue_counter = n;
             } else {
                 eprintln!("sush: continue: {}: loop count out of range", args[1]);
                 return 1;

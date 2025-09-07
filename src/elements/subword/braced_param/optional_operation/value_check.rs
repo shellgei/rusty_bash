@@ -11,6 +11,12 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
+use crate::elements::subword::SimpleSubword;
+
+fn is_special_param(name: &str) -> bool {
+   //"$?*@#-!0123456789".contains(name) 
+   "*@".contains(name) 
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
@@ -24,6 +30,7 @@ impl OptionalOperation for ValueCheck {
     fn get_text(&self) -> String {
         self.text.clone()
     }
+
     fn exec(
         &mut self,
         variable: &Variable,
@@ -33,7 +40,7 @@ impl OptionalOperation for ValueCheck {
         let sym = self.symbol.clone().unwrap();
         let mut check_ok = match sym.starts_with(":") {
             true => !text.is_empty(),
-            false => variable.exist(core)?,
+            false => is_special_param(&variable.name) || variable.exist(core)?,
         };
 
         if sym.ends_with("+") {
@@ -79,12 +86,28 @@ impl OptionalOperation for ValueCheck {
 
 impl ValueCheck {
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let v = match &self.alternative_value {
+        let mut v = match &self.alternative_value {
             Some(av) => av.clone(),
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
 
-        self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);
+        if self.in_double_quoted {
+            for e in v.subwords.iter_mut() {
+                if e.is_escaped_char() {
+                    match e.get_text() {
+                        "\\$" | "\\\\" | "\\\"" | "\\`" => {},
+                        txt => {
+                            let sw = SimpleSubword { text: txt.to_string() };
+                            *e = Box::new(sw);
+                        },
+                    }
+                }
+            }
+
+            self.alternative_value = Some(v.dollar_expansion(core)?);
+        }else{
+            self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);
+        }
         if self.in_double_quoted {
             for sw in self.alternative_value.as_mut().unwrap().subwords.iter_mut() {
                 if sw.get_text().starts_with("'") {
@@ -92,7 +115,12 @@ impl ValueCheck {
                 }
             }
         }
-        v.eval_as_value(core)
+
+        if v.text.starts_with("~") && ! self.in_double_quoted {
+            v.eval_as_value(core)
+        }else{
+            v.eval_as_alter(core)
+        }
     }
 
     fn apply_single_quote_rule(sw: &mut Box<dyn Subword>) {

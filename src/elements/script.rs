@@ -35,42 +35,23 @@ impl Script {
     pub fn pretty_print(&mut self, indent_num: usize) {
         let mut semicolon = false;
         let mut printed = false;
+        let mut end_pos = self.jobs.len()-1;
+
+        for job in self.jobs.iter_mut().rev() {
+            if job.pipelines.is_empty() {
+                end_pos -= 1;
+                break;
+            }
+        }
+
         for (i, job) in self.jobs.iter_mut().enumerate() {
-            let tmp = job.text.clone();
-            let job_text = tmp.trim_ascii_end();
-
-            if job_text.is_empty() {
-                semicolon = printed;
-                continue;
-            }
-
-            if semicolon {
-                println!(";");
-                semicolon = false;
-            } else if printed {
-                println!();
-            }
-
-            let tmp = self.job_ends[i].clone();
-            let job_end = tmp.trim_ascii_end();
-
-            let text = job_text.to_owned() + job_end;
-
-            for _ in 0..indent_num {
-                print!("    ");
-            }
-            print!("{}", &text);
-            printed = true;
+            job.pretty_print(indent_num, &mut semicolon, &mut printed,
+                             &self.job_ends[i], i==end_pos);
         }
         println!();
     }
 
     pub fn get_one_line_text(&self) -> String {
-        /*
-        pub jobs: Vec<Job>,
-        pub job_ends: Vec<String>,
-            */
-        //self.text.replace("\n", "")
         let mut ans = String::new();
         for (i, j) in self.jobs.iter().enumerate() {
             ans += &j.get_one_line_text();

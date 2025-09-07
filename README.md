@@ -43,7 +43,7 @@ ueda@uedaP1g6:main🌵~/GIT/rusty_bash🍣
 
 ## Comparison with Bash 5.2
 
-This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed 24 of 84 test scripts.
+This graph shows the test result with the script in `./sush_test/bash_genuine_test` of [this test repository](https://github.com/ryuichiueda/bash_for_sush_test). Currently, the binary built from alpha repo has passed 27 of 84 test scripts.
 
 ![](https://github.com/ryuichiueda/bash_for_sush_test/blob/master/sush_test/graph.png)
 
@@ -78,6 +78,9 @@ The following behavior of Bash will not be imitated by `sush`. So we alter the r
     🍣 (( 1++     ))
     sush: ((: 1++     : syntax error: operand expected (error token is "+")
     ```
+* error messages of `readonly`
+    * We added `readonly: ` to the messages in `attr.right`.
+        * e.g.: `./attr.tests: line 17: a: readonly variable` -> `./attr.tests: line 17: readonly: a: readonly variable`
 
 ## Contribution
 

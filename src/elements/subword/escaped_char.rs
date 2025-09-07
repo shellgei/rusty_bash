@@ -38,6 +38,10 @@ impl Subword for EscapedChar {
     fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
         vec![]
     }
+
+    fn is_escaped_char(&self) -> bool {
+        true
+    }
 }
 
 impl EscapedChar {

@@ -107,17 +107,23 @@ impl ForCommand {
 
             if core.continue_counter > 0 {
                 core.continue_counter -= 1;
-                continue;
             }
 
             if let Some(mut s) = self.do_script.clone() {
                 let _ = s.exec(core);
             }
 
+
             if core.break_counter > 0 {
                 core.break_counter -= 1;
                 break;
             }
+            if core.continue_counter > 1 {
+                break;
+            }
+        }
+        if core.continue_counter > 0 {
+            core.continue_counter -= 1;
         }
         true
     }
@@ -148,6 +154,10 @@ impl ForCommand {
                 return ok;
             }
 
+            if core.continue_counter > 0 {
+                core.continue_counter -= 1;
+            }
+
             if let Some(mut s) = self.do_script.clone() {
                 let _ = s.exec(core);
             }
@@ -156,11 +166,17 @@ impl ForCommand {
                 core.break_counter -= 1;
                 break;
             }
+            if core.continue_counter > 1 {
+                break;
+            }
 
             let (ok, _) = Self::eval_arithmetic(&mut self.arithmetics[2], core);
             if !ok {
                 return false;
             }
+        }
+        if core.continue_counter > 0 {
+            core.continue_counter -= 1;
         }
         true
     }

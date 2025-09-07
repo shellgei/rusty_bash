@@ -42,7 +42,7 @@ impl Subword for Parameter {
             return vec![];
         }
 
-        if ifs.starts_with(" ") || self.array.is_none() {
+        if ifs.contains(" ") || self.array.is_none() { //TODO: add \t and \n ?
             return splitter::split(self.get_text(), ifs, prev_char)
                 .iter()
                 .map(|s| (From::from(&s.0), s.1))

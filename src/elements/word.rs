@@ -93,6 +93,13 @@ impl Word {
         Ok(Self::make_args(&mut ws).join(&joint))
     }
 
+    pub fn eval_as_alter(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let w = self.dollar_expansion(core)?;
+        let mut ws = w.path_expansion(core);
+        let joint = core.db.get_ifs_head();
+        Ok(Self::make_args(&mut ws).join(&joint))
+    }
+
     pub fn eval_as_assoc_index(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let w = self.tilde_and_dollar_expansion(core)?;
         let joint = core.db.get_ifs_head();
@@ -142,6 +149,12 @@ impl Word {
         for sw in self.subwords.iter_mut() {
             sw.set_pipe();
         }
+    }
+
+    pub fn dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
+        let mut w = self.clone();
+        substitution::eval(&mut w, core)?;
+        Ok(w)
     }
 
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {

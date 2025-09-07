@@ -18,6 +18,18 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
         return vec![word.clone()];
     }
 
+    if split.len() == 1 {
+        /*
+        if word.subwords[pos].get_text() != split[0].0.get_text() {
+            let mut w = word.clone();
+            w.subwords[pos] = split[0].0.clone();
+            w.do_not_erase = split[0].1;
+            return vec![w];
+        }*/
+
+        return vec![word.clone()];
+    }
+
     let mut left = word.subwords[..pos].to_vec();
     let remain = split[0].1;
     left.push(split.remove(0).0);

@@ -70,9 +70,24 @@ fn set_substitution(
         sub.left_hand.index = None;
     }
 
+    /* TODO: chaos!!!! */
+    let treat_as_array = core.db.is_array(&sub.left_hand.name)
+                         || core.db.is_assoc(&sub.left_hand.name);
+    let option_indicate_array = arg::has_option("-A", args)
+                         || arg::has_option("-a", args);
+    let treat_as_export = core.db.has_flag(&sub.left_hand.name, 'x')
+                         || export_opt;
+    let subs_elem_quoted_string = sub.left_hand.index.is_some()
+                         && sub.right_hand.text.starts_with("'");
+
+    if option_indicate_array {
+        sub.quoted = false;
+    }
+
     if sub.has_right
-        && (core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name))
-        && !(sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'"))
+        && treat_as_array
+        && !subs_elem_quoted_string
+        && (!treat_as_export || option_indicate_array)
     {
         sub.reparse(core)?;
     }
@@ -140,6 +155,9 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
         }
         if core.db.has_flag(n, 'u') {
             opt += "u";
+        }
+        if core.db.has_flag(n, 'x') {
+            opt += "x";
         }
 
         if core.db.is_readonly(n) && !opt.contains('r') && !core.options.query("posix") {
@@ -210,6 +228,9 @@ fn declare_print_all(core: &mut ShellCore, args: &[String]) -> i32 {
         if core.db.has_flag(&name, 'i') && !options.contains('i') {
             print!("i");
         }
+        if core.db.has_flag(&name, 'x') && !options.contains('x') {
+            print!("x");
+        }
         if core.db.is_readonly(&name) && !options.contains('r') && !core.options.query("posix") {
             print!("r");
         }
@@ -265,9 +286,10 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
 }
 
 pub fn export(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
-    let args = args.to_owned();
+    let mut args = args.to_owned();
     for sub in subs.iter_mut() {
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
+        args.push("-x".to_string());
         if let Err(e) = set_substitution(core, sub, &args, layer) {
             e.print(core);
             return 1;
@@ -322,14 +344,12 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
         if sub.left_hand.index.is_some() {
             let msg = ExecError::VariableInvalid(sub.left_hand.text.clone());
             return super::error_exit(1, &args[0], &String::from(&msg), core);
-            //return 1;
         }
 
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
 
         if let Err(e) = set_substitution(core, sub, &args, layer) {
-            e.print(core);
-            return 1;
+            return super::error_exit(1, &args[0], &String::from(&e), core);
         }
         core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
     }

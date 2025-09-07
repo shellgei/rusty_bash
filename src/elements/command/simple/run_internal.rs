@@ -64,12 +64,16 @@ pub fn run_substitution_builtin(
                     } else {
                         let mut f = Feeder::new(&arg);
                         match Substitution::parse(&mut f, core, true)? {
-                            Some(s) => subs.push(s),
+                            Some(mut s) => {
+                                s.quoted = true;
+                                subs.push(s);
+                            },
                             _ => {
                                 let mut s = Substitution::default();
                                 s.text = arg;
                                 s.left_hand.text = s.text.clone();
                                 s.left_hand.name = s.text.clone();
+                                s.quoted = true;
                                 subs.push(s);
                             }
                         }

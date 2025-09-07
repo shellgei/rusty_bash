@@ -20,7 +20,7 @@ pub struct Substitution {
     append: bool,
     lineno: usize,
     pub has_right: bool,
-    //    pub double_quoted: bool,
+    pub quoted: bool,
 }
 
 impl Substitution {
@@ -50,7 +50,7 @@ impl Substitution {
                 .unwrap()
                 .reparse(core, &self.left_hand.name)?;
         }
-        self.right_hand.reparse(core)?;
+        self.right_hand.reparse(core, self.quoted)?;
         Ok(())
     }
 
