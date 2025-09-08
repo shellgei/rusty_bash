@@ -127,6 +127,9 @@ pub trait Subword {
     fn is_escaped_char(&self) -> bool {
         false
     }
+    fn is_to_proc_sub(&self) -> bool {
+        false
+    }
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> {
         vec![]
     }

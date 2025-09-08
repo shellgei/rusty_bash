@@ -11,10 +11,10 @@ use nix::unistd::Pid;
 
 #[derive(Debug, Clone, Default)]
 pub struct ParenCommand {
-    text: String,
-    script: Option<Script>,
+    pub text: String,
+    pub script: Option<Script>,
     redirects: Vec<Redirect>,
-    lineno: usize,
+    pub lineno: usize,
 }
 
 impl Command for ParenCommand {
@@ -65,15 +65,6 @@ impl Command for ParenCommand {
 }
 
 impl ParenCommand {
-    /*
-        pub fn new(text: &str, script: Option<Script>) -> Self {
-            Self {
-                text: text.to_string(),
-                script: script,
-                redirects: vec![],
-            }
-        }
-    */
     pub fn parse(
         feeder: &mut Feeder,
         core: &mut ShellCore,

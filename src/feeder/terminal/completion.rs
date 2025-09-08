@@ -4,7 +4,6 @@
 use crate::core::builtins::compgen;
 use crate::core::completion::CompletionEntry;
 use crate::elements::command::simple::SimpleCommand;
-use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;
 use crate::error::exec::ExecError;
 use crate::feeder::terminal::Terminal;

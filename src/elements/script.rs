@@ -16,7 +16,7 @@ enum Status {
 pub struct Script {
     pub jobs: Vec<Job>,
     pub job_ends: Vec<String>,
-    text: String,
+    pub text: String,
 }
 
 impl Script {

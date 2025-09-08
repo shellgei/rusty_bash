@@ -46,6 +46,10 @@ impl Subword for ProcessSubstitution {
             self.pipe.as_mut().unwrap().set(-1, unistd::getpgrp());
         }
     }
+
+    fn is_to_proc_sub(&self) -> bool {
+        self.text.starts_with(">(")
+    }
 }
 
 impl ProcessSubstitution {

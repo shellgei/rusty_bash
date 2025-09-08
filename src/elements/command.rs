@@ -249,7 +249,7 @@ pub fn parse(
     if let Some(a) = FunctionDefinition::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = SimpleCommand::parse(feeder, core)? {
-        Ok(Some(Box::new(a)))
+        Ok(Some(a))
     } else if let Some(a) = IfCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ArithmeticCommand::parse(feeder, core)? {
