@@ -12,6 +12,12 @@ use crate::elements::word::Word;
 use crate::utils::exit;
 use nix::unistd::Pid;
 
+#[derive(Debug, Clone)]
+enum SubsArgType {
+    Subs(Box<Substitution>),
+    Other(Word),
+}
+
 #[derive(Debug, Default, Clone)]
 pub struct SimpleCommand {
     text: String,
@@ -20,6 +26,7 @@ pub struct SimpleCommand {
     args: Vec<String>,
     redirects: Vec<Redirect>,
     force_fork: bool,
+    substitutions_as_args: Vec<SubsArgType>,
 }
 
 impl Command for SimpleCommand {
