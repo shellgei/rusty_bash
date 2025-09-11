@@ -63,7 +63,7 @@ pub fn run_substitution_builtin(
                         com.args.push(arg);
                     } else {
                         let mut f = Feeder::new(&arg);
-                        match Substitution::parse(&mut f, core, true)? {
+                        match Substitution::parse(&mut f, core, true, false)? {
                             Some(mut s) => {
                                 s.quoted = true;
                                 subs.push(s);

@@ -175,36 +175,11 @@ impl Substitution {
         Ok(true)
     }
 
-    /* for the case 'declare "A=B"' */
     /*
-    pub fn parse_double_quoted(feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<Option<Self>, ParseError> {
-        let text = if let Some(s) = Word::parse(feeder, core, None)? {
-            let mut txt = s.text;
-            txt.remove(0);
-            txt.pop();
-            txt
-        }else{
-            return Ok(None);
-        };
-
-        let mut f = Feeder::new(&text.replace("~", "\\~"));
-        match Self::parse_as_arg(&mut f, core) {
-            Ok(Some(a)) => Ok(Some(a)),
-            _ => Ok(Some(Self::default())),
-        }
-    }*/
-
     pub fn parse_as_arg(
         feeder: &mut Feeder,
         core: &mut ShellCore,
     ) -> Result<Option<Self>, ParseError> {
-        /*
-        if feeder.starts_with("\"")
-        && ! feeder.starts_with("\"-") {
-            return Self::parse_double_quoted(feeder, core);
-        }*/
-
         let mut ans = Self::default();
         if !ans.eat_left_hand(feeder, core)? {
             return Ok(None);
@@ -222,12 +197,13 @@ impl Substitution {
         }
 
         Ok(Some(ans))
-    }
+    }*/
 
     pub fn parse(
         feeder: &mut Feeder,
         core: &mut ShellCore,
         permit_space: bool,
+        permit_no_equal: bool,
     ) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 
@@ -245,6 +221,10 @@ impl Substitution {
         }
 
         if !ans.eat_equal(feeder) {
+            if permit_no_equal {
+                ans.has_right = false;
+                return Ok(Some(ans));
+            }
             feeder.rewind();
             return Ok(None);
         }
