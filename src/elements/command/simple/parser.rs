@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use crate::utils;
-use super::SimpleCommand;
+use super::{SimpleCommand, SubsArgType};
 
 impl SimpleCommand {
     pub fn eat_substitution(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
@@ -19,6 +19,24 @@ impl SimpleCommand {
         }else{
             Ok(false)
         }
+    }
+
+    pub fn eat_substitution_as_arg(&mut self, feeder: &mut Feeder,core: &mut ShellCore)
+    -> Result<bool, ParseError> {
+        if let Some(s) = Substitution::parse(feeder, core)? {
+            self.text += &s.text;
+            self.substitutions_as_args
+                .push(SubsArgType::Subs(Box::new(s)));
+            return Ok(true);
+        }
+
+        if let Some(w) = Word::parse(feeder, core)? {
+            self.text += &w.text;
+            self.substitutions_as_args.push(SubsArgType::Other(w));
+            return Ok(true);
+        }
+
+        Ok(false)
     }
 
     fn eat_word(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
@@ -54,6 +72,13 @@ impl SimpleCommand {
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
+
+            if core.subst_builtins.contains_key(&ans.command_name) {
+                if ans.eat_substitution_as_arg(feeder, core)? {
+                    continue;
+                }
+            }
+
             if ! ans.eat_word(feeder, core)? {
                 break;
             }
