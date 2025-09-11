@@ -100,3 +100,4 @@
 ./test_fixed.bash
 ./test_fixed.bash
 ./test_fixed.bash
+./test_builtins.bash
