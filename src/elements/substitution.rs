@@ -222,6 +222,7 @@ impl Substitution {
 
         if !ans.eat_equal(feeder) {
             if permit_no_equal {
+                feeder.pop_backup();
                 ans.has_right = false;
                 return Ok(Some(ans));
             }
