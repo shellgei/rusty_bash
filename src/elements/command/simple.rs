@@ -27,6 +27,7 @@ pub struct SimpleCommand {
     redirects: Vec<Redirect>,
     force_fork: bool,
     substitutions_as_args: Vec<SubsArgType>,
+    command_name: String,
 }
 
 impl Command for SimpleCommand {

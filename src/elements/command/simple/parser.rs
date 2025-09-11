@@ -28,8 +28,12 @@ impl SimpleCommand {
             _       => return Ok(false),
         };
 
-        if ans.words.is_empty() && utils::reserved(&w.text) {
-            return Ok(false);
+        if ans.words.is_empty() {
+            if utils::reserved(&w.text) {
+                return Ok(false);
+            }
+
+            ans.command_name = w.text.clone();
         }
         ans.text += &w.text;
         ans.words.push(w);
