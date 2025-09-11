@@ -48,11 +48,11 @@ pub fn run_substitution_builtin(
         return Ok(false);
     }
 
-    if !core.substitution_builtins.contains_key(&com.args[0]) {
+    if !core.subst_builtins.contains_key(&com.args[0]) {
         return Ok(false);
     }
 
-    let func = core.substitution_builtins[&com.args[0]];
+    let func = core.subst_builtins[&com.args[0]];
     let mut subs = vec![];
     for sub in com.substitutions_as_args.iter_mut() {
         match sub {

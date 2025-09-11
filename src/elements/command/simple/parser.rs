@@ -115,41 +115,25 @@ impl SimpleCommand {
         Ok(Some(Box::new(com)))
     }
 
-    fn eat_before_command(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
-        while command::eat_redirects(feeder, core, &mut self.redirects, &mut self.text)?
-        || Self::eat_substitution(feeder, self, core)? {}
-        
-        Ok(())
-    }
-
-    fn eat_non_word(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<bool, ParseError> {
-        command::eat_redirects(feeder, core, &mut self.redirects, &mut self.text)?;
-
-        Ok(core.substitution_builtins.contains_key(&self.command_name)
-        && Self::eat_substitution_as_arg(feeder, self, core)?)
-    }
-
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Box<dyn Command>>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Box<dyn Command>>, ParseError> {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        if let Err(e) = ans.eat_before_command(feeder, core) {
-            feeder.rewind();
-            return Err(e);
-        };
+        while command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?
+              || Self::eat_substitution(feeder, &mut ans, core)? {}
 
         loop {
-            match ans.eat_non_word(feeder, core) {
-                Ok(true) => continue,
-                Ok(false) => {},
-                Err(e) => {
-                    feeder.rewind();
-                    return Err(e);
-                },
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
+
+            if core.subst_builtins.contains_key(&ans.command_name) {
+                if Self::eat_substitution_as_arg(feeder, &mut ans, core)? {
+                    continue;
+                }
             }
 
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if ! Self::eat_word(feeder, &mut ans, core)? { //don't rewind here
+            if ! Self::eat_word(feeder, &mut ans, core)? {
                 break;
             }
         }

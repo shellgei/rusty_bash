@@ -53,7 +53,7 @@ pub struct ShellCore {
     pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, BuiltinFn>,
-    pub substitution_builtins: HashMap<String, SubstBuiltinFn>,
+    pub subst_builtins: HashMap<String, SubstBuiltinFn>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
     pub traplist: Vec<(i32, String)>,

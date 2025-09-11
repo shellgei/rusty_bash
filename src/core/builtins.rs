@@ -107,15 +107,15 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("wait".to_string(), job_commands::wait);
 
-        self.substitution_builtins
+        self.subst_builtins
             .insert("export".to_string(), variable::export);
-        self.substitution_builtins
+        self.subst_builtins
             .insert("readonly".to_string(), variable::readonly);
-        self.substitution_builtins
+        self.subst_builtins
             .insert("typeset".to_string(), variable::declare);
-        self.substitution_builtins
+        self.subst_builtins
             .insert("declare".to_string(), variable::declare);
-        self.substitution_builtins
+        self.subst_builtins
             .insert("local".to_string(), variable::local);
     }
 }
