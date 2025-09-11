@@ -21,27 +21,27 @@ impl SimpleCommand {
         }
     }
 
-    fn eat_word(feeder: &mut Feeder, ans: &mut SimpleCommand, core: &mut ShellCore)
-        -> Result<bool, ParseError> {
+    fn eat_word(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
         let w = match Word::parse(feeder, core)? {
             Some(w) => w,
             _       => return Ok(false),
         };
 
-        if ans.words.is_empty() {
+        if self.words.is_empty() {
             if utils::reserved(&w.text) {
                 return Ok(false);
             }
 
-            ans.command_name = w.text.clone();
+            self.command_name = w.text.clone();
         }
-        ans.text += &w.text;
-        ans.words.push(w);
+        self.text += &w.text;
+        self.words.push(w);
         Ok(true)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
-        -> Result<Option<Self>, ParseError> {
+    -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         feeder.set_backup();
 
@@ -54,7 +54,7 @@ impl SimpleCommand {
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-            if ! Self::eat_word(feeder, &mut ans, core)? {
+            if ! ans.eat_word(feeder, core)? {
                 break;
             }
         }
