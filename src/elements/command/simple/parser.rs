@@ -1,16 +1,13 @@
-//SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::{alias, SimpleCommand, SubsArgType};
 use crate::elements::command;
 use crate::elements::command::{Command, ParenCommand};
-use crate::elements::script::Script;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
 use crate::{utils, Feeder, ShellCore};
-use crate::elements::pipeline::Pipeline;
-use crate::elements::job::Job;
 
 impl SimpleCommand {
     pub fn eat_substitution(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
@@ -76,29 +73,6 @@ impl SimpleCommand {
         Ok(true)
     }
 
-    fn make_dummy_paren(&mut self) -> Result<Option<Box<dyn Command>>, ParseError> {
-        let mut pip = Pipeline::default();
-        pip.text = self.text.clone();
-        pip.commands.push(self.boxed_clone());
-
-        let mut job = Job::default();
-        job.text = pip.text.clone();
-        job.pipelines.push(pip);
-        job.pipeline_ends.push("".to_string());
-
-        let mut script = Script::default();
-        script.text = job.text.clone();
-        script.jobs.push(job);
-        script.job_ends.push("".to_string());
-
-        let mut com = ParenCommand::default();
-        com.lineno = self.lineno;
-        com.text = script.text.clone();
-        com.script = Some(script);
-
-        Ok(Some(Box::new(com)))
-    }
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Box<dyn Command>>, ParseError> {
         let mut ans = Self::default();
@@ -132,7 +106,7 @@ impl SimpleCommand {
             feeder.pop_backup();
 
             if ans.words.iter_mut().any(|w| w.is_to_proc_sub() ) {
-                return ans.make_dummy_paren();
+                return Ok(Some(Box::new(ParenCommand::from(ans))));
             }
 
             Ok(Some(Box::new(ans)))

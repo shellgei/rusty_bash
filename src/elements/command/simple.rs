@@ -33,7 +33,7 @@ pub struct SimpleCommand {
     force_fork: bool,
     substitutions_as_args: Vec<SubsArgType>,
     command_name: String,
-    lineno: usize,
+    pub lineno: usize,
     continue_alias_check: bool,
     invalid_alias: bool,
     command_path: String,

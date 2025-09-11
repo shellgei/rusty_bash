@@ -3,11 +3,39 @@
 
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::command::SimpleCommand;
+use crate::elements::pipeline::Pipeline;
+use crate::elements::job::Job;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
 use crate::{Feeder, Script, ShellCore};
 use nix::unistd::Pid;
+
+impl From<SimpleCommand> for ParenCommand {
+    fn from(c: SimpleCommand) -> Self {
+        let mut pip = Pipeline::default();
+        pip.text = c.get_text();
+        pip.commands.push(c.boxed_clone());
+
+        let mut job = Job::default();
+        job.text = pip.text.clone();
+        job.pipelines.push(pip);
+        job.pipeline_ends.push("".to_string());
+
+        let mut script = Script::default();
+        script.text = job.text.clone();
+        script.jobs.push(job);
+        script.job_ends.push("".to_string());
+
+        let mut com = ParenCommand::default();
+        com.lineno = c.lineno;
+        com.text = script.text.clone();
+        com.script = Some(script);
+
+        com
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct ParenCommand {
