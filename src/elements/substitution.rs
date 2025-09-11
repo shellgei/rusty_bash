@@ -25,8 +25,8 @@ impl Substitution {
                           &self.right_hand.evaluated_string, layer)
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<Option<Self>, ParseError> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+                 permit_no_equal: bool) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         feeder.set_backup();
 
@@ -40,6 +40,10 @@ impl Substitution {
         }
 
         if ! feeder.starts_with("=") {
+            if permit_no_equal {
+                feeder.pop_backup();
+                return Ok(Some(ans));
+            }
             feeder.rewind();
             return Ok(None);
         }
