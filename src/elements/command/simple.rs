@@ -14,7 +14,7 @@ use nix::unistd::Pid;
 
 #[derive(Debug, Clone)]
 enum SubsArgType {
-    Subs(Box<Substitution>),
+    Subs(Box<Substitution>), //clippyの指示でBoxに
     Other(Word),
 }
 
