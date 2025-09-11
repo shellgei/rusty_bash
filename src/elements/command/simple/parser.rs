@@ -13,81 +13,65 @@ use crate::elements::pipeline::Pipeline;
 use crate::elements::job::Job;
 
 impl SimpleCommand {
-    pub fn eat_substitution(
-        feeder: &mut Feeder,
-        ans: &mut Self,
-        core: &mut ShellCore,
-    ) -> Result<bool, ParseError> {
-        match Substitution::parse(feeder, core, false) {
-            Ok(Some(s)) => {
-                ans.text += &s.text;
-                ans.substitutions.push(s);
+    pub fn eat_substitution(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
+        match Substitution::parse(feeder, core, false)? {
+            Some(s) => {
+                self.text += &s.text;
+                self.substitutions.push(s);
                 Ok(true)
             }
-            Ok(None) => Ok(false),
-            Err(e) => {
-                feeder.rewind();
-                Err(e)
-            }
+            None => Ok(false),
         }
     }
 
-    pub fn eat_substitution_as_arg(
-        feeder: &mut Feeder,
-        ans: &mut Self,
-        core: &mut ShellCore,
-    ) -> Result<bool, ParseError> {
+    pub fn eat_substitution_as_arg(&mut self, feeder: &mut Feeder,core: &mut ShellCore)
+    -> Result<bool, ParseError> {
         if let Some(s) = Substitution::parse_as_arg(feeder, core)? {
-            ans.text += &s.text;
-            ans.substitutions_as_args
+            self.text += &s.text;
+            self.substitutions_as_args
                 .push(SubsArgType::Subs(Box::new(s)));
             return Ok(true);
         }
 
         if let Some(w) = Word::parse(feeder, core, None)? {
-            ans.text += &w.text;
-            ans.substitutions_as_args.push(SubsArgType::Other(w));
+            self.text += &w.text;
+            self.substitutions_as_args.push(SubsArgType::Other(w));
             return Ok(true);
         }
 
         Ok(false)
     }
 
-    fn eat_word(
-        feeder: &mut Feeder,
-        ans: &mut SimpleCommand,
-        core: &mut ShellCore,
-    ) -> Result<bool, ParseError> {
+    fn eat_word(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
         let mut mode = None;
-        if ans.command_name == "eval" || ans.command_name == "let" {
+        if self.command_name == "eval" || self.command_name == "let" {
             mode = Some(WordMode::EvalLet);
         }
 
-        let w = match Word::parse(feeder, core, mode) {
-            Ok(Some(w)) => w,
-            Err(e) => {
-                feeder.rewind();
-                return Err(e);
-            }
+        let w = match Word::parse(feeder, core, mode)? {
+            Some(w) => w,
             _ => return Ok(false),
         };
 
-        if ans.words.is_empty() {
-            ans.lineno = feeder.lineno;
+        if self.words.is_empty() {
+            self.lineno = feeder.lineno;
             if utils::reserved(&w.text) {
                 return Ok(false);
             }
 
-            ans.command_name = w.text.clone();
+            self.command_name = w.text.clone();
         }
 
-        if (ans.words.is_empty() || ans.continue_alias_check) && alias::set(ans, &w, core, feeder)?
-        {
+        if (self.words.is_empty()
+            || self.continue_alias_check)
+            && alias::set(self, &w, core, feeder)?  {
             return Ok(true);
         }
 
-        ans.text += &w.text;
-        ans.words.push(w);
+        self.text += &w.text;
+        self.words.push(w);
 
         Ok(true)
     }
@@ -121,19 +105,19 @@ impl SimpleCommand {
         feeder.set_backup();
 
         while command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?
-              || Self::eat_substitution(feeder, &mut ans, core)? {}
+              || ans.eat_substitution(feeder, core)? {}
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
 
             if core.subst_builtins.contains_key(&ans.command_name) {
-                if Self::eat_substitution_as_arg(feeder, &mut ans, core)? {
+                if ans.eat_substitution_as_arg(feeder, core)? {
                     continue;
                 }
             }
 
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
-            if ! Self::eat_word(feeder, &mut ans, core)? {
+            if ! ans.eat_word(feeder, core)? {
                 break;
             }
         }
