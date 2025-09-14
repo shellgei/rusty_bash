@@ -284,7 +284,6 @@ impl Redirect {
         core: &mut ShellCore,
         lineno: usize,
     ) -> Result<(), ParseError> {
-        let mut lineno2 = lineno;
         let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {
             Ok(s) => s,
@@ -301,11 +300,9 @@ impl Redirect {
             if feeder.is_empty() {
                 if feeder.feed_additional_line(core).is_err() {
                     let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text);
-                    let _ = core.db.set_param("LINENO", &lineno2.to_string(), None);
+                    let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
                     error::print(&msg, core);
                     break;
-                }else{
-                    lineno2 += 1;
                 }
 
                 if remove_tab {
@@ -315,6 +312,13 @@ impl Redirect {
 
                 if feeder.starts_with(&end_return) {
                     feeder.consume(end.len());
+                    break;
+                }else if feeder.starts_with(&end) {
+                    feeder.consume(end.len());
+                    let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text);
+                    //let _ = core.db.set_param("LINENO", &lineno2.to_string(), None);
+                    let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
+                    error::print(&msg, core);
                     break;
                 }
             }
