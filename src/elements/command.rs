@@ -117,9 +117,7 @@ pub trait Command {
         self.get_text().replace("\n", " ")
     }
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
-    fn get_lineno(&mut self) -> usize {
-        panic!("IMPLEMENT!!")
-    }
+    fn get_lineno(&mut self) -> usize;
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
     fn force_fork(&self) -> bool;
@@ -129,13 +127,14 @@ pub trait Command {
         feeder: &mut Feeder,
         core: &mut ShellCore,
     ) -> Result<(), ParseError> {
+        let lineno = self.get_lineno();
         for r in self.get_redirects().iter_mut() {
             if r.called_as_heredoc {
                 continue;
             }
             if r.symbol == "<<" || r.symbol == "<<-" {
                 r.called_as_heredoc = true;
-                r.eat_heredoc(feeder, core)?;
+                r.eat_heredoc(feeder, core, lineno)?;
             }
         }
         Ok(())

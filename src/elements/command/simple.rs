@@ -99,6 +99,10 @@ impl Command for SimpleCommand {
     fn force_fork(&self) -> bool {
         self.force_fork
     }
+
+    fn get_lineno(&mut self) -> usize {
+        self.lineno
+    }
 }
 
 impl SimpleCommand {

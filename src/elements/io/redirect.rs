@@ -9,7 +9,7 @@ use crate::elements::word::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::{exit, file_check};
-use crate::{Feeder, ShellCore};
+use crate::{error, Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::fs::{File, OpenOptions};
@@ -282,6 +282,7 @@ impl Redirect {
         &mut self,
         feeder: &mut Feeder,
         core: &mut ShellCore,
+        lineno: usize,
     ) -> Result<(), ParseError> {
         let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {
@@ -297,7 +298,11 @@ impl Redirect {
 
         loop {
             if feeder.is_empty() {
-                feeder.feed_additional_line(core)?;
+                if feeder.feed_additional_line(core).is_err() {
+                    let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted {})", lineno, &self.right.text);
+                    error::print(&msg, core);
+                    break;
+                }
 
                 if remove_tab {
                     let len = feeder.scanner_tabs();
