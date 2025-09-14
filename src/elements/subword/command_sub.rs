@@ -130,13 +130,8 @@ impl CommandSubstitution {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        feeder.nest.push(("`".to_string(), vec!["`".to_string()]));
-        let old = Self::parse_old_style(feeder, core);
-        feeder.nest.pop();
-        match old {
-            Ok(Some(ans)) => return Ok(Some(ans)),
-            Err(e) => return Err(e),
-            _ => {},
+        if let Some(ans) = Self::parse_old_style(feeder, core)? {
+            return Ok(Some(ans));
         }
 
         if !feeder.starts_with("$(") {
