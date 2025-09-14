@@ -278,6 +278,12 @@ impl Redirect {
         }
     }
 
+    fn show_heredoc_warning(&self, lineno: usize, feeder_lineno: usize, core: &mut ShellCore) {
+        let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text);
+        let _ = core.db.set_param("LINENO", &feeder_lineno.to_string(), None);
+        error::print(&msg, core);
+    }
+
     pub fn eat_heredoc(
         &mut self,
         feeder: &mut Feeder,
@@ -290,7 +296,15 @@ impl Redirect {
             Err(_) => return Err(ParseError::UnexpectedSymbol(self.right.text.clone())),
         };
 
+        //dbg!("{:?}", &feeder.nest);
+
+        let mut end_nest = end.clone();
         let end_return = end.clone() + "\n";
+        match feeder.nest.last().unwrap().0.as_str() {
+            "(" => end_nest += ")",
+            "`" => end_nest += "`",
+            _ => end_nest += "\n",
+        }
 
         if feeder.starts_with("\n") {
             feeder.consume(1);
@@ -299,9 +313,7 @@ impl Redirect {
         loop {
             if feeder.is_empty() {
                 if feeder.feed_additional_line(core).is_err() {
-                    let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text);
-                    let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
-                    error::print(&msg, core);
+                    self.show_heredoc_warning(lineno, feeder.lineno, core);
                     break;
                 }
 
@@ -310,15 +322,12 @@ impl Redirect {
                     feeder.consume(len);
                 }
 
-                if feeder.starts_with(&end_return) {
+                if feeder.starts_with(&end_nest) || feeder.starts_with(&end_return) {
                     feeder.consume(end.len());
                     break;
-                }else if feeder.starts_with(&end) {
+                }else if feeder.starts_with(&(end.clone())) {
                     feeder.consume(end.len());
-                    let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text);
-                    //let _ = core.db.set_param("LINENO", &lineno2.to_string(), None);
-                    let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
-                    error::print(&msg, core);
+                    self.show_heredoc_warning(lineno, feeder.lineno, core);
                     break;
                 }
             }
