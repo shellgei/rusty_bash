@@ -86,6 +86,7 @@ impl SimpleCommand {
 
         if ans.words.len() + ans.redirects.len() + ans.substitutions.len() > 0 {
             feeder.pop_backup();
+            dbg!("{:?}", &ans);
             Ok(Some(ans))
         }else{
             feeder.rewind();
