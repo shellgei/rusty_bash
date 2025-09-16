@@ -300,7 +300,6 @@ impl Redirect {
         let end_return = end.clone() + "\n";
         match feeder.nest.last().unwrap().0.as_str() {
             "(" => end_nest += ")",
-        //    "`" => end_nest += "`",
             _ => end_nest += "\n",
         }
 
@@ -311,7 +310,7 @@ impl Redirect {
         loop {
             if feeder.is_empty() {
                 if feeder.feed_additional_line(core).is_err() {
-                    self.show_heredoc_warning(lineno, feeder.lineno, core);
+                    self.show_heredoc_warning(lineno, feeder.lineno-1, core);
                     break;
                 }
             }
