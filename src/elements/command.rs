@@ -135,6 +135,8 @@ pub trait Command {
             if r.symbol == "<<" || r.symbol == "<<-" {
                 r.called_as_heredoc = true;
                 r.eat_heredoc(feeder, core, lineno)?;
+                let mut tmp = String::new();
+                eat_blank_with_comment(feeder, core, &mut tmp);
             }
         }
         Ok(())

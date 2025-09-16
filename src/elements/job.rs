@@ -266,7 +266,10 @@ impl Job {
         ans.text += &feeder.consume(com_num);
 
         match !ans.pipelines.is_empty() {
-            true => Ok(Some(ans)),
+            true => {
+                ans.read_heredoc(feeder, core)?;
+                Ok(Some(ans))
+            },
             false => Ok(None),
         }
     }

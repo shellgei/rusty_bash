@@ -110,6 +110,7 @@ impl SimpleCommand {
                 return Ok(Some(Box::new(ParenCommand::from(ans))));
             }
 
+//            ans.read_heredoc(feeder, core)?;//TODO: maybe required for every command
             Ok(Some(Box::new(ans)))
         } else {
             feeder.rewind();

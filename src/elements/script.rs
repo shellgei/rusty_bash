@@ -135,6 +135,7 @@ impl Script {
         self.jobs.iter().map(|j| j.pipelines.len()).sum()
     }
 
+    /*
     fn read_heredoc(
         &mut self,
         feeder: &mut Feeder,
@@ -144,7 +145,7 @@ impl Script {
             job.read_heredoc(feeder, core)?;
         }
         Ok(())
-    }
+    }*/
 
     pub fn parse(
         feeder: &mut Feeder,
@@ -158,11 +159,11 @@ impl Script {
             match ans.check_nest(feeder, permit_empty) {
                 Status::NormalEnd => {
                     ans.unalias(core);
-                    ans.read_heredoc(feeder, core)?;
+                    //ans.read_heredoc(feeder, core)?;
                     return Ok(Some(ans));
                 }
                 Status::NeedMoreLine => {
-                    ans.read_heredoc(feeder, core)?;
+                    //ans.read_heredoc(feeder, core)?;
                     feeder.feed_additional_line(core)?
                 }
                 Status::UnexpectedSymbol(s) => {

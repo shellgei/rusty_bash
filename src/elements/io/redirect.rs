@@ -296,13 +296,11 @@ impl Redirect {
             Err(_) => return Err(ParseError::UnexpectedSymbol(self.right.text.clone())),
         };
 
-        //dbg!("{:?}", &feeder.nest);
-
         let mut end_nest = end.clone();
         let end_return = end.clone() + "\n";
         match feeder.nest.last().unwrap().0.as_str() {
             "(" => end_nest += ")",
-            "`" => end_nest += "`",
+        //    "`" => end_nest += "`",
             _ => end_nest += "\n",
         }
 
@@ -316,20 +314,20 @@ impl Redirect {
                     self.show_heredoc_warning(lineno, feeder.lineno, core);
                     break;
                 }
+            }
 
-                if remove_tab {
-                    let len = feeder.scanner_tabs();
-                    feeder.consume(len);
-                }
+            if remove_tab {
+                let len = feeder.scanner_tabs();
+                feeder.consume(len);
+            }
 
-                if feeder.starts_with(&end_nest) || feeder.starts_with(&end_return) {
-                    feeder.consume(end.len());
-                    break;
-                }else if feeder.starts_with(&(end.clone())) {
-                    feeder.consume(end.len());
-                    self.show_heredoc_warning(lineno, feeder.lineno, core);
-                    break;
-                }
+            if feeder.starts_with(&end_nest) || feeder.starts_with(&end_return) {
+                feeder.consume(end.len());
+                break;
+            }else if feeder.starts_with(&(end.clone())) {
+                feeder.consume(end.len());
+                self.show_heredoc_warning(lineno, feeder.lineno, core);
+                break;
             }
 
             if let Some(mut sw) = subword::parse(feeder, core, &Some(WordMode::Heredoc))? {
