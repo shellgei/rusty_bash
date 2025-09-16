@@ -103,8 +103,15 @@ impl ParenCommand {
             ..Default::default()
         };
 
-        if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, substitution)? {
-            ans.text.push('(');
+        let mut start = "(";
+        if substitution {
+            if feeder.starts_with("`") {
+                start = "`";
+            }
+        }
+
+        if command::eat_inner_script(feeder, core, start, vec![")"], &mut ans.script, substitution)? {
+            ans.text.push_str(start);
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
 

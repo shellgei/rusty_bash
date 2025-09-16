@@ -279,7 +279,7 @@ impl Redirect {
     }
 
     fn show_heredoc_warning(&self, lineno: usize, feeder_lineno: usize, core: &mut ShellCore) {
-        let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text);
+        let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text.replace("\\", ""));
         let _ = core.db.set_param("LINENO", &feeder_lineno.to_string(), None);
         error::print(&msg, core);
     }
@@ -297,9 +297,14 @@ impl Redirect {
         };
 
         let mut end_nest = end.clone();
+        let mut back_quote = false;
         let end_return = end.clone() + "\n";
         match feeder.nest.last().unwrap().0.as_str() {
             "(" => end_nest += ")",
+            "`" => {
+                back_quote = true;
+                end_nest += ")";
+            },
             _ => end_nest += "\n",
         }
 
@@ -322,6 +327,9 @@ impl Redirect {
 
             if feeder.starts_with(&end_nest) || feeder.starts_with(&end_return) {
                 feeder.consume(end.len());
+                if !back_quote && feeder.starts_with(")") {
+                    self.show_heredoc_warning(lineno, feeder.lineno, core);
+                }
                 break;
             }else if feeder.starts_with(&(end.clone())) {
                 feeder.consume(end.len());
