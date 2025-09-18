@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
 use crate::utils;
-use super::{SimpleCommand, SubsArgType};
+use super::SimpleCommand;
 
 impl SimpleCommand {
     pub fn eat_substitution(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
