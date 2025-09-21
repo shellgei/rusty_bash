@@ -51,6 +51,7 @@ impl Command for SimpleCommand {
         if self.force_fork 
         || pipe.is_connected() 
         || ( ! core.builtins.contains_key(&self.args[0]) 
+             && ! core.subst_builtins.contains_key(&self.args[0])
              && ! core.db.functions.contains_key(&self.args[0]) ) {
             self.fork_exec(core, pipe)
         }else{
