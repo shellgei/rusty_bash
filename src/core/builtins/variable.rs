@@ -6,5 +6,6 @@ use crate::elements::substitution::Substitution;
 
 pub fn local(core: &mut ShellCore, args: &[String],
              subs: &mut [Substitution]) -> i32 {
+    dbg!("{:?}", &subs);
     0
 }
