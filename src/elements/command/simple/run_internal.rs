@@ -58,7 +58,7 @@ pub fn run_substitution_builtin(
     }
 
     let func = core.subst_builtins[&com.args[0]];
-    let exit_status = func(core, &args[..], &mut subs[..]);
+    let exit_status = func(core, &args, &mut subs);
     core.db.set_param("?", &exit_status.to_string(), None)?;
     Ok(true)
 }
