@@ -69,16 +69,17 @@ pub fn run_substitution_builtin(
     Ok(true)
 }
 
-fn other_to_subst(arg: &str,core: &mut ShellCore,
-                  subs: &mut Vec<Substitution>
-                  ) -> Result<(), ExecError> {
+fn other_to_subst(arg: &str,
+    core: &mut ShellCore,
+    subs: &mut Vec<Substitution>
+) -> Result<(), ExecError> {
     let mut f = Feeder::new(arg);
     match Substitution::parse(&mut f, core, true, false)? {
         Some(mut s) => {
             s.quoted = true;
             subs.push(s);
         }
-        _ => {
+        None => {
             let mut s = Substitution::default();
             s.text = arg.to_string();
             s.left_hand.text = s.text.clone();
