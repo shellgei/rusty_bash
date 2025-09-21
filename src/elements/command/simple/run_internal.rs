@@ -43,16 +43,11 @@ pub fn run_substitution_builtin(
     com: &mut SimpleCommand,
     core: &mut ShellCore,
 ) -> Result<bool, ExecError> {
-    if com.args.is_empty() {
-        eprintln!("ShellCore::run_builtin");
-        return Ok(false);
-    }
-
     if !core.subst_builtins.contains_key(&com.args[0]) {
         return Ok(false);
     }
 
-    let func = core.subst_builtins[&com.args[0]];
+    let mut args = vec![com.args[0].clone()];
     let mut subs = vec![];
     for sub in com.substitutions_as_args.iter_mut() {
         match sub {
@@ -60,22 +55,23 @@ pub fn run_substitution_builtin(
             SubsArgType::Other(w) => {
                 for arg in w.eval(core)? {
                     if arg.starts_with("-") || arg.starts_with("+") {
-                        com.args.push(arg);
-                    } else {
-                        let mut f = Feeder::new(&arg);
-                        match Substitution::parse(&mut f, core, true, false)? {
-                            Some(mut s) => {
-                                s.quoted = true;
-                                subs.push(s);
-                            }
-                            _ => {
-                                let mut s = Substitution::default();
-                                s.text = arg;
-                                s.left_hand.text = s.text.clone();
-                                s.left_hand.name = s.text.clone();
-                                s.quoted = true;
-                                subs.push(s);
-                            }
+                        args.push(arg);
+                        continue;
+                    }
+
+                    let mut f = Feeder::new(&arg);
+                    match Substitution::parse(&mut f, core, true, false)? {
+                        Some(mut s) => {
+                            s.quoted = true;
+                            subs.push(s);
+                        }
+                        _ => {
+                            let mut s = Substitution::default();
+                            s.text = arg;
+                            s.left_hand.text = s.text.clone();
+                            s.left_hand.name = s.text.clone();
+                            s.quoted = true;
+                            subs.push(s);
                         }
                     }
                 }
@@ -83,6 +79,7 @@ pub fn run_substitution_builtin(
         }
     }
 
-    core.db.exit_status = func(core, &com.args[..], &mut subs[..]);
+    let func = core.subst_builtins[&com.args[0]];
+    core.db.exit_status = func(core, &args[..], &mut subs[..]);
     Ok(true)
 }
