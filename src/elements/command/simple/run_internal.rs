@@ -74,20 +74,20 @@ fn other_to_subst(arg: &str,
     subs: &mut Vec<Substitution>
 ) -> Result<(), ExecError> {
     let mut f = Feeder::new(arg);
-    match Substitution::parse(&mut f, core, true, false)? {
-        Some(mut s) => {
-            s.quoted = true;
-            subs.push(s);
-        }
-        None => {
-            let mut s = Substitution::default();
-            s.text = arg.to_string();
-            s.left_hand.text = s.text.clone();
-            s.left_hand.name = s.text.clone();
-            s.quoted = true;
-            subs.push(s);
-        }
+
+    if let Some(mut s) = Substitution::parse(&mut f,
+                             core, true, false)? {
+        s.quoted = true;
+        subs.push(s);
+        return Ok(());
     }
+
+    let mut s = Substitution::default();
+    s.text = arg.to_string();
+    s.left_hand.text = s.text.clone();
+    s.left_hand.name = s.text.clone();
+    s.quoted = true;
+    subs.push(s);
 
     Ok(())
 }

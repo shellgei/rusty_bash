@@ -179,26 +179,33 @@ impl ShellCore {
             .map(|e| e.to_string())
             .collect();
 
-        let _ = self.db.set_param(
-            "SUSH_VERSION",
-            &format!("{version}({symbol})-{profile}"),
-            None,
-        );
+
         let _ = self.db.set_param(
             "BASH_VERSION",
             &format!("{t_bash_ver}({t_bash_symbol})-{profile}"),
             None,
         );
+
         let _ = self.db.set_param("MACHTYPE", &machtype, None);
         let _ = self.db.set_param("HOSTTYPE", t_arch, None);
         let _ = self.db.set_param("OSTYPE", t_os, None);
-        let _ = self
-            .db
-            .set_array("SUSH_VERSINFO", Some(sush_versinfo), None);
+
+        if let Ok("1") = env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+        }else{
+            let _ = self
+                .db
+                .set_array("SUSH_VERSINFO", Some(sush_versinfo), None);
+            let _ = self.db.set_param(
+                "SUSH_VERSION",
+                &format!("{version}({symbol})-{profile}"),
+                None,
+            );
+            self.db.set_flag("SUSH_VERSINFO", 'r', None);
+        }
+
         let _ = self
             .db
             .set_array("BASH_VERSINFO", Some(bash_versinfo), None);
-        self.db.set_flag("SUSH_VERSINFO", 'r', None);
         self.db.set_flag("BASH_VERSINFO", 'r', None);
     }
 
