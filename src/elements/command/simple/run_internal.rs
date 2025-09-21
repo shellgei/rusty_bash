@@ -52,7 +52,7 @@ pub fn run_substitution_builtin(
     let mut subs = vec![];
     for sub in com.substitutions_as_args.iter_mut() {
         match sub {
-            SubsArgType::Subs(s) => subs.push((**s).clone()),
+            SubsArgType::Subs(s) => subs.push(*s.clone()),
             SubsArgType::Other(w) => {},
         }
     }
