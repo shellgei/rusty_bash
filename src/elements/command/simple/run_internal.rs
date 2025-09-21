@@ -56,23 +56,8 @@ pub fn run_substitution_builtin(
                 for arg in w.eval(core)? {
                     if arg.starts_with("-") || arg.starts_with("+") {
                         args.push(arg);
-                        continue;
-                    }
-
-                    let mut f = Feeder::new(&arg);
-                    match Substitution::parse(&mut f, core, true, false)? {
-                        Some(mut s) => {
-                            s.quoted = true;
-                            subs.push(s);
-                        }
-                        _ => {
-                            let mut s = Substitution::default();
-                            s.text = arg;
-                            s.left_hand.text = s.text.clone();
-                            s.left_hand.name = s.text.clone();
-                            s.quoted = true;
-                            subs.push(s);
-                        }
+                    }else{
+                        other_to_subst(&arg, core, &mut subs)?;
                     }
                 }
             }
@@ -82,4 +67,26 @@ pub fn run_substitution_builtin(
     let func = core.subst_builtins[&com.args[0]];
     core.db.exit_status = func(core, &args[..], &mut subs[..]);
     Ok(true)
+}
+
+fn other_to_subst(arg: &str,core: &mut ShellCore,
+                  subs: &mut Vec<Substitution>
+                  ) -> Result<(), ExecError> {
+    let mut f = Feeder::new(arg);
+    match Substitution::parse(&mut f, core, true, false)? {
+        Some(mut s) => {
+            s.quoted = true;
+            subs.push(s);
+        }
+        _ => {
+            let mut s = Substitution::default();
+            s.text = arg.to_string();
+            s.left_hand.text = s.text.clone();
+            s.left_hand.name = s.text.clone();
+            s.quoted = true;
+            subs.push(s);
+        }
+    }
+
+    Ok(())
 }
