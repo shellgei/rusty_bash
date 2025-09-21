@@ -5,7 +5,9 @@ use super::{SimpleCommand, SubsArgType};
 use crate::error::exec::ExecError;
 use crate::ShellCore;
 
-pub fn run(com: &mut SimpleCommand, core: &mut ShellCore) -> Result<bool, ExecError> {
+pub fn run(com: &mut SimpleCommand,
+           core: &mut ShellCore
+) -> Result<bool, ExecError> {
     let ans = run_function(&mut com.args, core)
         || run_substitution_builtin(com, core)?
         || run_builtin(com, core)?;
