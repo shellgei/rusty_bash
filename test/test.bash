@@ -812,4 +812,18 @@ res=$($com <<< 'TZ=GMT date | grep GMT')
 res=$($com <<< 'TZ=UTC date | grep UTC')
 [ $? -eq 0 ] || err $LINENO
 
+### local ###
+
+res=$($com <<< 'f() { local a="$(echo 1)" ; echo "$a" ; } ; f')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< "f() { local 'a=1' ; echo "$a" ; } ; f")
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'f() { local "a=1" ; echo "$a" ; } ; f')
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'f() { local "a= 1" ; echo "$a" ; } ; f')
+[ "$res" = " 1" ] || err $LINENO
+
 echo OK $0
