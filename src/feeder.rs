@@ -25,8 +25,9 @@ pub struct Feeder {
 }
 
 impl Feeder {
-    pub fn new() -> Feeder {
+    pub fn new(s: &str) -> Feeder {
         Feeder {
+            remaining: s.to_string(),
             nest: vec![("".to_string(), vec![])],
             ..Default::default()
         }
