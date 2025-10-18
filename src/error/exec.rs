@@ -39,6 +39,12 @@ impl From<Errno> for ExecError {
     }
 }
 
+impl From<ParseError> for ExecError {
+    fn from(e: ParseError) -> ExecError {
+        ExecError::ParseError(e)
+    }
+}
+
 impl From<ExecError> for String {
     fn from(e: ExecError) -> String {
         Self::from(&e)

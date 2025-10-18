@@ -4,7 +4,7 @@
 use super::{SimpleCommand, SubsArgType};
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
-use crate::ShellCore;
+use crate::{ShellCore, Feeder};
 
 pub fn run(com: &mut SimpleCommand,
            core: &mut ShellCore
@@ -78,18 +78,16 @@ fn other_to_subst(arg: &str,
 ) -> Result<(), ExecError> {
     let mut f = Feeder::new(arg);
 
-    if let Some(mut s) = Substitution::parse(&mut f,
-                             core, true, false)? {
-        s.quoted = true;
+    if let Some(mut s)
+    = Substitution::parse(&mut f, core, true)? {
+        //s.quoted = true;
         subs.push(s);
         return Ok(());
     }
 
     let mut s = Substitution::default();
     s.text = arg.to_string();
-    s.left_hand.text = s.text.clone();
-    s.left_hand.name = s.text.clone();
-    s.quoted = true;
+    //s.quoted = true;
     subs.push(s);
 
     Ok(())
