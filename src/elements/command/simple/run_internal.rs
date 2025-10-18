@@ -2,9 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::{SimpleCommand, SubsArgType};
-use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
-use crate::{ShellCore, Feeder};
+use crate::ShellCore;
 
 pub fn run(com: &mut SimpleCommand,
            core: &mut ShellCore
@@ -54,15 +53,7 @@ pub fn run_substitution_builtin(
     for sub in com.substitutions_as_args.iter_mut() {
         match sub {
             SubsArgType::Subs(s) => subs.push(*s.clone()),
-            SubsArgType::Other(w) => {
-                for arg in w.eval(core)? {
-                    if arg.starts_with("-") || arg.starts_with("+") {
-                        args.push(arg);
-                    }else{
-                        other_to_subst(&arg, core, &mut subs)?;
-                    }   
-                }   
-            } 
+            SubsArgType::Other(w) => {},
         }
     }
 
@@ -70,25 +61,4 @@ pub fn run_substitution_builtin(
     let exit_status = func(core, &args, &mut subs);
     core.db.set_param("?", &exit_status.to_string(), None)?;
     Ok(true)
-}
-
-fn other_to_subst(arg: &str,
-    core: &mut ShellCore,
-    subs: &mut Vec<Substitution>
-) -> Result<(), ExecError> {
-    let mut f = Feeder::new(arg);
-
-    if let Some(mut s)
-    = Substitution::parse(&mut f, core, true)? {
-        //s.quoted = true;
-        subs.push(s);
-        return Ok(());
-    }
-
-    let mut s = Substitution::default();
-    s.text = arg.to_string();
-    //s.quoted = true;
-    subs.push(s);
-
-    Ok(())
 }
