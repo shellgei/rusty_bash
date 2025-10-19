@@ -817,7 +817,7 @@ res=$($com <<< 'TZ=UTC date | grep UTC')
 res=$($com <<< 'f() { local a="$(echo 1)" ; echo "$a" ; } ; f')
 [ "$res" = "1" ] || err $LINENO
 
-res=$($com <<< "f() { local 'a=1' ; echo "$a" ; } ; f")
+res=$($com <<< "f() { local 'a=1' ; echo \"\$a\" ; } ; f")
 [ "$res" = "1" ] || err $LINENO
 
 res=$($com <<< 'f() { local "a=1" ; echo "$a" ; } ; f')
