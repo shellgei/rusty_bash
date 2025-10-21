@@ -40,7 +40,7 @@ fn main() {
 }
 
 fn main_loop(core: &mut ShellCore) {
-    let mut feeder = Feeder::new();
+    let mut feeder = Feeder::new("");
     loop {
         core.jobtable_check_status();
         core.jobtable_print_status_change();
