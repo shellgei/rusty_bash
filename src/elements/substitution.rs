@@ -175,30 +175,6 @@ impl Substitution {
         Ok(true)
     }
 
-    /*
-    pub fn parse_as_arg(
-        feeder: &mut Feeder,
-        core: &mut ShellCore,
-    ) -> Result<Option<Self>, ParseError> {
-        let mut ans = Self::default();
-        if !ans.eat_left_hand(feeder, core)? {
-            return Ok(None);
-        }
-
-        if !ans.eat_equal(feeder) {
-            ans.has_right = false;
-            return Ok(Some(ans));
-        }
-
-        ans.has_right = true;
-        if let Some(a) = Value::parse(feeder, core, false)? {
-            ans.text += &a.text.clone();
-            ans.right_hand = a;
-        }
-
-        Ok(Some(ans))
-    }*/
-
     pub fn parse(
         feeder: &mut Feeder,
         core: &mut ShellCore,
