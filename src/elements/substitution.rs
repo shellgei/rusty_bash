@@ -26,7 +26,7 @@ impl Substitution {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
-                 permit_space: bool,
+                 permit_space_in_value: bool,
                  permit_no_equal: bool
                  ) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
@@ -53,7 +53,8 @@ impl Substitution {
         ans.text += &feeder.consume(1);
         feeder.pop_backup();
 
-        if let Some(a) = Value::parse(feeder, core, permit_space)? {
+        if let Some(a) = Value::parse(feeder, core,
+                             permit_space_in_value)? {
             ans.text += &a.text.clone();
             ans.right_hand = a;
         }
