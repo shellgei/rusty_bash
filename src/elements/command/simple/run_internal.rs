@@ -75,7 +75,7 @@ pub fn run_substitution_builtin(
 fn to_sub(arg: String, core: &mut ShellCore,
           subs: &mut Vec<Substitution>) -> Result<(), ExecError> {
     let mut f = Feeder::new(&arg);
-    if let Some(mut s) = Substitution::parse(&mut f, core, true)? {
+    if let Some(mut s) = Substitution::parse(&mut f, core, true, true)? {
         subs.push(s);
     }else{
         let mut s = Substitution::default();

@@ -12,7 +12,7 @@ use super::{SimpleCommand, SubsArgType};
 impl SimpleCommand {
     pub fn eat_substitution(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<bool, ParseError> {
-        if let Some(s) = Substitution::parse(feeder, core, false)? {
+        if let Some(s) = Substitution::parse(feeder, core, false, false)? {
             self.text += &s.text;
             self.substitutions.push(s);
             Ok(true)
@@ -23,7 +23,7 @@ impl SimpleCommand {
 
     pub fn eat_substitution_as_arg(&mut self, feeder: &mut Feeder,core: &mut ShellCore)
     -> Result<bool, ParseError> {
-        if let Some(s) = Substitution::parse(feeder, core, true)? {
+        if let Some(s) = Substitution::parse(feeder, core, false, true)? {
             self.text += &s.text;
             self.substitutions_as_args
                 .push(SubsArgType::Subs(Box::new(s)));

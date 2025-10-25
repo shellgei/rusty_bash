@@ -26,6 +26,7 @@ impl Substitution {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
+                 permit_space: bool,
                  permit_no_equal: bool
                  ) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
