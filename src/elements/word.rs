@@ -14,6 +14,11 @@ use super::subword;
 use super::subword::Subword;
 use super::subword::simple::SimpleSubword;
 
+#[derive(Debug, Clone)]
+pub enum WordMode {
+    PermitAnyChar,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
@@ -111,14 +116,17 @@ impl Word {
             .collect()
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
-        -> Result<Option<Word>, ParseError> {
+    pub fn parse(
+        feeder: &mut Feeder,
+        core: &mut ShellCore,
+        mode: Option<WordMode>,
+    ) -> Result<Option<Word>, ParseError> {
         if feeder.starts_with("#") {
             return Ok(None);
         }
 
         let mut subwords = vec![];
-        while let Some(sw) = subword::parse(feeder, core)? {
+        while let Some(sw) = subword::parse(feeder, core, &mode)? {
             subwords.push(sw);
         }
 
