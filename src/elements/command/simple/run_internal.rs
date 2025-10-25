@@ -73,7 +73,7 @@ fn other_to_subst(arg: &str,
     core: &mut ShellCore,
     subs: &mut Vec<Substitution>
 ) -> Result<(), ExecError> {
-    let mut f = Feeder::new(arg);
+    let mut f = Feeder::new(&arg.replace("$", "\\$"));
 
     if let Some(mut s) = Substitution::parse(&mut f,
                              core, true, false)? {
