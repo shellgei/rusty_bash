@@ -19,7 +19,8 @@ impl Value {
         Ok(())
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    pub fn parse(feeder: &mut Feeder,
+        core: &mut ShellCore, permit_space: bool)
     -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 

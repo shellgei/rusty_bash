@@ -53,7 +53,7 @@ impl Substitution {
         ans.text += &feeder.consume(1);
         feeder.pop_backup();
 
-        if let Some(a) = Value::parse(feeder, core)? {
+        if let Some(a) = Value::parse(feeder, core, permit_space)? {
             ans.text += &a.text.clone();
             ans.right_hand = a;
         }
