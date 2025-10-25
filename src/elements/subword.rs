@@ -88,7 +88,7 @@ pub trait Subword {
     fn is_name(&self) -> bool {false}
 }
 
-pub fn last_resort(
+fn last_resort(
     feeder: &mut Feeder,
     core: &mut ShellCore,
     mode: &Option<WordMode>,
