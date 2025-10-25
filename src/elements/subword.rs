@@ -35,6 +35,12 @@ impl Clone for Box::<dyn Subword> {
     }
 }
 
+impl From<&String> for Box<dyn Subword> {
+    fn from(s: &String) -> Box<dyn Subword> {
+        Box::new(SimpleSubword { text: s.clone() })
+    }
+}
+
 fn split_str(s: &str) -> Vec<&str> {
     let mut esc = false;
     let mut from = 0;
@@ -82,6 +88,22 @@ pub trait Subword {
     fn is_name(&self) -> bool {false}
 }
 
+pub fn last_resort(
+    feeder: &mut Feeder,
+    core: &mut ShellCore,
+    mode: &Option<WordMode>,
+) -> Result<Option<Box<dyn Subword>>, ParseError> {
+    match mode {
+        Some(WordMode::PermitAnyChar) => {
+            if feeder.len() == 0 {
+                return Ok(None);
+            }
+            Ok(Some(From::from(&feeder.consume(1))))
+        }
+        _ => Ok(None),
+    }
+}
+
 pub fn parse(
     feeder: &mut Feeder,
     core: &mut ShellCore,
@@ -94,5 +116,5 @@ pub fn parse(
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
     else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
-    else{ Ok(None) }
+    else{ last_resort(feeder, core, mode) }
 }
