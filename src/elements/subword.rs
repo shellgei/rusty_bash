@@ -83,10 +83,10 @@ pub trait Subword {
 }
 
 pub fn parse(
-        feeder: &mut Feeder,
-        core: &mut ShellCore,
-        mode: &Option<WordMode>
-    ) -> Result<Option<Box<dyn Subword>>, ParseError> {
+    feeder: &mut Feeder,
+    core: &mut ShellCore,
+    mode: &Option<WordMode>
+) -> Result<Option<Box<dyn Subword>>, ParseError> {
     if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
