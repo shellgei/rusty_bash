@@ -206,7 +206,7 @@ pub fn parse_special_subword(
                 Ok(None)
             }
         }
-        Some(WordMode::ReparseOfValue) => {
+        Some(WordMode::PermitAnyChar) => {
             if feeder.is_empty() {
                 Ok(None)
             } else {
