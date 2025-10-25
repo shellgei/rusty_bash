@@ -132,7 +132,7 @@ impl Redirect {
         let blank_len = feeder.scanner_blank(core);
         ans.text += &feeder.consume(blank_len);
 
-        let w = match Word::parse(feeder, core) {
+        let w = match Word::parse(feeder, core, None) {
             Ok(Some(w)) => w,
             Ok(None)    => return Ok(false),
             Err(e)      => {
