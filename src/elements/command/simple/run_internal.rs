@@ -78,9 +78,7 @@ fn to_sub(arg: String, core: &mut ShellCore,
     if let Some(mut s) = Substitution::parse(&mut f, core, true, true)? {
         subs.push(s);
     }else{
-        let mut s = Substitution::default();
-        s.text = arg.to_string();
-        subs.push(s);
+        return Err(ExecError::InvalidName(arg));
     }
 
     Ok(())
