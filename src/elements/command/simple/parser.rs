@@ -30,7 +30,7 @@ impl SimpleCommand {
             return Ok(true);
         }
 
-        if let Some(w) = Word::parse(feeder, core)? {
+        if let Some(w) = Word::parse(feeder, core, None)? {
             self.text += &w.text;
             self.substitutions_as_args.push(SubsArgType::Other(w));
             return Ok(true);
@@ -41,7 +41,7 @@ impl SimpleCommand {
 
     fn eat_word(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<bool, ParseError> {
-        let w = match Word::parse(feeder, core)? {
+        let w = match Word::parse(feeder, core, None)? {
             Some(w) => w,
             _       => return Ok(false),
         };
