@@ -164,7 +164,7 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
-pub fn parse_special_subword(
+pub fn last_resort(
     feeder: &mut Feeder,
     core: &mut ShellCore,
     mode: &Option<WordMode>,
@@ -257,6 +257,6 @@ pub fn parse(
     } else if let Some(a) = EvalLetParen::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
     } else {
-        parse_special_subword(feeder, core, mode)
+        last_resort(feeder, core, mode)
     }
 }
