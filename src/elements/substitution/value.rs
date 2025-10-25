@@ -29,7 +29,7 @@ impl Value {
             false => None,
         };
 
-        if let Some(w) = Word::parse(feeder, core, None)? {
+        if let Some(w) = Word::parse(feeder, core, mode)? {
             ans.text += &w.text;
             ans.value = w;
         }//パース失敗は左辺が空文字と解釈
