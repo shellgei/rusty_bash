@@ -21,7 +21,7 @@ impl SimpleCommand {
         }
     }
 
-    pub fn eat_substitution_as_arg(&mut self, feeder: &mut Feeder,core: &mut ShellCore)
+    fn eat_substitution_as_arg(&mut self, feeder: &mut Feeder,core: &mut ShellCore)
     -> Result<bool, ParseError> {
         if let Some(s) = Substitution::parse(feeder, core, true)? {
             self.text += &s.text;
