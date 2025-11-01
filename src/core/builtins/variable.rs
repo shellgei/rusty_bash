@@ -7,7 +7,6 @@ use crate::error::exec::ExecError;
 
 pub fn local(core: &mut ShellCore, args: &[String],
              subs: &mut [Substitution]) -> i32 {
-    let args = args.to_owned();
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2
     } else {
