@@ -9,6 +9,7 @@ use crate::utils;
 #[derive(Debug, Clone)]
 pub struct IntData {
     pub body: isize,
+    pub flags: String,
 }
 
 impl Data for IntData {
@@ -72,5 +73,21 @@ impl Data for IntData {
             return Ok(true);
         }
         Ok(key == "0")
+    }
+
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+        Ok(())
+    }
+
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
+    }
+
+    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        Ok(self.flags.contains(flag))
     }
 }

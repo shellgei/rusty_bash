@@ -5,7 +5,9 @@ use super::Data;
 use crate::error::exec::ExecError;
 
 #[derive(Debug, Clone, Default)]
-pub struct UninitAssoc {}
+pub struct UninitAssoc {
+    pub flags: String,
+}
 
 impl Data for UninitAssoc {
     fn boxed_clone(&self) -> Box<dyn Data> {
@@ -42,5 +44,21 @@ impl Data for UninitAssoc {
     }
     fn remove_elem(&mut self, _: &str) -> Result<(), ExecError> {
         Ok(())
+    }
+
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+        Ok(())
+    }
+
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
+    }
+
+    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        Ok(self.flags.contains(flag))
     }
 }

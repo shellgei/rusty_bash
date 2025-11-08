@@ -10,6 +10,7 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Default)]
 pub struct IntArrayData {
     body: HashMap<usize, isize>,
+    pub flags: String,
 }
 
 impl Data for IntArrayData {
@@ -206,9 +207,29 @@ impl Data for IntArrayData {
         }
         Err(ExecError::Other("invalid index".to_string()))
     }
+
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+        Ok(())
+    }
+
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
+    }
+
+    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        Ok(self.flags.contains(flag))
+    }
 }
 
 impl IntArrayData {
+    pub fn new() -> Self {
+        Self { body: HashMap::new(), flags: "i".to_string() }
+    }
+
     pub fn set_elem(
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,
@@ -246,7 +267,7 @@ impl IntArrayData {
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,
     ) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), UninitArray {}.boxed_clone());
+        db_layer.insert(name.to_string(), UninitArray {flags: String::new()}.boxed_clone());
         Ok(())
     }
 

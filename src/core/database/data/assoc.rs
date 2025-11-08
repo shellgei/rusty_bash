@@ -10,6 +10,7 @@ use std::collections::HashMap;
 pub struct AssocData {
     body: HashMap<String, String>,
     last: Option<String>,
+    flags: String,
 }
 
 impl From<HashMap<String, String>> for AssocData {
@@ -17,6 +18,7 @@ impl From<HashMap<String, String>> for AssocData {
         Self {
             body: hm,
             last: None,
+            flags: String::new(),
         }
     }
 }
@@ -151,23 +153,25 @@ impl Data for AssocData {
         self.body.remove(key);
         Ok(())
     }
-}
 
-impl AssocData {
-    /*
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), Box::new(AssocData::default()));
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
         Ok(())
     }
 
-    pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
-                     key: &String, val: &String) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(v) => v.set_as_assoc(key, val),
-            _ => Err(ExecError::Other("TODO".to_string())),
-        }
-    }*/
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
+    }
 
+    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        Ok(self.flags.contains(flag))
+    }
+}
+
+impl AssocData {
     pub fn append_elem(
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,

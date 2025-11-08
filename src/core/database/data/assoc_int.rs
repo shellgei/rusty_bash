@@ -11,6 +11,7 @@ use std::collections::HashMap;
 pub struct IntAssocData {
     body: HashMap<String, isize>,
     last: Option<String>,
+    flags: String,
 }
 
 /*
@@ -179,30 +180,28 @@ impl Data for IntAssocData {
         self.body.remove(key);
         Ok(())
     }
-}
 
-impl IntAssocData {
-    /*
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), Box::new(IntAssocData::default()));
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
         Ok(())
     }
 
-    pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
-                     key: &String, val: &String) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(v) => v.set_as_assoc(key, val),
-            _ => Err(ExecError::Other("TODO".to_string())),
-        }
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
     }
 
-    pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
-                     key: &String, val: &String) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(v) => v.append_to_assoc_elem(key, val),
-            _ => Err(ExecError::Other("TODO".to_string())),
-        }
-    }*/
+    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        Ok(self.flags.contains(flag))
+    }
+}
+
+impl IntAssocData {
+    pub fn new() -> Self {
+        Self { body: HashMap::new(), last: None, flags: "i".to_string() }
+    }
 
     pub fn get(&self, key: &str) -> Option<String> {
         Some(self.body.get(key).unwrap_or(&0).to_string())

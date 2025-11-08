@@ -184,4 +184,16 @@ pub trait Data {
     fn remove_elem(&mut self, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("Undefined call remove_elem".to_string()))
     }
+
+    fn set_flag(&mut self, _: char) -> Result<(), ExecError> {
+        Err(ExecError::Other("Don't have flags".to_string()))
+    }
+
+    fn unset_flag(&mut self, _: char) -> Result<(), ExecError> {
+        Err(ExecError::Other("Don't have flags".to_string()))
+    }
+
+    fn has_flag(&mut self, _: char) -> Result<bool, ExecError> {
+        Err(ExecError::Other("Don't have flags".to_string()))
+    }
 }

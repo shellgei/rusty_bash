@@ -5,7 +5,9 @@ use super::Data;
 use crate::error::exec::ExecError;
 
 #[derive(Debug, Clone, Default)]
-pub struct UninitArray {}
+pub struct UninitArray {
+    pub flags: String,
+}
 
 /*
 impl From<Option<Vec<String>>> for UninitArray {
@@ -49,5 +51,21 @@ impl Data for UninitArray {
     }
     fn remove_elem(&mut self, _: &str) -> Result<(), ExecError> {
         Ok(())
+    }
+
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+        Ok(())
+    }
+
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
+    }
+
+    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        Ok(self.flags.contains(flag))
     }
 }

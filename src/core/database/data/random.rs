@@ -41,6 +41,10 @@ impl Data for RandomVar {
     fn is_special(&self) -> bool {
         true
     }
+
+    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        Ok(flag == 'i')
+    }
 }
 
 impl RandomVar {

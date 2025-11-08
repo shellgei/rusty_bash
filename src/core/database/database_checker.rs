@@ -21,8 +21,8 @@ impl DataBase {
     }
 
     pub fn has_flag_layer(&mut self, name: &str, flag: char, layer: usize) -> bool {
-        if let Some(e) = self.param_options[layer].get(name) {
-            return e.contains(flag);
+        if let Some(e) = self.params[layer].get_mut(name) {
+            return e.has_flag(flag).unwrap_or(false);
         }
         false
     }
@@ -30,8 +30,8 @@ impl DataBase {
     pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
         let num = self.params.len();
         for layer in (0..num).rev() {
-            if let Some(e) = self.param_options[layer].get(name) {
-                return e.contains(flag);
+            if let Some(e) = self.params[layer].get_mut(name) {
+                return e.has_flag(flag).unwrap_or(false);
             }
         }
         false

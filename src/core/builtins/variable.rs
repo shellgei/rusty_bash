@@ -349,6 +349,7 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
         if let Err(e) = set_substitution(core, sub, &args, layer) {
             return super::error_exit(1, &args[0], &String::from(&e), core);
         }
+        //dbg!("{:?}", &core.db.params[layer]);
         core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
     }
     0

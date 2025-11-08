@@ -10,11 +10,12 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Default)]
 pub struct ArrayData {
     body: HashMap<usize, String>,
+    pub flags: String,
 }
 
 impl From<HashMap<usize, String>> for ArrayData {
     fn from(h: HashMap<usize, String>) -> Self {
-        Self { body: h }
+        Self { body: h, flags: String::new() }
     }
 }
 
@@ -174,6 +175,22 @@ impl Data for ArrayData {
         self.body.remove(&index);
         Ok(())
     }
+
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+        Ok(())
+    }
+
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
+    }
+
+    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        Ok(self.flags.contains(flag))
+    }
 }
 
 impl ArrayData {
@@ -183,7 +200,7 @@ impl ArrayData {
         v: Option<Vec<String>>,
     ) -> Result<(), ExecError> {
         if v.is_none() {
-            db_layer.insert(name.to_string(), UninitArray {}.boxed_clone());
+            db_layer.insert(name.to_string(), UninitArray {flags: String::new()}.boxed_clone());
         } else {
             db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
         }
