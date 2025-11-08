@@ -19,5 +19,5 @@ pub trait Data {
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         Err(ExecError::Other("not a single variable".to_string()))
-    } 
+    }
 }
