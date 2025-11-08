@@ -1,6 +1,10 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+mod data;
+
+use self::data::Data;
+use self::data::single::SingleData;
 use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::HashMap;
@@ -9,7 +13,7 @@ use std::env;
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub position_parameters: Vec<Vec<String>>,
-    parameters: Vec<HashMap<String, String>>,
+    params: Vec<HashMap<String, Box::<dyn Data>>>,
     pub functions: HashMap<String, FunctionDefinition>,
 }
 
@@ -17,7 +21,7 @@ impl DataBase {
     pub fn new() -> Self {
         Self {
             position_parameters: vec![vec!["sush".to_string()]],
-            parameters: vec![HashMap::new()],
+            params: vec![HashMap::new()],
             ..Default::default()
         }
     }
@@ -31,22 +35,22 @@ impl DataBase {
             return Ok("".to_string());
         }
 
-        for params in self.parameters.iter().rev() {
+        for params in self.params.iter_mut().rev() {
             if params.contains_key(name) {
-                return Ok(params[name].clone());
+                return Ok(params.get_mut(name).unwrap().get_as_single()?);
             }
         }
 
-        if ! self.parameters[0].contains_key(name) {
+        if ! self.params[0].contains_key(name) {
             if let Ok(val) = env::var(name) {
                 self.set_param(name, &val, None)?;
             }
         }
 
-        let ans = match self.parameters[0].get(name) {
-            Some(val) => val,
-            None      => "",
-        }.to_string();
+        let ans = match self.params[0].get_mut(name) {
+            Some(val) => val.get_as_single()?,
+            None      => String::new(),
+        };
 
         Ok(ans)
     }
@@ -56,7 +60,7 @@ impl DataBase {
             return layer.unwrap();
         }
 
-        for (i, params) in self.parameters.iter().enumerate().rev() {
+        for (i, params) in self.params.iter().enumerate().rev() {
             if params.contains_key(name) {
                 return i;
             }
@@ -68,26 +72,26 @@ impl DataBase {
     pub fn set_param(&mut self, name: &str, val: &str,
                      layer: Option<usize>) -> Result<(), ExecError> {
         let layer = self.solve_set_layer(name, layer);
-        self.parameters[layer].insert(name.to_string(), val.to_string());
+        self.params[layer].insert(name.to_string(), Box::new(SingleData::from(val)));
         if layer == 0 && env::var(name).is_ok() {
             env::set_var(name, val.to_string());
         }
         Ok(())
     }
 
-    pub fn get_param_layer_ref(&self, layer: usize) -> &HashMap<String, String> {
-        &self.parameters[layer]
+    pub fn get_param_layer_ref(&mut self, layer: usize) -> &mut HashMap<String, Box::<dyn Data>> {
+        &mut self.params[layer]
     }
 
     pub fn push_local(&mut self) {
-        self.parameters.push(HashMap::new());
+        self.params.push(HashMap::new());
     }   
 
     pub fn pop_local(&mut self) {
-        self.parameters.pop();
+        self.params.pop();
     }
 
     pub fn get_layer_num(&mut self) -> usize {
-        self.parameters.len()
+        self.params.len()
     }
 }

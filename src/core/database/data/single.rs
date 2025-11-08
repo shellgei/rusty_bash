@@ -1,0 +1,35 @@
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXLicense-Identifier: BSD-3-Clause
+
+use super::Data;
+
+use crate::error::exec::ExecError;
+
+#[derive(Debug, Clone)]
+pub struct SingleData {
+    body: String,
+    flags: String,
+}
+
+impl From<&str> for SingleData {
+    fn from(s: &str) -> Self {
+        Self {
+            body: s.to_string(),
+            flags: String::new(),
+        }
+    }
+}
+
+impl Data for SingleData {
+    fn boxed_clone(&self) -> Box<dyn Data> {
+        Box::new(self.clone())
+    }
+
+    fn get_print_string(&self) -> String {
+        self.body.clone()
+    }
+
+    fn get_as_single(&mut self) -> Result<String, ExecError> {
+        Ok(self.body.clone())
+    }
+}

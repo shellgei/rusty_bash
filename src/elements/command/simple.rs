@@ -98,7 +98,7 @@ impl SimpleCommand {
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let layer = core.db.get_layer_num() - 1;
         for entry in core.db.get_param_layer_ref(layer) {
-            std::env::set_var(entry.0, entry.1);
+            std::env::set_var(entry.0, entry.1.get_as_single()?);
         }
         Ok(())
     } 
