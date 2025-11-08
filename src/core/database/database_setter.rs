@@ -408,7 +408,7 @@ impl DataBase {
 
         let rf = &mut self.params[layer];
         match rf.get_mut(name) {
-            Some(d) => { d.set_flag(flag); },
+            Some(d) => { let _ = d.set_flag(flag); },
             None => {
                 match flag {
                     'i' => {rf.insert(name.to_string(), Box::new(IntData { body: 0, flags: flag.to_string() }));},
@@ -429,7 +429,7 @@ impl DataBase {
 
         let rf = &mut self.params[layer];
         if let Some(d) = rf.get_mut(name) {
-            d.unset_flag(flag);
+            let _ = d.unset_flag(flag);
         }
     }
 }

@@ -229,10 +229,6 @@ impl Data for IntArrayData {
 }
 
 impl IntArrayData {
-    pub fn new() -> Self {
-        Self { body: HashMap::new(), flags: "i".to_string() }
-    }
-
     pub fn set_elem(
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,

@@ -17,7 +17,7 @@ use self::data::single_int::IntData;
 use self::data::Data;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::error::exec::ExecError;
-use crate::{env, exit};
+use crate::env;
 use std::collections::HashMap;
 //use self::data::special::SpecialData;
 
@@ -135,7 +135,7 @@ impl DataBase {
             //if let Some(opt) = self.param_options[ly].get_mut(name) {
             if let Some(v) = self.params[ly].get_mut(name) {
                 //opt.retain(|c| c != 'i');
-                v.unset_flag('i');
+                let _ = v.unset_flag('i');
             }
         }
 

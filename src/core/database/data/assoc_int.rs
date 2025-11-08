@@ -220,8 +220,4 @@ impl IntAssocData {
     pub fn values(&self) -> Vec<String> {
         self.body.iter().map(|e| e.1.to_string()).collect()
     }
-
-    fn give_inherit_flags(&mut self) -> String {
-        self.flags.clone()
-    }
 }
