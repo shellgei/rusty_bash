@@ -29,7 +29,7 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
 
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(&self.print_body()).finish()
+        fmt.debug_struct(&self.get_print_string()).finish()
     }
 }
 
@@ -41,7 +41,7 @@ impl Clone for Box<dyn Data> {
 
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
-    fn print_body(&self) -> String;
+    fn get_print_string(&self) -> String;
 
     fn get_str_type(&self) -> Box<dyn Data> {
         self.boxed_clone()
@@ -53,7 +53,7 @@ pub trait Data {
             return;
         }
 
-        let body = self.print_body(); //.replace("$", "\\$");
+        let body = self.get_print_string(); //.replace("$", "\\$");
         if !self.is_initialized() {
             println!("{name}");
         } else if declare_print

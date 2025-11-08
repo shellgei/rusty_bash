@@ -20,7 +20,7 @@ impl Data for UninitArray {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         "".to_string()
     }
 

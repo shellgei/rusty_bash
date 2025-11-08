@@ -18,7 +18,7 @@ impl Data for RandomVar {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         self.prev.clone()
     }
 

@@ -18,7 +18,7 @@ impl Data for IntArrayData {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
             formatted += &format!("[{}]=\"{}\" ", i, &self.body[&i]);

@@ -28,7 +28,7 @@ impl Data for AssocData {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
