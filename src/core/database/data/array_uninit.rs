@@ -68,4 +68,8 @@ impl Data for UninitArray {
     fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
         Ok(self.flags.contains(flag))
     }
+
+    fn give_inherit_flags(&mut self) -> String {
+        self.flags.clone()
+    }
 }

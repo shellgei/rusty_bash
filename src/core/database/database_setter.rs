@@ -410,6 +410,12 @@ impl DataBase {
         match rf.get_mut(name) {
             Some(d) => { d.set_flag(flag); },
             None => {
+                match flag {
+                    'i' => {rf.insert(name.to_string(), Box::new(IntData { body: 0, flags: flag.to_string() }));},
+                    'a' => {rf.insert(name.to_string(), Box::new(UninitArray { flags: flag.to_string() }));},
+                    'A' => {rf.insert(name.to_string(), Box::new(UninitAssoc { flags: flag.to_string() }));},
+                     _ => {},
+                }
                 //rf.insert(name.to_string(), flag.to_string());
             }
         }

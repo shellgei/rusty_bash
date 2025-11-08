@@ -13,7 +13,6 @@ pub mod random;
 pub mod seconds;
 pub mod single;
 pub mod single_int;
-//pub mod special;
 pub mod srandom;
 
 use crate::error::arith::ArithError;
@@ -195,5 +194,9 @@ pub trait Data {
 
     fn has_flag(&mut self, _: char) -> Result<bool, ExecError> {
         Err(ExecError::Other("Don't have flags".to_string()))
+    }
+
+    fn give_inherit_flags(&mut self) -> String {
+        String::new()
     }
 }
