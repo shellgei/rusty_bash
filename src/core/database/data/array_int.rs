@@ -221,6 +221,9 @@ impl Data for IntArrayData {
     }
 
     fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+        if flag == 'i' {
+            return Ok(true);
+        }
         Ok(self.flags.contains(flag))
     }
 }

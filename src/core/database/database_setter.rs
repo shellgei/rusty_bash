@@ -272,7 +272,7 @@ impl DataBase {
             Some(v) => {
                 if !v.is_initialized() {
                     *v = match i_flag {
-                        true => IntAssocData::default().boxed_clone(),
+                        true => IntAssocData::new().boxed_clone(),
                         false => AssocData::default().boxed_clone(),
                     };
                 }
@@ -414,7 +414,7 @@ impl DataBase {
                     'i' => {rf.insert(name.to_string(), Box::new(IntData { body: 0, flags: flag.to_string() }));},
                     'a' => {rf.insert(name.to_string(), Box::new(UninitArray { flags: flag.to_string() }));},
                     'A' => {rf.insert(name.to_string(), Box::new(UninitAssoc { flags: flag.to_string() }));},
-                     _ => {},
+                    c => {rf.insert(name.to_string(), Box::new(SingleData {body: String::new(), flags: c.to_string()} ) ); },
                 }
                 //rf.insert(name.to_string(), flag.to_string());
             }

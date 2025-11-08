@@ -7,7 +7,7 @@ use crate::utils;
 
 #[derive(Debug, Clone)]
 pub struct SingleData {
-    body: String,
+    pub body: String,
     pub flags: String,
 }
 
