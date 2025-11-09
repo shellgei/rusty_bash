@@ -11,14 +11,6 @@ use crate::core::DataBase;
 use crate::error::exec::ExecError;
 use crate::utils::restricted_shell;
 
-fn case_change(s: &str, l_flag: bool, u_flag: bool) -> String {
-    match (l_flag, u_flag) {
-        (true, _) => s.to_string().to_lowercase(),
-        (_, true) => s.to_string().to_uppercase(),
-        _ => s.to_string(),
-    }
-}
-
 impl DataBase {
     pub fn init_as_num(
         &mut self,
@@ -66,13 +58,8 @@ impl DataBase {
             env::set_var(name, "");
         }
 
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
-
-        if env::var(name).is_ok() {
-            env::set_var(name, &val);
-        }
 
         if db_layer.get(name).is_none() {
             db_layer.insert(name.to_string(), Box::new(SingleData::from("")));
@@ -85,12 +72,18 @@ impl DataBase {
         }
 
         if d.is_array() {
-            d.set_as_array("0", &val)
+            d.set_as_array("0", &val)?;
         }else if d.is_assoc() {
-            d.set_as_assoc("0", &val)
+            d.set_as_assoc("0", &val)?;
         }else {
-            d.set_as_single(&val)
+            d.set_as_single(&val)?;
         }
+
+        if env::var(name).is_ok() {
+            let v = d.get_as_single()?;
+            env::set_var(name, &v);
+        }
+        Ok(())
     }
 
     pub fn append_param(
@@ -115,13 +108,8 @@ impl DataBase {
             env::set_var(name, "");
         }
 
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
-
-        if let Ok(v) = env::var(name) {
-            env::set_var(name, v + &val);
-        }
 
         if db_layer.get(name).is_none() {
             db_layer.insert(name.to_string(), Box::new(SingleData::from("")));
@@ -133,7 +121,14 @@ impl DataBase {
             return d.append_to_array_elem("0", &val);
         }
 
-        d.append_as_single(&val)
+        d.append_as_single(&val)?;
+
+        if let Ok(_) = env::var(name) {
+            let v = d.get_as_single()?;
+            env::set_var(name, v);
+        }
+
+        Ok(())
     }
 
     pub fn set_param2(
@@ -209,12 +204,11 @@ impl DataBase {
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
 
         let i_flag = self.has_flag(name, 'i');
         match append {
-            false => self.set_elem(layer, name, pos, &val, i_flag),
-            true  => self.append_elem(layer, name, pos, &val),
+            false => self.set_elem(layer, name, pos, &val.to_string(), i_flag),
+            true  => self.append_elem(layer, name, pos, &val.to_string()),
         }
     }
 
@@ -229,7 +223,6 @@ impl DataBase {
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
@@ -238,7 +231,7 @@ impl DataBase {
                 if let Some(init_v) = v.initialize() {
                     *v = init_v;
                 }
-                v.set_as_assoc(key, &val)
+                v.set_as_assoc(key, val)
             }
             _ => Err(ExecError::Other("TODO".to_string())),
         }
@@ -255,7 +248,6 @@ impl DataBase {
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
-        //let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
         AssocData::append_elem(&mut self.params[layer], name, key, &val)
     }

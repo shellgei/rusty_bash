@@ -14,12 +14,10 @@ pub mod single;
 pub mod single_int;
 pub mod srandom;
 
-//use crate::core::HashMap;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use std::fmt;
 use std::fmt::Debug;
-//use super::{ArrayData, IntArrayData};
 
 fn to_int(s: &str) -> Result<isize, ExecError> {
     match s.parse::<isize>() {
