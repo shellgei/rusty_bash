@@ -80,21 +80,17 @@ impl DataBase {
 
         let d = db_layer.get_mut(name).unwrap();
 
+        if let Some(init_d) = d.initialize() {
+            *d = init_d;
+        }
+
         if d.is_array() {
-            if !d.is_initialized() {
-                *d = ArrayData::new().boxed_clone();
-            }
-            return d.set_as_array("0", &val);
+            d.set_as_array("0", &val)
+        }else if d.is_assoc() {
+            d.set_as_assoc("0", &val)
+        }else {
+            d.set_as_single(&val)
         }
-
-        if d.is_assoc() {
-            if !d.is_initialized() {
-                *d = AssocData::new().boxed_clone();
-            }
-            return d.set_as_assoc("0", &val);
-        }
-
-        d.set_as_single(&val)
     }
 
     pub fn append_param(

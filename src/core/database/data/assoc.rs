@@ -10,7 +10,7 @@ use std::collections::HashMap;
 pub struct AssocData {
     body: HashMap<String, String>,
     last: Option<String>,
-    flags: String,
+    pub flags: String,
 }
 
 impl From<HashMap<String, String>> for AssocData {

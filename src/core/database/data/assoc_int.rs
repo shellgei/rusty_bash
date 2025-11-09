@@ -11,15 +11,8 @@ use std::collections::HashMap;
 pub struct IntAssocData {
     body: HashMap<String, isize>,
     last: Option<String>,
-    flags: String,
+    pub flags: String,
 }
-
-/*
-impl From<HashMap<String, String>> for IntAssocData {
-    fn from(hm: HashMap<String, String>) -> Self {
-        Self { body: hm, last: None, }
-    }
-}*/
 
 impl Data for IntAssocData {
     fn boxed_clone(&self) -> Box<dyn Data> {

@@ -72,19 +72,9 @@ pub trait Data {
         true
     }
 
-    /*
-    fn initialize(&self) -> Box<dyn Data> {
-        let num = self.has_flag('i');
-
-        if self.has_flag('a') {
-            match num {
-                true => return Box::new(IntArrayData {body: HashMap::new(), flags: "ai".to_string()}),
-                false => return Box::new(ArrayData {body: HashMap::new(), flags: "a".to_string()}),
-            }
-        }
-
-        self.boxed_clone()
-    }*/
+    fn initialize(&mut self) -> Option<Box<dyn Data>> {
+        None
+    }
 
     fn has_key(&mut self, _: &str) -> Result<bool, ExecError> {
         Ok(false)

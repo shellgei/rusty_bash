@@ -9,7 +9,7 @@ use crate::utils;
 #[derive(Debug, Clone)]
 pub struct IntData {
     pub body: isize,
-    flags: String,
+    pub flags: String,
 }
 
 impl Data for IntData {

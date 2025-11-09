@@ -3,6 +3,9 @@
 
 use super::Data;
 use crate::error::exec::ExecError;
+use super::super::{
+    ArrayData, AssocData, IntArrayData, IntAssocData, IntData, SingleData
+};
 
 #[derive(Debug, Clone)]
 pub struct Uninit {
@@ -15,6 +18,52 @@ impl Data for Uninit {
     }
     fn get_print_string(&self) -> String {
         "".to_string()
+    }
+
+    fn initialize(&mut self) -> Option<Box<dyn Data>> {
+        let num = self.has_flag('i');
+
+        if self.has_flag('a') {
+            match num {
+                true => {
+                    let mut d = IntArrayData::new();
+                    d.flags = self.flags.clone();
+                    return Some(Box::new(d));
+                },
+                false => {
+                    let mut d = ArrayData::new();
+                    d.flags = self.flags.clone();
+                    return Some(Box::new(d));
+                },
+            }
+        }
+
+        if self.has_flag('A') {
+            match num {
+                true => {
+                    let mut d = IntAssocData::new();
+                    d.flags = self.flags.clone();
+                    return Some(Box::new(d));
+                },
+                false => {
+                    let mut d = AssocData::new();
+                    d.flags = self.flags.clone();
+                    return Some(Box::new(d));
+                },
+            }
+        }
+
+        match num {
+            true => {
+                let mut d = IntData::new();
+                d.flags = self.flags.clone();
+                return Some(Box::new(d));
+            },
+            false => {
+                let d = SingleData::new(&self.flags);
+                return Some(Box::new(d));
+            },
+        }
     }
 
     fn clear(&mut self) {}
