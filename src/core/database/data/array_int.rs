@@ -2,7 +2,6 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::array::ArrayData;
-use super::uninit::Uninit;
 use super::Data;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
@@ -234,14 +233,6 @@ impl IntArrayData {
             body: HashMap::new(),
             flags: "ai".to_string(),
         }
-    }
-
-    pub fn set_new_entry(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-    ) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), Box::new(Uninit::new("ai".to_string())));
-        Ok(())
     }
 
     pub fn values(&self) -> Vec<String> {

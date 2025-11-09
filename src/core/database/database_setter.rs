@@ -456,18 +456,18 @@ impl DataBase {
                 return d.set_as_assoc(&pos.to_string(), val);
             } else if d.is_single() {
                 let data = d.get_as_single()?;
-                IntArrayData::set_new_entry(db_layer, name)?;
+                Self::set_new_entry_i(db_layer, name)?;
     
                 if !data.is_empty() {
                     Self::set_elem_i(db_layer, name, 0, &data)?;
                 }
                 Self::set_elem_i(db_layer, name, pos, val)
             } else {
-                IntArrayData::set_new_entry(db_layer, name)?;
+                Self::set_new_entry_i(db_layer, name)?;
                 Self::set_elem_i(db_layer, name, pos, val)
             }
         } else {
-            IntArrayData::set_new_entry(db_layer, name)?;
+            Self::set_new_entry_i(db_layer, name)?;
             Self::set_elem_i(db_layer, name, pos, val)
         }
     }
@@ -509,6 +509,14 @@ impl DataBase {
         } else {
             db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
         }
+        Ok(())
+    }
+
+    pub fn set_new_entry_i(
+        db_layer: &mut HashMap<String, Box<dyn Data>>,
+        name: &str,
+    ) -> Result<(), ExecError> {
+        db_layer.insert(name.to_string(), Box::new(Uninit::new("ai".to_string())));
         Ok(())
     }
 }
