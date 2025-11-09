@@ -329,15 +329,6 @@ impl DataBase {
         restricted_shell::check(self, name, &v)?;
 
         let layer = self.get_target_layer(name, layer);
-
-        /*
-        match self.param_options[layer].get_mut(name) {
-            Some(e) => *e += "i",
-            None => {
-                self.param_options[layer].insert(name.to_string(), "i".to_string());
-            }
-        }*/
-
         let db_layer = &mut self.params[layer];
         db_layer.insert(name.to_string(), IntArrayData::new().boxed_clone());
 
@@ -356,15 +347,6 @@ impl DataBase {
         restricted_shell::check(self, name, &None)?;
 
         let layer = self.get_target_layer(name, layer);
-
-        /*
-        match self.param_options[layer].get_mut(name) {
-            Some(e) => *e += "i",
-            None => {
-                self.param_options[layer].insert(name.to_string(), "i".to_string());
-            }
-        }*/
-
         let db_layer = &mut self.params[layer];
         db_layer.insert(name.to_string(), IntAssocData::new().boxed_clone());
         Ok(())
