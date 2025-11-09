@@ -19,13 +19,11 @@ use crate::elements::command::function_def::FunctionDefinition;
 use crate::error::exec::ExecError;
 use crate::env;
 use std::collections::HashMap;
-//use self::data::special::SpecialData;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
     pub params: Vec<HashMap<String, Box<dyn Data>>>,
-//    pub param_options: Vec<HashMap<String, String>>,
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
     pub exit_status: i32,
@@ -37,7 +35,6 @@ impl DataBase {
     pub fn new() -> DataBase {
         let mut data = DataBase {
             params: vec![HashMap::new()],
-            //param_options: vec![HashMap::new()],
             position_parameters: vec![vec![]],
             flags: "B".to_string(),
             ..Default::default()
@@ -60,16 +57,10 @@ impl DataBase {
 
     pub fn push_local(&mut self) {
         self.params.push(HashMap::new());
-        /*
-        match self.param_options.last() {
-            Some(e) => self.param_options.push(e.clone()),
-            None => exit::internal("error: DataBase::push_local"),
-        }*/
     }
 
     pub fn pop_local(&mut self) {
         self.params.pop();
-        //self.param_options.pop();
     }
 
     pub fn init(&mut self, name: &str, layer: usize) {
@@ -84,10 +75,6 @@ impl DataBase {
         for layer in &mut self.params {
             layer.remove(name);
         }
-        /*
-        for layer in &mut self.param_options {
-            layer.remove(name);
-        }*/
     }
 
     pub fn unset_function(&mut self, name: &str) {
@@ -132,9 +119,7 @@ impl DataBase {
     pub fn int_to_str_type(&mut self, name: &str, layer: usize) -> Result<(), ExecError> {
         let layer_len = self.params.len();
         for ly in layer..layer_len {
-            //if let Some(opt) = self.param_options[ly].get_mut(name) {
             if let Some(v) = self.params[ly].get_mut(name) {
-                //opt.retain(|c| c != 'i');
                 let _ = v.unset_flag('i');
             }
         }

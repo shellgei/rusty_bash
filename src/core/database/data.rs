@@ -196,7 +196,8 @@ pub trait Data {
         Err(ExecError::Other("Don't have flags".to_string()))
     }
 
+    /*
     fn give_inherit_flags(&mut self) -> String {
         String::new()
-    }
+    }*/
 }

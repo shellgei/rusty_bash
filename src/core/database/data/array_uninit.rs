@@ -9,13 +9,6 @@ pub struct UninitArray {
     pub flags: String,
 }
 
-/*
-impl From<Option<Vec<String>>> for UninitArray {
-    fn from(v: Option<Vec<String>>) -> Self {
-        return Self { }
-    }
-}*/
-
 impl Data for UninitArray {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
@@ -67,9 +60,5 @@ impl Data for UninitArray {
 
     fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
         Ok(self.flags.contains(flag))
-    }
-
-    fn give_inherit_flags(&mut self) -> String {
-        self.flags.clone()
     }
 }

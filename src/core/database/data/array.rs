@@ -216,8 +216,8 @@ impl ArrayData {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
-                    let flags = d.give_inherit_flags();
-                    *d = ArrayData {body: HashMap::new(), flags: flags}.boxed_clone();
+             //       let flags = d.give_inherit_flags();
+                    *d = ArrayData {body: HashMap::new(), flags: "a".to_string()}.boxed_clone();
                 }
 
                 d.set_as_array(&pos.to_string(), val)
@@ -250,8 +250,8 @@ impl ArrayData {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
-                    let flags = d.give_inherit_flags();
-                    *d = ArrayData {body: HashMap::new(), flags: flags}.boxed_clone();
+                    //let flags = d.give_inherit_flags();
+                    *d = ArrayData {body: HashMap::new(), flags: "a".to_string()}.boxed_clone();
                 }
 
                 d.append_to_array_elem(&pos.to_string(), val)
