@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data;
+use super::{case_change, Data};
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
@@ -11,13 +11,6 @@ pub struct ArrayData {
     pub body: HashMap<usize, String>,
     pub flags: String,
 }
-
-/*
-impl From<HashMap<usize, String>> for ArrayData {
-    fn from(h: HashMap<usize, String>) -> Self {
-        Self { body: h, flags: "a".to_string() }
-    }
-}*/
 
 impl From<Option<Vec<String>>> for ArrayData {
     fn from(v: Option<Vec<String>>) -> Self {
@@ -56,32 +49,44 @@ impl Data for ArrayData {
     }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.body.insert(0, value.to_string());
+        let mut value = value.to_string();
+        case_change(&self.flags, &mut value);
+        self.body.insert(0, value);
         Ok(())
     }
 
     fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        if let Some(v) = self.body.get(&0) {
-            self.body.insert(0, v.to_owned() + value);
+        let mut value = if let Some(v) = self.body.get(&0) {
+            v.to_owned() + value
         } else {
-            self.body.insert(0, value.to_string());
-        }
+            value.to_string()
+        };
+
+        case_change(&self.flags, &mut value);
+        self.body.insert(0, value);
         Ok(())
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let n = self.index_of(key)?;
-        self.body.insert(n, value.to_string());
+
+        let mut value = value.to_string();
+        case_change(&self.flags, &mut value);
+
+        self.body.insert(n, value);
         Ok(())
     }
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let n = self.index_of(key)?;
-        if let Some(v) = self.body.get(&n) {
-            self.body.insert(n, v.to_owned() + value);
+        let mut value = if let Some(v) = self.body.get(&n) {
+            v.to_owned() + value
         } else {
-            self.body.insert(n, value.to_string());
-        }
+            value.to_string()
+        };
+
+        case_change(&self.flags, &mut value);
+        self.body.insert(n, value);
         Ok(())
     }
 

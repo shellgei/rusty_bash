@@ -28,6 +28,14 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
     }
 }
 
+fn case_change(flags: &String, text: &mut String) {
+    if flags.contains('l') {
+        *text = text.to_lowercase();
+    }else if flags.contains('u') {
+        *text = text.to_uppercase();
+    }
+}
+
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.get_print_string()).finish()
@@ -200,4 +208,5 @@ pub trait Data {
     fn has_flag(&mut self, _: char) -> bool {
         false
     }
+
 }

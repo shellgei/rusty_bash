@@ -1,7 +1,7 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data;
+use super::{case_change, Data};
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
@@ -50,13 +50,19 @@ impl Data for AssocData {
     }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.body.insert("0".to_string(), value.to_string());
+        let mut value = value.to_string();
+        case_change(&self.flags, &mut value);
+
+        self.body.insert("0".to_string(), value);
         Ok(())
     }
 
     fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        self.body.insert(key.to_string(), value.to_string());
-        self.last = Some(value.to_string());
+        let mut value = value.to_string();
+        case_change(&self.flags, &mut value);
+
+        self.body.insert(key.to_string(), value.clone());
+        self.last = Some(value);
         Ok(())
     }
 

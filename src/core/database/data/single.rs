@@ -1,7 +1,7 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data;
+use super::{case_change, Data};
 use crate::error::exec::ExecError;
 use crate::utils;
 
@@ -43,11 +43,13 @@ impl Data for SingleData {
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body = value.to_string();
+        case_change(&self.flags, &mut self.body);
         Ok(())
     }
 
     fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body += value;
+        case_change(&self.flags, &mut self.body);
         Ok(())
     }
 
