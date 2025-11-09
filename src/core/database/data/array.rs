@@ -2,7 +2,6 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::Data;
-use super::uninit::Uninit;
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
@@ -198,79 +197,6 @@ impl ArrayData {
         Self {
             body: HashMap::new(),
             flags: "a".to_string(),
-        }
-    }
-
-    pub fn set_new_entry(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        v: Option<Vec<String>>,
-    ) -> Result<(), ExecError> {
-        if v.is_none() {
-            db_layer.insert(name.to_string(), Box::new(Uninit::new("a".to_string())));
-        } else {
-            db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
-        }
-        Ok(())
-    }
-
-    pub fn set_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
-    ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
-            if d.is_array() {
-                if !d.is_initialized() {
-                    *d = ArrayData {body: HashMap::new(), flags: "a".to_string()}.boxed_clone();
-                }
-
-                d.set_as_array(&pos.to_string(), val)
-            } else if d.is_assoc() {
-                return d.set_as_assoc(&pos.to_string(), val);
-            } else if d.is_single() {
-                let data = d.get_as_single()?;
-                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-
-                if !data.is_empty() {
-                    Self::set_elem(db_layer, name, 0, &data)?;
-                }
-                Self::set_elem(db_layer, name, pos, val)
-            } else {
-                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-                Self::set_elem(db_layer, name, pos, val)
-            }
-        } else {
-            ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-            Self::set_elem(db_layer, name, pos, val)
-        }
-    }
-
-    pub fn append_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
-    ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
-            if d.is_array() {
-                if !d.is_initialized() {
-                    *d = ArrayData {body: HashMap::new(), flags: "a".to_string()}.boxed_clone();
-                }
-
-                d.append_to_array_elem(&pos.to_string(), val)
-            } else if d.is_assoc() {
-                return d.append_to_assoc_elem(&pos.to_string(), val);
-            } else {
-                let data = d.get_as_single()?;
-                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-                Self::append_elem(db_layer, name, 0, &data)?;
-                Self::append_elem(db_layer, name, pos, val)
-            }
-        } else {
-            ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-            Self::set_elem(db_layer, name, pos, val)
         }
     }
 

@@ -236,39 +236,6 @@ impl IntArrayData {
         }
     }
 
-    pub fn set_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
-    ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
-            if d.is_array() {
-                if !d.is_initialized() {
-                    *d = IntArrayData::new().boxed_clone();
-                }
-
-                d.set_as_array(&pos.to_string(), val)
-            } else if d.is_assoc() {
-                return d.set_as_assoc(&pos.to_string(), val);
-            } else if d.is_single() {
-                let data = d.get_as_single()?;
-                IntArrayData::set_new_entry(db_layer, name)?;
-
-                if !data.is_empty() {
-                    Self::set_elem(db_layer, name, 0, &data)?;
-                }
-                Self::set_elem(db_layer, name, pos, val)
-            } else {
-                IntArrayData::set_new_entry(db_layer, name)?;
-                Self::set_elem(db_layer, name, pos, val)
-            }
-        } else {
-            IntArrayData::set_new_entry(db_layer, name)?;
-            Self::set_elem(db_layer, name, pos, val)
-        }
-    }
-
     pub fn set_new_entry(
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,
