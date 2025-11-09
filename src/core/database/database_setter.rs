@@ -278,23 +278,27 @@ impl DataBase {
         let db_layer = &mut self.params[layer];
 
         if i_flag {
-            db_layer.insert(name.to_string(), IntArrayData::new().boxed_clone());
-    
+            let mut obj = IntArrayData::new();
             if v.is_some() {
                 for (i, e) in v.unwrap().into_iter().enumerate() {
-                    self.set_array_elem(name, &e, i as isize, Some(layer), false)?;
+                    obj.set_as_array(&i.to_string(), &e)?;
                 }
             }
-        }else if v.is_none() {
-            db_layer.insert(name.to_string(), Box::new(Uninit::new("a")));
-        } else {
-            let v = v
-                .unwrap()
-                .iter()
-                .map(|e| case_change(e, l_flag, u_flag))
-                .collect();
-            db_layer.insert(name.to_string(), Box::new(ArrayData::from(Some(v))));
+            db_layer.insert(name.to_string(), Box::new(obj));
+            return Ok(());
         }
+
+        if v.is_none() {
+            db_layer.insert(name.to_string(), Box::new(Uninit::new("a")));
+            return Ok(());
+        }
+
+        let v = v
+            .unwrap()
+            .iter()
+            .map(|e| case_change(e, l_flag, u_flag))
+            .collect();
+        db_layer.insert(name.to_string(), Box::new(ArrayData::from(Some(v))));
         Ok(())
     }
 
