@@ -77,13 +77,6 @@ impl DataBase {
         self.has_flag(name, 'i')
     }
 
-    pub fn write_check(&mut self, name: &str) -> Result<(), ExecError> {
-        if self.has_flag(name, 'r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
-        Ok(())
-    }
-
     pub fn is_assoc(&mut self, name: &str) -> bool {
         match self.get_ref(name) {
             Some(d) => d.is_assoc(),

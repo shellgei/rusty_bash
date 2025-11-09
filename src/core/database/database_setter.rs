@@ -12,15 +12,19 @@ use crate::error::exec::ExecError;
 use crate::utils::restricted_shell;
 
 impl DataBase {
-    pub fn init_as_num(
-        &mut self,
-        name: &str,
-        value: &str,
-        layer: Option<usize>,
+    fn write_check(&mut self, name: &str, values: &Option<Vec<String>>
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![value.to_string()]))?;
+        if self.has_flag(name, 'r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
+        restricted_shell::check(self, name, values)?;
+        Ok(())
+    }
+
+    pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>,
+    ) -> Result<(), ExecError> {
+        self.write_check(name, &Some(vec![]))?;
 
         let mut data = IntData::new();
 
@@ -42,9 +46,7 @@ impl DataBase {
         val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -63,18 +65,11 @@ impl DataBase {
         }
 
         let d = db_layer.get_mut(name).unwrap();
-
         if let Some(init_d) = d.initialize() {
             *d = init_d;
         }
 
-        if d.is_array() {
-            d.set_as_array("0", &val)?;
-        }else if d.is_assoc() {
-            d.set_as_assoc("0", &val)?;
-        }else {
-            d.set_as_single(&val)?;
-        }
+        d.set_as_single(&val)?;
 
         if env::var(name).is_ok() {
             let v = d.get_as_single()?;
@@ -89,9 +84,7 @@ impl DataBase {
         val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -183,9 +176,7 @@ impl DataBase {
     pub fn set_array_elem(&mut self, name: &str, val: &str,
         pos: isize, layer: Option<usize>, append: bool,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
         let i_flag = self.has_flag(name, 'i');
@@ -198,9 +189,7 @@ impl DataBase {
     pub fn set_assoc_elem(&mut self, name: &str, key: &str,
         val: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
         match self.params[layer].get_mut(name) {
@@ -217,9 +206,7 @@ impl DataBase {
     pub fn append_to_assoc_elem(&mut self, name: &str, key: &str,
         val: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
         match self.params[layer].get_mut(name) {
@@ -235,9 +222,7 @@ impl DataBase {
         layer: Option<usize>,
         i_flag: bool,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &v)?;
+        self.write_check(name, &v)?;
 
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
@@ -273,9 +258,7 @@ impl DataBase {
         set_array: bool,
         i_flag: bool,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &None)?;
+        self.write_check(name, &None)?;
 
         let obj = if i_flag {
             Box::new(IntAssocData::new()) as Box::<dyn Data>
