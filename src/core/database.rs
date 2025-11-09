@@ -1,10 +1,12 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+//The methods of DataBase are distributed in database/database_*.rs files.
 mod data;
 mod database_checker;
 mod database_getter;
 mod database_setter;
+mod database_initializer;
 
 use self::data::array::ArrayData;
 use self::data::array_int::IntArrayData;
@@ -39,7 +41,7 @@ impl DataBase {
             ..Default::default()
         };
 
-        database_setter::initialize(&mut data).unwrap();
+        database_initializer::initialize(&mut data).unwrap();
         data
     }
 
