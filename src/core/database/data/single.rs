@@ -80,7 +80,7 @@ impl Data for SingleData {
         Ok(())
     }
 
-    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
-        Ok(self.flags.contains(flag))
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.flags.contains(flag)
     }
 }

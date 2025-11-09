@@ -39,8 +39,8 @@ impl Data for SRandomVar {
         true
     }
 
-    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
-        Ok(flag == 'i')
+    fn has_flag(&mut self, flag: char) -> bool {
+        flag == 'i'
     }
 }
 

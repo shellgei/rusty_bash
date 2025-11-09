@@ -55,8 +55,8 @@ impl Data for Uninit {
         Ok(())
     }
 
-    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
-        Ok(self.flags.contains(flag))
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.flags.contains(flag)
     }
 
     fn is_assoc(&self) -> bool {

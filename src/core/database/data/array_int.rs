@@ -220,11 +220,11 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
+    fn has_flag(&mut self, flag: char) -> bool {
         if flag == 'i' {
-            return Ok(true);
+            return true;
         }
-        Ok(self.flags.contains(flag))
+        self.flags.contains(flag)
     }
 }
 

@@ -191,12 +191,7 @@ pub trait Data {
         Err(ExecError::Other("Don't have flags".to_string()))
     }
 
-    fn has_flag(&mut self, _: char) -> Result<bool, ExecError> {
-        Err(ExecError::Other("Don't have flags".to_string()))
+    fn has_flag(&mut self, _: char) -> bool {
+        false
     }
-
-    /*
-    fn give_inherit_flags(&mut self) -> String {
-        String::new()
-    }*/
 }
