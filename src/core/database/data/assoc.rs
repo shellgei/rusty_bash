@@ -67,12 +67,15 @@ impl Data for AssocData {
     }
 
     fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        if let Some(v) = self.body.get(key) {
-            self.body.insert(key.to_string(), v.to_owned() + value);
+        let mut value = if let Some(v) = self.body.get(key) {
+            v.to_owned() + value
         } else {
-            self.body.insert(key.to_string(), value.to_string());
-        }
-        self.last = Some(value.to_string());
+            value.to_string()
+        };
+
+        case_change(&self.flags, &mut value);
+        self.body.insert(key.to_string(), value.clone());
+        self.last = Some(value);
         Ok(())
     }
 
