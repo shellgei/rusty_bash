@@ -417,18 +417,18 @@ impl DataBase {
                 return d.set_as_assoc(&pos.to_string(), val);
             } else if d.is_single() {
                 let data = d.get_as_single()?;
-                self.set_new_entry(layer, name, Some(vec![]))?;
+                self.set_new_entry(layer, name, Some(vec![]), false)?;
 
                 if !data.is_empty() {
                     self.set_elem(layer, name, 0, &data)?;
                 }
                 self.set_elem(layer, name, pos, val)
             } else {
-                self.set_new_entry(layer, name, Some(vec![]))?;
+                self.set_new_entry(layer, name, Some(vec![]), false)?;
                 self.set_elem(layer, name, pos, val)
             }
         } else {
-            self.set_new_entry(layer, name, Some(vec![]))?;
+            self.set_new_entry(layer, name, Some(vec![]), false)?;
             self.set_elem(layer, name, pos, val)
         }
     }
@@ -447,18 +447,18 @@ impl DataBase {
                 return d.set_as_assoc(&pos.to_string(), val);
             } else if d.is_single() {
                 let data = d.get_as_single()?;
-                self.set_new_entry_i(layer, name)?;
+                self.set_new_entry(layer, name, None, true)?;
     
                 if !data.is_empty() {
                     self.set_elem_i(layer, name, 0, &data)?;
                 }
                 self.set_elem_i(layer, name, pos, val)
             } else {
-                self.set_new_entry_i(layer, name)?;
+                self.set_new_entry(layer, name, None, true)?;
                 self.set_elem_i(layer, name, pos, val)
             }
         } else {
-            self.set_new_entry_i(layer, name)?;
+            self.set_new_entry(layer, name, None, true)?;
             self.set_elem_i(layer, name, pos, val)
         }
     }
@@ -477,19 +477,24 @@ impl DataBase {
                 return d.append_to_assoc_elem(&pos.to_string(), val);
             } else {
                 let data = d.get_as_single()?;
-                self.set_new_entry(layer, name, Some(vec![]))?;
+                self.set_new_entry(layer, name, Some(vec![]), false)?;
                 self.append_elem(layer, name, 0, &data)?;
                 self.append_elem(layer, name, pos, val)
             }
         } else {
-            self.set_new_entry(layer, name, Some(vec![]))?;
+            self.set_new_entry(layer, name, Some(vec![]), false)?;
             self.set_elem(layer, name, pos, val)
         }
     }
 
     fn set_new_entry(&mut self, layer: usize,
-        name: &str, v: Option<Vec<String>>,
+        name: &str, v: Option<Vec<String>>, i_flag: bool
     ) -> Result<(), ExecError> {
+        if i_flag {
+            self.params[layer].insert(name.to_string(), Box::new(Uninit::new("ai".to_string())));
+            return Ok(());
+        }
+        
         if v.is_none() {
             self.params[layer].insert(name.to_string(), Box::new(Uninit::new("a".to_string())));
         } else {
@@ -498,11 +503,12 @@ impl DataBase {
         Ok(())
     }
 
+    /*
     fn set_new_entry_i(&mut self, layer: usize, name: &str
     ) -> Result<(), ExecError> {
         self.params[layer].insert(name.to_string(), Box::new(Uninit::new("ai".to_string())));
         Ok(())
-    }
+    }*/
 }
 
 pub fn initialize(db: &mut DataBase) -> Result<(), String> {
