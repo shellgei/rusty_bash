@@ -230,7 +230,6 @@ impl DataBase {
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
-        //let i_flag = self.has_flag(name, 'i');
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
@@ -256,7 +255,7 @@ impl DataBase {
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
+        //let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
         AssocData::append_elem(&mut self.params[layer], name, key, &val)
     }
@@ -272,8 +271,6 @@ impl DataBase {
         self.write_check(name)?;
         restricted_shell::check(self, name, &v)?;
 
-        let l_flag = self.has_flag(name, 'l');
-        let u_flag = self.has_flag(name, 'u');
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
@@ -293,12 +290,11 @@ impl DataBase {
             return Ok(());
         }
 
-        let v = v
-            .unwrap()
-            .iter()
-            .map(|e| case_change(e, l_flag, u_flag))
-            .collect();
-        db_layer.insert(name.to_string(), Box::new(ArrayData::from(Some(v))));
+        let mut obj = ArrayData::new();
+        for (i, e) in v.unwrap().into_iter().enumerate() {
+            obj.set_as_array(&i.to_string(), &e)?;
+        }
+        db_layer.insert(name.to_string(), Box::new(obj));
         Ok(())
     }
 
