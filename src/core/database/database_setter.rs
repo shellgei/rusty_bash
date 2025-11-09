@@ -180,20 +180,14 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn set_array_elem(
-        &mut self,
-        name: &str,
-        val: &str,
-        pos: isize,
-        layer: Option<usize>,
-        append: bool,
+    pub fn set_array_elem(&mut self, name: &str, val: &str,
+        pos: isize, layer: Option<usize>, append: bool,
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
-
         let i_flag = self.has_flag(name, 'i');
         match append {
             false => self.set_elem(layer, name, pos, &val.to_string(), i_flag),
@@ -209,9 +203,7 @@ impl DataBase {
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
-        let db_layer = &mut self.params[layer];
-
-        match db_layer.get_mut(name) {
+        match self.params[layer].get_mut(name) {
             Some(v) => {
                 if let Some(init_v) = v.initialize() {
                     *v = init_v;
