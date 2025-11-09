@@ -9,8 +9,7 @@ use super::data::random::RandomVar;
 use super::data::seconds::Seconds;
 use super::data::srandom::SRandomVar;
 use super::{
-    ArrayData, AssocData, Data, IntArrayData, IntAssocData, IntData, SingleData, UninitArray,
-    UninitAssoc,
+    ArrayData, AssocData, Data, IntArrayData, IntAssocData, IntData, SingleData, Uninit,
 };
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
@@ -315,7 +314,7 @@ impl DataBase {
         let db_layer = &mut self.params[layer];
 
         if v.is_none() {
-            db_layer.insert(name.to_string(), UninitArray {flags: "".to_string()}.boxed_clone());
+            db_layer.insert(name.to_string(), Box::new(Uninit::new("a".to_string())));
         } else {
             let v = v
                 .unwrap()
@@ -395,7 +394,7 @@ impl DataBase {
         if set_array {
             db_layer.insert(name.to_string(), Box::new(AssocData::default()));
         } else {
-            db_layer.insert(name.to_string(), UninitAssoc {flags: "".to_string()}.boxed_clone());
+            db_layer.insert(name.to_string(), Box::new(Uninit::new("A".to_string())));
         }
         Ok(())
     }
@@ -412,8 +411,8 @@ impl DataBase {
             None => {
                 match flag {
                     'i' => {rf.insert(name.to_string(), Box::new(IntData { body: 0, flags: flag.to_string() }));},
-                    'a' => {rf.insert(name.to_string(), Box::new(UninitArray { flags: flag.to_string() }));},
-                    'A' => {rf.insert(name.to_string(), Box::new(UninitAssoc { flags: flag.to_string() }));},
+                    'a' | 'A' => {rf.insert(name.to_string(), Box::new(Uninit::new(flag.to_string())));},
+                    //'A' => {rf.insert(name.to_string(), Box::new(Uninit::new(flag.to_string())));},
                     c => {rf.insert(name.to_string(), Box::new(SingleData {body: String::new(), flags: c.to_string()} ) ); },
                 }
                 //rf.insert(name.to_string(), flag.to_string());

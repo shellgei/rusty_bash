@@ -1,8 +1,8 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::array_uninit::UninitArray;
 use super::Data;
+use super::uninit::Uninit;
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
@@ -200,7 +200,7 @@ impl ArrayData {
         v: Option<Vec<String>>,
     ) -> Result<(), ExecError> {
         if v.is_none() {
-            db_layer.insert(name.to_string(), UninitArray {flags: String::new()}.boxed_clone());
+            db_layer.insert(name.to_string(), Box::new(Uninit::new("a".to_string())));
         } else {
             db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
         }

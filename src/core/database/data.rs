@@ -3,10 +3,9 @@
 
 pub mod array;
 pub mod array_int;
-pub mod array_uninit;
+pub mod uninit;
 pub mod assoc;
 pub mod assoc_int;
-pub mod assoc_uninit;
 pub mod epochrealtime;
 pub mod epochseconds;
 pub mod random;

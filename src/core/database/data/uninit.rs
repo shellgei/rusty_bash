@@ -4,12 +4,12 @@
 use super::Data;
 use crate::error::exec::ExecError;
 
-#[derive(Debug, Clone, Default)]
-pub struct UninitAssoc {
-    pub flags: String,
+#[derive(Debug, Clone)]
+pub struct Uninit {
+    flags: String,
 }
 
-impl Data for UninitAssoc {
+impl Data for Uninit {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
@@ -32,9 +32,6 @@ impl Data for UninitAssoc {
     }
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         Ok("".to_string())
-    }
-    fn is_assoc(&self) -> bool {
-        true
     }
     fn len(&mut self) -> usize {
         0
@@ -60,5 +57,19 @@ impl Data for UninitAssoc {
 
     fn has_flag(&mut self, flag: char) -> Result<bool, ExecError> {
         Ok(self.flags.contains(flag))
+    }
+
+    fn is_assoc(&self) -> bool {
+        self.flags.contains('A')
+    }
+
+    fn is_array(&self) -> bool {
+        self.flags.contains('a')
+    }
+}
+
+impl Uninit {
+    pub fn new(flags: String) -> Self {
+        Self { flags }
     }
 }
