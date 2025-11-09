@@ -9,7 +9,7 @@ use crate::utils;
 #[derive(Debug, Clone)]
 pub struct IntData {
     pub body: isize,
-    pub flags: String,
+    flags: String,
 }
 
 impl Data for IntData {
@@ -92,5 +92,14 @@ impl Data for IntData {
             return true;
         }
         self.flags.contains(flag)
+    }
+}
+
+impl IntData {
+    pub fn new() -> Self {
+        Self {
+            body: 0,
+            flags: "i".to_string(),
+        }
     }
 }

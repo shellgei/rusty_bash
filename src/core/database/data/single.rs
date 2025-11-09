@@ -84,3 +84,12 @@ impl Data for SingleData {
         self.flags.contains(flag)
     }
 }
+
+impl SingleData {
+    pub fn new(flags: &str) -> Self {
+        Self {
+            body: "".to_string(),
+            flags: flags.to_string(),
+        }
+    }
+}

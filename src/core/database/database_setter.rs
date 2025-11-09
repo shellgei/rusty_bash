@@ -37,16 +37,8 @@ impl DataBase {
         restricted_shell::check(self, name, &Some(vec![value.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
-        /*
-        match self.param_options[layer].get_mut(name) {
-            Some(e) => *e += "i",
-            None => {
-                self.param_options[layer].insert(name.to_string(), "i".to_string());
-            }
-        }*/
         let db_layer = &mut self.params[layer];
-
-        let mut data = IntData { body: 0, flags: "i".to_string() };
+        let mut data = IntData::new();// { body: 0, flags: "i".to_string() };
 
         if !value.is_empty() {
             match value.parse::<isize>() {
@@ -410,11 +402,10 @@ impl DataBase {
             Some(d) => { let _ = d.set_flag(flag); },
             None => {
                 match flag {
-                    'i' => {rf.insert(name.to_string(), Box::new(IntData { body: 0, flags: flag.to_string() }));},
+                    'i' => {rf.insert(name.to_string(), Box::new(IntData::new()));},
                     'a' | 'A' => {rf.insert(name.to_string(), Box::new(Uninit::new(flag.to_string())));},
-                    c => {rf.insert(name.to_string(), Box::new(SingleData {body: String::new(), flags: c.to_string()} ) ); },
+                    c => {rf.insert(name.to_string(), Box::new(SingleData::new(&c.to_string()))); },
                 }
-                //rf.insert(name.to_string(), flag.to_string());
             }
         }
     }
@@ -444,14 +435,9 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
 
     db.init_as_num("UID", &unistd::getuid().to_string(), None)?;
     db.set_flag("UID", 'r', None);
-//    db.param_options[0].insert("UID".to_string(), "ir".to_string());
 
     db.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
-  //  db.param_options[0].insert("RANDOM".to_string(), "i".to_string());
-
     db.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
- //   db.param_options[0].insert("SRANDOM".to_string(), "i".to_string());
-
     db.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
     db.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds {}));
     db.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime {}));
