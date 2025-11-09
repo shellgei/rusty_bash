@@ -6,7 +6,7 @@ use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct AssocData {
     body: HashMap<String, String>,
     last: Option<String>,
@@ -172,6 +172,14 @@ impl Data for AssocData {
 }
 
 impl AssocData {
+    pub fn new() -> Self {
+        Self {
+            body: HashMap::new(),
+            last: None,
+            flags: "A".to_string(),
+        }
+    }
+
     pub fn append_elem(
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,

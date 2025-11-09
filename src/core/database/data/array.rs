@@ -7,7 +7,7 @@ use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct ArrayData {
     body: HashMap<usize, String>,
     pub flags: String,
@@ -15,13 +15,13 @@ pub struct ArrayData {
 
 impl From<HashMap<usize, String>> for ArrayData {
     fn from(h: HashMap<usize, String>) -> Self {
-        Self { body: h, flags: String::new() }
+        Self { body: h, flags: "a".to_string() }
     }
 }
 
 impl From<Option<Vec<String>>> for ArrayData {
     fn from(v: Option<Vec<String>>) -> Self {
-        let mut ans = Self::default();
+        let mut ans = Self::new();
         v.unwrap().into_iter().enumerate().for_each(|(i, e)| {
             ans.body.insert(i, e);
         });
@@ -194,6 +194,13 @@ impl Data for ArrayData {
 }
 
 impl ArrayData {
+    pub fn new() -> Self {
+        Self {
+            body: HashMap::new(),
+            flags: "a".to_string(),
+        }
+    }
+
     pub fn set_new_entry(
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,
@@ -216,7 +223,6 @@ impl ArrayData {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
-             //       let flags = d.give_inherit_flags();
                     *d = ArrayData {body: HashMap::new(), flags: "a".to_string()}.boxed_clone();
                 }
 
@@ -250,7 +256,6 @@ impl ArrayData {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
-                    //let flags = d.give_inherit_flags();
                     *d = ArrayData {body: HashMap::new(), flags: "a".to_string()}.boxed_clone();
                 }
 

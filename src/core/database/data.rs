@@ -14,10 +14,12 @@ pub mod single;
 pub mod single_int;
 pub mod srandom;
 
+//use crate::core::HashMap;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use std::fmt;
 use std::fmt::Debug;
+//use super::{ArrayData, IntArrayData};
 
 fn to_int(s: &str) -> Result<isize, ExecError> {
     match s.parse::<isize>() {
@@ -69,6 +71,20 @@ pub trait Data {
     fn is_initialized(&self) -> bool {
         true
     }
+
+    /*
+    fn initialize(&self) -> Box<dyn Data> {
+        let num = self.has_flag('i');
+
+        if self.has_flag('a') {
+            match num {
+                true => return Box::new(IntArrayData {body: HashMap::new(), flags: "ai".to_string()}),
+                false => return Box::new(ArrayData {body: HashMap::new(), flags: "a".to_string()}),
+            }
+        }
+
+        self.boxed_clone()
+    }*/
 
     fn has_key(&mut self, _: &str) -> Result<bool, ExecError> {
         Ok(false)

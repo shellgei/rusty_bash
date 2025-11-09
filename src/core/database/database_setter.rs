@@ -96,14 +96,14 @@ impl DataBase {
 
         if d.is_array() {
             if !d.is_initialized() {
-                *d = ArrayData::default().boxed_clone();
+                *d = ArrayData::new().boxed_clone();
             }
             return d.set_as_array("0", &val);
         }
 
         if d.is_assoc() {
             if !d.is_initialized() {
-                *d = AssocData::default().boxed_clone();
+                *d = AssocData::new().boxed_clone();
             }
             return d.set_as_assoc("0", &val);
         }
@@ -272,7 +272,7 @@ impl DataBase {
                 if !v.is_initialized() {
                     *v = match i_flag {
                         true => IntAssocData::new().boxed_clone(),
-                        false => AssocData::default().boxed_clone(),
+                        false => AssocData::new().boxed_clone(),
                     };
                 }
 
@@ -347,7 +347,7 @@ impl DataBase {
         }*/
 
         let db_layer = &mut self.params[layer];
-        db_layer.insert(name.to_string(), IntArrayData::default().boxed_clone());
+        db_layer.insert(name.to_string(), IntArrayData::new().boxed_clone());
 
         if v.is_some() {
             for (i, e) in v.unwrap().into_iter().enumerate() {
@@ -392,7 +392,7 @@ impl DataBase {
         let db_layer = &mut self.params[layer];
 
         if set_array {
-            db_layer.insert(name.to_string(), Box::new(AssocData::default()));
+            db_layer.insert(name.to_string(), Box::new(AssocData::new()));
         } else {
             db_layer.insert(name.to_string(), Box::new(Uninit::new("A".to_string())));
         }
@@ -412,7 +412,6 @@ impl DataBase {
                 match flag {
                     'i' => {rf.insert(name.to_string(), Box::new(IntData { body: 0, flags: flag.to_string() }));},
                     'a' | 'A' => {rf.insert(name.to_string(), Box::new(Uninit::new(flag.to_string())));},
-                    //'A' => {rf.insert(name.to_string(), Box::new(Uninit::new(flag.to_string())));},
                     c => {rf.insert(name.to_string(), Box::new(SingleData {body: String::new(), flags: c.to_string()} ) ); },
                 }
                 //rf.insert(name.to_string(), flag.to_string());

@@ -7,7 +7,7 @@ use super::Data;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct IntArrayData {
     body: HashMap<usize, isize>,
     pub flags: String,
@@ -229,6 +229,13 @@ impl Data for IntArrayData {
 }
 
 impl IntArrayData {
+    pub fn new() -> Self {
+        Self {
+            body: HashMap::new(),
+            flags: "ai".to_string(),
+        }
+    }
+
     pub fn set_elem(
         db_layer: &mut HashMap<String, Box<dyn Data>>,
         name: &str,
@@ -238,7 +245,7 @@ impl IntArrayData {
         if let Some(d) = db_layer.get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
-                    *d = IntArrayData::default().boxed_clone();
+                    *d = IntArrayData::new().boxed_clone();
                 }
 
                 d.set_as_array(&pos.to_string(), val)
