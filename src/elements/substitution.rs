@@ -63,10 +63,10 @@ impl Substitution {
 
         if a.is_empty() && !self.append {
             if core.db.is_assoc(&self.left_hand.name) {
-                core.db.set_assoc(&self.left_hand.name, Some(layer), true)?;
+                core.db.set_assoc(&self.left_hand.name, Some(layer), true, false)?;
             } else {
                 core.db
-                    .set_array(&self.left_hand.name, Some(vec![]), Some(layer))?;
+                    .set_array(&self.left_hand.name, Some(vec![]), Some(layer), false)?;
             }
             return Ok(());
         } else if !self.append {

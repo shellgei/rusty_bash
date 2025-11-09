@@ -194,7 +194,7 @@ impl ShellCore {
         }else{
             let _ = self
                 .db
-                .set_array("SUSH_VERSINFO", Some(sush_versinfo), None);
+                .set_array("SUSH_VERSINFO", Some(sush_versinfo), None, false);
             let _ = self.db.set_param(
                 "SUSH_VERSION",
                 &format!("{version}({symbol})-{profile}"),
@@ -205,7 +205,7 @@ impl ShellCore {
 
         let _ = self
             .db
-            .set_array("BASH_VERSINFO", Some(bash_versinfo), None);
+            .set_array("BASH_VERSINFO", Some(bash_versinfo), None, false);
         self.db.set_flag("BASH_VERSINFO", 'r', None);
     }
 

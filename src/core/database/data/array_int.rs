@@ -71,20 +71,6 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    /*
-    fn push_elems(&mut self, values: Vec<String>) -> Result<(), ExecError> {
-        let mut index = match self.body.is_empty() {
-            true  => 0,
-            false => *self.keys().iter().max().unwrap(),
-        };
-
-        for v in values {
-            self.body.insert(index, v);
-            index += 1;
-        }
-        Ok(())
-    }*/
-
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let key = self.index_of(key)?;
         let n = super::to_int(value)?;
@@ -97,13 +83,14 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
+    fn get_as_array(&mut self, key: &str, _: &str) -> Result<String, ExecError> {
         if key == "@" {
             return Ok(self.values().join(" "));
         }
+        /*
         if key == "@" {
             return Ok(self.values().join(ifs));
-        }
+        }*/
 
         let n = key
             .parse::<usize>()
