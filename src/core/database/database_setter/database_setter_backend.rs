@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::{ArrayData, Data, IntArrayData, Uninit};
+use super::{ArrayData, Data, Uninit};
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
 
@@ -10,14 +10,11 @@ impl DataBase {
         pos: isize, val: &String, i_flag: bool
         ) -> Result<(), ExecError> {
         if let Some(d) = self.params[layer].get_mut(name) {
-            if d.is_array() {
-                if !d.is_initialized() {
-                    *d = match i_flag {
-                        true  => IntArrayData::new().boxed_clone(),
-                        false => Box::new(ArrayData::new()),
-                    };
-                }
+            if let Some(init_d) = d.initialize() {
+                *d = init_d;
+            }
 
+            if d.is_array() {
                 d.set_as_array(&pos.to_string(), val)
             } else if d.is_assoc() {
                 return d.set_as_assoc(&pos.to_string(), val);
@@ -43,11 +40,11 @@ impl DataBase {
         name: &str, pos: isize, val: &String,
     ) -> Result<(), ExecError> {
         if let Some(d) = self.params[layer].get_mut(name) {
-            if d.is_array() {
-                if !d.is_initialized() {
-                    *d = Box::new(ArrayData::new());
-                }
+            if let Some(init_d) = d.initialize() {
+                *d = init_d;
+            }
 
+            if d.is_array() {
                 d.append_to_array_elem(&pos.to_string(), val)
             } else if d.is_assoc() {
                 return d.append_to_assoc_elem(&pos.to_string(), val);

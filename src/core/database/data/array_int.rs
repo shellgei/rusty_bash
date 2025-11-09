@@ -32,9 +32,6 @@ impl Data for IntArrayData {
     fn clear(&mut self) {
         self.body.clear();
     }
-    fn is_initialized(&self) -> bool {
-        true
-    }
 
     fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
         if key == "@" || key == "*" {
@@ -158,7 +155,13 @@ impl Data for IntArrayData {
             hash.insert(*d.0, d.1.to_string());
         }
 
-        Box::new(ArrayData::from(hash))
+        let mut str_d = ArrayData {
+            body: hash,
+            flags: self.flags.clone(),
+        };
+        let _ = str_d.unset_flag('i');
+
+        Box::new(str_d)
     }
 
     fn is_array(&self) -> bool {

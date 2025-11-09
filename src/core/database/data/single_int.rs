@@ -1,4 +1,4 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::single::SingleData;
@@ -55,7 +55,10 @@ impl Data for IntData {
     }
 
     fn get_str_type(&self) -> Box<dyn Data> {
-        Box::new(SingleData::from(self.body.to_string().as_ref()))
+        let mut d = SingleData::from(self.body.to_string().as_ref());
+        d.flags = self.flags.clone();
+        let _ = d.unset_flag('i');
+        Box::new(d)
     }
 
     fn len(&mut self) -> usize {

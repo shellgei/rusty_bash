@@ -218,23 +218,6 @@ impl DataBase {
         }
     }
 
-        /*
-    pub fn append_to_array_elem(
-        &mut self,
-        name: &str,
-        val: &str,
-        pos: isize,
-        layer: Option<usize>,
-    ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
-
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
-        let layer = self.get_target_layer(name, layer);
-        self.append_elem(layer, name, pos, &val)
-    }*/
-
     pub fn set_assoc_elem(
         &mut self,
         name: &str,
@@ -247,19 +230,15 @@ impl DataBase {
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
-        let i_flag = self.has_flag(name, 'i');
+        //let i_flag = self.has_flag(name, 'i');
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
 
         match db_layer.get_mut(name) {
             Some(v) => {
-                if !v.is_initialized() {
-                    *v = match i_flag {
-                        true => IntAssocData::new().boxed_clone(),
-                        false => AssocData::new().boxed_clone(),
-                    };
+                if let Some(init_v) = v.initialize() {
+                    *v = init_v;
                 }
-
                 v.set_as_assoc(key, &val)
             }
             _ => Err(ExecError::Other("TODO".to_string())),

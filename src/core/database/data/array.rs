@@ -8,15 +8,16 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct ArrayData {
-    body: HashMap<usize, String>,
+    pub body: HashMap<usize, String>,
     pub flags: String,
 }
 
+/*
 impl From<HashMap<usize, String>> for ArrayData {
     fn from(h: HashMap<usize, String>) -> Self {
         Self { body: h, flags: "a".to_string() }
     }
-}
+}*/
 
 impl From<Option<Vec<String>>> for ArrayData {
     fn from(v: Option<Vec<String>>) -> Self {
@@ -52,9 +53,6 @@ impl Data for ArrayData {
 
     fn clear(&mut self) {
         self.body.clear();
-    }
-    fn is_initialized(&self) -> bool {
-        true
     }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {

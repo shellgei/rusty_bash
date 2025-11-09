@@ -108,7 +108,10 @@ impl Data for IntAssocData {
             hash.insert(d.0.to_string(), d.1.to_string());
         }
 
-        Box::new(AssocData::from(hash))
+        let mut new_d = AssocData::from(hash);
+        new_d.flags = self.flags.clone();
+        let _ = new_d.unset_flag('i');
+        Box::new(new_d)
     }
 
     fn is_assoc(&self) -> bool {

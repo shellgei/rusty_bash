@@ -18,7 +18,7 @@ impl From<HashMap<String, String>> for AssocData {
         Self {
             body: hm,
             last: None,
-            flags: String::new(),
+            flags: "A".to_string(),
         }
     }
 }
