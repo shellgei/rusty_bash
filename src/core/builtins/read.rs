@@ -114,7 +114,7 @@ pub fn read_a(
         check_word_limit(&mut word, limit);
         consume_tail_ifs(&mut word, &tail_space);
 
-        if let Err(e) = core.db.set_array_elem(name, &word, pos, None) {
+        if let Err(e) = core.db.set_array_elem(name, &word, pos, None, false) {
             let msg = format!("{:?}", &e);
             error::print(&msg, core);
             return 1;

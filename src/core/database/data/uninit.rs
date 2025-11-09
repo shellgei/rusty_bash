@@ -69,7 +69,7 @@ impl Data for Uninit {
 }
 
 impl Uninit {
-    pub fn new(flags: String) -> Self {
-        Self { flags }
+    pub fn new(flags: &str) -> Self {
+        Self { flags: flags.to_string() }
     }
 }

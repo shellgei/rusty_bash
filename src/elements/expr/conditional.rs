@@ -256,7 +256,7 @@ impl ConditionalExpr {
                 if let Some(e) = res.get(i) {
                     let s = e.as_str().to_string();
                     core.db
-                        .set_array_elem("BASH_REMATCH", &s, i as isize, None)?;
+                        .set_array_elem("BASH_REMATCH", &s, i as isize, None, false)?;
                 } else {
                     break;
                 }

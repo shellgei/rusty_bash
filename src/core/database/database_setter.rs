@@ -159,14 +159,14 @@ impl DataBase {
 
         if self.is_array(name) {
             if let Ok(n) = index.parse::<isize>() {
-                self.set_array_elem(name, val, n, layer)?;
+                self.set_array_elem(name, val, n, layer, false)?;
             }
         } else if self.is_assoc(name) {
             self.set_assoc_elem(name, index, val, layer)?;
         } else {
             match index.parse::<isize>() {
                 Ok(n) => {
-                    self.set_array_elem(name, val, n, layer)?;
+                    self.set_array_elem(name, val, n, layer, false)?;
                 }
                 _ => {
                     self.set_assoc_elem(name, index, val, layer)?;
@@ -189,14 +189,14 @@ impl DataBase {
 
         if self.is_array(name) {
             if let Ok(n) = index.parse::<isize>() {
-                self.append_to_array_elem(name, val, n, layer)?;
+                self.set_array_elem(name, val, n, layer, true)?;
             }
         } else if self.is_assoc(name) {
             self.append_to_assoc_elem(name, index, val, layer)?;
         } else {
             match index.parse::<isize>() {
                 Ok(n) => {
-                    self.append_to_array_elem(name, val, n, layer)?;
+                    self.set_array_elem(name, val, n, layer, true)?;
                 }
                 _ => {
                     self.append_to_assoc_elem(name, index, val, layer)?;
@@ -212,6 +212,7 @@ impl DataBase {
         val: &str,
         pos: isize,
         layer: Option<usize>,
+        append: bool,
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
@@ -221,15 +222,13 @@ impl DataBase {
         let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
 
         let i_flag = self.has_flag(name, 'i');
-        self.set_elem(layer, name, pos, &val, i_flag)
-            /*
-        if self.has_flag(name, 'i') {
-            self.set_elem(layer, name, pos, &val, true)
-        } else {
-            self.set_elem(layer, name, pos, &val, false)
-        }*/
+        match append {
+            false => self.set_elem(layer, name, pos, &val, i_flag),
+            true  => self.append_elem(layer, name, pos, &val),
+        }
     }
 
+        /*
     pub fn append_to_array_elem(
         &mut self,
         name: &str,
@@ -244,7 +243,7 @@ impl DataBase {
         let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
         self.append_elem(layer, name, pos, &val)
-    }
+    }*/
 
     pub fn set_assoc_elem(
         &mut self,
@@ -309,7 +308,7 @@ impl DataBase {
         let db_layer = &mut self.params[layer];
 
         if v.is_none() {
-            db_layer.insert(name.to_string(), Box::new(Uninit::new("a".to_string())));
+            db_layer.insert(name.to_string(), Box::new(Uninit::new("a")));
         } else {
             let v = v
                 .unwrap()
@@ -337,7 +336,7 @@ impl DataBase {
 
         if v.is_some() {
             for (i, e) in v.unwrap().into_iter().enumerate() {
-                self.set_array_elem(name, &e, i as isize, Some(layer))?;
+                self.set_array_elem(name, &e, i as isize, Some(layer), false)?;
             }
         }
 
@@ -371,7 +370,7 @@ impl DataBase {
         if set_array {
             db_layer.insert(name.to_string(), Box::new(AssocData::new()));
         } else {
-            db_layer.insert(name.to_string(), Box::new(Uninit::new("A".to_string())));
+            db_layer.insert(name.to_string(), Box::new(Uninit::new("A")));
         }
         Ok(())
     }
@@ -386,11 +385,12 @@ impl DataBase {
         match rf.get_mut(name) {
             Some(d) => { let _ = d.set_flag(flag); },
             None => {
-                match flag {
-                    'i' => {rf.insert(name.to_string(), Box::new(IntData::new()));},
-                    'a' | 'A' => {rf.insert(name.to_string(), Box::new(Uninit::new(flag.to_string())));},
-                    c => {rf.insert(name.to_string(), Box::new(SingleData::new(&c.to_string()))); },
-                }
+                let obj = match flag {
+                    'i' => Box::new(IntData::new()) as Box::<dyn Data>,
+                    'a' | 'A' => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
+                    c => Box::new(SingleData::new(&c.to_string())) as Box::<dyn Data>,
+                };
+                rf.insert(name.to_string(), obj);
             }
         }
     }
@@ -498,25 +498,17 @@ impl DataBase {
     fn set_new_entry(&mut self, layer: usize,
         name: &str, v: Option<Vec<String>>, i_flag: bool
     ) -> Result<(), ExecError> {
-        if i_flag {
-            self.params[layer].insert(name.to_string(), Box::new(Uninit::new("ai".to_string())));
-            return Ok(());
-        }
-        
-        if v.is_none() {
-            self.params[layer].insert(name.to_string(), Box::new(Uninit::new("a".to_string())));
-        } else {
-            self.params[layer].insert(name.to_string(), Box::new(ArrayData::from(v)));
-        }
+        let obj = if i_flag {
+            Box::new(Uninit::new("ai")) as Box::<dyn Data>
+        }else if v.is_none() {
+            Box::new(Uninit::new("a")) as Box::<dyn Data>
+        }else {
+            Box::new(ArrayData::from(v)) as Box::<dyn Data>
+        };
+
+        self.params[layer].insert(name.to_string(), obj);
         Ok(())
     }
-
-    /*
-    fn set_new_entry_i(&mut self, layer: usize, name: &str
-    ) -> Result<(), ExecError> {
-        self.params[layer].insert(name.to_string(), Box::new(Uninit::new("ai".to_string())));
-        Ok(())
-    }*/
 }
 
 pub fn initialize(db: &mut DataBase) -> Result<(), String> {
