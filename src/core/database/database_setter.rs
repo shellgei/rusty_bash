@@ -22,20 +22,17 @@ impl DataBase {
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![value.to_string()]))?;
 
-        let layer = self.get_target_layer(name, layer);
-        let db_layer = &mut self.params[layer];
         let mut data = IntData::new();
 
         if !value.is_empty() {
             match value.parse::<isize>() {
                 Ok(n) => data.body = n,
-                Err(e) => {
-                    return Err(ExecError::Other(e.to_string()));
-                }
+                Err(e) => return Err(ExecError::Other(e.to_string())),
             }
         }
 
-        db_layer.insert(name.to_string(), Box::new(data));
+        let layer = self.get_target_layer(name, layer);
+        self.params[layer].insert(name.to_string(), Box::new(data));
         Ok(())
     }
 
@@ -150,12 +147,8 @@ impl DataBase {
             self.set_assoc_elem(name, index, val, layer)?;
         } else {
             match index.parse::<isize>() {
-                Ok(n) => {
-                    self.set_array_elem(name, val, n, layer, false)?;
-                }
-                _ => {
-                    self.set_assoc_elem(name, index, val, layer)?;
-                }
+                Ok(n) => self.set_array_elem(name, val, n, layer, false)?,
+                _ => self.set_assoc_elem(name, index, val, layer)?,
             }
         }
         Ok(())
