@@ -220,11 +220,14 @@ impl DataBase {
         let layer = self.get_target_layer(name, layer);
         let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
 
+        let i_flag = self.has_flag(name, 'i');
+        self.set_elem(layer, name, pos, &val, i_flag)
+            /*
         if self.has_flag(name, 'i') {
-            self.set_elem_i(layer, name, pos, &val)
+            self.set_elem(layer, name, pos, &val, true)
         } else {
-            self.set_elem(layer, name, pos, &val)
-        }
+            self.set_elem(layer, name, pos, &val, false)
+        }*/
     }
 
     pub fn append_to_array_elem(
@@ -404,12 +407,16 @@ impl DataBase {
         }
     }
 
-    fn set_elem(&mut self, layer: usize, name: &str, pos: isize, val: &String
+    fn set_elem(&mut self, layer: usize, name: &str,
+        pos: isize, val: &String, i_flag: bool
         ) -> Result<(), ExecError> {
         if let Some(d) = self.params[layer].get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
-                    *d = Box::new(ArrayData::new());
+                    *d = match i_flag {
+                        true  => IntArrayData::new().boxed_clone(),
+                        false => Box::new(ArrayData::new()),
+                    };
                 }
 
                 d.set_as_array(&pos.to_string(), val)
@@ -417,23 +424,24 @@ impl DataBase {
                 return d.set_as_assoc(&pos.to_string(), val);
             } else if d.is_single() {
                 let data = d.get_as_single()?;
-                self.set_new_entry(layer, name, Some(vec![]), false)?;
+                self.set_new_entry(layer, name, Some(vec![]), i_flag)?;
 
                 if !data.is_empty() {
-                    self.set_elem(layer, name, 0, &data)?;
+                    self.set_elem(layer, name, 0, &data, i_flag)?;
                 }
-                self.set_elem(layer, name, pos, val)
+                self.set_elem(layer, name, pos, val, i_flag)
             } else {
-                self.set_new_entry(layer, name, Some(vec![]), false)?;
-                self.set_elem(layer, name, pos, val)
+                self.set_new_entry(layer, name, Some(vec![]), i_flag)?;
+                self.set_elem(layer, name, pos, val, i_flag)
             }
         } else {
-            self.set_new_entry(layer, name, Some(vec![]), false)?;
-            self.set_elem(layer, name, pos, val)
+            self.set_new_entry(layer, name, Some(vec![]), i_flag)?;
+            self.set_elem(layer, name, pos, val, i_flag)
         }
     }
 
 
+    /*
     fn set_elem_i(&mut self, layer: usize, name: &str, pos: isize, val: &String,
     ) -> Result<(), ExecError> {
         if let Some(d) = self.params[layer].get_mut(name) {
@@ -461,7 +469,7 @@ impl DataBase {
             self.set_new_entry(layer, name, None, true)?;
             self.set_elem_i(layer, name, pos, val)
         }
-    }
+    }*/
 
     fn append_elem(&mut self, layer: usize, 
         name: &str, pos: isize, val: &String,
@@ -483,7 +491,7 @@ impl DataBase {
             }
         } else {
             self.set_new_entry(layer, name, Some(vec![]), false)?;
-            self.set_elem(layer, name, pos, val)
+            self.set_elem(layer, name, pos, val, false)
         }
     }
 
