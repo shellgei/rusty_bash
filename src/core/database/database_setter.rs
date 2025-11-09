@@ -338,8 +338,7 @@ impl DataBase {
             None => {
                 let obj = match flag {
                     'i' => Box::new(IntData::new()) as Box::<dyn Data>,
-                    'a' | 'A' => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
-                    c => Box::new(SingleData::new(&c.to_string())) as Box::<dyn Data>,
+                    _ => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
                 };
                 rf.insert(name.to_string(), obj);
             }
