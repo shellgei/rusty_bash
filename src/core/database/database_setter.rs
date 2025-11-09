@@ -16,7 +16,6 @@ use crate::error::exec::ExecError;
 use crate::utils::restricted_shell;
 use nix::unistd;
 use std::{env, process};
-use std::collections::HashMap;
 
 fn case_change(s: &str, l_flag: bool, u_flag: bool) -> String {
     match (l_flag, u_flag) {
@@ -222,9 +221,9 @@ impl DataBase {
         let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
 
         if self.has_flag(name, 'i') {
-            Self::set_elem_i(&mut self.params[layer], name, pos, &val)
+            self.set_elem_i(layer, name, pos, &val)
         } else {
-            Self::set_elem(&mut self.params[layer], name, pos, &val)
+            self.set_elem(layer, name, pos, &val)
         }
     }
 
@@ -241,7 +240,7 @@ impl DataBase {
 
         let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
-        Self::append_elem(&mut self.params[layer], name, pos, &val)
+        self.append_elem(layer, name, pos, &val)
     }
 
     pub fn set_assoc_elem(
@@ -405,13 +404,9 @@ impl DataBase {
         }
     }
 
-    pub fn set_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
-    ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
+    fn set_elem(&mut self, layer: usize, name: &str, pos: isize, val: &String
+        ) -> Result<(), ExecError> {
+        if let Some(d) = self.params[layer].get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
                     *d = Box::new(ArrayData::new());
@@ -422,30 +417,26 @@ impl DataBase {
                 return d.set_as_assoc(&pos.to_string(), val);
             } else if d.is_single() {
                 let data = d.get_as_single()?;
-                Self::set_new_entry(db_layer, name, Some(vec![]))?;
+                self.set_new_entry(layer, name, Some(vec![]))?;
 
                 if !data.is_empty() {
-                    Self::set_elem(db_layer, name, 0, &data)?;
+                    self.set_elem(layer, name, 0, &data)?;
                 }
-                Self::set_elem(db_layer, name, pos, val)
+                self.set_elem(layer, name, pos, val)
             } else {
-                Self::set_new_entry(db_layer, name, Some(vec![]))?;
-                Self::set_elem(db_layer, name, pos, val)
+                self.set_new_entry(layer, name, Some(vec![]))?;
+                self.set_elem(layer, name, pos, val)
             }
         } else {
-            Self::set_new_entry(db_layer, name, Some(vec![]))?;
-            Self::set_elem(db_layer, name, pos, val)
+            self.set_new_entry(layer, name, Some(vec![]))?;
+            self.set_elem(layer, name, pos, val)
         }
     }
 
 
-    pub fn set_elem_i(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
+    fn set_elem_i(&mut self, layer: usize, name: &str, pos: isize, val: &String,
     ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
+        if let Some(d) = self.params[layer].get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
                     *d = IntArrayData::new().boxed_clone();
@@ -456,29 +447,26 @@ impl DataBase {
                 return d.set_as_assoc(&pos.to_string(), val);
             } else if d.is_single() {
                 let data = d.get_as_single()?;
-                Self::set_new_entry_i(db_layer, name)?;
+                self.set_new_entry_i(layer, name)?;
     
                 if !data.is_empty() {
-                    Self::set_elem_i(db_layer, name, 0, &data)?;
+                    self.set_elem_i(layer, name, 0, &data)?;
                 }
-                Self::set_elem_i(db_layer, name, pos, val)
+                self.set_elem_i(layer, name, pos, val)
             } else {
-                Self::set_new_entry_i(db_layer, name)?;
-                Self::set_elem_i(db_layer, name, pos, val)
+                self.set_new_entry_i(layer, name)?;
+                self.set_elem_i(layer, name, pos, val)
             }
         } else {
-            Self::set_new_entry_i(db_layer, name)?;
-            Self::set_elem_i(db_layer, name, pos, val)
+            self.set_new_entry_i(layer, name)?;
+            self.set_elem_i(layer, name, pos, val)
         }
     }
 
-    pub fn append_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
+    fn append_elem(&mut self, layer: usize, 
+        name: &str, pos: isize, val: &String,
     ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
+        if let Some(d) = self.params[layer].get_mut(name) {
             if d.is_array() {
                 if !d.is_initialized() {
                     *d = Box::new(ArrayData::new());
@@ -489,34 +477,30 @@ impl DataBase {
                 return d.append_to_assoc_elem(&pos.to_string(), val);
             } else {
                 let data = d.get_as_single()?;
-                Self::set_new_entry(db_layer, name, Some(vec![]))?;
-                Self::append_elem(db_layer, name, 0, &data)?;
-                Self::append_elem(db_layer, name, pos, val)
+                self.set_new_entry(layer, name, Some(vec![]))?;
+                self.append_elem(layer, name, 0, &data)?;
+                self.append_elem(layer, name, pos, val)
             }
         } else {
-            Self::set_new_entry(db_layer, name, Some(vec![]))?;
-            Self::set_elem(db_layer, name, pos, val)
+            self.set_new_entry(layer, name, Some(vec![]))?;
+            self.set_elem(layer, name, pos, val)
         }
     }
 
-    pub fn set_new_entry(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        v: Option<Vec<String>>,
+    fn set_new_entry(&mut self, layer: usize,
+        name: &str, v: Option<Vec<String>>,
     ) -> Result<(), ExecError> {
         if v.is_none() {
-            db_layer.insert(name.to_string(), Box::new(Uninit::new("a".to_string())));
+            self.params[layer].insert(name.to_string(), Box::new(Uninit::new("a".to_string())));
         } else {
-            db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
+            self.params[layer].insert(name.to_string(), Box::new(ArrayData::from(v)));
         }
         Ok(())
     }
 
-    pub fn set_new_entry_i(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
+    fn set_new_entry_i(&mut self, layer: usize, name: &str
     ) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), Box::new(Uninit::new("ai".to_string())));
+        self.params[layer].insert(name.to_string(), Box::new(Uninit::new("ai".to_string())));
         Ok(())
     }
 }
