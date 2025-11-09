@@ -180,12 +180,8 @@ impl DataBase {
             self.append_to_assoc_elem(name, index, val, layer)?;
         } else {
             match index.parse::<isize>() {
-                Ok(n) => {
-                    self.set_array_elem(name, val, n, layer, true)?;
-                }
-                _ => {
-                    self.append_to_assoc_elem(name, index, val, layer)?;
-                }
+                Ok(n) => self.set_array_elem(name, val, n, layer, true)?,
+                _ => self.append_to_assoc_elem(name, index, val, layer)?,
             }
         }
         Ok(())
@@ -212,12 +208,8 @@ impl DataBase {
         }
     }
 
-    pub fn set_assoc_elem(
-        &mut self,
-        name: &str,
-        key: &str,
-        val: &str,
-        layer: Option<usize>,
+    pub fn set_assoc_elem(&mut self, name: &str, key: &str,
+        val: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
@@ -237,19 +229,18 @@ impl DataBase {
         }
     }
 
-    pub fn append_to_assoc_elem(
-        &mut self,
-        name: &str,
-        key: &str,
-        val: &str,
-        layer: Option<usize>,
+    pub fn append_to_assoc_elem(&mut self, name: &str, key: &str,
+        val: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
         self.write_check(name)?;
         restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
-        AssocData::append_elem(&mut self.params[layer], name, key, &val)
+        match self.params[layer].get_mut(name) {
+            Some(v) => v.append_to_assoc_elem(key, val),
+            _ => Err(ExecError::Other("TODO".to_string())),
+        }
     }
 
     pub fn set_array(

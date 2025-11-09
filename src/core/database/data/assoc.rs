@@ -189,18 +189,6 @@ impl AssocData {
         }
     }
 
-    pub fn append_elem( //TODO: this function should move to ../data.rs
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        key: &str,
-        val: &str,
-    ) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(v) => v.append_to_assoc_elem(key, val),
-            _ => Err(ExecError::Other("TODO".to_string())),
-        }
-    }
-
     pub fn get(&self, key: &str) -> Option<String> {
         self.body.get(key).cloned()
     }
