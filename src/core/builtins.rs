@@ -22,6 +22,8 @@ impl ShellCore {
 
         self.subst_builtins
             .insert("local".to_string(), variable::local);
+        self.subst_builtins
+            .insert("readonly".to_string(), variable::readonly);
     }
 }
 
