@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::error::arith::ArithError;
@@ -21,7 +21,7 @@ pub enum ExecError {
     InvalidName(String),
     InvalidOption(String),
     Interrupted,
-    ValidOnlyInFunction(String),
+    ValidOnlyInFunction,
     VariableReadOnly(String),
     VariableInvalid(String),
     ParseIntError(String),
@@ -82,9 +82,7 @@ impl From<&ExecError> for String {
             ExecError::InvalidName(name) => format!("`{name}': not a valid identifier"),
             ExecError::InvalidOption(opt) => format!("{opt}: invalid option"),
             ExecError::Interrupted => "interrupted".to_string(),
-            ExecError::ValidOnlyInFunction(com) => {
-                format!("{}: can only be used in a function", &com)
-            }
+            ExecError::ValidOnlyInFunction => "can only be used in a function".to_string(),
             ExecError::VariableReadOnly(name) => format!("{name}: readonly variable"),
             ExecError::VariableInvalid(name) => format!("`{name}': not a valid identifier"),
             ExecError::ParseIntError(e) => e.to_string(),
