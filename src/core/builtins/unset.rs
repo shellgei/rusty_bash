@@ -45,13 +45,13 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             if !index.ends_with("]") {
                 let msg = format!("{}: invalid variable", &name);
-                return super::error_exit(1, &args[0], &msg, core);
+                return super::error_exit_text(1, &args[0], &msg, core);
             }
 
             index.remove(0);
             index.pop();
             if let Err(e) = core.db.unset_array_elem(&name, &index) {
-                return super::error_exit(1, &args[0], &String::from(&e), core);
+                return super::error_exit_text(1, &args[0], &String::from(&e), core);
             }
             return 0;
         }

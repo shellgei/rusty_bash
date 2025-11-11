@@ -13,7 +13,7 @@ pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if !core.builtins.contains_key(&args[1]) {
         let msg = format!("{}: not a shell builtin", &args[1]);
-        return super::error_exit(1, &args[0], &msg, core);
+        return super::error_exit_text(1, &args[0], &msg, core);
     }
 
     core.builtins[&args[1]](core, &args[1..])
@@ -80,7 +80,7 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
 pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     if core.db.flags.contains('r') && arg::consume_arg("-p", &mut args) {
-        return super::error_exit(1, &args[0], "-p: restricted", core);
+        return super::error_exit_text(1, &args[0], "-p: restricted", core);
     }
 
     if args.len() <= 1 {

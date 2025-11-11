@@ -392,7 +392,7 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         Ok(ans) => ans,
         Err(e) => {
             let msg = String::from(&e);
-            return super::error_exit(1, "printf", &msg, core);
+            return super::error_exit_text(1, "printf", &msg, core);
         }
     };
 
@@ -401,7 +401,7 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
         if let Ok(Some(mut a)) = Substitution::parse(&mut f, core, false, false) {
             if let Err(e) = a.eval(core, None, false) {
                 let msg = String::from(&e);
-                return super::error_exit(2, "printf", &msg, core);
+                return super::error_exit_text(2, "printf", &msg, core);
             }
         } else {
             return 1;
@@ -410,7 +410,7 @@ fn printf_v(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
     }
     if let Err(e) = core.db.set_param(&args[2], &s, None) {
         let msg = String::from(&e);
-        return super::error_exit(2, "printf", &msg, core);
+        return super::error_exit_text(2, "printf", &msg, core);
     }
 
     0
