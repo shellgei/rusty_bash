@@ -11,7 +11,7 @@ pub fn local(core: &mut ShellCore, args: &[String],
         core.db.get_layer_num() - 2
     } else {
         let e = &ExecError::ValidOnlyInFunction;
-        return super::error_exit(1, &args[0], &String::from(e), core);
+        return super::error_exit(1, &args[0], e, core);
     };
 
     for sub in subs.iter_mut() {
