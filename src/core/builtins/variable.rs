@@ -12,8 +12,8 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2 //The last element of data.parameters is for local itself.
     } else {
-        let e = ExecError::ValidOnlyInFunction;
-        return super::error_exit(1, &args[0], &String::from(&e), core);
+        let e = &ExecError::ValidOnlyInFunction;
+        return super::error_exit(1, &args[0], e, core);
     };
 
     for sub in subs.iter_mut() {
