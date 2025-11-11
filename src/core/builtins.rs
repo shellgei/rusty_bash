@@ -8,7 +8,16 @@ mod pwd;
 mod utils;
 
 use crate::ShellCore;
+use crate::error::exec::ExecError;
 use crate::utils::exit;
+
+pub fn error_exit(exit_status: i32, name: &str,
+                  err: &ExecError, core: &mut ShellCore) -> i32 {
+    let shellname = core.db.get_param("0").unwrap();
+    let msg = String::from(err);
+    eprintln!("{}: {}: {}", &shellname, name, msg);
+    exit_status
+}
 
 impl ShellCore {
     pub fn set_builtins(&mut self) {
