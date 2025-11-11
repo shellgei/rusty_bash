@@ -10,6 +10,13 @@ mod utils;
 use crate::ShellCore;
 use crate::utils::exit;
 
+pub fn error_exit(exit_status: i32, name: &str,
+                  msg: &str, core: &mut ShellCore) -> i32 {
+    let shellname = core.db.get_param("0").unwrap();
+    eprintln!("{}: {}: {}", &shellname, name, msg);
+    exit_status
+}
+
 impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);

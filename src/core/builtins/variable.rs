@@ -10,8 +10,8 @@ pub fn local(core: &mut ShellCore, args: &[String],
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2
     } else {
-        ExecError::ValidOnlyInFunction("local".to_string()).print(core);
-        return 1;
+        let e = &ExecError::ValidOnlyInFunction;
+        return super::error_exit(1, &args[0], &String::from(e), core);
     };
 
     for sub in subs.iter_mut() {
