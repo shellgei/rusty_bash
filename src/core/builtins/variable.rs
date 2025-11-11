@@ -16,8 +16,7 @@ pub fn local(core: &mut ShellCore, args: &[String],
 
     for sub in subs.iter_mut() {
         if let Err(e) = sub.eval(core, Some(layer)) {
-            e.print(core);
-            return 1;
+            return super::error_exit(1, &args[0], &e, core);
         }
     }
 
