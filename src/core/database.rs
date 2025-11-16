@@ -2,7 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 //The methods of DataBase are distributed in database/database_*.rs files.
-mod data;
+pub mod data;
 mod database_checker;
 mod database_getter;
 mod database_setter;

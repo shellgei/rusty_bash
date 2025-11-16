@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::error_exit_text;
@@ -15,6 +15,10 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
         let e = &ExecError::ValidOnlyInFunction;
         return super::error_exit(1, &args[0], e, core);
     };
+
+    if core.shopts.query("localvar_inherit") {
+        subs.into_iter().for_each(|e| e.localvar_inherit(core) );
+    }
 
     for sub in subs.iter_mut() {
         if let Err(e) = set_substitution(core, sub, &args, layer) {

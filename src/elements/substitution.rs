@@ -30,10 +30,12 @@ impl Substitution {
         layer: Option<usize>,
         declare: bool,
     ) -> Result<(), ExecError> {
-        core.db
-            .set_param("LINENO", &self.lineno.to_string(), None)?;
-        self.right_hand
-            .eval(core, &self.left_hand.name, self.append)?;
+        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
+        self.right_hand.eval(core, &self.left_hand.name, self.append)?;
+
+        if self.right_hand.is_obj() {
+            return Ok(());
+        }
 
         if declare && self.right_hand.evaluated_array.is_some() {
             self.left_hand.index = None;
@@ -52,6 +54,17 @@ impl Substitution {
         }
         self.right_hand.reparse(core, self.quoted)?;
         Ok(())
+    }
+
+    pub fn localvar_inherit(&mut self, core: &mut ShellCore) {
+        if self.has_right {
+            return;
+        }
+
+        if let Some(d) = core.db.get_ref(&self.left_hand.name) {
+            self.right_hand = Value::from(d.clone());
+            self.has_right = true;
+        }
     }
 
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
