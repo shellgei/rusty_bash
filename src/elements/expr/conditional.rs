@@ -250,13 +250,13 @@ impl ConditionalExpr {
             Err(e) => return Err(ExecError::Other(e.to_string())),
         };
 
-        core.db.set_array("BASH_REMATCH", Some(vec![]), None)?;
+        core.db.set_array("BASH_REMATCH", Some(vec![]), None, false)?;
         if let Some(res) = re.captures(&left) {
             for i in 0.. {
                 if let Some(e) = res.get(i) {
                     let s = e.as_str().to_string();
                     core.db
-                        .set_array_elem("BASH_REMATCH", &s, i as isize, None)?;
+                        .set_array_elem("BASH_REMATCH", &s, i as isize, None, false)?;
                 } else {
                     break;
                 }

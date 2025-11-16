@@ -115,13 +115,13 @@ impl CommandSubstitution {
 
         ans.text += &feeder.consume(1);
         let mut paren = ans.text.clone();
-        paren.remove(0);
-        paren.insert(0, '(');
+  //      paren.remove(0);
+   //     paren.insert(0, '(');
         paren.pop();
         paren.push(')');
 
         let mut f = Feeder::new(&paren);
-        if let Some(s) = ParenCommand::parse(&mut f, core, false)? {
+        if let Some(s) = ParenCommand::parse(&mut f, core, true)? {
             ans.command = s;
             return Ok(Some(ans));
         }

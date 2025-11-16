@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::error_exit;
+use super::error_exit_text;
 use crate::elements::substitution::variable::Variable;
 use crate::{arg, error, utils, ShellCore};
 
@@ -70,7 +70,7 @@ pub fn read_(
         consume_tail_ifs(&mut word, &tail_space);
 
         if let Err(e) = Variable::parse_and_set(&args[0], &word, core) {
-            return super::error_exit(1, "read", &String::from(&e), core);
+            return super::error_exit_text(1, "read", &String::from(&e), core);
         }
 
         args.remove(0);
@@ -114,7 +114,7 @@ pub fn read_a(
         check_word_limit(&mut word, limit);
         consume_tail_ifs(&mut word, &tail_space);
 
-        if let Err(e) = core.db.set_array_elem(name, &word, pos, None) {
+        if let Err(e) = core.db.set_array_elem(name, &word, pos, None, false) {
             let msg = format!("{:?}", &e);
             error::print(&msg, core);
             return 1;
@@ -146,7 +146,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
             Ok(n) => limit = n,
             Err(_) => {
                 let err = format!("{}: invalid number", &s);
-                return error_exit(1, "read", &err, core);
+                return error_exit_text(1, "read", &err, core);
             }
         };
     }

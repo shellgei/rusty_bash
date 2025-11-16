@@ -58,6 +58,7 @@ pub fn wait_pipeline(
         "PIPESTATUS",
         Some(pipestatus.iter().map(|e| e.to_string()).collect()),
         None,
+        false,
     );
 
     if core.options.query("pipefail") {

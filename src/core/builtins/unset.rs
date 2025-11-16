@@ -4,12 +4,36 @@
 use crate::ShellCore;
 
 fn unset_all(core: &mut ShellCore, name: &str) -> i32 {
-    core.db.unset(name);
+    if ! core.shopts.query("localvar_unset") {
+        core.db.unset(name, None);
+        return 0;
+    }
+
+    let mut layer = core.db.get_layer_num()-1;
+    if layer <= 1 {
+        core.db.unset(name, None);
+    }else{
+        layer -= 1;
+        core.db.unset(name, Some(layer));
+    }
+
     0
 }
 
 fn unset_var(core: &mut ShellCore, name: &str) -> i32 {
-    core.db.unset_var(name);
+    if ! core.shopts.query("localvar_unset") {
+        core.db.unset_var(name, None);
+        return 0;
+    }
+
+    let mut layer = core.db.get_layer_num()-1;
+    if layer <= 1 {
+        core.db.unset_var(name, None);
+    }else{
+        layer -= 1;
+        core.db.unset_var(name, Some(layer));
+    }
+
     0
 }
 
@@ -45,13 +69,13 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             if !index.ends_with("]") {
                 let msg = format!("{}: invalid variable", &name);
-                return super::error_exit(1, &args[0], &msg, core);
+                return super::error_exit_text(1, &args[0], &msg, core);
             }
 
             index.remove(0);
             index.pop();
             if let Err(e) = core.db.unset_array_elem(&name, &index) {
-                return super::error_exit(1, &args[0], &String::from(&e), core);
+                return super::error_exit_text(1, &args[0], &String::from(&e), core);
             }
             return 0;
         }

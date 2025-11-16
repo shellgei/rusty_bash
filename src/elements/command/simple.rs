@@ -33,7 +33,7 @@ pub struct SimpleCommand {
     force_fork: bool,
     substitutions_as_args: Vec<SubsArgType>,
     command_name: String,
-    lineno: usize,
+    pub lineno: usize,
     continue_alias_check: bool,
     invalid_alias: bool,
     command_path: String,
@@ -99,6 +99,10 @@ impl Command for SimpleCommand {
     fn force_fork(&self) -> bool {
         self.force_fork
     }
+
+    fn get_lineno(&mut self) -> usize {
+        self.lineno
+    }
 }
 
 impl SimpleCommand {
@@ -127,7 +131,7 @@ impl SimpleCommand {
         if self.force_fork
             || (!pipe.lastpipe && pipe.is_connected())
             || (!core.builtins.contains_key(&self.args[0])
-                && !core.substitution_builtins.contains_key(&self.args[0])
+                && !core.subst_builtins.contains_key(&self.args[0])
                 && !core.db.functions.contains_key(&self.args[0]))
         {
             self.command_path = hash::get_and_regist(self, core)?;
@@ -197,7 +201,7 @@ impl SimpleCommand {
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let layer = core.db.get_layer_num() - 1;
         for (k, v) in &mut core.db.params[layer] {
-            env::set_var(&k, v.get_as_single().unwrap_or("".to_string()));
+            env::set_var(k, v.get_as_single().unwrap_or("".to_string()));
         }
         Ok(())
     }

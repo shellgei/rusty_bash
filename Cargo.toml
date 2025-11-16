@@ -1,9 +1,12 @@
 [package]
 name = "sush"
-version = "1.2.2"
+version = "1.2.3"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.compat]
+target_bash_version = "5.2.37" # Ubuntu 25.04
 
 [dependencies]
 nix = { version = "0.29.0", features = ["fs", "process", "signal", "term", "user", "time", "hostname", "resource"]}
@@ -60,6 +63,8 @@ default = ["0", "1", "2", "3", "4", "5", "6"]               # All
 5 = ["0", "lang_hi", "lang_ja", "lang_ko", "lang_zh"]       # Asia
 6 = ["0", "lang_ar", "lang_sw"]                             # Africa / Middle East
 
+[build-dependencies]
+cargo_toml = "0.22"
 
 [profile.release]
 opt-level = 3

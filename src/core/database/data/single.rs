@@ -1,19 +1,21 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data;
+use super::{case_change, Data};
 use crate::error::exec::ExecError;
 use crate::utils;
 
 #[derive(Debug, Clone)]
 pub struct SingleData {
-    body: String,
+    pub body: String,
+    pub flags: String,
 }
 
 impl From<&str> for SingleData {
     fn from(s: &str) -> Self {
         Self {
             body: s.to_string(),
+            flags: String::new(),
         }
     }
 }
@@ -22,7 +24,7 @@ impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         let mut s = self.body.replace("'", "\\'");
         if s.contains('~') || s.starts_with('#') {
             s = "'".to_owned() + &s + "'";
@@ -41,11 +43,13 @@ impl Data for SingleData {
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body = value.to_string();
+        case_change(&self.flags, &mut self.body);
         Ok(())
     }
 
     fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
         self.body += value;
+        case_change(&self.flags, &mut self.body);
         Ok(())
     }
 
@@ -64,5 +68,30 @@ impl Data for SingleData {
             return Ok(true);
         }
         Ok(key == "0")
+    }
+
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+        Ok(())
+    }
+
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
+    }
+
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.flags.contains(flag)
+    }
+}
+
+impl SingleData {
+    pub fn new(flags: &str) -> Self {
+        Self {
+            body: "".to_string(),
+            flags: flags.to_string(),
+        }
     }
 }

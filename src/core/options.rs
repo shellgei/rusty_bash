@@ -69,6 +69,8 @@ impl Options {
             "sourcepath",
             "xpg_echo",
             "assoc_expand_once",
+            "localvar_inherit",
+            "localvar_unset",
         ];
 
         for opt in opt_strs {
@@ -93,6 +95,8 @@ impl Options {
             "lastpipe",
             "execfail",
             "assoc_expand_once",
+            "localvar_inherit",
+            "localvar_unset",
         ]
         .iter()
         .map(|s| s.to_string())

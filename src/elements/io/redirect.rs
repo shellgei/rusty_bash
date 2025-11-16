@@ -9,7 +9,7 @@ use crate::elements::word::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::{exit, file_check};
-use crate::{Feeder, ShellCore};
+use crate::{error, Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::fs::{File, OpenOptions};
@@ -278,10 +278,17 @@ impl Redirect {
         }
     }
 
+    fn show_heredoc_warning(&self, lineno: usize, feeder_lineno: usize, core: &mut ShellCore) {
+        let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text.replace("\\", ""));
+        let _ = core.db.set_param("LINENO", &feeder_lineno.to_string(), None);
+        error::print(&msg, core);
+    }
+
     pub fn eat_heredoc(
         &mut self,
         feeder: &mut Feeder,
         core: &mut ShellCore,
+        lineno: usize,
     ) -> Result<(), ParseError> {
         let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {
@@ -289,7 +296,17 @@ impl Redirect {
             Err(_) => return Err(ParseError::UnexpectedSymbol(self.right.text.clone())),
         };
 
+        let mut end_nest = end.clone();
+        let mut back_quote = false;
         let end_return = end.clone() + "\n";
+        match feeder.nest.last().unwrap().0.as_str() {
+            "(" => end_nest += ")",
+            "`" => {
+                back_quote = true;
+                end_nest += ")";
+            },
+            _ => end_nest += "\n",
+        }
 
         if feeder.starts_with("\n") {
             feeder.consume(1);
@@ -297,17 +314,27 @@ impl Redirect {
 
         loop {
             if feeder.is_empty() {
-                feeder.feed_additional_line(core)?;
-
-                if remove_tab {
-                    let len = feeder.scanner_tabs();
-                    feeder.consume(len);
-                }
-
-                if feeder.starts_with(&end_return) {
-                    feeder.consume(end.len());
+                if feeder.feed_additional_line(core).is_err() {
+                    self.show_heredoc_warning(lineno, feeder.lineno-1, core);
                     break;
                 }
+            }
+
+            if remove_tab {
+                let len = feeder.scanner_tabs();
+                feeder.consume(len);
+            }
+
+            if feeder.starts_with(&end_nest) || feeder.starts_with(&end_return) {
+                feeder.consume(end.len());
+                if !back_quote && feeder.starts_with(")") {
+                    self.show_heredoc_warning(lineno, feeder.lineno, core);
+                }
+                break;
+            }else if feeder.starts_with(&(end.clone())) {
+                feeder.consume(end.len());
+                self.show_heredoc_warning(lineno, feeder.lineno, core);
+                break;
             }
 
             if let Some(mut sw) = subword::parse(feeder, core, &Some(WordMode::Heredoc))? {

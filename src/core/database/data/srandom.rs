@@ -17,7 +17,7 @@ impl Data for SRandomVar {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         self.prev.clone()
     }
 
@@ -37,6 +37,10 @@ impl Data for SRandomVar {
 
     fn is_special(&self) -> bool {
         true
+    }
+
+    fn has_flag(&mut self, flag: char) -> bool {
+        flag == 'i'
     }
 }
 

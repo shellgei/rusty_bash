@@ -1,15 +1,16 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data;
+use super::{case_change, Data};
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct AssocData {
     body: HashMap<String, String>,
     last: Option<String>,
+    pub flags: String,
 }
 
 impl From<HashMap<String, String>> for AssocData {
@@ -17,6 +18,7 @@ impl From<HashMap<String, String>> for AssocData {
         Self {
             body: hm,
             last: None,
+            flags: "A".to_string(),
         }
     }
 }
@@ -26,7 +28,7 @@ impl Data for AssocData {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
@@ -48,23 +50,32 @@ impl Data for AssocData {
     }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.body.insert("0".to_string(), value.to_string());
+        let mut value = value.to_string();
+        case_change(&self.flags, &mut value);
+
+        self.body.insert("0".to_string(), value);
         Ok(())
     }
 
     fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        self.body.insert(key.to_string(), value.to_string());
-        self.last = Some(value.to_string());
+        let mut value = value.to_string();
+        case_change(&self.flags, &mut value);
+
+        self.body.insert(key.to_string(), value.clone());
+        self.last = Some(value);
         Ok(())
     }
 
     fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
-        if let Some(v) = self.body.get(key) {
-            self.body.insert(key.to_string(), v.to_owned() + value);
+        let mut value = if let Some(v) = self.body.get(key) {
+            v.to_owned() + value
         } else {
-            self.body.insert(key.to_string(), value.to_string());
-        }
-        self.last = Some(value.to_string());
+            value.to_string()
+        };
+
+        case_change(&self.flags, &mut value);
+        self.body.insert(key.to_string(), value.clone());
+        self.last = Some(value);
         Ok(())
     }
 
@@ -151,32 +162,30 @@ impl Data for AssocData {
         self.body.remove(key);
         Ok(())
     }
-}
 
-impl AssocData {
-    /*
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), Box::new(AssocData::default()));
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
         Ok(())
     }
 
-    pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
-                     key: &String, val: &String) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(v) => v.set_as_assoc(key, val),
-            _ => Err(ExecError::Other("TODO".to_string())),
-        }
-    }*/
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
+    }
 
-    pub fn append_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        key: &str,
-        val: &str,
-    ) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(v) => v.append_to_assoc_elem(key, val),
-            _ => Err(ExecError::Other("TODO".to_string())),
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.flags.contains(flag)
+    }
+}
+
+impl AssocData {
+    pub fn new() -> Self {
+        Self {
+            body: HashMap::new(),
+            last: None,
+            flags: "A".to_string(),
         }
     }
 

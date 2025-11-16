@@ -1,7 +1,7 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::error_exit;
+use super::error_exit_text;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
@@ -12,9 +12,13 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
     let layer = if core.db.get_layer_num() > 2 {
         core.db.get_layer_num() - 2 //The last element of data.parameters is for local itself.
     } else {
-        ExecError::ValidOnlyInFunction("local".to_string()).print(core);
-        return 1;
+        let e = &ExecError::ValidOnlyInFunction;
+        return super::error_exit(1, &args[0], e, core);
     };
+
+    if core.shopts.query("localvar_inherit") {
+        subs.into_iter().for_each(|e| e.localvar_inherit(core) );
+    }
 
     for sub in subs.iter_mut() {
         if let Err(e) = set_substitution(core, sub, &args, layer) {
@@ -48,7 +52,7 @@ fn set_substitution(
 
     let mut layer = layer;
     if arg::has_option("-g", args) && layer != 0 {
-        core.db.unset(&sub.left_hand.name);
+        core.db.unset(&sub.left_hand.name, None);
         layer = 0;
     }
 
@@ -71,14 +75,12 @@ fn set_substitution(
     }
 
     /* TODO: chaos!!!! */
-    let treat_as_array = core.db.is_array(&sub.left_hand.name)
-                         || core.db.is_assoc(&sub.left_hand.name);
-    let option_indicate_array = arg::has_option("-A", args)
-                         || arg::has_option("-a", args);
-    let treat_as_export = core.db.has_flag(&sub.left_hand.name, 'x')
-                         || export_opt;
-    let subs_elem_quoted_string = sub.left_hand.index.is_some()
-                         && sub.right_hand.text.starts_with("'");
+    let treat_as_array =
+        core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name);
+    let option_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
+    let treat_as_export = core.db.has_flag(&sub.left_hand.name, 'x') || export_opt;
+    let subs_elem_quoted_string =
+        sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'");
 
     if option_indicate_array {
         sub.quoted = false;
@@ -143,7 +145,7 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
         } else if core.db.exist(n) {
             ""
         } else {
-            return error_exit(1, n, "not found", core);
+            return error_exit_text(1, n, "not found", core);
         }
         .to_string();
 
@@ -279,7 +281,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
     let layer = core.db.get_layer_num() - 2;
     for sub in subs {
         if let Err(e) = set_substitution(core, sub, &args, layer) {
-            return super::error_exit(1, &args[0], &String::from(&e), core);
+            return super::error_exit(1, &args[0], &e, core);
         }
     }
     0
@@ -342,15 +344,16 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
 
     for sub in subs {
         if sub.left_hand.index.is_some() {
-            let msg = ExecError::VariableInvalid(sub.left_hand.text.clone());
-            return super::error_exit(1, &args[0], &String::from(&msg), core);
+            let e = ExecError::VariableInvalid(sub.left_hand.text.clone());
+            return super::error_exit(1, &args[0], &e, core);
         }
 
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
 
         if let Err(e) = set_substitution(core, sub, &args, layer) {
-            return super::error_exit(1, &args[0], &String::from(&e), core);
+            return super::error_exit(1, &args[0], &e, core);
         }
+        //dbg!("{:?}", &core.db.params[layer]);
         core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
     }
     0

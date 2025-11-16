@@ -21,8 +21,8 @@ impl DataBase {
     }
 
     pub fn has_flag_layer(&mut self, name: &str, flag: char, layer: usize) -> bool {
-        if let Some(e) = self.param_options[layer].get(name) {
-            return e.contains(flag);
+        if let Some(e) = self.params[layer].get_mut(name) {
+            return e.has_flag(flag);
         }
         false
     }
@@ -30,8 +30,8 @@ impl DataBase {
     pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
         let num = self.params.len();
         for layer in (0..num).rev() {
-            if let Some(e) = self.param_options[layer].get(name) {
-                return e.contains(flag);
+            if let Some(e) = self.params[layer].get_mut(name) {
+                return e.has_flag(flag);
             }
         }
         false
@@ -75,13 +75,6 @@ impl DataBase {
 
     pub fn is_int(&mut self, name: &str) -> bool {
         self.has_flag(name, 'i')
-    }
-
-    pub fn write_check(&mut self, name: &str) -> Result<(), ExecError> {
-        if self.has_flag(name, 'r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
-        Ok(())
     }
 
     pub fn is_assoc(&mut self, name: &str) -> bool {
