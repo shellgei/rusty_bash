@@ -313,11 +313,9 @@ impl Redirect {
         }
 
         loop {
-            if feeder.is_empty() {
-                if feeder.feed_additional_line(core).is_err() {
-                    self.show_heredoc_warning(lineno, feeder.lineno-1, core);
-                    break;
-                }
+            if feeder.is_empty() &&feeder.feed_additional_line(core).is_err() {
+                self.show_heredoc_warning(lineno, feeder.lineno-1, core);
+                break;
             }
 
             if remove_tab {

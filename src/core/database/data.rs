@@ -26,7 +26,7 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
     }
 }
 
-fn case_change(flags: &String, text: &mut String) {
+fn case_change(flags: &str, text: &mut String) {
     if flags.contains('l') {
         *text = text.to_lowercase();
     }else if flags.contains('u') {

@@ -11,6 +11,16 @@ use crate::utils::arg;
 use crate::{file_check, utils, Feeder, ShellCore};
 use unicode_width::UnicodeWidthStr;
 
+struct Entry<'a> {
+    list: &'a [String],
+    widths: &'a [usize],
+    row: usize,
+    col: usize,
+    row_num: usize,
+    width: usize,
+    pointed: bool,
+}
+
 fn str_width(s: &str) -> usize {
     UnicodeWidthStr::width(s)
 }
@@ -303,7 +313,16 @@ impl Terminal {
         for row in 0..row_num {
             for col in 0..col_num {
                 let tab = self.tab_row == row as i32 && self.tab_col == col as i32;
-                self.print_an_entry(list, &widths, row, col, row_num, max_entry_width, tab);
+                let entry = Entry {
+                    list,
+                    widths: &widths,
+                    row,
+                    col,
+                    row_num,
+                    width: max_entry_width,
+                    pointed: tab,
+                };
+                self.print_an_entry(&entry);
             }
             print!("\r\n");
         }
@@ -322,28 +341,19 @@ impl Terminal {
         }
     }
 
-    fn print_an_entry(
-        &mut self,
-        list: &[String],
-        widths: &[usize],
-        row: usize,
-        col: usize,
-        row_num: usize,
-        width: usize,
-        pointed: bool,
-    ) {
-        let i = col * row_num + row;
-        let space_num = match i < list.len() {
-            true => width - widths[i],
-            false => width,
+    fn print_an_entry(&mut self, entry: &Entry) {
+        let i = entry.col * entry.row_num + entry.row;
+        let space_num = match i < entry.list.len() {
+            true => entry.width - entry.widths[i],
+            false => entry.width,
         };
-        let cand = match i < list.len() {
-            true => list[i].clone(),
+        let cand = match i < entry.list.len() {
+            true => entry.list[i].clone(),
             false => "".to_string(),
         };
 
         let s = String::from_utf8(vec![b' '; space_num]).unwrap();
-        if pointed {
+        if entry.pointed {
             print!("\x1b[01;7m{}{}\x1b[00m", &cand, &s);
             self.completion_candidate = cand;
         } else {

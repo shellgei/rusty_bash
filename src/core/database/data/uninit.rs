@@ -57,11 +57,11 @@ impl Data for Uninit {
             true => {
                 let mut d = IntData::new();
                 d.flags = self.flags.clone();
-                return Some(Box::new(d));
+                Some(Box::new(d))
             },
             false => {
                 let d = SingleData::new(&self.flags);
-                return Some(Box::new(d));
+                Some(Box::new(d))
             },
         }
     }

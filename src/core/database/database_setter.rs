@@ -69,7 +69,7 @@ impl DataBase {
             *d = init_d;
         }
 
-        d.set_as_single(&val)?;
+        d.set_as_single(val)?;
 
         if env::var(name).is_ok() {
             let v = d.get_as_single()?;
@@ -108,12 +108,12 @@ impl DataBase {
         let d = db_layer.get_mut(name).unwrap();
 
         if d.is_array() {
-            return d.append_to_array_elem("0", &val);
+            return d.append_to_array_elem("0", val);
         }
 
-        d.append_as_single(&val)?;
+        d.append_as_single(val)?;
 
-        if let Ok(_) = env::var(name) {
+        if let Ok(name) = env::var(name) {
             let v = d.get_as_single()?;
             env::set_var(name, v);
         }
@@ -229,8 +229,8 @@ impl DataBase {
 
         if i_flag {
             let mut obj = IntArrayData::new();
-            if v.is_some() {
-                for (i, e) in v.unwrap().into_iter().enumerate() {
+            if let Some(v) = v {
+                for (i, e) in v.into_iter().enumerate() {
                     obj.set_as_array(&i.to_string(), &e)?;
                 }
             }
