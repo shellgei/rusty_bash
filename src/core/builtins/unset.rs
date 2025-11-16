@@ -4,12 +4,36 @@
 use crate::ShellCore;
 
 fn unset_all(core: &mut ShellCore, name: &str) -> i32 {
-    core.db.unset(name);
+    if ! core.shopts.query("localvar_unset") {
+        core.db.unset(name, None);
+        return 0;
+    }
+
+    let mut layer = core.db.get_layer_num()-1;
+    if layer <= 1 {
+        core.db.unset(name, None);
+    }else{
+        layer -= 1;
+        core.db.unset(name, Some(layer));
+    }
+
     0
 }
 
 fn unset_var(core: &mut ShellCore, name: &str) -> i32 {
-    core.db.unset_var(name);
+    if ! core.shopts.query("localvar_unset") {
+        core.db.unset_var(name, None);
+        return 0;
+    }
+
+    let mut layer = core.db.get_layer_num()-1;
+    if layer <= 1 {
+        core.db.unset_var(name, None);
+    }else{
+        layer -= 1;
+        core.db.unset_var(name, Some(layer));
+    }
+
     0
 }
 

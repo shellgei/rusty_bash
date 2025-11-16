@@ -52,7 +52,7 @@ fn set_substitution(
 
     let mut layer = layer;
     if arg::has_option("-g", args) && layer != 0 {
-        core.db.unset(&sub.left_hand.name);
+        core.db.unset(&sub.left_hand.name, None);
         layer = 0;
     }
 

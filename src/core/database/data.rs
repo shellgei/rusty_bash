@@ -87,6 +87,7 @@ pub trait Data {
     }
 
     fn clear(&mut self) {}
+
     fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("Undefined call set_as_single".to_string()))
     }

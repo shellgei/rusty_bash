@@ -70,7 +70,23 @@ impl DataBase {
         }
     }
 
-    pub fn unset_var(&mut self, name: &str) {
+    pub fn unset_var(&mut self, name: &str, called_layer: Option<usize>) {
+        if let Some(layer) = called_layer {
+            if layer == 0 {
+                return;
+            }
+            self.params[layer].remove(name);
+
+            env::set_var(name, "");
+            for layer in self.params.iter_mut() {
+                if let Some(val) = layer.get_mut(name) {
+                    *val = Box::new( Uninit::new("") );
+                }
+            }
+
+            return;
+        }
+
         env::remove_var(name);
 
         for layer in &mut self.params {
@@ -82,14 +98,14 @@ impl DataBase {
         self.functions.remove(name);
     }
 
-    pub fn unset(&mut self, name: &str) {
-        self.unset_var(name);
+    pub fn unset(&mut self, name: &str, called_layer: Option<usize>) {
+        self.unset_var(name, called_layer);
         self.unset_function(name);
     }
 
     pub fn unset_array_elem(&mut self, name: &str, key: &str) -> Result<(), ExecError> {
         if self.is_single(name) && (key == "0" || key == "@" || key == "*") {
-            self.unset_var(name);
+            self.unset_var(name, None);
             return Ok(());
         }
 
