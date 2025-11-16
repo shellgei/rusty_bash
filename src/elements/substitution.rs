@@ -30,10 +30,12 @@ impl Substitution {
         layer: Option<usize>,
         declare: bool,
     ) -> Result<(), ExecError> {
-        core.db
-            .set_param("LINENO", &self.lineno.to_string(), None)?;
-        self.right_hand
-            .eval(core, &self.left_hand.name, self.append)?;
+        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
+        self.right_hand.eval(core, &self.left_hand.name, self.append)?;
+
+        if self.right_hand.is_obj() {
+            return Ok(());
+        }
 
         if declare && self.right_hand.evaluated_array.is_some() {
             self.left_hand.index = None;
@@ -54,6 +56,17 @@ impl Substitution {
         Ok(())
     }
 
+    pub fn localvar_inherit(&mut self, core: &mut ShellCore) {
+        if self.has_right {
+            return;
+        }
+
+        if let Some(d) = core.db.get_ref(&self.left_hand.name) {
+            self.right_hand = Value::from(d.clone());
+            self.has_right = true;
+        }
+    }
+
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         if self.right_hand.evaluated_array.is_none() {
             return Err(ExecError::Other("no array and no index".to_string()));
@@ -63,10 +76,10 @@ impl Substitution {
 
         if a.is_empty() && !self.append {
             if core.db.is_assoc(&self.left_hand.name) {
-                core.db.set_assoc(&self.left_hand.name, Some(layer), true)?;
+                core.db.set_assoc(&self.left_hand.name, Some(layer), true, false)?;
             } else {
                 core.db
-                    .set_array(&self.left_hand.name, Some(vec![]), Some(layer))?;
+                    .set_array(&self.left_hand.name, Some(vec![]), Some(layer), false)?;
             }
             return Ok(());
         } else if !self.append {
@@ -175,59 +188,11 @@ impl Substitution {
         Ok(true)
     }
 
-    /* for the case 'declare "A=B"' */
-    /*
-    pub fn parse_double_quoted(feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<Option<Self>, ParseError> {
-        let text = if let Some(s) = Word::parse(feeder, core, None)? {
-            let mut txt = s.text;
-            txt.remove(0);
-            txt.pop();
-            txt
-        }else{
-            return Ok(None);
-        };
-
-        let mut f = Feeder::new(&text.replace("~", "\\~"));
-        match Self::parse_as_arg(&mut f, core) {
-            Ok(Some(a)) => Ok(Some(a)),
-            _ => Ok(Some(Self::default())),
-        }
-    }*/
-
-    pub fn parse_as_arg(
-        feeder: &mut Feeder,
-        core: &mut ShellCore,
-    ) -> Result<Option<Self>, ParseError> {
-        /*
-        if feeder.starts_with("\"")
-        && ! feeder.starts_with("\"-") {
-            return Self::parse_double_quoted(feeder, core);
-        }*/
-
-        let mut ans = Self::default();
-        if !ans.eat_left_hand(feeder, core)? {
-            return Ok(None);
-        }
-
-        if !ans.eat_equal(feeder) {
-            ans.has_right = false;
-            return Ok(Some(ans));
-        }
-
-        ans.has_right = true;
-        if let Some(a) = Value::parse(feeder, core, false)? {
-            ans.text += &a.text.clone();
-            ans.right_hand = a;
-        }
-
-        Ok(Some(ans))
-    }
-
     pub fn parse(
         feeder: &mut Feeder,
         core: &mut ShellCore,
         permit_space: bool,
+        permit_no_equal: bool,
     ) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 
@@ -245,6 +210,11 @@ impl Substitution {
         }
 
         if !ans.eat_equal(feeder) {
+            if permit_no_equal {
+                feeder.pop_backup();
+                ans.has_right = false;
+                return Ok(Some(ans));
+            }
             feeder.rewind();
             return Ok(None);
         }

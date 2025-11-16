@@ -104,24 +104,15 @@ impl Variable {
         let i_opt = arg::consume_arg("-i", args);
         let a_opt = arg::consume_arg("-a", args);
         if a_opt || (!arg::has_option("-A", args) && self.index.is_some()) {
-            if prev.is_empty() {
-                //TODO: ^ Maybe, there is a case where an assoc must be
-                //prepared.
-                return match i_opt {
-                    true => core.db.set_int_array(&self.name, None, layer),
-                    false => core.db.set_array(&self.name, None, layer),
-                };
-            }
-
-            return match i_opt {
-                true => core.db.set_int_array(&self.name, Some(prev), layer),
-                false => core.db.set_array(&self.name, Some(prev), layer),
+            let data = match prev.is_empty() {
+                true  => None,
+                false => Some(prev),
             };
+            return core.db.set_array(&self.name, data, layer, i_opt);
+            //TODO: ^ Maybe, there is a case where an assoc must be
+            //prepared.
         } else if arg::consume_arg("-A", args) {
-            match i_opt {
-                true => core.db.set_int_assoc(&self.name, layer)?,
-                false => core.db.set_assoc(&self.name, layer, false)?,
-            }
+            core.db.set_assoc(&self.name, layer, false, i_opt)?;
             if !prev.is_empty() {
                 core.db.set_assoc_elem(&self.name, "0", &prev[0], layer)?;
             }

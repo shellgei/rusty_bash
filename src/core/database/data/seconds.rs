@@ -17,7 +17,7 @@ impl Data for Seconds {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         "".to_string() //TODO
     }
 

@@ -21,7 +21,7 @@ pub fn history(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if args.len() > 1 {
         let msg = format!("{}: invalid option", &args[1]);
-        return super::error_exit(1, "history", &msg, core);
+        return super::error_exit_text(1, "history", &msg, core);
     }
 
     let mut number = 1;

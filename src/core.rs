@@ -53,7 +53,7 @@ pub struct ShellCore {
     pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
     pub builtins: HashMap<String, BuiltinFn>,
-    pub substitution_builtins: HashMap<String, SubstBuiltinFn>,
+    pub subst_builtins: HashMap<String, SubstBuiltinFn>,
     pub sigint: Arc<AtomicBool>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
     pub traplist: Vec<(i32, String)>,
@@ -164,22 +164,48 @@ impl ShellCore {
         let t_os = env!("CARGO_CFG_TARGET_OS");
         let machtype = format!("{t_arch}-{t_vendor}-{t_os}");
         let symbol = "rusty_bash";
+        let t_bash_symbol = "bash_compatible";
+        let t_bash_ver = env!("COMPAT_TARGET_BASH_VERSION");
         let vparts = version.split('.').collect();
-        let versinfo = [vparts, vec![symbol, profile, &machtype]]
+        let tbvparts = t_bash_ver.split('.').collect();
+        let sush_versinfo = [vparts, vec![symbol, profile, &machtype]]
+            .concat()
+            .iter()
+            .map(|e| e.to_string())
+            .collect();
+        let bash_versinfo = [tbvparts, vec![t_bash_symbol, profile, &machtype]]
             .concat()
             .iter()
             .map(|e| e.to_string())
             .collect();
 
+
         let _ = self.db.set_param(
             "BASH_VERSION",
-            &format!("{version}({symbol})-{profile}"),
+            &format!("{t_bash_ver}({t_bash_symbol})-{profile}"),
             None,
         );
+
         let _ = self.db.set_param("MACHTYPE", &machtype, None);
         let _ = self.db.set_param("HOSTTYPE", t_arch, None);
         let _ = self.db.set_param("OSTYPE", t_os, None);
-        let _ = self.db.set_array("BASH_VERSINFO", Some(versinfo), None);
+
+        if let Ok("1") = env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+        }else{
+            let _ = self
+                .db
+                .set_array("SUSH_VERSINFO", Some(sush_versinfo), None, false);
+            let _ = self.db.set_param(
+                "SUSH_VERSION",
+                &format!("{version}({symbol})-{profile}"),
+                None,
+            );
+            self.db.set_flag("SUSH_VERSINFO", 'r', None);
+        }
+
+        let _ = self
+            .db
+            .set_array("BASH_VERSINFO", Some(bash_versinfo), None, false);
         self.db.set_flag("BASH_VERSINFO", 'r', None);
     }
 

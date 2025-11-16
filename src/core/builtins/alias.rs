@@ -4,9 +4,8 @@
 use crate::ShellCore;
 
 pub fn alias(core: &mut ShellCore, args: &[String]) -> i32 {
-    if args.len() == 1 
-    || args.len() == 2 && args[1] == "-p" {
-        if ! core.shopts.query("expand_aliases") {
+    if args.len() == 1 || args.len() == 2 && args[1] == "-p" {
+        if !core.shopts.query("expand_aliases") {
             return 0;
         }
         for k in &core.db.get_indexes_all("BASH_ALIASES") {
@@ -24,8 +23,7 @@ pub fn alias(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
-    if args.len() == 2
-        && core.db.has_array_value("BASH_ALIASES", &args[1]) {
+    if args.len() == 2 && core.db.has_array_value("BASH_ALIASES", &args[1]) {
         let alias = core.db.get_elem("BASH_ALIASES", &args[1]).unwrap();
         println!("alias {}='{}'", &args[1], &alias);
         return 0;
@@ -40,8 +38,8 @@ pub fn unalias(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if args.iter().any(|s| s == "-a") {
-        core.db.unset("BASH_ALIASES");
-        let _ = core.db.set_assoc("BASH_ALIASES", None, true);
+        core.db.unset("BASH_ALIASES", None);
+        let _ = core.db.set_assoc("BASH_ALIASES", None, true, false);
         return 0;
     }
 

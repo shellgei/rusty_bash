@@ -16,7 +16,7 @@ mod history;
 mod job_commands;
 mod loop_control;
 pub mod option;
-pub mod parameter;
+pub mod variable;
 mod printf;
 mod pwd;
 mod read;
@@ -28,12 +28,25 @@ mod ulimit;
 mod unset;
 
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{exit, Feeder, Script, ShellCore};
 //#[cfg(not(target_os = "macos"))]
 
-pub fn error_exit(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
+pub fn error_exit_text(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
+    if core.db.flags.contains('i') {
+        eprintln!("{}: {}: {}", &shellname, name, msg);
+    } else {
+        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+        eprintln!("{}: line {}: {}: {}", &shellname, &lineno, name, msg);
+    }
+    exit_status
+}
+
+pub fn error_exit(exit_status: i32, name: &str, err: &ExecError, core: &mut ShellCore) -> i32 {
+    let shellname = core.db.get_param("0").unwrap();
+    let msg = String::from(err);
     if core.db.flags.contains('i') {
         eprintln!("{}: {}: {}", &shellname, name, msg);
     } else {
@@ -107,16 +120,16 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("wait".to_string(), job_commands::wait);
 
-        self.substitution_builtins
-            .insert("export".to_string(), parameter::export);
-        self.substitution_builtins
-            .insert("readonly".to_string(), parameter::readonly);
-        self.substitution_builtins
-            .insert("typeset".to_string(), parameter::declare);
-        self.substitution_builtins
-            .insert("declare".to_string(), parameter::declare);
-        self.substitution_builtins
-            .insert("local".to_string(), parameter::local);
+        self.subst_builtins
+            .insert("export".to_string(), variable::export);
+        self.subst_builtins
+            .insert("readonly".to_string(), variable::readonly);
+        self.subst_builtins
+            .insert("typeset".to_string(), variable::declare);
+        self.subst_builtins
+            .insert("declare".to_string(), variable::declare);
+        self.subst_builtins
+            .insert("local".to_string(), variable::local);
     }
 }
 
@@ -199,16 +212,16 @@ pub fn let_(core: &mut ShellCore, args: &[String]) -> i32 {
                 Ok(s) => last_result = if s == "0" { 1 } else { 0 },
                 Err(e) => {
                     core.valid_assoc_expand_once = false;
-                    return error_exit(1, &args[0], &String::from(&e), core);
+                    return error_exit(1, &args[0], &e, core);
                 }
             },
             Ok(None) => {
                 core.valid_assoc_expand_once = false;
-                return error_exit(1, &args[0], "expression expected", core);
+                return error_exit_text(1, &args[0], "expression expected", core);
             }
             Err(e) => {
                 core.valid_assoc_expand_once = false;
-                return error_exit(1, &args[0], &String::from(&e), core);
+                return error_exit(1, &args[0], &From::from(e), core);
             }
         }
     }

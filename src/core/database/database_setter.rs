@@ -1,63 +1,42 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-//The methods of DataBase are distributed in database/database_*.rs files.
+mod database_setter_backend;
 
-use super::data::epochrealtime::EpochRealTime;
-use super::data::epochseconds::EpochSeconds;
-use super::data::random::RandomVar;
-use super::data::seconds::Seconds;
-use super::data::srandom::SRandomVar;
+use std::env;
 use super::{
-    ArrayData, AssocData, Data, IntArrayData, IntAssocData, IntData, SingleData, UninitArray,
-    UninitAssoc,
+    ArrayData, AssocData, Data, IntArrayData, IntAssocData, IntData, SingleData, Uninit,
 };
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
 use crate::utils::restricted_shell;
-use nix::unistd;
-use std::{env, process};
-
-fn case_change(s: &str, l_flag: bool, u_flag: bool) -> String {
-    match (l_flag, u_flag) {
-        (true, _) => s.to_string().to_lowercase(),
-        (_, true) => s.to_string().to_uppercase(),
-        _ => s.to_string(),
-    }
-}
 
 impl DataBase {
-    pub fn init_as_num(
-        &mut self,
-        name: &str,
-        value: &str,
-        layer: Option<usize>,
+    fn write_check(&mut self, name: &str, values: &Option<Vec<String>>
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![value.to_string()]))?;
-
-        let layer = self.get_target_layer(name, layer);
-        match self.param_options[layer].get_mut(name) {
-            Some(e) => *e += "i",
-            None => {
-                self.param_options[layer].insert(name.to_string(), "i".to_string());
-            }
+        if self.has_flag(name, 'r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
         }
-        let db_layer = &mut self.params[layer];
+        restricted_shell::check(self, name, values)?;
+        Ok(())
+    }
 
-        let mut data = IntData { body: 0 };
+    pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>,
+    ) -> Result<(), ExecError> {
+        self.write_check(name, &Some(vec![]))?;
+
+        let mut data = IntData::new();
 
         if !value.is_empty() {
             match value.parse::<isize>() {
                 Ok(n) => data.body = n,
-                Err(e) => {
-                    return Err(ExecError::Other(e.to_string()));
-                }
+                Err(e) => return Err(ExecError::Other(e.to_string())),
             }
         }
 
-        db_layer.insert(name.to_string(), Box::new(data));
+        let layer = self.get_target_layer(name, layer);
+        self.params[layer].insert(name.to_string(), Box::new(data));
         Ok(())
     }
 
@@ -67,9 +46,7 @@ impl DataBase {
         val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -80,35 +57,25 @@ impl DataBase {
             env::set_var(name, "");
         }
 
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
-
-        if env::var(name).is_ok() {
-            env::set_var(name, &val);
-        }
 
         if db_layer.get(name).is_none() {
             db_layer.insert(name.to_string(), Box::new(SingleData::from("")));
         }
 
         let d = db_layer.get_mut(name).unwrap();
-
-        if d.is_array() {
-            if !d.is_initialized() {
-                *d = ArrayData::default().boxed_clone();
-            }
-            return d.set_as_array("0", &val);
+        if let Some(init_d) = d.initialize() {
+            *d = init_d;
         }
 
-        if d.is_assoc() {
-            if !d.is_initialized() {
-                *d = AssocData::default().boxed_clone();
-            }
-            return d.set_as_assoc("0", &val);
-        }
+        d.set_as_single(&val)?;
 
-        d.set_as_single(&val)
+        if env::var(name).is_ok() {
+            let v = d.get_as_single()?;
+            env::set_var(name, &v);
+        }
+        Ok(())
     }
 
     pub fn append_param(
@@ -117,9 +84,7 @@ impl DataBase {
         val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -133,13 +98,8 @@ impl DataBase {
             env::set_var(name, "");
         }
 
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
-
-        if let Ok(v) = env::var(name) {
-            env::set_var(name, v + &val);
-        }
 
         if db_layer.get(name).is_none() {
             db_layer.insert(name.to_string(), Box::new(SingleData::from("")));
@@ -151,7 +111,14 @@ impl DataBase {
             return d.append_to_array_elem("0", &val);
         }
 
-        d.append_as_single(&val)
+        d.append_as_single(&val)?;
+
+        if let Ok(_) = env::var(name) {
+            let v = d.get_as_single()?;
+            env::set_var(name, v);
+        }
+
+        Ok(())
     }
 
     pub fn set_param2(
@@ -167,18 +134,14 @@ impl DataBase {
 
         if self.is_array(name) {
             if let Ok(n) = index.parse::<isize>() {
-                self.set_array_elem(name, val, n, layer)?;
+                self.set_array_elem(name, val, n, layer, false)?;
             }
         } else if self.is_assoc(name) {
             self.set_assoc_elem(name, index, val, layer)?;
         } else {
             match index.parse::<isize>() {
-                Ok(n) => {
-                    self.set_array_elem(name, val, n, layer)?;
-                }
-                _ => {
-                    self.set_assoc_elem(name, index, val, layer)?;
-                }
+                Ok(n) => self.set_array_elem(name, val, n, layer, false)?,
+                _ => self.set_assoc_elem(name, index, val, layer)?,
             }
         }
         Ok(())
@@ -197,105 +160,59 @@ impl DataBase {
 
         if self.is_array(name) {
             if let Ok(n) = index.parse::<isize>() {
-                self.append_to_array_elem(name, val, n, layer)?;
+                self.set_array_elem(name, val, n, layer, true)?;
             }
         } else if self.is_assoc(name) {
             self.append_to_assoc_elem(name, index, val, layer)?;
         } else {
             match index.parse::<isize>() {
-                Ok(n) => {
-                    self.append_to_array_elem(name, val, n, layer)?;
-                }
-                _ => {
-                    self.append_to_assoc_elem(name, index, val, layer)?;
-                }
+                Ok(n) => self.set_array_elem(name, val, n, layer, true)?,
+                _ => self.append_to_assoc_elem(name, index, val, layer)?,
             }
         }
         Ok(())
     }
 
-    pub fn set_array_elem(
-        &mut self,
-        name: &str,
-        val: &str,
-        pos: isize,
-        layer: Option<usize>,
+    pub fn set_array_elem(&mut self, name: &str, val: &str,
+        pos: isize, layer: Option<usize>, append: bool,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
-
-        if self.has_flag(name, 'i') {
-            IntArrayData::set_elem(&mut self.params[layer], name, pos, &val)
-        } else {
-            ArrayData::set_elem(&mut self.params[layer], name, pos, &val)
+        let i_flag = self.has_flag(name, 'i');
+        match append {
+            false => self.set_elem(layer, name, pos, &val.to_string(), i_flag),
+            true  => self.append_elem(layer, name, pos, &val.to_string()),
         }
     }
 
-    pub fn append_to_array_elem(
-        &mut self,
-        name: &str,
-        val: &str,
-        pos: isize,
-        layer: Option<usize>,
+    pub fn set_assoc_elem(&mut self, name: &str, key: &str,
+        val: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
-        ArrayData::append_elem(&mut self.params[layer], name, pos, &val)
-    }
-
-    pub fn set_assoc_elem(
-        &mut self,
-        name: &str,
-        key: &str,
-        val: &str,
-        layer: Option<usize>,
-    ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
-
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
-        let i_flag = self.has_flag(name, 'i');
-        let layer = self.get_target_layer(name, layer);
-        let db_layer = &mut self.params[layer];
-
-        match db_layer.get_mut(name) {
+        match self.params[layer].get_mut(name) {
             Some(v) => {
-                if !v.is_initialized() {
-                    *v = match i_flag {
-                        true => IntAssocData::default().boxed_clone(),
-                        false => AssocData::default().boxed_clone(),
-                    };
+                if let Some(init_v) = v.initialize() {
+                    *v = init_v;
                 }
-
-                v.set_as_assoc(key, &val)
+                v.set_as_assoc(key, val)
             }
             _ => Err(ExecError::Other("TODO".to_string())),
         }
     }
 
-    pub fn append_to_assoc_elem(
-        &mut self,
-        name: &str,
-        key: &str,
-        val: &str,
-        layer: Option<usize>,
+    pub fn append_to_assoc_elem(&mut self, name: &str, key: &str,
+        val: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &Some(vec![val.to_string()]))?;
+        self.write_check(name, &Some(vec![val.to_string()]))?;
 
-        let val = case_change(val, self.has_flag(name, 'l'), self.has_flag(name, 'u'));
         let layer = self.get_target_layer(name, layer);
-        AssocData::append_elem(&mut self.params[layer], name, key, &val)
+        match self.params[layer].get_mut(name) {
+            Some(v) => v.append_to_assoc_elem(key, val),
+            _ => Err(ExecError::Other("TODO".to_string())),
+        }
     }
 
     pub fn set_array(
@@ -303,76 +220,34 @@ impl DataBase {
         name: &str,
         v: Option<Vec<String>>,
         layer: Option<usize>,
+        i_flag: bool,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &v)?;
+        self.write_check(name, &v)?;
 
-        let l_flag = self.has_flag(name, 'l');
-        let u_flag = self.has_flag(name, 'u');
         let layer = self.get_target_layer(name, layer);
         let db_layer = &mut self.params[layer];
+
+        if i_flag {
+            let mut obj = IntArrayData::new();
+            if v.is_some() {
+                for (i, e) in v.unwrap().into_iter().enumerate() {
+                    obj.set_as_array(&i.to_string(), &e)?;
+                }
+            }
+            db_layer.insert(name.to_string(), Box::new(obj));
+            return Ok(());
+        }
 
         if v.is_none() {
-            db_layer.insert(name.to_string(), UninitArray {}.boxed_clone());
-        } else {
-            let v = v
-                .unwrap()
-                .iter()
-                .map(|e| case_change(e, l_flag, u_flag))
-                .collect();
-            db_layer.insert(name.to_string(), Box::new(ArrayData::from(Some(v))));
-        }
-        Ok(())
-    }
-
-    pub fn set_int_array(
-        &mut self,
-        name: &str,
-        v: Option<Vec<String>>,
-        layer: Option<usize>,
-    ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &v)?;
-
-        let layer = self.get_target_layer(name, layer);
-
-        match self.param_options[layer].get_mut(name) {
-            Some(e) => *e += "i",
-            None => {
-                self.param_options[layer].insert(name.to_string(), "i".to_string());
-            }
+            db_layer.insert(name.to_string(), Box::new(Uninit::new("a")));
+            return Ok(());
         }
 
-        let db_layer = &mut self.params[layer];
-        db_layer.insert(name.to_string(), IntArrayData::default().boxed_clone());
-
-        if v.is_some() {
-            for (i, e) in v.unwrap().into_iter().enumerate() {
-                self.set_array_elem(name, &e, i as isize, Some(layer))?;
-            }
+        let mut obj = ArrayData::new();
+        for (i, e) in v.unwrap().into_iter().enumerate() {
+            obj.set_as_array(&i.to_string(), &e)?;
         }
-
-        Ok(())
-    }
-
-    pub fn set_int_assoc(&mut self, name: &str, layer: Option<usize>) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &None)?;
-
-        let layer = self.get_target_layer(name, layer);
-
-        match self.param_options[layer].get_mut(name) {
-            Some(e) => *e += "i",
-            None => {
-                self.param_options[layer].insert(name.to_string(), "i".to_string());
-            }
-        }
-
-        let db_layer = &mut self.params[layer];
-        db_layer.insert(name.to_string(), IntAssocData::default().boxed_clone());
+        db_layer.insert(name.to_string(), Box::new(obj));
         Ok(())
     }
 
@@ -381,19 +256,20 @@ impl DataBase {
         name: &str,
         layer: Option<usize>,
         set_array: bool,
+        i_flag: bool,
     ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        self.write_check(name)?;
-        restricted_shell::check(self, name, &None)?;
+        self.write_check(name, &None)?;
+
+        let obj = if i_flag {
+            Box::new(IntAssocData::new()) as Box::<dyn Data>
+        } else if set_array {
+            Box::new(AssocData::new()) as Box::<dyn Data>
+        } else {
+            Box::new(Uninit::new("A")) as Box::<dyn Data>
+        };
 
         let layer = self.get_target_layer(name, layer);
-        let db_layer = &mut self.params[layer];
-
-        if set_array {
-            db_layer.insert(name.to_string(), Box::new(AssocData::default()));
-        } else {
-            db_layer.insert(name.to_string(), UninitAssoc {}.boxed_clone());
-        }
+        self.params[layer].insert(name.to_string(), obj);
         Ok(())
     }
 
@@ -403,11 +279,15 @@ impl DataBase {
             Some(lay) => lay,
         };
 
-        let rf = &mut self.param_options[layer];
+        let rf = &mut self.params[layer];
         match rf.get_mut(name) {
-            Some(d) => d.push(flag),
+            Some(d) => { let _ = d.set_flag(flag); },
             None => {
-                rf.insert(name.to_string(), flag.to_string());
+                let obj = match flag {
+                    'i' => Box::new(IntData::new()) as Box::<dyn Data>,
+                    _ => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
+                };
+                rf.insert(name.to_string(), obj);
             }
         }
     }
@@ -418,43 +298,9 @@ impl DataBase {
             Some(lay) => lay,
         };
 
-        let rf = &mut self.param_options[layer];
+        let rf = &mut self.params[layer];
         if let Some(d) = rf.get_mut(name) {
-            d.retain(|e| e != flag)
+            let _ = d.unset_flag(flag);
         }
     }
-}
-
-pub fn initialize(db: &mut DataBase) -> Result<(), String> {
-    db.exit_status = 0;
-
-    db.set_param("$", &process::id().to_string(), None)?;
-    db.set_param("BASHPID", &process::id().to_string(), None)?;
-    db.set_param("BASH_SUBSHELL", "0", None)?;
-    db.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
-    db.set_param("OPTIND", "1", None)?;
-    db.set_param("IFS", " \t\n", None)?;
-
-    db.init_as_num("UID", &unistd::getuid().to_string(), None)?;
-    db.param_options[0].insert("UID".to_string(), "ir".to_string());
-
-    db.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
-    db.param_options[0].insert("RANDOM".to_string(), "i".to_string());
-
-    db.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
-    db.param_options[0].insert("SRANDOM".to_string(), "i".to_string());
-
-    db.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
-    db.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds {}));
-    db.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime {}));
-
-    db.set_array("FUNCNAME", None, None)?;
-    db.set_array("BASH_SOURCE", Some(vec![]), None)?;
-    db.set_array("BASH_ARGC", Some(vec![]), None)?;
-    db.set_array("BASH_ARGV", Some(vec![]), None)?;
-    db.set_array("BASH_LINENO", Some(vec![]), None)?;
-    db.set_array("DIRSTACK", Some(vec![]), None)?;
-    db.set_assoc("BASH_ALIASES", None, true)?;
-    db.set_assoc("BASH_CMDS", None, true)?;
-    Ok(())
 }

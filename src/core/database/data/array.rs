@@ -1,26 +1,20 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::array_uninit::UninitArray;
-use super::Data;
+use super::{case_change, Data};
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct ArrayData {
-    body: HashMap<usize, String>,
-}
-
-impl From<HashMap<usize, String>> for ArrayData {
-    fn from(h: HashMap<usize, String>) -> Self {
-        Self { body: h }
-    }
+    pub body: HashMap<usize, String>,
+    pub flags: String,
 }
 
 impl From<Option<Vec<String>>> for ArrayData {
     fn from(v: Option<Vec<String>>) -> Self {
-        let mut ans = Self::default();
+        let mut ans = Self::new();
         v.unwrap().into_iter().enumerate().for_each(|(i, e)| {
             ans.body.insert(i, e);
         });
@@ -33,7 +27,7 @@ impl Data for ArrayData {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_print_string(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
             let ansi = utils::to_ansi_c(&self.body[&i]);
@@ -53,37 +47,46 @@ impl Data for ArrayData {
     fn clear(&mut self) {
         self.body.clear();
     }
-    fn is_initialized(&self) -> bool {
-        true
-    }
 
     fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        self.body.insert(0, value.to_string());
+        let mut value = value.to_string();
+        case_change(&self.flags, &mut value);
+        self.body.insert(0, value);
         Ok(())
     }
 
     fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
-        if let Some(v) = self.body.get(&0) {
-            self.body.insert(0, v.to_owned() + value);
+        let mut value = if let Some(v) = self.body.get(&0) {
+            v.to_owned() + value
         } else {
-            self.body.insert(0, value.to_string());
-        }
+            value.to_string()
+        };
+
+        case_change(&self.flags, &mut value);
+        self.body.insert(0, value);
         Ok(())
     }
 
     fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let n = self.index_of(key)?;
-        self.body.insert(n, value.to_string());
+
+        let mut value = value.to_string();
+        case_change(&self.flags, &mut value);
+
+        self.body.insert(n, value);
         Ok(())
     }
 
     fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
         let n = self.index_of(key)?;
-        if let Some(v) = self.body.get(&n) {
-            self.body.insert(n, v.to_owned() + value);
+        let mut value = if let Some(v) = self.body.get(&n) {
+            v.to_owned() + value
         } else {
-            self.body.insert(n, value.to_string());
-        }
+            value.to_string()
+        };
+
+        case_change(&self.flags, &mut value);
+        self.body.insert(n, value);
         Ok(())
     }
 
@@ -174,79 +177,29 @@ impl Data for ArrayData {
         self.body.remove(&index);
         Ok(())
     }
-}
 
-impl ArrayData {
-    pub fn set_new_entry(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        v: Option<Vec<String>>,
-    ) -> Result<(), ExecError> {
-        if v.is_none() {
-            db_layer.insert(name.to_string(), UninitArray {}.boxed_clone());
-        } else {
-            db_layer.insert(name.to_string(), Box::new(ArrayData::from(v)));
+    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
         }
         Ok(())
     }
 
-    pub fn set_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
-    ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
-            if d.is_array() {
-                if !d.is_initialized() {
-                    *d = ArrayData::default().boxed_clone();
-                }
-
-                d.set_as_array(&pos.to_string(), val)
-            } else if d.is_assoc() {
-                return d.set_as_assoc(&pos.to_string(), val);
-            } else if d.is_single() {
-                let data = d.get_as_single()?;
-                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-
-                if !data.is_empty() {
-                    Self::set_elem(db_layer, name, 0, &data)?;
-                }
-                Self::set_elem(db_layer, name, pos, val)
-            } else {
-                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-                Self::set_elem(db_layer, name, pos, val)
-            }
-        } else {
-            ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-            Self::set_elem(db_layer, name, pos, val)
-        }
+    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+        self.flags.retain(|e| e != flag);
+        Ok(())
     }
 
-    pub fn append_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
-    ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
-            if d.is_array() {
-                if !d.is_initialized() {
-                    *d = ArrayData::default().boxed_clone();
-                }
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.flags.contains(flag)
+    }
+}
 
-                d.append_to_array_elem(&pos.to_string(), val)
-            } else if d.is_assoc() {
-                return d.append_to_assoc_elem(&pos.to_string(), val);
-            } else {
-                let data = d.get_as_single()?;
-                ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-                Self::append_elem(db_layer, name, 0, &data)?;
-                Self::append_elem(db_layer, name, pos, val)
-            }
-        } else {
-            ArrayData::set_new_entry(db_layer, name, Some(vec![]))?;
-            Self::set_elem(db_layer, name, pos, val)
+impl ArrayData {
+    pub fn new() -> Self {
+        Self {
+            body: HashMap::new(),
+            flags: "a".to_string(),
         }
     }
 

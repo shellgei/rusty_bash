@@ -146,9 +146,14 @@ impl Job {
         }
     }
 
-    pub fn pretty_print(&mut self, indent_num: usize,
-                        semicolon: &mut bool, printed: &mut bool,
-                        job_end: &str, end: bool) -> bool {
+    pub fn pretty_print(
+        &mut self,
+        indent_num: usize,
+        semicolon: &mut bool,
+        printed: &mut bool,
+        job_end: &str,
+        end: bool,
+    ) -> bool {
         let tmp = self.text.clone();
         let job_text = tmp.trim_ascii();
 
@@ -169,7 +174,7 @@ impl Job {
 
         let text = match end {
             false => job_text.to_owned() + job_end,
-            true  => job_text.to_owned(),
+            true => job_text.to_owned(),
         };
 
         for _ in 0..indent_num {
@@ -261,7 +266,10 @@ impl Job {
         ans.text += &feeder.consume(com_num);
 
         match !ans.pipelines.is_empty() {
-            true => Ok(Some(ans)),
+            true => {
+                ans.read_heredoc(feeder, core)?;
+                Ok(Some(ans))
+            },
             false => Ok(None),
         }
     }

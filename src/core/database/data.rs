@@ -3,17 +3,15 @@
 
 pub mod array;
 pub mod array_int;
-pub mod array_uninit;
+pub mod uninit;
 pub mod assoc;
 pub mod assoc_int;
-pub mod assoc_uninit;
 pub mod epochrealtime;
 pub mod epochseconds;
 pub mod random;
 pub mod seconds;
 pub mod single;
 pub mod single_int;
-//pub mod special;
 pub mod srandom;
 
 use crate::error::arith::ArithError;
@@ -28,9 +26,17 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
     }
 }
 
+fn case_change(flags: &String, text: &mut String) {
+    if flags.contains('l') {
+        *text = text.to_lowercase();
+    }else if flags.contains('u') {
+        *text = text.to_uppercase();
+    }
+}
+
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(&self.print_body()).finish()
+        fmt.debug_struct(&self.get_print_string()).finish()
     }
 }
 
@@ -42,7 +48,7 @@ impl Clone for Box<dyn Data> {
 
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
-    fn print_body(&self) -> String;
+    fn get_print_string(&self) -> String;
 
     fn get_str_type(&self) -> Box<dyn Data> {
         self.boxed_clone()
@@ -54,7 +60,7 @@ pub trait Data {
             return;
         }
 
-        let body = self.print_body(); //.replace("$", "\\$");
+        let body = self.get_print_string(); //.replace("$", "\\$");
         if !self.is_initialized() {
             println!("{name}");
         } else if declare_print
@@ -72,11 +78,16 @@ pub trait Data {
         true
     }
 
+    fn initialize(&mut self) -> Option<Box<dyn Data>> {
+        None
+    }
+
     fn has_key(&mut self, _: &str) -> Result<bool, ExecError> {
         Ok(false)
     }
 
     fn clear(&mut self) {}
+
     fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("Undefined call set_as_single".to_string()))
     }
@@ -184,4 +195,17 @@ pub trait Data {
     fn remove_elem(&mut self, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("Undefined call remove_elem".to_string()))
     }
+
+    fn set_flag(&mut self, _: char) -> Result<(), ExecError> {
+        Err(ExecError::Other("Don't have flags".to_string()))
+    }
+
+    fn unset_flag(&mut self, _: char) -> Result<(), ExecError> {
+        Err(ExecError::Other("Don't have flags".to_string()))
+    }
+
+    fn has_flag(&mut self, _: char) -> bool {
+        false
+    }
+
 }

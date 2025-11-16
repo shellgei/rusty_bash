@@ -11,9 +11,10 @@ use nix::unistd::User;
 pub fn eval(word: &mut Word, core: &mut ShellCore) {
     if word.subwords.len() > 1
         && word.subwords[1..].iter().any(|sw| sw.get_text() == "=")
-        && !core.options.query("posix") {
-            let permit_equal = word.mode.is_none();
-            return eval_multi(word, core, permit_equal);
+        && !core.options.query("posix")
+    {
+        let permit_equal = word.mode.is_none();
+        return eval_multi(word, core, permit_equal);
     }
     if let Some(WordMode::RightOfSubstitution) = word.mode {
         return eval_multi(word, core, false);

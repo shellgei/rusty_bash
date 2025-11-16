@@ -3,18 +3,46 @@
 
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::command::SimpleCommand;
+use crate::elements::pipeline::Pipeline;
+use crate::elements::job::Job;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
 use crate::{Feeder, Script, ShellCore};
 use nix::unistd::Pid;
 
+impl From<SimpleCommand> for ParenCommand {
+    fn from(c: SimpleCommand) -> Self {
+        let mut pip = Pipeline::default();
+        pip.text = c.get_text();
+        pip.commands.push(c.boxed_clone());
+
+        let mut job = Job::default();
+        job.text = pip.text.clone();
+        job.pipelines.push(pip);
+        job.pipeline_ends.push("".to_string());
+
+        let mut script = Script::default();
+        script.text = job.text.clone();
+        script.jobs.push(job);
+        script.job_ends.push("".to_string());
+
+        let mut com = ParenCommand::default();
+        com.lineno = c.lineno;
+        com.text = script.text.clone();
+        com.script = Some(script);
+
+        com
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct ParenCommand {
-    text: String,
-    script: Option<Script>,
+    pub text: String,
+    pub script: Option<Script>,
     redirects: Vec<Redirect>,
-    lineno: usize,
+    pub lineno: usize,
 }
 
 impl Command for ParenCommand {
@@ -65,15 +93,6 @@ impl Command for ParenCommand {
 }
 
 impl ParenCommand {
-    /*
-        pub fn new(text: &str, script: Option<Script>) -> Self {
-            Self {
-                text: text.to_string(),
-                script: script,
-                redirects: vec![],
-            }
-        }
-    */
     pub fn parse(
         feeder: &mut Feeder,
         core: &mut ShellCore,
@@ -84,8 +103,15 @@ impl ParenCommand {
             ..Default::default()
         };
 
-        if command::eat_inner_script(feeder, core, "(", vec![")"], &mut ans.script, substitution)? {
-            ans.text.push('(');
+        let mut start = "(";
+        if substitution {
+            if feeder.starts_with("`") {
+                start = "`";
+            }
+        }
+
+        if command::eat_inner_script(feeder, core, start, vec![")"], &mut ans.script, substitution)? {
+            ans.text.push_str(start);
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));
 

@@ -3,6 +3,7 @@
 
 use super::super::Variable;
 use super::OptionalOperation;
+use crate::elements::subword::SimpleSubword;
 use crate::elements::subword::SingleQuoted;
 use crate::elements::subword::Subword;
 use crate::elements::word::{Word, WordMode};
@@ -11,11 +12,10 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
-use crate::elements::subword::SimpleSubword;
 
 fn is_special_param(name: &str) -> bool {
-   //"$?*@#-!0123456789".contains(name) 
-   "*@".contains(name) 
+    //"$?*@#-!0123456789".contains(name)
+    "*@".contains(name)
 }
 
 #[derive(Debug, Clone, Default)]
@@ -95,17 +95,19 @@ impl ValueCheck {
             for e in v.subwords.iter_mut() {
                 if e.is_escaped_char() {
                     match e.get_text() {
-                        "\\$" | "\\\\" | "\\\"" | "\\`" => {},
+                        "\\$" | "\\\\" | "\\\"" | "\\`" => {}
                         txt => {
-                            let sw = SimpleSubword { text: txt.to_string() };
+                            let sw = SimpleSubword {
+                                text: txt.to_string(),
+                            };
                             *e = Box::new(sw);
-                        },
+                        }
                     }
                 }
             }
 
             self.alternative_value = Some(v.dollar_expansion(core)?);
-        }else{
+        } else {
             self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);
         }
         if self.in_double_quoted {
@@ -116,9 +118,9 @@ impl ValueCheck {
             }
         }
 
-        if v.text.starts_with("~") && ! self.in_double_quoted {
+        if v.text.starts_with("~") && !self.in_double_quoted {
             v.eval_as_value(core)
-        }else{
+        } else {
             v.eval_as_alter(core)
         }
     }

@@ -24,7 +24,7 @@ pub enum WordMode {
     Heredoc,
     RightOfSubstitution,
     Value,
-    ReparseOfValue,
+    PermitAnyChar,
     //ReparseOfSubstitution,
     ParamOption(Vec<String>),
 }
@@ -238,6 +238,14 @@ impl Word {
 
     pub fn set_heredoc_flag(&mut self) {
         self.subwords.iter_mut().for_each(|e| e.set_heredoc_flag());
+    }
+
+    pub fn is_to_proc_sub(&mut self) -> bool {
+        if self.subwords.len() == 1 {
+            return self.subwords[0].is_to_proc_sub();
+        }
+
+        false
     }
 
     fn scan_pos(&self, s: &str) -> Vec<usize> {
