@@ -113,7 +113,7 @@ impl DataBase {
 
         d.append_as_single(val)?;
 
-        if let Ok(name) = env::var(name) {
+        if env::var(name).is_ok() {
             let v = d.get_as_single()?;
             env::set_var(name, v);
         }
