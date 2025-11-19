@@ -17,7 +17,7 @@ impl DataBase {
             if d.is_array() {
                 d.set_as_array(&pos.to_string(), val)
             } else if d.is_assoc() {
-                return d.set_as_assoc(&pos.to_string(), val);
+                d.set_as_assoc(&pos.to_string(), val)
             } else if d.is_single() {
                 let data = d.get_as_single()?;
                 self.set_new_entry(layer, name, Some(vec![]), i_flag)?;
@@ -47,7 +47,7 @@ impl DataBase {
             if d.is_array() {
                 d.append_to_array_elem(&pos.to_string(), val)
             } else if d.is_assoc() {
-                return d.append_to_assoc_elem(&pos.to_string(), val);
+                d.append_to_assoc_elem(&pos.to_string(), val)
             } else {
                 let data = d.get_as_single()?;
                 self.set_new_entry(layer, name, Some(vec![]), false)?;
