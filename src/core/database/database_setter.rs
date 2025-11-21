@@ -273,12 +273,7 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn set_flag(&mut self, name: &str, flag: char, layer: Option<usize>) {
-        let layer = match layer {
-            None => self.position_parameters.len() - 1,
-            Some(lay) => lay,
-        };
-
+    pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
         let rf = &mut self.params[layer];
         match rf.get_mut(name) {
             Some(d) => { let _ = d.set_flag(flag); },
@@ -292,12 +287,7 @@ impl DataBase {
         }
     }
 
-    pub fn unset_flag(&mut self, name: &str, flag: char, layer: Option<usize>) {
-        let layer = match layer {
-            None => self.position_parameters.len() - 1,
-            Some(lay) => lay,
-        };
-
+    pub fn unset_flag(&mut self, name: &str, flag: char, layer: usize) {
         let rf = &mut self.params[layer];
         if let Some(d) = rf.get_mut(name) {
             let _ = d.unset_flag(flag);

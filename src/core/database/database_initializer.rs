@@ -21,7 +21,7 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.set_param("IFS", " \t\n", None)?;
 
     db.init_as_num("UID", &unistd::getuid().to_string(), None)?;
-    db.set_flag("UID", 'r', None);
+    db.set_flag("UID", 'r', 0);
 
     db.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
     db.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));

@@ -200,13 +200,13 @@ impl ShellCore {
                 &format!("{version}({symbol})-{profile}"),
                 None,
             );
-            self.db.set_flag("SUSH_VERSINFO", 'r', None);
+            self.db.set_flag("SUSH_VERSINFO", 'r', 0);
         }
 
         let _ = self
             .db
             .set_array("BASH_VERSINFO", Some(bash_versinfo), None, false);
-        self.db.set_flag("BASH_VERSINFO", 'r', None);
+        self.db.set_flag("BASH_VERSINFO", 'r', 0);
     }
 
     pub fn flip_exit_status(&mut self) {

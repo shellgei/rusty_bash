@@ -95,21 +95,21 @@ fn set_substitution(
     }
 
     if export_opt {
-        core.db.set_flag(&sub.left_hand.name, 'x', Some(layer));
+        core.db.set_flag(&sub.left_hand.name, 'x', layer);
     }
 
     if arg::has_option("-i", args) {
-        core.db.set_flag(&sub.left_hand.name, 'i', Some(layer));
+        core.db.set_flag(&sub.left_hand.name, 'i', layer);
     }
 
     if little_opt {
-        core.db.unset_flag(&sub.left_hand.name, 'u', Some(layer));
-        core.db.set_flag(&sub.left_hand.name, 'l', Some(layer));
+        core.db.unset_flag(&sub.left_hand.name, 'u', layer);
+        core.db.set_flag(&sub.left_hand.name, 'l', layer);
     }
 
     if upper_opt {
-        core.db.unset_flag(&sub.left_hand.name, 'l', Some(layer));
-        core.db.set_flag(&sub.left_hand.name, 'u', Some(layer));
+        core.db.unset_flag(&sub.left_hand.name, 'l', layer);
+        core.db.set_flag(&sub.left_hand.name, 'u', layer);
     }
 
     let mut res = Ok(());
@@ -130,7 +130,7 @@ fn set_substitution(
     }
 
     if read_only {
-        core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
+        core.db.set_flag(&sub.left_hand.name, 'r', layer);
     }
 
     res
@@ -353,8 +353,7 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
         if let Err(e) = set_substitution(core, sub, &args, layer) {
             return super::error_exit(1, &args[0], &e, core);
         }
-        //dbg!("{:?}", &core.db.params[layer]);
-        core.db.set_flag(&sub.left_hand.name, 'r', Some(layer));
+        core.db.set_flag(&sub.left_hand.name, 'r', layer);
     }
     0
 }
