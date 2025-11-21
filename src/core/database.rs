@@ -55,7 +55,7 @@ impl DataBase {
         Ok(ans)
     }
 
-    fn solve_set_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
+    pub fn solve_set_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
         if layer.is_some() {
             return layer.unwrap();
         }
@@ -103,9 +103,8 @@ impl DataBase {
     }
 
     pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
-        match self.params[layer].get_mut(name) {
-            Some(d) => d.set_flag(flag),
-            None => {}
+        if let Some(d) = self.params[layer].get_mut(name) {
+            d.set_flag(flag);
         }
     }   
 
