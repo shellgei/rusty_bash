@@ -95,6 +95,13 @@ impl DataBase {
         self.params.len()
     }
 
+    pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
+        let num = self.params.len();
+        (0..num)
+            .rev()
+            .find(|&layer| self.params[layer].contains_key(name))
+    }
+
     pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
         match self.params[layer].get_mut(name) {
             Some(d) => d.set_flag(flag),
