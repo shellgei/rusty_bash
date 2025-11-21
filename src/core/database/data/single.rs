@@ -38,8 +38,4 @@ impl Data for SingleData {
             self.flags.push(flag);
         }
     }
-
-    fn unset_flag(&mut self, flag: char) {
-        self.flags.retain(|e| e != flag);
-    }
 }

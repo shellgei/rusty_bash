@@ -22,5 +22,4 @@ pub trait Data {
     }
 
     fn set_flag(&mut self, _: char) {}
-    fn unset_flag(&mut self, _: char) {}
 }
