@@ -159,7 +159,7 @@ impl Data for IntArrayData {
             body: hash,
             flags: self.flags.clone(),
         };
-        let _ = str_d.unset_flag('i');
+        str_d.unset_flag('i');
 
         Box::new(str_d)
     }
@@ -197,16 +197,14 @@ impl Data for IntArrayData {
         Err(ExecError::Other("invalid index".to_string()))
     }
 
-    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
         }
-        Ok(())
     }
 
-    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn unset_flag(&mut self, flag: char) {
         self.flags.retain(|e| e != flag);
-        Ok(())
     }
 
     fn has_flag(&mut self, flag: char) -> bool {
