@@ -30,6 +30,8 @@ pub fn readonly(core: &mut ShellCore, args: &[String],
         if let Err(e) = sub.eval(core, Some(layer)) {
             return super::error_exit(1, &args[0], &e, core);
         }
+
+        core.db.set_flag(&sub.left_hand.text, 'r', layer);
     }
 
     0
