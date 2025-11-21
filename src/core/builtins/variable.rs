@@ -23,12 +23,11 @@ pub fn local(core: &mut ShellCore, args: &[String],
     0
 }
 
-pub fn readonly(core: &mut ShellCore, _: &[String],
+pub fn readonly(core: &mut ShellCore, args: &[String],
                 subs: &mut [Substitution]) -> i32 {
     for sub in subs.iter_mut() {
         if let Err(e) = sub.eval(core, None) {
-            e.print(core);
-            return 1;
+            return super::error_exit(1, &args[0], &e, core);
         }
     }
 
