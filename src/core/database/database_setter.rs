@@ -275,7 +275,7 @@ impl DataBase {
 
     pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
         match self.params[layer].get_mut(name) {
-            Some(d) => { let _ = d.set_flag(flag); },
+            Some(d) => { d.set_flag(flag); },
             None => {
                 let obj = match flag {
                     'i' => Box::new(IntData::new()) as Box::<dyn Data>,
@@ -289,7 +289,7 @@ impl DataBase {
     pub fn unset_flag(&mut self, name: &str, flag: char, layer: usize) {
         let rf = &mut self.params[layer];
         if let Some(d) = rf.get_mut(name) {
-            let _ = d.unset_flag(flag);
+            d.unset_flag(flag);
         }
     }
 }
