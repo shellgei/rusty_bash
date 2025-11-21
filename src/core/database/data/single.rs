@@ -32,4 +32,14 @@ impl Data for SingleData {
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         Ok(self.body.clone())
     }
+
+    fn set_flag(&mut self, flag: char) {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }   
+    }
+
+    fn unset_flag(&mut self, flag: char) {
+        self.flags.retain(|e| e != flag);
+    } 
 }

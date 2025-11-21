@@ -20,4 +20,7 @@ pub trait Data {
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         Err(ExecError::Other("not a single variable".to_string()))
     }
+
+    fn set_flag(&mut self, _: char) {}
+    fn unset_flag(&mut self, _: char) {}
 }
