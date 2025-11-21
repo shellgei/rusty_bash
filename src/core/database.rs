@@ -102,8 +102,7 @@ impl DataBase {
     }
 
     pub fn unset_flag(&mut self, name: &str, flag: char, layer: usize) {
-        let rf = &mut self.params[layer];
-        if let Some(d) = rf.get_mut(name) {
+        if let Some(d) = self.params[layer].get_mut(name) {
             d.unset_flag(flag);
         }
     }
