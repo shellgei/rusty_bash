@@ -90,7 +90,7 @@ pub trait Subword {
 
 fn last_resort(
     feeder: &mut Feeder,
-    core: &mut ShellCore,
+    _: &mut ShellCore,
     mode: &Option<WordMode>,
 ) -> Result<Option<Box<dyn Subword>>, ParseError> {
     match mode {
