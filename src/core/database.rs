@@ -85,7 +85,7 @@ impl DataBase {
 
     pub fn push_local(&mut self) {
         self.params.push(HashMap::new());
-    }   
+    }
 
     pub fn pop_local(&mut self) {
         self.params.pop();
@@ -95,18 +95,11 @@ impl DataBase {
         self.params.len()
     }
 
-    pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
-        let num = self.params.len();
-        (0..num)
-            .rev()
-            .find(|&layer| self.params[layer].contains_key(name))
-    }
-
     pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
         if let Some(d) = self.params[layer].get_mut(name) {
             d.set_flag(flag);
         }
-    }   
+    }
 
     pub fn unset_flag(&mut self, name: &str, flag: char, layer: usize) {
         let rf = &mut self.params[layer];

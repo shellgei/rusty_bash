@@ -36,10 +36,10 @@ impl Data for SingleData {
     fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
-        }   
+        }
     }
 
     fn unset_flag(&mut self, flag: char) {
         self.flags.retain(|e| e != flag);
-    } 
+    }
 }
