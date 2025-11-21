@@ -274,15 +274,14 @@ impl DataBase {
     }
 
     pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
-        let rf = &mut self.params[layer];
-        match rf.get_mut(name) {
+        match self.params[layer].get_mut(name) {
             Some(d) => { let _ = d.set_flag(flag); },
             None => {
                 let obj = match flag {
                     'i' => Box::new(IntData::new()) as Box::<dyn Data>,
                     _ => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
                 };
-                rf.insert(name.to_string(), obj);
+                self.params[layer].insert(name.to_string(), obj);
             }
         }
     }
