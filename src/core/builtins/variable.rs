@@ -40,9 +40,12 @@ fn set_substitution(
         return Err(ExecError::VariableReadOnly(sub.left_hand.name.clone()));
     }
 
-    if sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("(") {
-        let msg = format!("{}: cannot assign list to array member", sub.left_hand.text);
-        return Err(ExecError::Other(msg));
+    if let Some(r) = sub.right_hand.as_mut() {
+        if sub.left_hand.index.is_some()
+        && r.text.starts_with("(") {
+            let msg = format!("{}: cannot assign list to array member", sub.left_hand.text);
+            return Err(ExecError::Other(msg));
+        }
     }
 
     let read_only = arg::has_option("-r", args);
@@ -68,10 +71,11 @@ fn set_substitution(
             .init_variable(core, Some(layer), &mut args_clone)?;
     }
 
-    if (arg::has_option("-A", args) || arg::has_option("-a", args))
-        && (sub.right_hand.text.starts_with("(") || sub.right_hand.text.starts_with("'("))
-    {
-        sub.left_hand.index = None;
+    if let Some(r) = sub.right_hand.as_mut() {
+        if (arg::has_option("-A", args) || arg::has_option("-a", args))
+            && (r.text.starts_with("(") || r.text.starts_with("'(")) {
+            sub.left_hand.index = None;
+        }
     }
 
     /* TODO: chaos!!!! */
@@ -79,8 +83,10 @@ fn set_substitution(
         core.db.is_array(&sub.left_hand.name) || core.db.is_assoc(&sub.left_hand.name);
     let option_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
     let treat_as_export = core.db.has_flag(&sub.left_hand.name, 'x') || export_opt;
-    let subs_elem_quoted_string =
-        sub.left_hand.index.is_some() && sub.right_hand.text.starts_with("'");
+    let subs_elem_quoted_string = match sub.right_hand.as_mut() {
+        Some(r) => sub.left_hand.index.is_some() && r.text.starts_with("'"),
+        _ => false,
+    };
 
     if option_indicate_array {
         sub.quoted = false;

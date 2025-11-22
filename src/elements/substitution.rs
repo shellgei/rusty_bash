@@ -16,7 +16,7 @@ use crate::{Feeder, ShellCore};
 pub struct Substitution {
     pub text: String,
     pub left_hand: Variable,
-    pub right_hand: Value,
+    pub right_hand: Option<Value>,
     append: bool,
     lineno: usize,
     pub has_right: bool,
@@ -31,14 +31,17 @@ impl Substitution {
         declare: bool,
     ) -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
-        self.right_hand.eval(core, &self.left_hand.name, self.append)?;
 
-        if self.right_hand.is_obj() {
-            return Ok(());
-        }
+        if let Some(r) = self.right_hand.as_mut() {
+            r.eval(core, &self.left_hand.name, self.append)?;
 
-        if declare && self.right_hand.evaluated_array.is_some() {
-            self.left_hand.index = None;
+            if r.is_obj() {
+                return Ok(());
+            }
+
+            if declare && r.evaluated_array.is_some() {
+                self.left_hand.index = None;
+            }
         }
 
         self.set_to_shell(core, layer)
@@ -52,7 +55,10 @@ impl Substitution {
                 .unwrap()
                 .reparse(core, &self.left_hand.name)?;
         }
-        self.right_hand.reparse(core, self.quoted)?;
+
+        if let Some(r) = self.right_hand.as_mut() {
+            r.reparse(core, self.quoted)?;
+        }
         Ok(())
     }
 
@@ -62,17 +68,22 @@ impl Substitution {
         }
 
         if let Some(d) = core.db.get_ref(&self.left_hand.name) {
-            self.right_hand = Value::from(d.clone());
+            self.right_hand = Some(Value::from(d.clone()));
             self.has_right = true;
         }
     }
 
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        if self.right_hand.evaluated_array.is_none() {
-            return Err(ExecError::Other("no array and no index".to_string()));
+        if let Some(r) = self.right_hand.as_mut() {
+            if r.evaluated_array.is_none() {
+                return Err(ExecError::Other("no array and no index".to_string()));
+            }
         }
 
-        let a = self.right_hand.evaluated_array.as_ref().unwrap();
+        let a = match self.right_hand.as_mut() {
+            Some(r) => r.evaluated_array.as_ref().unwrap(),
+            _ => &vec![],
+        };
 
         if a.is_empty() && !self.append {
             if core.db.is_assoc(&self.left_hand.name) {
@@ -109,15 +120,18 @@ impl Substitution {
         if index.is_empty() {
             return Err(ExecError::ArrayIndexInvalid(self.left_hand.text.clone()));
         }
-        if let Some(v) = &self.right_hand.evaluated_string {
-            if self.append {
-                return core
-                    .db
-                    .append_param2(&self.left_hand.name, index, v, Some(layer));
-            } else {
-                return core
-                    .db
-                    .set_param2(&self.left_hand.name, index, v, Some(layer));
+
+        if let Some(r) = self.right_hand.as_mut() {
+            if let Some(v) = &r.evaluated_string {
+                if self.append {
+                    return core
+                        .db
+                        .append_param2(&self.left_hand.name, index, v, Some(layer));
+                } else {
+                    return core
+                        .db
+                        .set_param2(&self.left_hand.name, index, v, Some(layer));
+                }
             }
         }
 
@@ -129,7 +143,10 @@ impl Substitution {
     }
 
     fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        let rhs_is_array = self.right_hand.evaluated_array.is_some();
+        let rhs_is_array = match self.right_hand.as_mut() {
+            Some(r) => r.evaluated_array.is_some(),
+            None => false,
+        };
 
         match self.left_hand.get_index(core, rhs_is_array, self.append)? {
             Some(index) => self.set_array_elem(core, layer, &index),
@@ -138,7 +155,11 @@ impl Substitution {
     }
 
     fn set_single(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        let data = self.right_hand.evaluated_string.clone().unwrap();
+        let data = match self.right_hand.as_mut() {
+            Some(r) => r.evaluated_string.clone().unwrap(),
+            None => String::new(),
+        };
+
         if self.append {
             core.db
                 .append_param(&self.left_hand.name, &data, Some(layer))
@@ -154,10 +175,15 @@ impl Substitution {
     ) -> Result<(), ExecError> {
         let layer = core.db.get_target_layer(&self.left_hand.name, layer);
 
-        if self.right_hand.evaluated_string.is_some() && self.left_hand.index.is_none() {
-            self.set_single(core, layer)
-        } else {
-            self.set_array(core, layer)
+        if let Some(r) = self.right_hand.as_mut() {
+            if r.evaluated_string.is_some()
+            && self.left_hand.index.is_none() {
+                self.set_single(core, layer)
+            } else {
+                self.set_array(core, layer)
+            }
+        }else{
+            Ok(())
         }
     }
 
@@ -223,7 +249,7 @@ impl Substitution {
         ans.has_right = true;
         if let Some(a) = Value::parse(feeder, core, permit_space)? {
             ans.text += &a.text.clone();
-            ans.right_hand = a;
+            ans.right_hand = Some(a);
         }
 
         Ok(Some(ans))
