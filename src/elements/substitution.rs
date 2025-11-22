@@ -20,17 +20,25 @@ pub struct Substitution {
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 layer: Option<usize>) -> Result<(), ExecError> {
-        if let Some(r) = self.right_hand.as_mut() {
-            r.eval(core)?;
-            core.db.set_param(&self.left_hand.text,
-                              &r.evaluated_string, layer)
-        }else{
-            match layer {
-                Some(0) | None => {},
-                _ => core.db.set_param(&self.left_hand.text, "", layer)?,
-            }
-            Ok(())
+        match self.right_hand.as_mut() {
+            Some(r) => {
+                r.eval(core)?;
+                core.db.set_param(&self.left_hand.text,
+                                  &r.evaluated_string, layer)
+            },
+            None => self.eval_no_right(core, layer),
         }
+    }
+
+    pub fn eval_no_right(&mut self, core: &mut ShellCore,
+                         layer: Option<usize>) -> Result<(), ExecError> {
+        let old_layer = core.db.get_layer_pos(&self.left_hand.text);
+        let already_exit = old_layer.is_some() && old_layer == layer;
+
+        if ! already_exit {
+            core.db.set_param(&self.left_hand.text, "", layer)?;
+        }
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
