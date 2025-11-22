@@ -72,7 +72,14 @@ impl DataBase {
     pub fn set_param(&mut self, name: &str, val: &str,
                      layer: Option<usize>) -> Result<(), ExecError> {
         let layer = self.solve_set_layer(name, layer);
-        self.params[layer].insert(name.to_string(), Box::new(SingleData::from(val)));
+
+        if let Some(d) = self.params[layer].get_mut(name) {
+            d.set_as_single(name, val)?;
+        }else{
+            self.params[layer].insert(name.to_string(),
+                                      Box::new(SingleData::from(val)));
+        }
+
         if layer == 0 && env::var(name).is_ok() {
             env::set_var(name, val.to_string());
         }

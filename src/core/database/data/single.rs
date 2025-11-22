@@ -29,6 +29,12 @@ impl Data for SingleData {
         self.body.clone()
     }
 
+    fn set_as_single(&mut self, name: &str,
+                     value: &str) -> Result<(), ExecError> {
+        self.body = value.to_string();
+        Ok(())
+    }
+
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         Ok(self.body.clone())
     }
