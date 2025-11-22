@@ -30,10 +30,11 @@ impl Substitution {
                           &r.evaluated_string, layer)
     }
 
-    pub fn eval_no_right(&mut self, core: &mut ShellCore,
-                         layer: Option<usize>) -> Result<(), ExecError> {
+    fn eval_no_right(&mut self, core: &mut ShellCore,
+                     layer: Option<usize>) -> Result<(), ExecError> {
         let old_layer = core.db.get_layer_pos(&self.left_hand.text);
-        let already_exit = old_layer.is_some() && old_layer == layer;
+        let already_exit = old_layer.is_some()
+                           && (layer.is_none() || old_layer == layer);
 
         if ! already_exit {
             core.db.set_param(&self.left_hand.text, "", layer)?;
