@@ -25,6 +25,10 @@ impl Substitution {
             core.db.set_param(&self.left_hand.text,
                               &r.evaluated_string, layer)
         }else{
+            match layer {
+                Some(0) | None => {},
+                _ => core.db.set_param(&self.left_hand.text, "", layer)?,
+            }
             Ok(())
         }
     }

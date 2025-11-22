@@ -828,8 +828,7 @@ res=$($com <<< 'f() { local "a= 1" ; echo "$a" ; } ; f')
 
 res=$($com <<< 'f () { local A ; A=BBB ; echo $A ; } ; echo $A ; f ; echo $A')
 [ "$res" = "
-BBB
-" ] || err $LINENO
+BBB" ] || err $LINENO
 
 
 ### readonly ###
