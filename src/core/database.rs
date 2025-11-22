@@ -76,7 +76,8 @@ impl DataBase {
         if let Some(d) = self.params[layer].get_mut(name) {
             d.set_as_single(name, val)?;
         }else{
-            self.params[layer].insert(name.to_string(), Box::new(SingleData::from(val)));
+            self.params[layer].insert(name.to_string(),
+                                      Box::new(SingleData::from(val)));
         }
 
         if layer == 0 && env::var(name).is_ok() {

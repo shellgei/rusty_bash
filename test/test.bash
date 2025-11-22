@@ -826,4 +826,23 @@ res=$($com <<< 'f() { local "a=1" ; echo "$a" ; } ; f')
 res=$($com <<< 'f() { local "a= 1" ; echo "$a" ; } ; f')
 [ "$res" = " 1" ] || err $LINENO
 
+res=$($com <<< 'f () { local A ; A=BBB ; echo $A ; } ; echo $A ; f ; echo $A')
+[ "$res" = "
+BBB" ] || err $LINENO
+
+
+### readonly ###
+
+res=$($com <<< 'readonly a=bbb; echo $a')
+[ "$res" == "bbb" ] || err $LINENO
+
+res=$($com <<< 'A=1; readonly A ; A=2; echo $A' )
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=1; readonly A ; echo $A' )
+[ "$res" = "1" ] || err $LINENO
+
+res=$($com <<< 'readonly x=1; x=2 ; echo $x')
+[ "$res" = "" ] || err $LINENO
+
 echo OK $0
