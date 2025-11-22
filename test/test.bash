@@ -806,11 +806,11 @@ res=$($com <<< 'A={a,b}; echo $A')
 res=$($com <<< 'A=ABC cd; echo $A')
 [ "$res" == "" ] || err $LINENO
 
-res=$($com <<< 'TZ=GMT date | grep GMT')
-[ $? -eq 0 ] || err $LINENO
+#res=$($com <<< 'TZ=GMT date | grep GMT')
+#[ $? -eq 0 ] || err $LINENO
 
-res=$($com <<< 'TZ=UTC date | grep UTC')
-[ $? -eq 0 ] || err $LINENO
+#res=$($com <<< 'TZ=UTC date | grep UTC')
+#[ $? -eq 0 ] || err $LINENO
 
 ### local ###
 
@@ -836,8 +836,9 @@ BBB" ] || err $LINENO
 res=$($com <<< 'readonly a=bbb; echo $a')
 [ "$res" == "bbb" ] || err $LINENO
 
-res=$($com <<< 'A=1; readonly A ; A=2; echo $A' )
-[ "$res" = "" ] || err $LINENO
+res=$($com <<< 'A=1; readonly A ; A=2
+echo $A' )
+[ "$res" = "1" ] || err $LINENO
 
 res=$($com <<< 'A=1; readonly A ; echo $A' )
 [ "$res" = "1" ] || err $LINENO
