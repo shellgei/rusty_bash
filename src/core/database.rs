@@ -55,7 +55,8 @@ impl DataBase {
         Ok(ans)
     }
 
-    pub fn solve_set_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
+    pub fn solve_set_layer(&mut self, name: &str,
+                           layer: Option<usize>) -> usize {
         if layer.is_some() {
             return layer.unwrap();
         }
