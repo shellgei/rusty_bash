@@ -20,14 +20,14 @@ pub struct Substitution {
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 layer: Option<usize>) -> Result<(), ExecError> {
-        match self.right_hand.as_mut() {
-            Some(r) => {
-                r.eval(core)?;
-                core.db.set_param(&self.left_hand.text,
-                                  &r.evaluated_string, layer)
-            },
-            None => self.eval_no_right(core, layer),
+        if self.right_hand.is_none() {
+            return self.eval_no_right(core, layer);
         }
+
+        let r = self.right_hand.as_mut().unwrap();
+        r.eval(core)?;
+        core.db.set_param(&self.left_hand.text,
+                          &r.evaluated_string, layer)
     }
 
     pub fn eval_no_right(&mut self, core: &mut ShellCore,
