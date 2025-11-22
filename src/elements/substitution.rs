@@ -14,15 +14,19 @@ use self::variable::Variable;
 pub struct Substitution {
     pub text: String,
     pub left_hand: Variable,
-    right_hand: Value,
+    right_hand: Option<Value>,
 }
 
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
                 layer: Option<usize>) -> Result<(), ExecError> {
-        self.right_hand.eval(core)?;
-        core.db.set_param(&self.left_hand.text,
-                          &self.right_hand.evaluated_string, layer)
+        if let Some(r) = self.right_hand.as_mut() {
+            r.eval(core)?;
+            core.db.set_param(&self.left_hand.text,
+                              &r.evaluated_string, layer)
+        }else{
+            Ok(())
+        }
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
@@ -56,10 +60,9 @@ impl Substitution {
         if let Some(a) = Value::parse(feeder, core,
                              permit_space_in_value)? {
             ans.text += &a.text.clone();
-            ans.right_hand = a;
+            ans.right_hand = Some(a);
         }
 
-        //dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
