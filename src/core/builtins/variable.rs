@@ -92,7 +92,7 @@ fn set_substitution(
         sub.quoted = false;
     }
 
-    if sub.has_right
+    if sub.right_hand.is_some()
         && treat_as_array
         && !subs_elem_quoted_string
         && (!treat_as_export || option_indicate_array)
@@ -120,7 +120,7 @@ fn set_substitution(
 
     let mut res = Ok(());
 
-    match sub.has_right {
+    match sub.right_hand.is_some() {
         true => res = sub.eval(core, Some(layer), true),
         false => {
             if !core.db.params[layer].contains_key(&sub.left_hand.name)

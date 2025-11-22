@@ -19,7 +19,6 @@ pub struct Substitution {
     pub right_hand: Option<Value>,
     append: bool,
     lineno: usize,
-    pub has_right: bool,
     pub quoted: bool,
 }
 
@@ -63,13 +62,12 @@ impl Substitution {
     }
 
     pub fn localvar_inherit(&mut self, core: &mut ShellCore) {
-        if self.has_right {
+        if self.right_hand.is_some() {
             return;
         }
 
         if let Some(d) = core.db.get_ref(&self.left_hand.name) {
             self.right_hand = Some(Value::from(d.clone()));
-            self.has_right = true;
         }
     }
 
@@ -238,7 +236,6 @@ impl Substitution {
         if !ans.eat_equal(feeder) {
             if permit_no_equal {
                 feeder.pop_backup();
-                ans.has_right = false;
                 return Ok(Some(ans));
             }
             feeder.rewind();
@@ -246,7 +243,6 @@ impl Substitution {
         }
         feeder.pop_backup();
 
-        ans.has_right = true;
         if let Some(a) = Value::parse(feeder, core, permit_space)? {
             ans.text += &a.text.clone();
             ans.right_hand = Some(a);
