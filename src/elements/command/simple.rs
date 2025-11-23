@@ -42,7 +42,10 @@ impl Command for SimpleCommand {
 
         if self.args.is_empty() {
             for sub in &self.substitutions {
-                sub.clone().eval(core, None)?;
+                if let Err(e) = sub.clone().eval(core, None) {
+                    let _ = core.db.set_param("?", "1", Some(0));
+                    return Err(e);
+                }
             }
 
             return Ok(None);
