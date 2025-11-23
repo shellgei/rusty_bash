@@ -846,4 +846,7 @@ res=$($com <<< 'A=1; readonly A ; echo $A' )
 res=$($com <<< 'readonly x=1; x=2 ; echo $x')
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< 'readonly x=1; x=2')
+[ $? -eq 1 ] || err $LINENO
+
 echo OK $0
