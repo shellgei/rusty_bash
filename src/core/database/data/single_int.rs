@@ -22,7 +22,9 @@ impl Data for IntData {
 
     fn clear(&mut self) {}
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         match value.parse::<isize>() {
             Ok(n) => self.body = n,
             Err(e) => {

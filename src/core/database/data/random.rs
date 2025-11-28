@@ -11,6 +11,7 @@ use rand_chacha::ChaCha20Rng;
 pub struct RandomVar {
     rng: ChaCha20Rng,
     prev: String,
+    flags: String, 
 }
 
 impl Data for RandomVar {
@@ -32,7 +33,9 @@ impl Data for RandomVar {
         self.prev.len()
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let seed = value.parse::<u64>().unwrap_or(0);
         self.rng = ChaCha20Rng::seed_from_u64(seed + 4011); //4011: for bash test
         Ok(())
@@ -42,8 +45,18 @@ impl Data for RandomVar {
         true
     }
 
+    fn set_flag(&mut self, flag: char) {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+    }
+
+    fn unset_flag(&mut self, flag: char) {
+        self.flags.retain(|e| e != flag);
+    }
+
     fn has_flag(&mut self, flag: char) -> bool {
-        flag == 'i'
+        self.flags.contains(flag)
     }
 }
 
@@ -52,6 +65,7 @@ impl RandomVar {
         Self {
             rng: ChaCha20Rng::seed_from_u64(0),
             prev: "".to_string(),
+            flags: "i".to_string(),
         }
     }
 }

@@ -56,7 +56,9 @@ impl Data for IntAssocData {
         self.body.clear();
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = super::to_int(value)?;
         self.body.insert("0".to_string(), n);
         Ok(())

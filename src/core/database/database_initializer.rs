@@ -26,8 +26,8 @@ pub fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
     db.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
     db.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
-    db.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds {}));
-    db.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime {}));
+    db.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds::new()));
+    db.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime::new()));
 
     db.set_array("FUNCNAME", None, None, false)?;
     db.set_array("BASH_SOURCE", Some(vec![]), None, false)?;

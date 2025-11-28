@@ -69,7 +69,7 @@ impl DataBase {
             *d = init_d;
         }
 
-        d.set_as_single(val)?;
+        d.set_as_single(name, val)?;
 
         if env::var(name).is_ok() {
             let v = d.get_as_single()?;

@@ -49,7 +49,9 @@ impl Data for AssocData {
         self.body.clear();
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let mut value = value.to_string();
         case_change(&self.flags, &mut value);
 

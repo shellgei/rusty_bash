@@ -31,10 +31,6 @@ impl Data for SRandomVar {
         self.prev.len()
     }
 
-    fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {
-        Ok(())
-    }
-
     fn is_special(&self) -> bool {
         true
     }

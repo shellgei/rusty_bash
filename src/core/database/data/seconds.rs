@@ -10,6 +10,7 @@ use std::time::Duration;
 pub struct Seconds {
     origin: String,
     shift: isize,
+    flags: String,
 }
 
 impl Data for Seconds {
@@ -37,7 +38,9 @@ impl Data for Seconds {
         0
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         self.shift = value.parse::<isize>()?;
         let time = clock::monotonic_time();
         self.origin = format!("{}.{}", time.as_secs(), time.subsec_nanos());
@@ -50,6 +53,20 @@ impl Data for Seconds {
     fn is_single_num(&self) -> bool {
         true
     }
+
+    fn set_flag(&mut self, flag: char) {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+    }
+
+    fn unset_flag(&mut self, flag: char) {
+        self.flags.retain(|e| e != flag);
+    }
+
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.flags.contains(flag)
+    }
 }
 
 impl Seconds {
@@ -58,6 +75,7 @@ impl Seconds {
         Self {
             origin: format!("{}.{}", time.as_secs(), time.subsec_nanos()),
             shift: 0,
+            flags: String::new(),
         }
     }
 }

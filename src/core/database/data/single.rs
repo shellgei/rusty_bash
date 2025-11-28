@@ -41,7 +41,9 @@ impl Data for SingleData {
         self.body.clear();
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         self.body = value.to_string();
         case_change(&self.flags, &mut self.body);
         Ok(())
