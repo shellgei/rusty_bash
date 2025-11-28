@@ -75,7 +75,9 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let key = self.index_of(key)?;
         let n = super::to_int(value)?;
 

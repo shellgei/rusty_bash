@@ -73,7 +73,9 @@ impl Data for IntAssocData {
         Ok(())
     }
 
-    fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let n = super::to_int(value)?;
 
         if let Some(v) = self.body.get(key) {

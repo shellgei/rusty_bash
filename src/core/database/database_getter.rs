@@ -4,7 +4,7 @@
 use super::data::Data;
 use super::DataBase;
 use crate::error::exec::ExecError;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use std::env;
 
 impl DataBase {
@@ -16,6 +16,10 @@ impl DataBase {
             }
         }
         None
+    }
+
+    pub fn get_layer_ref(&self, layer: usize) -> &HashMap<String, Box<dyn Data>> {
+        &self.params[layer]
     }
 
     pub fn get_ifs_head(&mut self) -> String {

@@ -70,7 +70,9 @@ impl Data for AssocData {
         Ok(())
     }
 
-    fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let mut value = if let Some(v) = self.body.get(key) {
             v.to_owned() + value
         } else {

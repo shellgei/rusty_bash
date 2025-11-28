@@ -93,7 +93,8 @@ impl Variable {
         let mut prev = vec![];
 
         let exists_in_layer = if let Some(l) = layer {
-            core.db.params[l].contains_key(&self.name)
+            //core.db.params[l].contains_key(&self.name)
+            core.db.exist_l(&self.name, l)
         } else {
             false
         };

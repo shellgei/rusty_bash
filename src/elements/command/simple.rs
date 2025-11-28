@@ -11,7 +11,6 @@ use crate::{proc_ctrl, ShellCore};
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
-use crate::env;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use nix::unistd::Pid;
@@ -200,9 +199,7 @@ impl SimpleCommand {
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let layer = core.db.get_layer_num() - 1;
-        for (k, v) in &mut core.db.params[layer] {
-            env::set_var(k, v.get_as_single().unwrap_or("".to_string()));
-        }
+        core.db.layer_to_env(layer);
         Ok(())
     }
 

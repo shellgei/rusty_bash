@@ -84,7 +84,9 @@ impl Data for ArrayData {
         Ok(())
     }
 
-    fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let n = self.index_of(key)?;
         let mut value = if let Some(v) = self.body.get(&n) {
             v.to_owned() + value

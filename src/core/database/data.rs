@@ -103,7 +103,9 @@ pub trait Data {
         self.readonly_check(name)?;
         Err(ExecError::Other("not an array".to_string()))
     }
-    fn append_to_array_elem(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, name: &str, _: &str,
+                            _: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         Err(ExecError::Other("not an array".to_string()))
     }
 
@@ -111,7 +113,9 @@ pub trait Data {
         self.readonly_check(name)?;
         Err(ExecError::Other("not an associative table".to_string()))
     }
-    fn append_to_assoc_elem(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, name: &str, _: &str,
+                            _: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         Err(ExecError::Other("not an associative table".to_string()))
     }
 

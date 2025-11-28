@@ -108,7 +108,7 @@ impl DataBase {
         let d = db_layer.get_mut(name).unwrap();
 
         if d.is_array() {
-            return d.append_to_array_elem("0", val);
+            return d.append_to_array_elem(name, "0", val);
         }
 
         d.append_as_single(name, val)?;
@@ -210,7 +210,7 @@ impl DataBase {
 
         let layer = self.get_target_layer(name, layer);
         match self.params[layer].get_mut(name) {
-            Some(v) => v.append_to_assoc_elem(key, val),
+            Some(v) => v.append_to_assoc_elem(name, key, val),
             _ => Err(ExecError::Other("TODO".to_string())),
         }
     }
@@ -290,6 +290,12 @@ impl DataBase {
         let rf = &mut self.params[layer];
         if let Some(d) = rf.get_mut(name) {
             d.unset_flag(flag);
+        }
+    }
+
+    pub fn layer_to_env(&mut self, layer: usize) {
+        for (k, v) in &mut self.params[layer] {
+            env::set_var(k, v.get_as_single().unwrap_or("".to_string()));
         }
     }
 }

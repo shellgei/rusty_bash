@@ -14,7 +14,6 @@ impl DataBase {
                 if a.has_key(index).unwrap_or(false) {
                     return true;
                 }
-                //return a.get_as_array_or_assoc(index, "").is_ok();
             }
         }
         false
@@ -50,6 +49,14 @@ impl DataBase {
             }
         }
         false
+    }
+
+    pub fn exist_l(&mut self, name: &str, layer: usize) -> bool {
+        if layer >= self.params.len() {
+            return false;
+        }
+
+        self.params[layer].contains_key(name)
     }
 
     pub fn has_key(&mut self, name: &str, key: &str) -> Result<bool, ExecError> {

@@ -24,7 +24,7 @@ use std::collections::HashMap;
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
-    pub params: Vec<HashMap<String, Box<dyn Data>>>,
+    params: Vec<HashMap<String, Box<dyn Data>>>,
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
     pub exit_status: i32,

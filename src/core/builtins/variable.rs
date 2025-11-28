@@ -123,7 +123,8 @@ fn set_substitution(
     match sub.right_hand.is_some() {
         true => res = sub.eval(core, Some(layer), true),
         false => {
-            if !core.db.params[layer].contains_key(&sub.left_hand.name)
+            //if !core.db.params[layer].contains_key(&sub.left_hand.name)
+            if !core.db.exist_l(&sub.left_hand.name, layer)
                 || (!core.db.is_array(&sub.left_hand.name) && arg::has_option("-a", args))
                 || (!core.db.is_assoc(&sub.left_hand.name) && arg::has_option("-A", args))
             {
