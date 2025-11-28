@@ -59,7 +59,9 @@ impl Data for AssocData {
         Ok(())
     }
 
-    fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_assoc(&mut self, name: &str, key: &str,
+                    value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let mut value = value.to_string();
         case_change(&self.flags, &mut value);
 

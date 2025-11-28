@@ -49,7 +49,9 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = match value.parse::<isize>() {
             Ok(n) => n,
             Err(e) => return Err(ExecError::Other(e.to_string())),
@@ -63,7 +65,10 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, key: &str, value: &str)
+    -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let key = self.index_of(key)?;
         let n = super::to_int(value)?;
         self.body.insert(key, n);

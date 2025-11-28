@@ -49,7 +49,9 @@ impl Data for SingleData {
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         self.body += value;
         case_change(&self.flags, &mut self.body);
         Ok(())

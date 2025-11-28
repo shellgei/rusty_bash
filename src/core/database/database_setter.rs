@@ -111,7 +111,7 @@ impl DataBase {
             return d.append_to_array_elem("0", val);
         }
 
-        d.append_as_single(val)?;
+        d.append_as_single(name, val)?;
 
         if env::var(name).is_ok() {
             let v = d.get_as_single()?;
@@ -197,7 +197,7 @@ impl DataBase {
                 if let Some(init_v) = v.initialize() {
                     *v = init_v;
                 }
-                v.set_as_assoc(key, val)
+                v.set_as_assoc(name, key, val)
             }
             _ => Err(ExecError::Other("TODO".to_string())),
         }
@@ -231,7 +231,7 @@ impl DataBase {
             let mut obj = IntArrayData::new();
             if let Some(v) = v {
                 for (i, e) in v.into_iter().enumerate() {
-                    obj.set_as_array(&i.to_string(), &e)?;
+                    obj.set_as_array(name, &i.to_string(), &e)?;
                 }
             }
             db_layer.insert(name.to_string(), Box::new(obj));
@@ -245,7 +245,7 @@ impl DataBase {
 
         let mut obj = ArrayData::new();
         for (i, e) in v.unwrap().into_iter().enumerate() {
-            obj.set_as_array(&i.to_string(), &e)?;
+            obj.set_as_array(name, &i.to_string(), &e)?;
         }
         db_layer.insert(name.to_string(), Box::new(obj));
         Ok(())

@@ -64,7 +64,9 @@ impl Data for IntAssocData {
         Ok(())
     }
 
-    fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_assoc(&mut self, name: &str, key: &str,
+                    value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let n = super::to_int(value)?;
         self.body.insert(key.to_string(), n);
         self.last = Some(value.to_string());

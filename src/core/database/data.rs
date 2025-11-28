@@ -91,7 +91,7 @@ pub trait Data {
     fn set_as_single(&mut self, name: &str,  _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)
     }
-    fn append_as_single(&mut self, _: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         Err(ExecError::Other("Undefined call set_as_single".to_string()))
     }
@@ -99,7 +99,7 @@ pub trait Data {
         Err(ExecError::Other("not a single variable".to_string()))
     }
 
-    fn set_as_array(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, _: &str, _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         Err(ExecError::Other("not an array".to_string()))
     }
@@ -107,7 +107,7 @@ pub trait Data {
         Err(ExecError::Other("not an array".to_string()))
     }
 
-    fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn set_as_assoc(&mut self, name: &str, _: &str, _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         Err(ExecError::Other("not an associative table".to_string()))
     }

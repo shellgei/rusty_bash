@@ -57,7 +57,9 @@ impl Data for ArrayData {
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let mut value = if let Some(v) = self.body.get(&0) {
             v.to_owned() + value
         } else {
@@ -69,7 +71,10 @@ impl Data for ArrayData {
         Ok(())
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, key: &str,
+                    value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = self.index_of(key)?;
 
         let mut value = value.to_string();

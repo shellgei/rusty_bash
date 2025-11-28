@@ -15,9 +15,9 @@ impl DataBase {
             }
 
             if d.is_array() {
-                d.set_as_array(&pos.to_string(), val)
+                d.set_as_array(name, &pos.to_string(), val)
             } else if d.is_assoc() {
-                d.set_as_assoc(&pos.to_string(), val)
+                d.set_as_assoc(name, &pos.to_string(), val)
             } else if d.is_single() {
                 let data = d.get_as_single()?;
                 self.set_new_entry(layer, name, Some(vec![]), i_flag)?;

@@ -34,7 +34,9 @@ impl Data for IntData {
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         match value.parse::<isize>() {
             Ok(n) => self.body += n,
             Err(e) => {
