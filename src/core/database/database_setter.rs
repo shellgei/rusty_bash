@@ -265,6 +265,10 @@ impl DataBase {
     }
 
     pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
+        if let Ok(Some(nameref)) = self.get_nameref(name) {
+            return self.set_flag(&nameref, flag, layer);
+        }
+
         match self.params[layer].get_mut(name) {
             Some(d) => { d.set_flag(flag); },
             None => {
