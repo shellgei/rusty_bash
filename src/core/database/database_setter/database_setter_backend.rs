@@ -9,27 +9,29 @@ impl DataBase {
     pub fn set_elem(&mut self, layer: usize, name: &str,
         pos: isize, val: &String, flags: &str
         ) -> Result<(), ExecError> {
-        if let Some(d) = self.params[layer].get_mut(name) {
-            if let Some(init_d) = d.initialize() {
-                *d = init_d;
-            }
+        if ! self.params[layer].contains_key(name) {
+            self.set_uninit_array(layer, name, Some(vec![]), &flags)?;
+            return self.set_elem(layer, name, pos, val, flags);
+        }
 
-            if d.is_array() {
-                d.set_as_array(name, &pos.to_string(), val)
-            } else if d.is_assoc() {
-                d.set_as_assoc(name, &pos.to_string(), val)
-            } else if d.is_single() {
-                let data = d.get_as_single()?;
-                self.set_uninit_array(layer, name, Some(vec![]), &flags)?;
 
-                if !data.is_empty() {
-                    self.set_elem(layer, name, 0, &data, flags)?;
-                }
-                self.set_elem(layer, name, pos, val, flags)
-            } else {
-                self.set_uninit_array(layer, name, Some(vec![]), &flags)?;
-                self.set_elem(layer, name, pos, val, flags)
+        let d = self.params[layer].get_mut(name).unwrap();
+        if let Some(init_d) = d.initialize() {
+            *d = init_d;
+        }
+
+        if d.is_array() {
+            d.set_as_array(name, &pos.to_string(), val)
+        } else if d.is_assoc() {
+            d.set_as_assoc(name, &pos.to_string(), val)
+        } else if d.is_single() {
+            let data = d.get_as_single()?;
+            self.set_uninit_array(layer, name, Some(vec![]), &flags)?;
+
+            if !data.is_empty() {
+                self.set_elem(layer, name, 0, &data, flags)?;
             }
+            self.set_elem(layer, name, pos, val, flags)
         } else {
             self.set_uninit_array(layer, name, Some(vec![]), &flags)?;
             self.set_elem(layer, name, pos, val, flags)
@@ -39,24 +41,25 @@ impl DataBase {
     pub fn append_elem(&mut self, layer: usize, 
         name: &str, pos: isize, val: &String,
     ) -> Result<(), ExecError> {
-        if let Some(d) = self.params[layer].get_mut(name) {
-            if let Some(init_d) = d.initialize() {
-                *d = init_d;
-            }
-
-            if d.is_array() {
-                d.append_to_array_elem(name, &pos.to_string(), val)
-            } else if d.is_assoc() {
-                d.append_to_assoc_elem(name, &pos.to_string(), val)
-            } else {
-                let data = d.get_as_single()?;
-                self.set_uninit_array(layer, name, Some(vec![]), "")?;
-                self.append_elem(layer, name, 0, &data)?;
-                self.append_elem(layer, name, pos, val)
-            }
-        } else {
+        if ! self.params[layer].contains_key(name) {
             self.set_uninit_array(layer, name, Some(vec![]), "")?;
-            self.set_elem(layer, name, pos, val, "")
+            return self.set_elem(layer, name, pos, val, "");
+        }
+
+        let d = self.params[layer].get_mut(name).unwrap();
+        if let Some(init_d) = d.initialize() {
+            *d = init_d;
+        }
+
+        if d.is_array() {
+            d.append_to_array_elem(name, &pos.to_string(), val)
+        } else if d.is_assoc() {
+            d.append_to_assoc_elem(name, &pos.to_string(), val)
+        } else {
+            let data = d.get_as_single()?;
+            self.set_uninit_array(layer, name, Some(vec![]), "")?;
+            self.append_elem(layer, name, 0, &data)?;
+            self.append_elem(layer, name, pos, val)
         }
     }
 
