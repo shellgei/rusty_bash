@@ -42,19 +42,9 @@ impl Subword for BracedParam {
         }
 
         if self.param.is_array() {
-            if let Some(s) = self.optional_operation.as_mut() {
-                if s.has_array_replace() {
-                    let mut arr = vec![];
-                    s.set_array(&self.param, &mut arr, &mut self.text, core)?;
-                    self.array = Some(arr);
-                    if self.param.index.is_some()
-                        && self.param.index.as_ref().unwrap().text == "[*]"
-                    {
-                        self.text = self.array.clone().unwrap().join(&core.db.get_ifs_head());
-                        //    self.array = None;
-                    }
-
-                    return Ok(());
+            if let Some(op) = self.optional_operation.as_mut() {
+                if op.has_array_replace() {
+                    return self.array_replace(core);
                 }
             }
         }
@@ -168,6 +158,21 @@ impl BracedParam {
         let arr = core.db.get_indexes_all(&self.param.name);
         self.array = Some(arr.clone());
         self.text = arr.join(" ");
+
+        Ok(())
+    }
+
+    fn array_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut arr = vec![];
+        let op = self.optional_operation.as_mut().unwrap();
+        op.set_array(&self.param, &mut arr, &mut self.text, core)?;
+        self.array = Some(arr);
+        if self.param.index.is_some()
+            && self.param.index.as_ref().unwrap().text == "[*]"
+        {
+            self.text = self.array.clone().unwrap().join(&core.db.get_ifs_head());
+            //    self.array = None;
+        }
 
         Ok(())
     }
