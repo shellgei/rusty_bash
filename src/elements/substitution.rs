@@ -30,19 +30,20 @@ impl Substitution {
         declare: bool,
     ) -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
-
-        if let Some(r) = self.right_hand.as_mut() {
-            r.eval(core, &self.left_hand.name, self.append)?;
-
-            if r.is_obj() {
-                return Ok(());
-            }
-
-            if declare && r.evaluated_array.is_some() {
-                self.left_hand.index = None;
-            }
+        if self.right_hand.is_none() {
+            return Ok(());
         }
 
+        let r = self.right_hand.as_mut().unwrap();
+        r.eval(core, &self.left_hand.name, self.append)?;
+
+        if r.is_obj() {
+            return Ok(());
+        }
+
+        if declare && r.evaluated_array.is_some() {
+            self.left_hand.index = None;
+        }
         self.set_to_shell(core, layer)
     }
 
@@ -72,27 +73,23 @@ impl Substitution {
     }
 
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
-        if let Some(r) = self.right_hand.as_mut() {
-            if r.evaluated_array.is_none() {
-                return Err(ExecError::Other("no array and no index".to_string()));
-            }
+        let r = self.right_hand.as_mut().unwrap();
+        if r.evaluated_array.is_none() {
+            return Err(ExecError::Other("no array and no index".to_string()));
         }
 
-        let a = match self.right_hand.as_mut() {
-            Some(r) => r.evaluated_array.as_ref().unwrap(),
-            _ => &vec![],
-        };
-
+        let a = r.evaluated_array.as_ref().unwrap();
+        let name = &self.left_hand.name;
         if a.is_empty() && !self.append {
-            if core.db.is_assoc(&self.left_hand.name) {
-                core.db.set_assoc(&self.left_hand.name, Some(layer), true, false)?;
+            if core.db.is_assoc(name) {
+                core.db.set_assoc(name, Some(layer), true, false)?;
             } else {
                 core.db
-                    .set_array(&self.left_hand.name, Some(vec![]), Some(layer), false)?;
+                    .set_array(name, Some(vec![]), Some(layer), false)?;
             }
             return Ok(());
         } else if !self.append {
-            core.db.init(&self.left_hand.name, layer);
+            core.db.init(name, layer);
         }
 
         for e in a {
@@ -100,10 +97,10 @@ impl Substitution {
                 //true if append
                 false => core
                     .db
-                    .set_param2(&self.left_hand.name, &e.0, &e.2, Some(layer))?,
+                    .set_param2(name, &e.0, &e.2, Some(layer))?,
                 true => core
                     .db
-                    .append_param2(&self.left_hand.name, &e.0, &e.2, Some(layer))?,
+                    .append_param2(name, &e.0, &e.2, Some(layer))?,
             }
         }
         Ok(())
@@ -119,17 +116,16 @@ impl Substitution {
             return Err(ExecError::ArrayIndexInvalid(self.left_hand.text.clone()));
         }
 
-        if let Some(r) = self.right_hand.as_mut() {
-            if let Some(v) = &r.evaluated_string {
-                if self.append {
-                    return core
-                        .db
-                        .append_param2(&self.left_hand.name, index, v, Some(layer));
-                } else {
-                    return core
-                        .db
-                        .set_param2(&self.left_hand.name, index, v, Some(layer));
-                }
+        let r = self.right_hand.as_mut().unwrap();
+        if let Some(v) = &r.evaluated_string {
+            if self.append {
+                return core
+                    .db
+                    .append_param2(&self.left_hand.name, index, v, Some(layer));
+            } else {
+                return core
+                    .db
+                    .set_param2(&self.left_hand.name, index, v, Some(layer));
             }
         }
 
@@ -172,16 +168,13 @@ impl Substitution {
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
         let layer = core.db.get_target_layer(&self.left_hand.name, layer);
+        let r = self.right_hand.as_mut().unwrap();
 
-        if let Some(r) = self.right_hand.as_mut() {
-            if r.evaluated_string.is_some()
-            && self.left_hand.index.is_none() {
-                self.set_single(core, layer)
-            } else {
-                self.set_array(core, layer)
-            }
-        }else{
-            Ok(())
+        if r.evaluated_string.is_some()
+        && self.left_hand.index.is_none() {
+            self.set_single(core, layer)
+        } else {
+            self.set_array(core, layer)
         }
     }
 
