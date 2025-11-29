@@ -70,6 +70,28 @@ impl DataBase {
         }
     }
 
+    pub fn unset_nameref(&mut self, name: &str,
+                         called_layer: Option<usize>) -> Result<(), ExecError> {
+        if let Some(layer) = called_layer {
+            if let Some(d) = self.params[layer].get_mut(name) {
+                if d.has_flag('n') {
+                    self.remove_entry(layer, name)?;
+                }
+            }
+            return Ok(());
+        }
+
+        let num = self.params.len();
+        for layer in 0..num {
+            if let Some(d) = self.params[layer].get_mut(name) {
+                if d.has_flag('n') {
+                    self.remove_entry(layer, name)?;
+                }
+            }
+        }
+        Ok(())
+    }
+
     pub fn unset_var(&mut self, name: &str, called_layer: Option<usize>) {
         if let Ok(Some(nameref)) = self.get_nameref(name) {
             if nameref != "" {

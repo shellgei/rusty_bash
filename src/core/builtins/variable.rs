@@ -153,7 +153,7 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
             "A"
         } else if core.db.is_array(n) {
             "a"
-        } else if core.db.exist(n) {
+        } else if core.db.exist(n) || core.db.exist_nameref(n) {
             ""
         } else {
             return error_exit_text(1, n, "not found", core);

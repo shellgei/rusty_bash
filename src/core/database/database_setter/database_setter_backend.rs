@@ -76,12 +76,22 @@ impl DataBase {
         self.set_entry(layer, name, obj)
     }
 
-    pub fn set_entry(&mut self, layer: usize, name: &str, data: Box::<dyn Data>) -> Result<(), ExecError> {
+    pub fn set_entry(&mut self, layer: usize, name: &str,
+                     data: Box::<dyn Data>) -> Result<(), ExecError> {
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
         self.params[layer].insert(name.to_string(), data);
+        Ok(())
+    }
+
+    pub fn remove_entry(&mut self, layer: usize, name: &str) -> Result<(), ExecError> {
+        if self.has_flag(name, 'r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
+
+        self.params[layer].remove(name);
         Ok(())
     }
 }

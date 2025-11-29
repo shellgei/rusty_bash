@@ -55,6 +55,14 @@ impl DataBase {
         false
     }
 
+    pub fn exist_nameref(&mut self, name: &str) -> bool {
+        if let Some(d) = self.get_ref(name) {
+            return d.has_flag('n');
+        }
+
+        false
+    }
+
     pub fn exist_l(&mut self, name: &str, layer: usize) -> bool {
         if layer >= self.params.len() {
             return false;

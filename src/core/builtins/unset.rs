@@ -37,6 +37,23 @@ fn unset_var(core: &mut ShellCore, name: &str) -> i32 {
     0
 }
 
+fn unset_nameref(core: &mut ShellCore, name: &str) -> i32 {
+    if ! core.shopts.query("localvar_unset") {
+        let _ = core.db.unset_nameref(name, None);
+        return 0;
+    }
+
+    let mut layer = core.db.get_layer_num()-1;
+    if layer <= 1 {
+        let _ = core.db.unset_nameref(name, None);
+    }else{
+        layer -= 1;
+        let _ = core.db.unset_nameref(name, Some(layer));
+    }
+
+    0
+}
+
 fn unset_function(core: &mut ShellCore, name: &str) -> i32 {
     core.db.unset_function(name);
     0
@@ -54,6 +71,12 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             if args.len() > 2 {
                 let name = args.remove(2);
                 return unset_var(core, &name);
+            }
+        }
+        "-n" => {
+            if args.len() > 2 {
+                let name = args.remove(2);
+                return unset_nameref(core, &name);
             }
         }
         name => {
@@ -92,7 +115,8 @@ pub fn unset(core: &mut ShellCore, args: &[String]) -> i32 {
             break;
         }
 
-        if (args[1] == "-v" || args[1] == "-f") && args.len() == 2 {
+        if (args[1] == "-v" || args[1] == "-f" || args[1] == "-n")
+        && args.len() == 2 {
             break;
         }
 
