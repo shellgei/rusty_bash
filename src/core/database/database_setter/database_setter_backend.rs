@@ -20,18 +20,18 @@ impl DataBase {
                 d.set_as_assoc(name, &pos.to_string(), val)
             } else if d.is_single() {
                 let data = d.get_as_single()?;
-                self.set_new_entry(layer, name, Some(vec![]), i_flag)?;
+                self.set_uninit_entry(layer, name, Some(vec![]), i_flag)?;
 
                 if !data.is_empty() {
                     self.set_elem(layer, name, 0, &data, i_flag)?;
                 }
                 self.set_elem(layer, name, pos, val, i_flag)
             } else {
-                self.set_new_entry(layer, name, Some(vec![]), i_flag)?;
+                self.set_uninit_entry(layer, name, Some(vec![]), i_flag)?;
                 self.set_elem(layer, name, pos, val, i_flag)
             }
         } else {
-            self.set_new_entry(layer, name, Some(vec![]), i_flag)?;
+            self.set_uninit_entry(layer, name, Some(vec![]), i_flag)?;
             self.set_elem(layer, name, pos, val, i_flag)
         }
     }
@@ -50,17 +50,17 @@ impl DataBase {
                 d.append_to_assoc_elem(name, &pos.to_string(), val)
             } else {
                 let data = d.get_as_single()?;
-                self.set_new_entry(layer, name, Some(vec![]), false)?;
+                self.set_uninit_entry(layer, name, Some(vec![]), false)?;
                 self.append_elem(layer, name, 0, &data)?;
                 self.append_elem(layer, name, pos, val)
             }
         } else {
-            self.set_new_entry(layer, name, Some(vec![]), false)?;
+            self.set_uninit_entry(layer, name, Some(vec![]), false)?;
             self.set_elem(layer, name, pos, val, false)
         }
     }
 
-    pub fn set_new_entry(&mut self, layer: usize,
+    pub fn set_uninit_entry(&mut self, layer: usize,
         name: &str, v: Option<Vec<String>>, i_flag: bool
     ) -> Result<(), ExecError> {
         let obj = if i_flag {
@@ -71,7 +71,17 @@ impl DataBase {
             Box::new(ArrayData::from(v)) as Box::<dyn Data>
         };
 
-        self.params[layer].insert(name.to_string(), obj);
+        //self.params[layer].insert(name.to_string(), obj);
+        //Ok(())
+        self.set_entry(layer, name, obj)
+    }
+
+    pub fn set_entry(&mut self, layer: usize, name: &str, data: Box::<dyn Data>) -> Result<(), ExecError> {
+        if self.has_flag(name, 'r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
+
+        self.params[layer].insert(name.to_string(), data);
         Ok(())
     }
 }

@@ -15,9 +15,6 @@ impl DataBase {
     fn write_check(&mut self, name: &str, values: &Option<Vec<String>>
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
-        if self.has_flag(name, 'r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
         restricted_shell::check(self, name, values)?;
         Ok(())
     }
@@ -36,8 +33,7 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
-        self.params[layer].insert(name.to_string(), Box::new(data));
-        Ok(())
+        self.set_entry(layer, name, Box::new(data))
     }
 
     pub fn set_param(
@@ -58,13 +54,12 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
-        let db_layer = &mut self.params[layer];
 
-        if db_layer.get(name).is_none() {
-            db_layer.insert(name.to_string(), Box::new(SingleData::from("")));
+        if self.params[layer].get(name).is_none() {
+            self.set_entry(layer, name, Box::new(SingleData::from("")))?;
         }
 
-        let d = db_layer.get_mut(name).unwrap();
+        let d = self.params[layer].get_mut(name).unwrap();
         if let Some(init_d) = d.initialize() {
             *d = init_d;
         }
@@ -99,14 +94,12 @@ impl DataBase {
         }
 
         let layer = self.get_target_layer(name, layer);
-        let db_layer = &mut self.params[layer];
 
-        if db_layer.get(name).is_none() {
-            db_layer.insert(name.to_string(), Box::new(SingleData::from("")));
+        if self.params[layer].get(name).is_none() {
+            self.set_entry(layer, name, Box::new(SingleData::from("")))?;
         }
 
-        let d = db_layer.get_mut(name).unwrap();
-
+        let d = self.params[layer].get_mut(name).unwrap();
         if d.is_array() {
             return d.append_to_array_elem(name, "0", val);
         }
@@ -225,8 +218,6 @@ impl DataBase {
         self.write_check(name, &v)?;
 
         let layer = self.get_target_layer(name, layer);
-        let db_layer = &mut self.params[layer];
-
         if i_flag {
             let mut obj = IntArrayData::new();
             if let Some(v) = v {
@@ -234,21 +225,18 @@ impl DataBase {
                     obj.set_as_array(name, &i.to_string(), &e)?;
                 }
             }
-            db_layer.insert(name.to_string(), Box::new(obj));
-            return Ok(());
+            return self.set_entry(layer, name, Box::new(obj));
         }
 
         if v.is_none() {
-            db_layer.insert(name.to_string(), Box::new(Uninit::new("a")));
-            return Ok(());
+            return self.set_entry(layer, name, Box::new(Uninit::new("a")));
         }
 
         let mut obj = ArrayData::new();
         for (i, e) in v.unwrap().into_iter().enumerate() {
             obj.set_as_array(name, &i.to_string(), &e)?;
         }
-        db_layer.insert(name.to_string(), Box::new(obj));
-        Ok(())
+        self.set_entry(layer, name, Box::new(obj))
     }
 
     pub fn set_assoc(
@@ -269,8 +257,7 @@ impl DataBase {
         };
 
         let layer = self.get_target_layer(name, layer);
-        self.params[layer].insert(name.to_string(), obj);
-        Ok(())
+        self.set_entry(layer, name, obj)
     }
 
     pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
@@ -281,7 +268,7 @@ impl DataBase {
                     'i' => Box::new(IntData::new()) as Box::<dyn Data>,
                     _ => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
                 };
-                self.params[layer].insert(name.to_string(), obj);
+                let _ = self.set_entry(layer, name, obj);
             }
         }
     }
