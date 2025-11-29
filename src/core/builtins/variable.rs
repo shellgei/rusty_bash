@@ -105,6 +105,10 @@ fn set_substitution(
         core.db.set_flag(&sub.left_hand.name, 'x', layer);
     }
 
+    if nameref_opt {
+        core.db.set_flag(&sub.left_hand.name, 'n', layer);
+    }
+
     if arg::has_option("-i", args) {
         core.db.set_flag(&sub.left_hand.name, 'i', layer);
     }
@@ -139,9 +143,6 @@ fn set_substitution(
 
     if read_only {
         core.db.set_flag(&sub.left_hand.name, 'r', layer);
-    }
-    if nameref_opt {
-        core.db.set_flag(&sub.left_hand.name, 'n', layer);
     }
 
     res

@@ -241,6 +241,10 @@ impl DataBase {
             return Ok(None);
         }
 
+        if ! d.is_initialized() {
+            return Ok(None);
+        }
+
         match d.get_as_single() {
             Ok(nameref) => Ok(Some(nameref)),
             Err(e) => Err(e), 

@@ -44,6 +44,12 @@ impl Data for SingleData {
     fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
 
+        if self.has_flag('n') {
+            if ! utils::is_var(value) {
+                return Err(ExecError::InvalidNameRef(value.to_string()));
+            }
+        }
+
         self.body = value.to_string();
         case_change(&self.flags, &mut self.body);
         Ok(())

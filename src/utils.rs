@@ -127,7 +127,25 @@ pub fn is_param(s: &str) -> bool {
         return n > 0;
     }
 
+    is_var(s)
+    /*
     /* variable */
+    if first_ch.is_ascii_digit() {
+        return false;
+    }
+
+    let name_c = |c: char| {
+        c.is_ascii_lowercase() || c.is_ascii_uppercase() || c.is_ascii_digit() || '_' == c
+    };
+    !s.chars().any(|c| !name_c(c))
+        */
+}
+
+pub fn is_var(s: &str) -> bool {
+    if s.is_empty() {
+        return false;
+    }
+    let first_ch = s.chars().next().unwrap();
     if first_ch.is_ascii_digit() {
         return false;
     }
