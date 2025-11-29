@@ -35,6 +35,12 @@ impl Subword for BracedParam {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.check()?;
 
+        if self.indirect
+        && ! core.db.exist(&self.param.name)
+        && ! core.db.exist_nameref(&self.param.name) {
+            return Err(ExecError::InvalidIndirectExpansion(self.param.name.to_string()));
+        }
+
         if self.indirect && core.db.has_flag(&self.param.name, 'n') {
             if self.text.contains("[") {
                 self.text = String::new();
