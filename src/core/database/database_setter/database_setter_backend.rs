@@ -7,11 +7,11 @@ use crate::error::exec::ExecError;
 
 impl DataBase {
     pub fn set_elem(&mut self, layer: usize, name: &str,
-        pos: isize, val: &String, flags: &str
+        pos: isize, val: &String, i_flag: bool
         ) -> Result<(), ExecError> {
         if ! self.params[layer].contains_key(name) {
-            self.set_uninit_array(layer, name, Some(vec![]), &flags)?;
-            return self.set_elem(layer, name, pos, val, flags);
+            self.set_uninit_array(layer, name, i_flag)?;
+            return self.set_elem(layer, name, pos, val, i_flag);
         }
 
 
@@ -24,26 +24,26 @@ impl DataBase {
             d.set_as_array(name, &pos.to_string(), val)
         } else if d.is_assoc() {
             d.set_as_assoc(name, &pos.to_string(), val)
-        } else if d.is_single() {
+        } else /*if d.is_single()*/ {
             let data = d.get_as_single()?;
-            self.set_uninit_array(layer, name, Some(vec![]), &flags)?;
+            self.set_uninit_array(layer, name, i_flag)?;
 
             if !data.is_empty() {
-                self.set_elem(layer, name, 0, &data, flags)?;
+                self.set_elem(layer, name, 0, &data, i_flag)?;
             }
+            self.set_elem(layer, name, pos, val, i_flag)
+        } /*else {
+            self.set_uninit_array(layer, name, &flags)?;
             self.set_elem(layer, name, pos, val, flags)
-        } else {
-            self.set_uninit_array(layer, name, Some(vec![]), &flags)?;
-            self.set_elem(layer, name, pos, val, flags)
-        }
+        }*/
     }
 
     pub fn append_elem(&mut self, layer: usize, 
         name: &str, pos: isize, val: &String,
     ) -> Result<(), ExecError> {
         if ! self.params[layer].contains_key(name) {
-            self.set_uninit_array(layer, name, Some(vec![]), "")?;
-            return self.set_elem(layer, name, pos, val, "");
+            self.set_uninit_array(layer, name, false)?;
+            return self.set_elem(layer, name, pos, val, false);
         }
 
         let d = self.params[layer].get_mut(name).unwrap();
@@ -57,21 +57,22 @@ impl DataBase {
             d.append_to_assoc_elem(name, &pos.to_string(), val)
         } else {
             let data = d.get_as_single()?;
-            self.set_uninit_array(layer, name, Some(vec![]), "")?;
+            self.set_uninit_array(layer, name, false)?;
             self.append_elem(layer, name, 0, &data)?;
             self.append_elem(layer, name, pos, val)
         }
     }
 
     pub fn set_uninit_array(&mut self, layer: usize,
-        name: &str, v: Option<Vec<String>>, flags: &str,
+        name: &str, i_flag: bool,
     ) -> Result<(), ExecError> {
-        let obj = if flags.contains('i') {
+        //let v = Some(vec![]);
+        let obj = if i_flag {
             Box::new(Uninit::new("ai")) as Box::<dyn Data>
-        }else if v.is_none() {
-            Box::new(Uninit::new("a")) as Box::<dyn Data>
+        //}else if v.is_none() {
+        //    Box::new(Uninit::new("a")) as Box::<dyn Data>
         }else {
-            Box::new(ArrayData::from(v)) as Box::<dyn Data>
+            Box::new(ArrayData::from(Some(vec![]))) as Box::<dyn Data>
         };
 
         self.set_entry(layer, name, obj)

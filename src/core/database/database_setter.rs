@@ -176,11 +176,7 @@ impl DataBase {
         self.write_check(name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
-        let i_flag = match self.has_flag(name, 'i') {
-            true => "i",
-            false => "",
-        };
-
+        let i_flag = self.has_flag(name, 'i');
         match append {
             false => self.set_elem(layer, name, pos, &val.to_string(), i_flag),
             true  => self.append_elem(layer, name, pos, &val.to_string()),
