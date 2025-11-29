@@ -35,33 +35,10 @@ impl Subword for BracedParam {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.check()?;
 
-        if self.indirect
-        && ! core.db.exist(&self.param.name)
-        && ! core.db.exist_nameref(&self.param.name) {
-            return Err(ExecError::InvalidIndirectExpansion(self.param.name.to_string()));
-        }
-
-        if self.indirect && core.db.has_flag(&self.param.name, 'n') {
-            if self.text.contains("[") {
-                self.text = String::new();
-            } else if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
-                self.text = nameref;
-            }else{
-                self.text = String::new();
-            }
-            return Ok(());
-        }
-
-        if self.indirect && self.param.is_var_array() {
-            // ${!name[@]}, ${!name[*]}
-            self.index_replace(core)?;
-            return Ok(());
-        }
-
-
         if self.indirect {
-            self.indirect_replace(core)?;
-            self.check()?;
+            if ! self.indirect_preparation(core)? {
+                return Ok(());
+            }
         }
 
         if self.param.is_array() {
@@ -193,6 +170,33 @@ impl BracedParam {
         self.text = arr.join(" ");
 
         Ok(())
+    }
+
+    fn indirect_preparation(&mut self, core: &mut ShellCore) -> Result<bool, ExecError> {
+        if ! core.db.exist(&self.param.name)
+        && ! core.db.exist_nameref(&self.param.name) {
+            return Err(ExecError::InvalidIndirectExpansion(self.param.name.to_string()));
+        }
+
+        if core.db.has_flag(&self.param.name, 'n') {
+            if self.text.contains("[") {
+                self.text = String::new();
+            } else if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
+                self.text = nameref;
+            }else{
+                self.text = String::new();
+            }
+            return Ok(false);
+        }
+
+        if self.param.is_var_array() { // ${!name[@]}, ${!name[*]}
+            self.index_replace(core)?;
+            return Ok(false);
+        }
+
+        self.indirect_replace(core)?;
+        self.check()?;
+        Ok(true)
     }
 
     fn indirect_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
