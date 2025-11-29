@@ -35,12 +35,6 @@ impl Subword for BracedParam {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.check()?;
 
-        if self.indirect && self.param.is_var_array() {
-            // ${!name[@]}, ${!name[*]}
-            self.index_replace(core)?;
-            return Ok(());
-        }
-
         if self.indirect && core.db.has_flag(&self.param.name, 'n') {
             if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
                 self.text = nameref;
@@ -49,6 +43,13 @@ impl Subword for BracedParam {
             }
             return Ok(());
         }
+
+        if self.indirect && self.param.is_var_array() {
+            // ${!name[@]}, ${!name[*]}
+            self.index_replace(core)?;
+            return Ok(());
+        }
+
 
         if self.indirect {
             self.indirect_replace(core)?;
