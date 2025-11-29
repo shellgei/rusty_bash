@@ -36,7 +36,9 @@ impl Subword for BracedParam {
         self.check()?;
 
         if self.indirect && core.db.has_flag(&self.param.name, 'n') {
-            if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
+            if self.text.contains("[") {
+                self.text = String::new();
+            } else if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
                 self.text = nameref;
             }else{
                 self.text = String::new();
