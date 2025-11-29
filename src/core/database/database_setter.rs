@@ -44,6 +44,10 @@ impl DataBase {
     ) -> Result<(), ExecError> {
         self.write_check(name, &Some(vec![val.to_string()]))?;
 
+        if let Some(nameref) = self.get_nameref(name)? {
+            return self.set_param(&nameref, val, layer);
+        }
+
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
             self.position_parameters[n][0] = val.to_string();

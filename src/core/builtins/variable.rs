@@ -52,6 +52,7 @@ fn set_substitution(
     let export_opt = arg::has_option("-x", args);
     let little_opt = arg::has_option("-l", args);
     let upper_opt = arg::has_option("-u", args);
+    let nameref_opt = arg::has_option("-n", args);
 
     let mut layer = layer;
     if arg::has_option("-g", args) && layer != 0 {
@@ -139,6 +140,9 @@ fn set_substitution(
     if read_only {
         core.db.set_flag(&sub.left_hand.name, 'r', layer);
     }
+    if nameref_opt {
+        core.db.set_flag(&sub.left_hand.name, 'n', layer);
+    }
 
     res
 }
@@ -167,6 +171,9 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
         }
         if core.db.has_flag(n, 'x') {
             opt += "x";
+        }
+        if core.db.has_flag(n, 'n') {
+            opt += "n";
         }
 
         if core.db.is_readonly(n) && !opt.contains('r') && !core.options.query("posix") {

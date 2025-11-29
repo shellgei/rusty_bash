@@ -190,6 +190,10 @@ impl DataBase {
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
 
+        if let Some(nameref) = self.get_nameref(name)? {
+            return self.get_param(&nameref);
+        }
+
         if let Some(val) = special_param(self, name) {
             return Ok(val);
         }
@@ -225,6 +229,22 @@ impl DataBase {
         }
 
         Ok("".to_string())
+    }
+
+    pub fn get_nameref(&mut self, name: &str) -> Result<Option<String>, ExecError> {
+        let d = match self.get_ref(name) {
+            Some(d) => d,
+            None => return Ok(None),
+        };
+
+        if ! d.has_flag('n') {
+            return Ok(None);
+        }
+
+        match d.get_as_single() {
+            Ok(nameref) => Ok(Some(nameref)),
+            Err(e) => Err(e), 
+        }
     }
 }
 

@@ -3,7 +3,6 @@
 
 pub mod array;
 pub mod array_int;
-pub mod uninit;
 pub mod assoc;
 pub mod assoc_int;
 pub mod epochrealtime;
@@ -13,6 +12,7 @@ pub mod seconds;
 pub mod single;
 pub mod single_int;
 pub mod srandom;
+pub mod uninit;
 
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
@@ -60,7 +60,7 @@ pub trait Data {
             return;
         }
 
-        let body = self.get_print_string(); //.replace("$", "\\$");
+        let body = self.get_print_string();
         if !self.is_initialized() {
             println!("{name}");
         } else if declare_print

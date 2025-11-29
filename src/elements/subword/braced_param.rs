@@ -41,6 +41,15 @@ impl Subword for BracedParam {
             return Ok(());
         }
 
+        if self.indirect && core.db.has_flag(&self.param.name, 'n') {
+            if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
+                self.text = nameref;
+            }else{
+                self.text = String::new();
+            }
+            return Ok(());
+        }
+
         if self.indirect {
             self.indirect_replace(core)?;
             self.check()?;
