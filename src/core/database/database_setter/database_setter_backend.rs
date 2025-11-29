@@ -91,7 +91,9 @@ impl DataBase {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
-        self.params[layer].remove(name);
+        if self.params[layer].contains_key(name) {
+            self.params[layer].remove(name);
+        }
         Ok(())
     }
 }

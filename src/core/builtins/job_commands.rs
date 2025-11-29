@@ -354,7 +354,7 @@ fn wait_next(
     }
 
     if let Some(var) = var_name {
-        core.db.unset(var, None);
+        let _ = core.db.unset(var, None);
         if let Err(e) = core.db.set_param(var, &pid, None) {
             e.print(core);
         }
@@ -391,7 +391,7 @@ fn wait_a_job(
     let ans = match core.job_table[pos].update_status(true, false) {
         Ok(n) => {
             if let Some(var) = var_name {
-                core.db.unset(var, None);
+                let _ = core.db.unset(var, None);
                 if let Err(e) = core.db.set_param(var, &pid, None) {
                     e.print(core);
                 }
