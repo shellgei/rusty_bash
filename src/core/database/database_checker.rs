@@ -37,6 +37,10 @@ impl DataBase {
     }
 
     pub fn exist(&mut self, name: &str) -> bool {
+        if let Ok(Some(nameref)) = self.get_nameref(name) {
+            return self.exist(&nameref);
+        }
+
         if let Ok(n) = name.parse::<usize>() {
             let layer = self.position_parameters.len() - 1;
             return n < self.position_parameters[layer].len();

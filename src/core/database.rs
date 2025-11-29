@@ -71,6 +71,13 @@ impl DataBase {
     }
 
     pub fn unset_var(&mut self, name: &str, called_layer: Option<usize>) {
+        if let Ok(Some(nameref)) = self.get_nameref(name) {
+            if nameref != "" {
+                 return self.unset_var(&nameref, called_layer);
+            }
+            return;
+        }
+
         if let Some(layer) = called_layer {
             if layer == 0 {
                 return;
