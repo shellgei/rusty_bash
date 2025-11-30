@@ -10,7 +10,7 @@ use std::{env, process};
 use crate::core::DataBase;
 use nix::unistd;
 
-pub fn initialize(db: &mut DataBase) -> Result<(), String> {
+pub(super) fn initialize(db: &mut DataBase) -> Result<(), String> {
     db.exit_status = 0;
 
     db.set_param("$", &process::id().to_string(), None)?;

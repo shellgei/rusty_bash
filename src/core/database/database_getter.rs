@@ -4,7 +4,7 @@
 use super::data::Data;
 use super::DataBase;
 use crate::error::exec::ExecError;
-use std::collections::{HashSet, HashMap};
+use std::collections::HashSet;
 use std::env;
 
 impl DataBase {
@@ -16,10 +16,6 @@ impl DataBase {
             }
         }
         None
-    }
-
-    pub fn get_layer_ref(&self, layer: usize) -> &HashMap<String, Box<dyn Data>> {
-        &self.params[layer]
     }
 
     pub fn get_ifs_head(&mut self) -> String {
@@ -252,7 +248,7 @@ impl DataBase {
     }
 }
 
-pub fn special_param(db: &DataBase, name: &str) -> Option<String> {
+fn special_param(db: &DataBase, name: &str) -> Option<String> {
     let val = match name {
         "-" => db.flags.clone(),
         "?" => db.exit_status.to_string(),
@@ -267,7 +263,7 @@ pub fn special_param(db: &DataBase, name: &str) -> Option<String> {
     Some(val)
 }
 
-pub fn connected_position_params(db: &mut DataBase, aster: bool) -> Result<String, ExecError> {
+fn connected_position_params(db: &mut DataBase, aster: bool) -> Result<String, ExecError> {
     let mut joint = " ".to_string();
     if aster {
         joint = db.get_ifs_head();
@@ -279,7 +275,7 @@ pub fn connected_position_params(db: &mut DataBase, aster: bool) -> Result<Strin
     }
 }
 
-pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
+fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
     let layer = db.position_parameters.len();
     match db.position_parameters[layer - 1].len() > pos {
         true => Ok(db.position_parameters[layer - 1][pos].to_string()),

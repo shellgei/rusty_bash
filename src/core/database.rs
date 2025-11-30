@@ -124,12 +124,7 @@ impl DataBase {
         for layer in (0..num).rev() {
             self.remove_entry(layer, name)?;
         }
-        /*
-        for layer in &mut self.params {
-            layer.remove(name);
-        }
-        */
-        return Ok(());
+        Ok(())
     }
 
     pub fn unset_function(&mut self, name: &str) {
