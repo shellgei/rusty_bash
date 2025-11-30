@@ -74,4 +74,27 @@ impl DataBase {
         }
         Ok(())
     }
+
+    pub fn unset_function(&mut self, name: &str) {
+        self.functions.remove(name);
+    }
+
+    pub fn unset(&mut self, name: &str, called_layer: Option<usize>) -> Result<(), ExecError> {
+        self.unset_var(name, called_layer)?;
+        self.unset_function(name);
+        Ok(())
+    }
+
+    pub fn unset_array_elem(&mut self, name: &str, key: &str) -> Result<(), ExecError> {
+        if self.is_single(name) && (key == "0" || key == "@" || key == "*") {
+            return self.unset_var(name, None);
+        }
+
+        for layer in &mut self.params {
+            if let Some(d) = layer.get_mut(name) {
+                d.remove_elem(key)?;
+            }
+        }
+        Ok(())
+    }
 }
