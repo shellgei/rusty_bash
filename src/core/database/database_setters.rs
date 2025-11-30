@@ -281,17 +281,6 @@ impl DataBase {
         }
     }
 
-    pub fn unset_flag(&mut self, name: &str, flag: char, layer: usize) {
-        if let Ok(Some(nameref)) = self.get_nameref(name) {
-            return self.unset_flag(&nameref, flag, layer);
-        }
-
-        let rf = &mut self.params[layer];
-        if let Some(d) = rf.get_mut(name) {
-            d.unset_flag(flag);
-        }
-    }
-
     pub fn layer_to_env(&mut self, layer: usize) {
         for (k, v) in &mut self.params[layer] {
             env::set_var(k, v.get_as_single().unwrap_or("".to_string()));

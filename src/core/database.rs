@@ -3,9 +3,10 @@
 
 //The methods of DataBase are distributed in database/database_*.rs files.
 pub mod data;
-mod database_checker;
-mod database_getter;
-mod database_setter;
+mod database_checkers;
+mod database_getters;
+mod database_setters;
+mod database_unsetters;
 mod database_initializer;
 
 use self::data::array::ArrayData;
@@ -18,7 +19,6 @@ use self::data::single_int::IntData;
 use self::data::Data;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::error::exec::ExecError;
-use crate::env;
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
@@ -68,63 +68,6 @@ impl DataBase {
         if let Some(d) = self.params[layer].get_mut(name) {
             d.clear();
         }
-    }
-
-    pub fn unset_nameref(&mut self, name: &str,
-                         called_layer: Option<usize>) -> Result<(), ExecError> {
-        if let Some(layer) = called_layer {
-            if let Some(d) = self.params[layer].get_mut(name) {
-                if d.has_flag('n') {
-                    self.remove_entry(layer, name)?;
-                }
-            }
-            return Ok(());
-        }
-
-        let num = self.params.len();
-        for layer in 0..num {
-            if let Some(d) = self.params[layer].get_mut(name) {
-                if d.has_flag('n') {
-                    self.remove_entry(layer, name)?;
-                }
-            }
-        }
-        Ok(())
-    }
-
-    pub fn unset_var(&mut self, name: &str,
-                     called_layer: Option<usize>) -> Result<(), ExecError> {
-        if let Ok(Some(nameref)) = self.get_nameref(name) {
-            if nameref != "" {
-                 return self.unset_var(&nameref, called_layer);
-            }
-            return Ok(());
-        }
-
-        if let Some(layer) = called_layer {
-            if layer == 0 {
-                return Ok(());
-            }
-            self.remove_entry(layer, name)?;
-            //self.params[layer].remove(name);
-
-            env::set_var(name, "");
-            for layer in self.params.iter_mut() {
-                if let Some(val) = layer.get_mut(name) {
-                    *val = Box::new( Uninit::new("") );
-                }
-            }
-
-            return Ok(());
-        }
-
-        env::remove_var(name);
-
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            self.remove_entry(layer, name)?;
-        }
-        Ok(())
     }
 
     pub fn unset_function(&mut self, name: &str) {
