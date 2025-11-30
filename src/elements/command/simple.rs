@@ -199,7 +199,7 @@ impl SimpleCommand {
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let layer = core.db.get_layer_num() - 1;
-        core.db.layer_to_env(layer);
+        core.db.set_layer_to_env(layer);
         Ok(())
     }
 
