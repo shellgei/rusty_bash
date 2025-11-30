@@ -149,7 +149,7 @@ impl Terminal {
     fn set_custom_compreply(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
-        let word_num = core.db.len("COMP_WORDS") as i32;
+        let word_num = core.db.get_var_len("COMP_WORDS") as i32;
 
         if prev_pos < 0 || prev_pos >= word_num {
             return Err(ExecError::Other("pos error".to_string()));
@@ -172,7 +172,7 @@ impl Terminal {
             Self::exec_action(cur_pos, core)?;
         }
 
-        match core.db.len("COMPREPLY") {
+        match core.db.get_var_len("COMPREPLY") {
             0 => Err(ExecError::Other("no completion cand".to_string())),
             _ => Ok(()),
         }
@@ -252,7 +252,7 @@ impl Terminal {
         }
 
         if pos == "0" {
-            return if core.db.len("COMP_WORDS") == 0 {
+            return if core.db.get_var_len("COMP_WORDS") == 0 {
                 self.escape_at_completion = false;
                 compgen::compgen_h(core, args)
                     .to_vec()

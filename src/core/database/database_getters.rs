@@ -98,7 +98,7 @@ impl DataBase {
         }
     }
 
-    pub fn len(&mut self, name: &str) -> usize {
+    pub fn get_var_len(&mut self, name: &str) -> usize {
         if let Some(d) = self.get_ref(name) {
             return d.len();
         }
@@ -156,7 +156,7 @@ impl DataBase {
         Ok(0)
     }
 
-    pub fn get_len(&mut self, name: &str) -> Result<usize, ExecError> {
+    pub fn get_braced_param_hash_length(&mut self, name: &str) -> Result<usize, ExecError> {
         Self::name_check(name)?;
 
         if name == "@" || name == "*" {

@@ -4,8 +4,16 @@
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
 use crate::utils;
+use crate::utils::restricted_shell;
 
 impl DataBase {
+    pub(super) fn check_on_write(&mut self, name: &str, values: &Option<Vec<String>>
+    ) -> Result<(), ExecError> {
+        Self::name_check(name)?;
+        restricted_shell::check(self, name, values)?;
+        Ok(())
+    }
+
     pub fn has_array_value(&mut self, name: &str, index: &str) -> bool {
         let num = self.params.len();
         for layer in (0..num).rev() {

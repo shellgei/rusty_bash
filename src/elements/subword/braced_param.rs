@@ -240,7 +240,7 @@ impl BracedParam {
 
         let value = core.db.get_param(&self.param.name).unwrap_or_default();
         self.text = match self.num {
-            true => core.db.get_len(&self.param.name)?.to_string(),
+            true => core.db.get_braced_param_hash_length(&self.param.name)?.to_string(),
             false => value.to_string(),
         };
 
@@ -294,7 +294,7 @@ impl BracedParam {
         }
 
         self.text = match self.num {
-            true => core.db.len(&self.param.name).to_string(),
+            true => core.db.get_var_len(&self.param.name).to_string(),
             false => core.db.get_vec(&self.param.name, true)?.join(ifs),
         };
 

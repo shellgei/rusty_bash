@@ -13,7 +13,7 @@ impl DataBase {
         val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        self.write_check(name, &Some(vec![val.to_string()]))?;
+        self.check_on_write(name, &Some(vec![val.to_string()]))?;
 
         if name == "BASH_ARGV0" {
             let n = layer.unwrap_or(self.get_layer_num() - 1);
@@ -77,7 +77,7 @@ impl DataBase {
     pub fn append_to_assoc_elem(&mut self, name: &str, key: &str,
         val: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        self.write_check(name, &Some(vec![val.to_string()]))?;
+        self.check_on_write(name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
         match self.params[layer].get_mut(name) {

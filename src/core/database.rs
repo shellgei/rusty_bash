@@ -18,7 +18,6 @@ use self::data::assoc_int::IntAssocData;
 use self::data::single::SingleData;
 use self::data::single_int::IntData;
 use self::data::Data;
-use crate::utils::restricted_shell;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
@@ -46,14 +45,6 @@ impl DataBase {
         data.initialize().unwrap();
         data
     }
-
-    fn write_check(&mut self, name: &str, values: &Option<Vec<String>>
-    ) -> Result<(), ExecError> {
-        Self::name_check(name)?;
-        restricted_shell::check(self, name, values)?;
-        Ok(())
-    }
-
 
     pub fn get_target_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
         match layer {

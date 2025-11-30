@@ -45,7 +45,7 @@ impl DataBase {
 
     pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        self.write_check(name, &Some(vec![]))?;
+        self.check_on_write(name, &Some(vec![]))?;
 
         let mut data = IntData::new();
 
@@ -67,7 +67,7 @@ impl DataBase {
         layer: Option<usize>,
         i_flag: bool,
     ) -> Result<(), ExecError> {
-        self.write_check(name, &v)?;
+        self.check_on_write(name, &v)?;
 
         let layer = self.get_target_layer(name, layer);
         if i_flag {
@@ -98,7 +98,7 @@ impl DataBase {
         set_array: bool,
         i_flag: bool,
     ) -> Result<(), ExecError> {
-        self.write_check(name, &None)?;
+        self.check_on_write(name, &None)?;
 
         let obj = if i_flag {
             Box::new(IntAssocData::new()) as Box::<dyn Data>

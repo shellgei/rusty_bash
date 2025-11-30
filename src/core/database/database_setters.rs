@@ -15,7 +15,7 @@ impl DataBase {
         val: &str,
         layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        self.write_check(name, &Some(vec![val.to_string()]))?;
+        self.check_on_write(name, &Some(vec![val.to_string()]))?;
 
         if let Some(nameref) = self.get_nameref(name)? {
             return self.set_param(&nameref, val, layer);
@@ -79,7 +79,7 @@ impl DataBase {
     pub fn set_array_elem(&mut self, name: &str, val: &str,
         pos: isize, layer: Option<usize>, append: bool,
     ) -> Result<(), ExecError> {
-        self.write_check(name, &Some(vec![val.to_string()]))?;
+        self.check_on_write(name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
         let i_flag = self.has_flag(name, 'i');
@@ -92,7 +92,7 @@ impl DataBase {
     pub fn set_assoc_elem(&mut self, name: &str, key: &str,
         val: &str, layer: Option<usize>,
     ) -> Result<(), ExecError> {
-        self.write_check(name, &Some(vec![val.to_string()]))?;
+        self.check_on_write(name, &Some(vec![val.to_string()]))?;
 
         let layer = self.get_target_layer(name, layer);
         match self.params[layer].get_mut(name) {
