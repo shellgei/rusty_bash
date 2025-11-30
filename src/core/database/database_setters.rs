@@ -4,9 +4,7 @@
 mod database_setter_backend;
 
 use std::env;
-use super::{
-    ArrayData, AssocData, Data, IntArrayData, IntAssocData, IntData, SingleData, Uninit,
-};
+use super::{ArrayData, Data, IntData, SingleData, Uninit};
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
 
@@ -106,58 +104,6 @@ impl DataBase {
             }
             _ => Err(ExecError::Other("TODO".to_string())),
         }
-    }
-
-    pub fn set_array(
-        &mut self,
-        name: &str,
-        v: Option<Vec<String>>,
-        layer: Option<usize>,
-        i_flag: bool,
-    ) -> Result<(), ExecError> {
-        self.write_check(name, &v)?;
-
-        let layer = self.get_target_layer(name, layer);
-        if i_flag {
-            let mut obj = IntArrayData::new();
-            if let Some(v) = v {
-                for (i, e) in v.into_iter().enumerate() {
-                    obj.set_as_array(name, &i.to_string(), &e)?;
-                }
-            }
-            return self.set_entry(layer, name, Box::new(obj));
-        }
-
-        if v.is_none() {
-            return self.set_entry(layer, name, Box::new(Uninit::new("a")));
-        }
-
-        let mut obj = ArrayData::new();
-        for (i, e) in v.unwrap().into_iter().enumerate() {
-            obj.set_as_array(name, &i.to_string(), &e)?;
-        }
-        self.set_entry(layer, name, Box::new(obj))
-    }
-
-    pub fn set_assoc(
-        &mut self,
-        name: &str,
-        layer: Option<usize>,
-        set_array: bool,
-        i_flag: bool,
-    ) -> Result<(), ExecError> {
-        self.write_check(name, &None)?;
-
-        let obj = if i_flag {
-            Box::new(IntAssocData::new()) as Box::<dyn Data>
-        } else if set_array {
-            Box::new(AssocData::new()) as Box::<dyn Data>
-        } else {
-            Box::new(Uninit::new("A")) as Box::<dyn Data>
-        };
-
-        let layer = self.get_target_layer(name, layer);
-        self.set_entry(layer, name, obj)
     }
 
     pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {

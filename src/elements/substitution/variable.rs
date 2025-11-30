@@ -109,11 +109,11 @@ impl Variable {
                 true  => None,
                 false => Some(prev),
             };
-            return core.db.set_array(&self.name, data, layer, i_opt);
+            return core.db.init_array(&self.name, data, layer, i_opt);
             //TODO: ^ Maybe, there is a case where an assoc must be
             //prepared.
         } else if arg::consume_arg("-A", args) {
-            core.db.set_assoc(&self.name, layer, false, i_opt)?;
+            core.db.init_assoc(&self.name, layer, false, i_opt)?;
             if !prev.is_empty() {
                 core.db.set_assoc_elem(&self.name, "0", &prev[0], layer)?;
             }

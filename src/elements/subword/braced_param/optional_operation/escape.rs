@@ -14,7 +14,7 @@ impl OptionalOperation for Escape {
         self.replace_single_data(text)
     }
 
-    fn set_array(
+    fn init_array(
         &mut self,
         param: &Variable,
         array: &mut Vec<String>,

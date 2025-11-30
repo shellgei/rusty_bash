@@ -82,10 +82,10 @@ impl Substitution {
         let name = &self.left_hand.name;
         if a.is_empty() && !self.append {
             if core.db.is_assoc(name) {
-                core.db.set_assoc(name, Some(layer), true, false)?;
+                core.db.init_assoc(name, Some(layer), true, false)?;
             } else {
                 core.db
-                    .set_array(name, Some(vec![]), Some(layer), false)?;
+                    .init_array(name, Some(vec![]), Some(layer), false)?;
             }
             return Ok(());
         } else if !self.append {
@@ -136,7 +136,7 @@ impl Substitution {
         Err(ExecError::Other(msg))
     }
 
-    fn set_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+    fn init_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         let rhs_is_array = match self.right_hand.as_mut() {
             Some(r) => r.evaluated_array.is_some(),
             None => false,
@@ -174,7 +174,7 @@ impl Substitution {
         && self.left_hand.index.is_none() {
             self.set_single(core, layer)
         } else {
-            self.set_array(core, layer)
+            self.init_array(core, layer)
         }
     }
 

@@ -84,7 +84,7 @@ fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &[String]
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
-        let _ = core.db.set_array("COMPREPLY", Some(vec![]), None, false);
+        let _ = core.db.init_array("COMPREPLY", Some(vec![]), None, false);
         self.set_completion_info(core)?;
 
         if self.set_custom_compreply(core).is_err() && self.set_default_compreply(core).is_err() {
@@ -210,7 +210,7 @@ impl Terminal {
             .iter()
             .map(|p| p.replacen(&tilde_path, &tilde_prefix, 1))
             .collect();
-        core.db.set_array("COMPREPLY", Some(tmp), None, false)
+        core.db.init_array("COMPREPLY", Some(tmp), None, false)
     }
 
     fn make_default_compreply(
@@ -426,7 +426,7 @@ impl Terminal {
 
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
-        let _ = core.db.set_array("COMP_WORDS", Some(words_all), None, false);
+        let _ = core.db.init_array("COMP_WORDS", Some(words_all), None, false);
 
         let mut num = words_left.len();
         match left_string.chars().last() {

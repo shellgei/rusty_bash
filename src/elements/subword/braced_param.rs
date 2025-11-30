@@ -165,7 +165,7 @@ impl BracedParam {
     fn array_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut arr = vec![];
         let op = self.optional_operation.as_mut().unwrap();
-        op.set_array(&self.param, &mut arr, &mut self.text, core)?;
+        op.init_array(&self.param, &mut arr, &mut self.text, core)?;
         self.array = Some(arr);
         if self.param.index.is_some()
             && self.param.index.as_ref().unwrap().text == "[*]"

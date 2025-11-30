@@ -54,7 +54,7 @@ pub fn wait_pipeline(
         show_time(core);
     }
     set_foreground(core);
-    let _ = core.db.set_array(
+    let _ = core.db.init_array(
         "PIPESTATUS",
         Some(pipestatus.iter().map(|e| e.to_string()).collect()),
         None,
