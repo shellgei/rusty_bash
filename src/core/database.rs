@@ -7,7 +7,7 @@ mod database_checkers;
 mod database_getters;
 mod database_setters;
 mod database_unsetters;
-mod database_initializer;
+mod database_initializers;
 
 use self::data::array::ArrayData;
 use self::data::array_int::IntArrayData;
@@ -41,7 +41,7 @@ impl DataBase {
             ..Default::default()
         };
 
-        database_initializer::initialize(&mut data).unwrap();
+        data.initialize().unwrap();
         data
     }
 

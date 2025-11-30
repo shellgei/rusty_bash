@@ -12,28 +12,11 @@ use crate::error::exec::ExecError;
 use crate::utils::restricted_shell;
 
 impl DataBase {
-    fn write_check(&mut self, name: &str, values: &Option<Vec<String>>
+    pub fn write_check(&mut self, name: &str, values: &Option<Vec<String>>
     ) -> Result<(), ExecError> {
         Self::name_check(name)?;
         restricted_shell::check(self, name, values)?;
         Ok(())
-    }
-
-    pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>,
-    ) -> Result<(), ExecError> {
-        self.write_check(name, &Some(vec![]))?;
-
-        let mut data = IntData::new();
-
-        if !value.is_empty() {
-            match value.parse::<isize>() {
-                Ok(n) => data.body = n,
-                Err(e) => return Err(ExecError::Other(e.to_string())),
-            }
-        }
-
-        let layer = self.get_target_layer(name, layer);
-        self.set_entry(layer, name, Box::new(data))
     }
 
     pub fn set_param(
