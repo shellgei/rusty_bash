@@ -83,7 +83,7 @@ impl DataBase {
         }
 
         if layer == 0 && env::var(name).is_ok() {
-            env::set_var(name, val.to_string());
+            unsafe{env::set_var(name, val.to_string())};
         }
         Ok(())
     }
