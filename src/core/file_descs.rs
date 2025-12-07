@@ -47,12 +47,12 @@ impl FileDescriptors {
     }
 
     pub fn close(&mut self, fd: RawFd, err_str: &str) {
-        if fd >= 0 {
+        if fd >= 3 {
             if self.fds[fd as usize].is_some() {
                 self.fds[fd as usize] = None;
-            }else{
-                unistd::close(fd).expect(err_str);
             }
+        }else if fd >= 0 {
+            unistd::close(fd).expect(err_str);
         }
     }
 
