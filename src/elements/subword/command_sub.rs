@@ -9,9 +9,8 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{proc_ctrl, Feeder, ShellCore};
 use nix::unistd;
-use std::fs::File;
 use std::io::{BufRead, BufReader, Error};
-use std::os::fd::{FromRawFd, RawFd};
+use std::os::fd::RawFd;
 use std::sync::atomic::Ordering::Relaxed;
 use std::{thread, time};
 
@@ -63,7 +62,8 @@ impl CommandSubstitution {
     }
 
     fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> Result<(), ExecError> {
-        let f = unsafe { File::from_raw_fd(fd) };
+        //let f = unsafe { File::from_raw_fd(fd) };
+        let f = core.fds.get_file(fd);
         let reader = BufReader::new(f);
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {

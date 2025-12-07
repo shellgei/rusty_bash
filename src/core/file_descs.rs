@@ -8,6 +8,7 @@ use std::os::fd::{OwnedFd, FromRawFd, RawFd};
 use nix::unistd;
 use std::os::fd::AsRawFd;
 use nix::errno::Errno;
+use std::fs::File;
 
 #[derive(Default, Debug)]
 pub struct FileDescriptors {
@@ -105,5 +106,11 @@ impl FileDescriptors {
             Err(Errno::EBADF) => Err(ExecError::BadFd(to)),
             Err(_) => Err(ExecError::Other("dup2 Unknown error".to_string())),
         }
+    }
+
+    pub fn get_file(&mut self, fd: RawFd) -> File {
+        let f = self.fds[fd as usize].as_mut().unwrap().try_clone().unwrap();
+        self.fds[fd as usize] = None;
+        File::from(f)
     }
 }
