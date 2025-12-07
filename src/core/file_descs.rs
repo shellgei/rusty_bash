@@ -55,8 +55,7 @@ impl FileDescriptors {
         }
 
         if fd >= 0 {
-            if let Ok(_) = unistd::close(fd) {
-            }
+            let _ = unistd::close(fd);
         }
     }
 
