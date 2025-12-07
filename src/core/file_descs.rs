@@ -72,7 +72,9 @@ impl FileDescriptors {
         if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
             return from;
         }
-        self.dupfd_cloexec(from, 10).expect("Can't allocate fd for backup")
+        let fd = fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(10)).unwrap();
+        self.fds[fd as usize] = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+        fd
     }
 
     pub fn replace(&mut self, from: RawFd, to: RawFd) -> bool {
