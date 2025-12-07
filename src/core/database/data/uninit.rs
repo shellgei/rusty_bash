@@ -16,7 +16,7 @@ impl Data for Uninit {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn get_print_string(&self) -> String {
+    fn get_print_string_fix(&self) -> String {
         "".to_string()
     }
 

@@ -19,7 +19,11 @@ impl Data for IntAssocData {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&self) -> String {
+    fn get_print_string(&mut self) -> String {
+        self.get_print_string_fix()
+    }
+
+    fn get_print_string_fix(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
@@ -29,22 +33,7 @@ impl Data for IntAssocData {
                 ansi = format!("\"{}\"", &ansi);
             }
 
-            /*
-            let mut k = k.clone();
-            if k.contains(" ") {
-                k = "\"".to_owned() + &k + "\"";
-            }*/
             let k = utils::to_ansi_c(&k);
-            /*
-            if k.contains('\'')
-            || k.contains('$')
-            || k.contains(' ')
-            || k.contains('`') {
-                if ! k.starts_with("$'") && ! k.ends_with("'") {
-                    k = format!("\"{}\"", &k);
-                }
-            }*/
-
             formatted += &format!("[{}]={} ", k, &ansi);
         }
 

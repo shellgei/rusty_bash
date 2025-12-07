@@ -24,7 +24,12 @@ impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn get_print_string(&self) -> String {
+
+    fn get_print_string(&mut self) -> String {
+        self.get_print_string_fix()
+    }
+
+    fn get_print_string_fix(&self) -> String {
         let mut s = self.body.replace("'", "\\'");
         if s.contains('~') || s.starts_with('#') {
             s = "'".to_owned() + &s + "'";

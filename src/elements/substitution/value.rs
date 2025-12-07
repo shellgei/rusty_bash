@@ -29,7 +29,7 @@ pub struct Value {
 impl From<Box::<dyn Data>> for Value {
     fn from(d: Box::<dyn Data>) -> Self {
         Self {
-            text: (*d.get_print_string()).to_string(),
+            text: (*d.get_print_string_fix()).to_string(),
             value: ParsedDataType::Obj(d),
             ..Default::default()
         }

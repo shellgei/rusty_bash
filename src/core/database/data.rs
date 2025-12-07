@@ -36,7 +36,7 @@ fn case_change(flags: &str, text: &mut String) {
 
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(&self.get_print_string()).finish()
+        fmt.debug_struct(&self.get_print_string_fix()).finish()
     }
 }
 
@@ -48,13 +48,17 @@ impl Clone for Box<dyn Data> {
 
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
-    fn get_print_string(&self) -> String;
+    fn get_print_string_fix(&self) -> String;
+
+    fn get_print_string(&mut self) -> String {
+        self.get_as_single().unwrap()
+    }
 
     fn get_str_type(&self) -> Box<dyn Data> {
         self.boxed_clone()
     }
 
-    fn print_with_name(&self, name: &str, declare_print: bool) {
+    fn print_with_name(&mut self, name: &str, declare_print: bool) {
         if self.is_special() {
             println!("{name}");
             return;
