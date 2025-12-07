@@ -10,7 +10,6 @@ use rand_chacha::ChaCha20Rng;
 #[derive(Debug, Clone)]
 pub struct RandomVar {
     rng: ChaCha20Rng,
-    prev: String,
     flags: String, 
 }
 
@@ -20,17 +19,17 @@ impl Data for RandomVar {
     }
 
     fn get_print_string_fix(&self) -> String {
-        self.prev.clone()
+        "".to_string()
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         let rand = self.rng.next_u32() & 0x7FFF;
-        self.prev = rand.to_string();
-        Ok(self.prev.clone())
+        //self.prev = rand.to_string();
+        Ok(rand.to_string())
     }
 
     fn len(&mut self) -> usize {
-        self.prev.len()
+        self.get_as_single().unwrap().len()
     }
 
     fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
@@ -64,7 +63,6 @@ impl RandomVar {
     pub fn new() -> Self {
         Self {
             rng: ChaCha20Rng::seed_from_u64(0),
-            prev: "".to_string(),
             flags: "i".to_string(),
         }
     }

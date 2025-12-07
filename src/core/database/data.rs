@@ -59,16 +59,11 @@ pub trait Data {
     }
 
     fn print_with_name(&mut self, name: &str, declare_print: bool) {
-        if self.is_special() {
-            println!("{name}");
-            return;
-        }
-
         let body = self.get_print_string();
         if !self.is_initialized() {
             println!("{name}");
         } else if declare_print
-            && self.is_single()
+            && (self.is_single() || self.is_special() )
             && !body.starts_with("\"")
             && !body.ends_with("\"")
         {

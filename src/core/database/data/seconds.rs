@@ -75,7 +75,7 @@ impl Seconds {
         Self {
             origin: format!("{}.{}", time.as_secs(), time.subsec_nanos()),
             shift: 0,
-            flags: String::new(),
+            flags: "i".to_string(),
         }
     }
 }
