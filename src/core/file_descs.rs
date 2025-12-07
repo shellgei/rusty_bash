@@ -47,13 +47,16 @@ impl FileDescriptors {
         Err(ExecError::Other("cannot get process group".to_string()))
     }
 
-    pub fn close(&mut self, fd: RawFd, err_str: &str) {
+    pub fn close(&mut self, fd: RawFd, _: &str) {
         if fd >= 3 {
             if self.fds[fd as usize].is_some() {
                 self.fds[fd as usize] = None;
             }
-        }else if fd >= 0 {
-            unistd::close(fd).expect(err_str);
+        }
+
+        if fd >= 0 {
+            if let Ok(_) = unistd::close(fd) {
+            }
         }
     }
 
