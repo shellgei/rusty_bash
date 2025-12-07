@@ -12,7 +12,7 @@ use std::os::unix::prelude::RawFd;
 #[derive(Debug, Clone)]
 pub struct Pipe {
     pub text: String,
-    pub recv: RawFd,
+    pub recv: Option<RawFd>,
     pub send: RawFd,
     pub prev: RawFd,
     pub pgid: Pid,
@@ -26,7 +26,7 @@ impl Pipe {
     pub fn new(text: String) -> Pipe {
         Pipe {
             text: text.clone(),
-            recv: -1,
+            recv: None,
             send: -1,
             prev: -1,
             pgid: Pid::from_raw(0),
@@ -37,10 +37,12 @@ impl Pipe {
         }
     }
 
-    pub fn end(prev: RawFd, pgid: Pid, lastpipe: bool) -> Pipe {
+    pub fn end(prev: Option<RawFd>, pgid: Pid, lastpipe: bool) -> Pipe {
         let mut p = Pipe::new(String::new());
         p.lastpipe = lastpipe;
-        p.prev = prev;
+        if prev.is_some() {
+            p.prev = prev.unwrap();
+        }
         p.pgid = pgid;
         p
     }
@@ -68,12 +70,14 @@ impl Pipe {
         }
     }
 
-    pub fn set(&mut self, prev: RawFd, pgid: Pid) {
+    pub fn set(&mut self, prev: Option<RawFd>, pgid: Pid) {
         if self.text != ">()" {
             let (recv, send) = unistd::pipe().expect("Cannot open pipe");
-            self.recv = recv.into_raw_fd();
+            self.recv = Some(recv.into_raw_fd());
             self.send = send.into_raw_fd();
-            self.prev = prev;
+            if prev.is_some() {
+                self.prev = prev.unwrap();
+            }
         }
 
         if self.text == ">()" {
@@ -102,14 +106,14 @@ impl Pipe {
     }
 
     pub fn parent_close(&mut self) {
-        io::close(self.send, "Cannot close parent pipe out");
-        io::close(self.prev, "Cannot close parent prev pipe out");
+        io::close(Some(self.send), "Cannot close parent pipe out");
+        io::close(Some(self.prev), "Cannot close parent prev pipe out");
     }
 
     pub fn is_connected(&self) -> bool {
         if self.lastpipe {
             return false;
         }
-        self.recv != -1 || self.send != -1 || self.prev != -1
+        self.recv.is_some() || self.send != -1 || self.prev != -1
     }
 }

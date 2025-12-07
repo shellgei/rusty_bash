@@ -12,9 +12,11 @@ use nix::errno::Errno;
 use nix::{fcntl, unistd};
 use std::os::unix::prelude::RawFd;
 
-pub fn close(fd: RawFd, err_str: &str) {
-    if fd >= 0 {
-        unistd::close(fd).expect(err_str);
+pub fn close(fd: Option<RawFd>, err_str: &str) {
+    if fd.is_some() {
+        if fd.unwrap() >= 0 {
+            unistd::close(fd.unwrap()).expect(err_str);
+        }
     }
 }
 
@@ -25,7 +27,7 @@ pub fn replace(from: RawFd, to: RawFd) -> bool {
 
     match unistd::dup2(from, to) {
         Ok(_) => {
-            close(from, &format!("sush(fatal): {from}: cannot be closed"));
+            close(Some(from), &format!("sush(fatal): {from}: cannot be closed"));
             true
         }
         Err(Errno::EBADF) => {

@@ -33,7 +33,7 @@ impl Pipeline {
             return (vec![], self.exclamation, self.time, None);
         }
 
-        let mut prev = -1;
+        let mut prev = None;
         let mut pids = vec![];
         let mut pgid = pgid;
 
