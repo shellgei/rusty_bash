@@ -67,19 +67,11 @@ impl Pipe {
 
     pub fn set(&mut self, prev: RawFd, pgid: Pid, core: &mut ShellCore) {
         if self.text != ">()" {
-    //        let (recv, send) = unistd::pipe().expect("Cannot open pipe");
-           // self.recv = recv.into_raw_fd();
-           // self.send = send.into_raw_fd();
             (self.recv, self.send) = core.fds.pipe();
             self.prev = prev;
         }
 
         if self.text == ">()" {
-            /*
-            let (recv, send) = unistd::pipe().expect("Cannot open pipe");
-            self.proc_sub_recv = recv.into_raw_fd();
-            self.proc_sub_send = send.into_raw_fd();
-            */
             (self.proc_sub_recv, self.proc_sub_send) = core.fds.pipe();
             self.prev = self.proc_sub_recv;
         }

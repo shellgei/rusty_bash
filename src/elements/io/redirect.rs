@@ -192,9 +192,7 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (r, s) = unistd::pipe().expect("Cannot open pipe");
-        let recv = r.into_raw_fd();
-        let send = s.into_raw_fd();
+        let (recv, send) = core.fds.pipe();
 
         if restore {
             self.left_backup = core.fds.backup(0);
@@ -231,9 +229,7 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (r, s) = unistd::pipe().expect("Cannot open pipe");
-        let recv = r.into_raw_fd();
-        let send = s.into_raw_fd();
+        let (recv, send) = core.fds.pipe();
 
         if restore {
             self.left_backup = core.fds.backup(0);
