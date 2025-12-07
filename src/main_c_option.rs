@@ -25,7 +25,7 @@ pub fn set_parameters(c_parts: &[String], core: &mut ShellCore, command: &str) {
 }
 
 pub fn run_and_exit(args: &[String], c_parts: &[String], core: &mut ShellCore) {
-    core.configure_c_mode();
+    let _ = core.configure_c_mode();
 
     if c_parts.is_empty() {
         println!("{}: -c: option requires an argument", &args[0]);
