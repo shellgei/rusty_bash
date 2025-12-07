@@ -24,7 +24,7 @@ impl DataBase {
             && (self.flags.contains('a') || self.has_flag(name, 'x'))
             && env::var(name).is_err()
         {
-            env::set_var(name, "");
+            unsafe{env::set_var(name, "")};
         }
 
         let layer = self.get_target_layer(name, layer);
@@ -42,7 +42,7 @@ impl DataBase {
 
         if env::var(name).is_ok() {
             let v = d.get_as_single()?;
-            env::set_var(name, v);
+            unsafe{env::set_var(name, v)};
         }
 
         Ok(())

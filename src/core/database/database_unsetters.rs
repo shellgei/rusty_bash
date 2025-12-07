@@ -56,7 +56,7 @@ impl DataBase {
             self.remove_entry(layer, name)?;
             //self.params[layer].remove(name);
 
-            env::set_var(name, "");
+            unsafe{env::set_var(name, "")};
             for layer in self.params.iter_mut() {
                 if let Some(val) = layer.get_mut(name) {
                     *val = Box::new( Uninit::new("") );
@@ -66,7 +66,7 @@ impl DataBase {
             return Ok(());
         }
 
-        env::remove_var(name);
+        unsafe{env::remove_var(name)};
 
         let num = self.params.len();
         for layer in (0..num).rev() {

@@ -141,8 +141,8 @@ impl ConditionalExpr {
                     stack.push(e.clone());
                     Ok(())
                 }
-                CondElem::UnaryOp(ref op) => Self::unary_operation(op, &mut stack, core),
-                CondElem::BinaryOp(ref op) => {
+                CondElem::UnaryOp(op) => Self::unary_operation(op, &mut stack, core),
+                CondElem::BinaryOp(op) => {
                     if stack.is_empty() {
                         return Ok(vec![CondElem::Ans(true)]); //for [[ -ot ]] [[ == ]] [[ = ]] ...
                     }

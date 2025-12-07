@@ -273,7 +273,7 @@ impl Word {
                     return false;
                 }
             }
-            Some(WordMode::ParamOption(ref v)) => {
+            Some(WordMode::ParamOption(v)) => {
                 if feeder.starts_withs(v) {
                     return false;
                 }
@@ -294,7 +294,7 @@ impl Word {
                     return false;
                 }
             }
-            Some(WordMode::ParamOption(ref v)) => {
+            Some(WordMode::ParamOption(v)) => {
                 if feeder.starts_withs(v) {
                     return false;
                 }

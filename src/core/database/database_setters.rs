@@ -27,7 +27,7 @@ impl DataBase {
         }
 
         if !self.flags.contains('r') && (self.flags.contains('a') || self.has_flag(name, 'x')) {
-            env::set_var(name, "");
+            unsafe{env::set_var(name, "")};
         }
 
         let layer = self.get_target_layer(name, layer);
@@ -45,7 +45,7 @@ impl DataBase {
 
         if env::var(name).is_ok() {
             let v = d.get_as_single()?;
-            env::set_var(name, &v);
+            unsafe{env::set_var(name, &v)};
         }
         Ok(())
     }
@@ -125,7 +125,7 @@ impl DataBase {
 
     pub fn set_layer_to_env(&mut self, layer: usize) {
         for (k, v) in &mut self.params[layer] {
-            env::set_var(k, v.get_as_single().unwrap_or("".to_string()));
+            unsafe{env::set_var(k, v.get_as_single().unwrap_or("".to_string()))};
         }
     }
 }

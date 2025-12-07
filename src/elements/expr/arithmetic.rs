@@ -191,11 +191,11 @@ impl ArithmeticExpr {
         .to_string();
 
         match (&ans.last(), &self.elements.get(pos + 1)) {
-            (Some(&ArithElem::Variable(_, _, _)), Some(&ArithElem::Word(_, _))) => {
+            (&Some(&ArithElem::Variable(_, _, _)), &Some(&ArithElem::Word(_, _))) => {
                 ans.push(ArithElem::BinaryOp(pm.clone()))
             }
-            (_, None) | (_, Some(&ArithElem::Variable(_, _, _))) => return inc,
-            (Some(&ArithElem::Integer(_)), _) | (Some(&ArithElem::Float(_)), _) => {
+            (_, &None) | (_, &Some(&ArithElem::Variable(_, _, _))) => return inc,
+            (&Some(&ArithElem::Integer(_)), _) | (&Some(&ArithElem::Float(_)), _) => {
                 ans.push(ArithElem::BinaryOp(pm.clone()))
             }
             _ => ans.push(ArithElem::UnaryOp(pm.clone())),

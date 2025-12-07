@@ -312,7 +312,7 @@ pub fn export(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) 
             return 1;
         }
         match core.db.get_param(&sub.left_hand.name) {
-            Ok(v) => env::set_var(&sub.left_hand.name, v),
+            Ok(v) => unsafe{env::set_var(&sub.left_hand.name, v)},
             Err(e) => {
                 e.print(core);
                 return 1;
