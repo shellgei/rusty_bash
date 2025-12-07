@@ -115,8 +115,6 @@ impl CommandSubstitution {
 
         ans.text += &feeder.consume(1);
         let mut paren = ans.text.clone();
-  //      paren.remove(0);
-   //     paren.insert(0, '(');
         paren.pop();
         paren.push(')');
 

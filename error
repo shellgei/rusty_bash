@@ -109,3 +109,4 @@
 ./test_fixed.bash
 ./test_fixed.bash
 ./test_redirects.bash
+./test_others.bash
