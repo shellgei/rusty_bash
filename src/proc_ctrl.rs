@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::io;
 use crate::error::exec::ExecError;
 use crate::utils::c_string;
 use crate::{error, exit, signal, Feeder, Script, ShellCore};
@@ -208,7 +207,7 @@ fn run_command_not_found(arg: &str, core: &mut ShellCore) -> ! {
 
 fn close_proc_sub(core: &mut ShellCore) {
     while let Some(fd) = core.proc_sub_fd.pop() {
-        io::close(fd, "");
+        core.fds.close(fd, "");
     }
 
     while let Some(pid) = core.proc_sub_pid.pop() {

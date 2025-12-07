@@ -145,7 +145,7 @@ impl SimpleCommand {
             }
             Ok(None)
         } else {
-            pipe.connect_lastpipe();
+            pipe.connect_lastpipe(core);
             if let Err(e) = self.nofork_exec(core) {
                 e.print(core);
                 core.db.exit_status = 1;

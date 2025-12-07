@@ -33,17 +33,17 @@ impl Subword for ProcessSubstitution {
         }
 
         let mut pipe = Pipe::new("|".to_string());
-        pipe.set(-1, unistd::getpgrp());
+        pipe.set(-1, unistd::getpgrp(), core);
         let pid = self.command.exec(core, &mut pipe)?.unwrap();
         core.proc_sub_pid.push(pid);
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
         Ok(())
     }
 
-    fn set_pipe(&mut self) {
+    fn set_pipe(&mut self, core: &mut ShellCore) {
         if self.direction == '>' {
             self.pipe = Some(Pipe::new(">()".to_string()));
-            self.pipe.as_mut().unwrap().set(-1, unistd::getpgrp());
+            self.pipe.as_mut().unwrap().set(-1, unistd::getpgrp(), core);
         }
     }
 

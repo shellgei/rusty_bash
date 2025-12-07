@@ -40,7 +40,7 @@ impl Pipeline {
         self.set_time(core);
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
-            p.set(prev, pgid);
+            p.set(prev, pgid, core);
 
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
@@ -58,7 +58,7 @@ impl Pipeline {
         let mut lastp = Pipe::end(prev, pgid, lastpipe);
         let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
         if lastpipe {
-            lastp.restore_lastpipe();
+            lastp.restore_lastpipe(core);
         }
 
         match result {
