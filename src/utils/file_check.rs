@@ -110,6 +110,6 @@ pub fn is_tty(name: &str) -> bool {
         Ok(n) => n,
         _ => return false,
     };
-    unsafe{isatty(fd) == 0}
+    unsafe{isatty(fd) == 1}
     //unistd::isatty(RawFd::from(fd)) == Ok(true)
 }
