@@ -372,7 +372,7 @@ impl ConditionalExpr {
             "-f" => file_check::is_regular_file(s),
             "-h" | "-L" => file_check::is_symlink(s),
             "-r" => file_check::is_readable(s),
-            "-t" => file_check::is_tty(s),
+            "-t" => file_check::is_tty_str(s),
             "-w" => file_check::is_writable(s),
             "-x" => file_check::is_executable(s),
             "-b" | "-c" | "-g" | "-k" | "-p" | "-s" | "-u" | "-G" | "-N" | "-O" | "-S" => {
