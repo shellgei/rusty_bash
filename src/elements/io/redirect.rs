@@ -17,6 +17,7 @@ use std::io::Write;
 use std::os::fd::FromRawFd;
 use std::os::fd::{IntoRawFd, RawFd};
 use std::process;
+use std::os::fd::{AsFd, AsRawFd};
 
 #[derive(Debug, Clone, Default)]
 pub struct Redirect {
@@ -100,9 +101,11 @@ impl Redirect {
 
         match file_open_result {
             Ok(file) => {
-                let fd = file.into_raw_fd();
-                if let Err(e) = core.fds.replace(fd, self.left_fd) {
-                    core.fds.close(fd);
+                //let fd = file.into_raw_fd();
+                let fd = file.as_fd();
+                //if let Err(e) = core.fds.replace(fd, self.left_fd) {
+                if let Err(e) = core.fds.connect_file(fd, self.left_fd) {
+                    core.fds.close(fd.as_raw_fd());
                     self.left_fd = -1;
                     return Err(e);
                 }

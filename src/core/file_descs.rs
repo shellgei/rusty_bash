@@ -4,7 +4,7 @@
 use crate::error::exec::ExecError;
 use nix::fcntl;
 use nix::unistd::Pid;
-use std::os::fd::{OwnedFd, FromRawFd, RawFd};
+use std::os::fd::{BorrowedFd, OwnedFd, FromRawFd, RawFd};
 use nix::unistd;
 use std::os::fd::AsRawFd;
 use nix::errno::Errno;
@@ -79,6 +79,28 @@ impl FileDescriptors {
         self.dupfd_cloexec(from, 10).unwrap()
     }
 
+    pub fn connect_file(&mut self, from: BorrowedFd, to: RawFd) -> Result<(), ExecError> {
+        if /*from < 0 ||*/ to < 0 {
+            return Ok(());
+        }
+
+        if self.fds[to as usize].is_none() {
+            return Ok(());
+        }
+
+        /*
+        let f= if self.fds[from as usize].is_none() {
+            unsafe{OwnedFd::from_raw_fd(from)}
+        }else {
+            self.fds[from as usize].as_mut().unwrap().try_clone().unwrap()
+        };
+        self.fds[from as usize] = None;
+        */
+        unistd::dup2(from, &mut self.fds[to as usize].as_mut().unwrap())?;
+        //self.close(from.as_raw_fd());
+        Ok(())
+    }
+
     pub fn replace(&mut self, from: RawFd, to: RawFd) -> Result<(), ExecError> {
         if from < 0 || to < 0 {
             return Ok(());
@@ -113,7 +135,6 @@ impl FileDescriptors {
         self.fds[from as usize] = None;
 
         if let Err(e) = unistd::dup2(&f, &mut self.fds[to as usize].as_mut().unwrap()) {
-        //if let Err(e) = unistd::dup2(from, to) {
             return match e {
                 Errno::EBADF => Err(ExecError::BadFd(to)),
                 _ => Err(ExecError::Other("dup2 Unknown error".to_string())),
