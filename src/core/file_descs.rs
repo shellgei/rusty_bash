@@ -3,8 +3,10 @@
 
 extern crate libc;
 use libc::dup2;
+use libc::fcntl;
+use libc::{F_GETFD, F_DUPFD_CLOEXEC};
+
 use crate::error::exec::ExecError;
-use nix::fcntl;
 use nix::unistd::Pid;
 use std::os::fd::{OwnedFd, FromRawFd, RawFd};
 use nix::unistd;
@@ -34,7 +36,8 @@ impl FileDescriptors {
 
     pub(super) fn dupfd_cloexec(&mut self, from: RawFd,
                                 hereafter: RawFd) -> Result<RawFd, ExecError> {
-        let fd = fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(hereafter))?;
+        //let fd = fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(hereafter))?;
+        let fd = unsafe{fcntl(from, F_DUPFD_CLOEXEC, hereafter)};
         self.fds[fd as usize] = Some(unsafe { OwnedFd::from_raw_fd(fd) });
 
         Ok(fd)
@@ -74,7 +77,8 @@ impl FileDescriptors {
     }
 
     pub fn backup(&mut self, from: RawFd) -> RawFd {
-        if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
+        //if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
+        if unsafe{fcntl(from, F_GETFD)} == -1 {
             return from;
         }
         self.dupfd_cloexec(from, 10).unwrap()

@@ -9,8 +9,7 @@ edition = "2024"
 target_bash_version = "5.2.37" # Ubuntu 25.04
 
 [dependencies]
-nix = { version = "0.29.0", features = ["fs", "process", "signal", "term", "user", "time", "hostname", "resource"]}
-#nix = { version = "0.30.1", features = ["fs", "process", "signal", "term", "user", "time", "hostname", "resource"]}
+nix = { version = "0.30.1", features = ["fs", "process", "signal", "term", "user", "time", "hostname", "resource"]}
 termion = "4.0.5"
 unicode-width = "0.1.11"
 signal-hook = "0.3.17"
