@@ -1,13 +1,14 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+extern crate libc;
+use libc::dup2;
 use crate::error::exec::ExecError;
 use nix::fcntl;
 use nix::unistd::Pid;
 use std::os::fd::{OwnedFd, FromRawFd, RawFd};
 use nix::unistd;
 use std::os::fd::AsRawFd;
-use nix::errno::Errno;
 use std::fs::File;
 
 #[derive(Default, Debug)]
@@ -22,9 +23,11 @@ impl FileDescriptors {
             data.fds.push(None);
         }
 
+        /*
         data.fds[0] = Some(unsafe{OwnedFd::from_raw_fd(0)});
         data.fds[1] = Some(unsafe{OwnedFd::from_raw_fd(1)});
         data.fds[2] = Some(unsafe{OwnedFd::from_raw_fd(2)});
+        */
 
         data
     }
@@ -82,7 +85,11 @@ impl FileDescriptors {
             return Ok(());
         }
 
-        unistd::dup2(from, to)?;
+        if unsafe{dup2(from, to)} < 0 {
+            return Err(ExecError::Other("dup2 error".to_string()));
+        }
+
+        //unistd::dup2(from, to)?;
         self.close(from);
         Ok(())
     }
@@ -92,12 +99,16 @@ impl FileDescriptors {
             return Err(ExecError::Other("minus fd number".to_string()));
         }
 
+        if unsafe{dup2(from, to)} < 0 {
+            return Err(ExecError::Other("dup2 error".to_string()));
+        }
+        /*
         if let Err(e) = unistd::dup2(from, to) {
             return match e {
                 Errno::EBADF => Err(ExecError::BadFd(to)),
                 _ => Err(ExecError::Other("dup2 Unknown error".to_string())),
             };
-        }
+        }*/
 
         Ok(())
     }
