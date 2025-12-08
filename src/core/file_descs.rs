@@ -84,14 +84,16 @@ impl FileDescriptors {
             return Ok(());
         }
 
-        if self.fds[from as usize].is_none()
-        || self.fds[to as usize].is_none() {
+        if self.fds[to as usize].is_none() {
             return Ok(());
         }
 
-        let f = self.fds[from as usize].as_mut().unwrap().try_clone().unwrap();
+        let f= if self.fds[from as usize].is_none() {
+            unsafe{OwnedFd::from_raw_fd(from)}
+        }else {
+            self.fds[from as usize].as_mut().unwrap().try_clone().unwrap()
+        };
         self.fds[from as usize] = None;
-
         unistd::dup2(f, &mut self.fds[to as usize].as_mut().unwrap())?;
         self.close(from);
         Ok(())
