@@ -130,6 +130,7 @@ impl FileDescriptors {
         File::from(f)
     }
 
+    /*
     pub fn isatty(&mut self, fd: RawFd) -> Result<bool, ExecError> {
         if fd < 0 || fd >= 256 || self.fds[fd as usize].is_none() {
             return Err(ExecError::BadFd(fd));
@@ -137,5 +138,5 @@ impl FileDescriptors {
         let f = self.fds[fd as usize].as_mut().unwrap().try_clone().unwrap();
         let ans = unistd::isatty(&f)?;
         Ok(ans)
-    }
+    }*/
 }

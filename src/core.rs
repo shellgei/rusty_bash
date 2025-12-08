@@ -10,6 +10,7 @@ pub mod jobtable;
 pub mod options;
 mod file_descs;
 
+use crate::utils::file_check;
 use self::completion::{Completion, CompletionEntry};
 use self::database::DataBase;
 use self::options::Options;
@@ -97,7 +98,7 @@ impl ShellCore {
 
         let _ = self.db.set_param("PS4", "+ ", None);
 
-        if let Ok(true) = self.fds.isatty(0) && self.script_name == "-" {
+        if file_check::is_tty("0") && self.script_name == "-" {
             self.db.flags += "himH";
             let _ = self.db.set_param("PS1", "🍣 ", None);
             let _ = self.db.set_param("PS2", "> ", None);
@@ -142,7 +143,7 @@ impl ShellCore {
     }
 
     pub fn configure_c_mode(&mut self) -> Result<(), ExecError> {
-        if let Ok(true) = self.fds.isatty(0) {
+        if file_check::is_tty("0") {
             self.tty_fd = Some(self.fds.dupfd_cloexec(0, 255)?);
         }
 
