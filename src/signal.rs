@@ -21,10 +21,11 @@ pub fn restore(sig: Signal) {
 }
 
 pub fn run_signal_check(core: &mut ShellCore) {
+    /*
     for fd in 3..10 {
         //use FD 3~9 to prevent signal-hool from using these FDs
         nix::unistd::dup2(2, fd).expect("sush(fatal): init error");
-    }
+    }*/
 
     core.sigint.store(true, Relaxed);
     let sigint = Arc::clone(&core.sigint);
@@ -33,10 +34,11 @@ pub fn run_signal_check(core: &mut ShellCore) {
         let mut signals =
             Signals::new(vec![consts::SIGINT]).expect("sush(fatal): cannot prepare signal data");
 
+        /*
         for fd in 3..10 {
             // release FD 3~9
             nix::unistd::close(fd).expect("sush(fatal): init error");
-        }
+        }*/
         sigint.store(false, Relaxed);
 
         loop {

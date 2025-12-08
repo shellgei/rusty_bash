@@ -1,6 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+extern crate libc;
+use libc::isatty;
 use faccess;
 use faccess::PathExt;
 use nix::unistd;
@@ -108,5 +110,6 @@ pub fn is_tty(name: &str) -> bool {
         Ok(n) => n,
         _ => return false,
     };
-    unistd::isatty(fd) == Ok(true)
+    unsafe{isatty(fd) == 0}
+    //unistd::isatty(RawFd::from(fd)) == Ok(true)
 }

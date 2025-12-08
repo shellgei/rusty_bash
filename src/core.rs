@@ -20,7 +20,6 @@ use crate::{error, proc_ctrl, signal};
 use nix::sys::signal::Signal;
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::unistd::Pid;
-use nix::unistd;
 use std::collections::HashMap;
 use std::os::fd::RawFd;
 //use std::os::fd::{FromRawFd, OwnedFd};
@@ -98,7 +97,7 @@ impl ShellCore {
 
         let _ = self.db.set_param("PS4", "+ ", None);
 
-        if unistd::isatty(0) == Ok(true) && self.script_name == "-" {
+        if let Ok(true) = self.fds.isatty(0) && self.script_name == "-" {
             self.db.flags += "himH";
             let _ = self.db.set_param("PS1", "🍣 ", None);
             let _ = self.db.set_param("PS2", "> ", None);
@@ -143,7 +142,7 @@ impl ShellCore {
     }
 
     pub fn configure_c_mode(&mut self) -> Result<(), ExecError> {
-        if unistd::isatty(0) == Ok(true) {
+        if let Ok(true) = self.fds.isatty(0) {
             self.tty_fd = Some(self.fds.dupfd_cloexec(0, 255)?);
         }
 

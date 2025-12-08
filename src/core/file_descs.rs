@@ -31,7 +31,8 @@ impl FileDescriptors {
 
     pub(super) fn dupfd_cloexec(&mut self, from: RawFd,
                                 hereafter: RawFd) -> Result<RawFd, ExecError> {
-        let fd = fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(hereafter))?;
+        let fd = fcntl::fcntl(self.fds[from as usize].as_ref().unwrap(),
+            fcntl::F_DUPFD_CLOEXEC(hereafter))?;
         self.fds[fd as usize] = Some(unsafe { OwnedFd::from_raw_fd(fd) });
 
         Ok(fd)
@@ -71,7 +72,8 @@ impl FileDescriptors {
     }
 
     pub fn backup(&mut self, from: RawFd) -> RawFd {
-        if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
+        if fcntl::fcntl(self.fds[from as usize].as_ref().unwrap(),
+                        fcntl::F_GETFD).is_err() {
             return from;
         }
         self.dupfd_cloexec(from, 10).unwrap()
@@ -82,7 +84,15 @@ impl FileDescriptors {
             return Ok(());
         }
 
-        unistd::dup2(from, to)?;
+        if self.fds[from as usize].is_none()
+        || self.fds[to as usize].is_none() {
+            return Ok(());
+        }
+
+        let f = self.fds[from as usize].as_mut().unwrap().try_clone().unwrap();
+        self.fds[from as usize] = None;
+
+        unistd::dup2(f, &mut self.fds[to as usize].as_mut().unwrap())?;
         self.close(from);
         Ok(())
     }
@@ -92,13 +102,23 @@ impl FileDescriptors {
             return Err(ExecError::Other("minus fd number".to_string()));
         }
 
-        if let Err(e) = unistd::dup2(from, to) {
+        if self.fds[from as usize].is_none()
+        || self.fds[to as usize].is_none() {
+            return Ok(());
+        }
+
+        let f = self.fds[from as usize].as_mut().unwrap().try_clone().unwrap();
+        self.fds[from as usize] = None;
+
+        if let Err(e) = unistd::dup2(&f, &mut self.fds[to as usize].as_mut().unwrap()) {
+        //if let Err(e) = unistd::dup2(from, to) {
             return match e {
                 Errno::EBADF => Err(ExecError::BadFd(to)),
                 _ => Err(ExecError::Other("dup2 Unknown error".to_string())),
             };
         }
 
+        self.fds[from as usize] = Some(f);
         Ok(())
     }
 
@@ -106,5 +126,14 @@ impl FileDescriptors {
         let f = self.fds[fd as usize].as_mut().unwrap().try_clone().unwrap();
         self.fds[fd as usize] = None;
         File::from(f)
+    }
+
+    pub fn isatty(&mut self, fd: RawFd) -> Result<bool, ExecError> {
+        if fd < 0 || fd >= 256 || self.fds[fd as usize].is_none() {
+            return Err(ExecError::BadFd(fd));
+        }
+        let f = self.fds[fd as usize].as_mut().unwrap().try_clone().unwrap();
+        let ans = unistd::isatty(&f)?;
+        Ok(ans)
     }
 }
