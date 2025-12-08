@@ -77,24 +77,17 @@ impl FileDescriptors {
         self.dupfd_cloexec(from, 10).unwrap()
     }
 
-    pub fn replace(&mut self, from: RawFd, to: RawFd) -> bool {
+    pub fn replace(&mut self, from: RawFd, to: RawFd) -> Result<(), ExecError> {
         if from < 0 || to < 0 {
-            return false;
+            return Ok(());
         }
     
         match unistd::dup2(from, to) {
             Ok(_) => {
                 self.close(from);
-                true
-            }
-            Err(Errno::EBADF) => {
-                eprintln!("sush: {to}: Bad file descriptor");
-                false
-            }
-            Err(_) => {
-                eprintln!("sush: dup2 Unknown error");
-                false
-            }
+                Ok(())
+            },
+            Err(e) => Err(ExecError::Errno(e)),
         }
     }
 

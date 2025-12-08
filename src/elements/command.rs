@@ -58,7 +58,7 @@ pub trait Command {
         if self.force_fork() || (!pipe.lastpipe && pipe.is_connected()) {
             self.fork_exec(core, pipe)
         } else {
-            pipe.connect_lastpipe(core);
+            pipe.connect_lastpipe(core)?;
             self.nofork_exec(core)
         }
     }
@@ -104,10 +104,15 @@ pub trait Command {
         } else {
             core.db.exit_status = 1;
         }
+        for r in self.get_redirects().iter_mut().rev() {
+            r.restore(core)?;
+        }
+        /*
         self.get_redirects()
             .iter_mut()
             .rev()
-            .for_each(|r| r.restore(core));
+            .for_each(|r| r.restore(core).expect("err"));
+        */
         result
     }
 

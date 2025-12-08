@@ -94,15 +94,17 @@ impl Redirect {
             self.left_backup = core.fds.backup(self.left_fd);
         }
 
+        if self.left_fd < 0 {
+            return Err(ExecError::BadFd(self.left_fd));
+        }
+
         match file_open_result {
             Ok(file) => {
                 let fd = file.into_raw_fd();
-                let result = core.fds.replace(fd, self.left_fd);
-                if !result {
+                if let Err(e) = core.fds.replace(fd, self.left_fd) {
                     core.fds.close(fd);
                     self.left_fd = -1;
-                    let msg = format!("{}: cannot replace", &fd);
-                    return Err(ExecError::Other(msg));
+                    return Err(e);
                 }
                 Ok(())
             }
@@ -217,7 +219,7 @@ impl Redirect {
             }
             ForkResult::Parent { child: _ } => {
                 core.fds.close(send);
-                core.fds.replace(recv, 0);
+                core.fds.replace(recv, 0)?;
             }
         }
         Ok(())
@@ -248,23 +250,24 @@ impl Redirect {
             }
             ForkResult::Parent { child: _ } => {
                 core.fds.close(send);
-                core.fds.replace(recv, 0);
+                core.fds.replace(recv, 0)?;
             }
         }
         Ok(())
     }
 
-    pub fn restore(&mut self, core: &mut ShellCore) {
+    pub fn restore(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.left_backup >= 0 && self.left_fd >= 0 {
             if self.left_backup == self.left_fd {
                 core.fds.close(self.left_fd);
             } else {
-                core.fds.replace(self.left_backup, self.left_fd);
+                core.fds.replace(self.left_backup, self.left_fd)?;
             }
         }
         if self.extra_left_backup >= 0 {
-            core.fds.replace(self.extra_left_backup, 2);
+            core.fds.replace(self.extra_left_backup, 2)?;
         }
+        Ok(())
     }
 
     pub fn new() -> Redirect {

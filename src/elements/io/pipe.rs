@@ -42,17 +42,19 @@ impl Pipe {
         p
     }
 
-    pub fn connect_lastpipe(&mut self, core: &mut ShellCore) {
+    pub fn connect_lastpipe(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.lastpipe && self.prev != 0 {
             self.lastpipe_backup = core.fds.backup(0);
-            core.fds.replace(self.prev, 0);
+            core.fds.replace(self.prev, 0)?;
         }
+        Ok(())
     }
 
-    pub fn restore_lastpipe(&mut self, core: &mut ShellCore) {
+    pub fn restore_lastpipe(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.lastpipe && self.lastpipe_backup != -1 {
-            core.fds.replace(self.lastpipe_backup, 0);
+            core.fds.replace(self.lastpipe_backup, 0)?;
         }
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipe> {
@@ -81,12 +83,12 @@ impl Pipe {
 
     pub fn connect(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.text == ">()" {
-            core.fds.replace(self.proc_sub_send, 0);
+            core.fds.replace(self.proc_sub_send, 0)?;
         }
 
         core.fds.close(self.recv);
-        core.fds.replace(self.send, 1);
-        core.fds.replace(self.prev, 0);
+        core.fds.replace(self.send, 1)?;
+        core.fds.replace(self.prev, 0)?;
 
         if self.text == "|&" {
             core.fds.share(1, 2)?;

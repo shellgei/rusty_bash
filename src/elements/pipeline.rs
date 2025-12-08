@@ -57,8 +57,11 @@ impl Pipeline {
         let lastpipe = (!core.db.flags.contains('m')) && core.shopts.query("lastpipe");
         let mut lastp = Pipe::end(prev, pgid, lastpipe);
         let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
+        let mut err = None;
         if lastpipe {
-            lastp.restore_lastpipe(core);
+            if let Err(e) = lastp.restore_lastpipe(core) {
+                err = Some(e);
+            }
         }
 
         match result {
@@ -66,7 +69,7 @@ impl Pipeline {
             Err(e) => return (pids, self.exclamation, self.time, Some(e)),
         }
 
-        (pids, self.exclamation, self.time, None)
+        (pids, self.exclamation, self.time, err)
     }
 
     fn set_time(&mut self, core: &mut ShellCore) {
