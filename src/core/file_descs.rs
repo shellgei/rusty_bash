@@ -81,26 +81,25 @@ impl FileDescriptors {
         if from < 0 || to < 0 {
             return Ok(());
         }
-    
-        match unistd::dup2(from, to) {
-            Ok(_) => {
-                self.close(from);
-                Ok(())
-            },
-            Err(e) => Err(ExecError::Errno(e)),
-        }
+
+        unistd::dup2(from, to)?;
+        self.close(from);
+        Ok(())
     }
 
     pub fn share(&mut self, from: RawFd, to: RawFd) -> Result<(), ExecError> {
         if from < 0 || to < 0 {
             return Err(ExecError::Other("minus fd number".to_string()));
         }
-    
-        match unistd::dup2(from, to) {
-            Ok(_) => Ok(()),
-            Err(Errno::EBADF) => Err(ExecError::BadFd(to)),
-            Err(_) => Err(ExecError::Other("dup2 Unknown error".to_string())),
+
+        if let Err(e) = unistd::dup2(from, to) {
+            return match e {
+                Errno::EBADF => Err(ExecError::BadFd(to)),
+                _ => Err(ExecError::Other("dup2 Unknown error".to_string())),
+            };
         }
+
+        Ok(())
     }
 
     pub fn get_file(&mut self, fd: RawFd) -> File {
