@@ -84,7 +84,7 @@ impl Pipe {
             core.fds.replace(self.proc_sub_send, 0);
         }
 
-        core.fds.close(self.recv, "Cannot close in-pipe");
+        core.fds.close(self.recv);
         core.fds.replace(self.send, 1);
         core.fds.replace(self.prev, 0);
 
@@ -95,8 +95,8 @@ impl Pipe {
     }
 
     pub fn parent_close(&mut self, core: &mut ShellCore) {
-        core.fds.close(self.send, "Cannot close parent pipe out");
-        core.fds.close(self.prev, "Cannot close parent prev pipe out");
+        core.fds.close(self.send);
+        core.fds.close(self.prev);
     }
 
     pub fn is_connected(&self) -> bool {

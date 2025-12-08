@@ -207,7 +207,7 @@ fn run_command_not_found(arg: &str, core: &mut ShellCore) -> ! {
 
 fn close_proc_sub(core: &mut ShellCore) {
     while let Some(fd) = core.proc_sub_fd.pop() {
-        core.fds.close(fd, "");
+        core.fds.close(fd);
     }
 
     while let Some(pid) = core.proc_sub_pid.pop() {

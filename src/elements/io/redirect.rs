@@ -99,7 +99,7 @@ impl Redirect {
                 let fd = file.into_raw_fd();
                 let result = core.fds.replace(fd, self.left_fd);
                 if !result {
-                    core.fds.close(fd, "sush(fatal): file does not close");
+                    core.fds.close(fd);
                     self.left_fd = -1;
                     let msg = format!("{}: cannot replace", &fd);
                     return Err(ExecError::Other(msg));
@@ -127,7 +127,7 @@ impl Redirect {
     fn redirect_output_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.right.text == "-" {
             self.set_left_fd(1);
-            core.fds.close(self.left_fd, "cannot close");
+            core.fds.close(self.left_fd);
             return Ok(());
         }
 
@@ -147,7 +147,7 @@ impl Redirect {
     fn redirect_input_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.right.text == "-" {
             self.set_left_fd(0);
-            core.fds.close(self.left_fd, "cannot close");
+            core.fds.close(self.left_fd);
             return Ok(());
         }
 
@@ -208,15 +208,15 @@ impl Redirect {
 
         match unsafe { unistd::fork()? } {
             ForkResult::Child => {
-                core.fds.close(recv, "here_data close error (child recv)");
+                core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}", &text);
                 f.flush().unwrap();
-                core.fds.close(send, "here_data close error (child send)");
+                core.fds.close(send);
                 process::exit(0);
             }
             ForkResult::Parent { child: _ } => {
-                core.fds.close(send, "here_data close error (parent send)");
+                core.fds.close(send);
                 core.fds.replace(recv, 0);
             }
         }
@@ -239,15 +239,15 @@ impl Redirect {
 
         match unsafe { unistd::fork()? } {
             ForkResult::Child => {
-                core.fds.close(recv, "here_data close error (child recv)");
+                core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = writeln!(&mut f, "{}", &text);
                 f.flush().unwrap();
-                core.fds.close(send, "here_data close error (child send)");
+                core.fds.close(send);
                 process::exit(0);
             }
             ForkResult::Parent { child: _ } => {
-                core.fds.close(send, "here_data close error (parent send)");
+                core.fds.close(send);
                 core.fds.replace(recv, 0);
             }
         }
@@ -257,7 +257,7 @@ impl Redirect {
     pub fn restore(&mut self, core: &mut ShellCore) {
         if self.left_backup >= 0 && self.left_fd >= 0 {
             if self.left_backup == self.left_fd {
-                core.fds.close(self.left_fd, "cannot close");
+                core.fds.close(self.left_fd);
             } else {
                 core.fds.replace(self.left_backup, self.left_fd);
             }

@@ -22,6 +22,10 @@ impl FileDescriptors {
             data.fds.push(None);
         }
 
+        data.fds[0] = Some(unsafe{OwnedFd::from_raw_fd(0)});
+        data.fds[1] = Some(unsafe{OwnedFd::from_raw_fd(1)});
+        data.fds[2] = Some(unsafe{OwnedFd::from_raw_fd(2)});
+
         data
     }
 
@@ -47,16 +51,12 @@ impl FileDescriptors {
         Err(ExecError::Other("cannot get process group".to_string()))
     }
 
-    pub fn close(&mut self, fd: RawFd, _: &str) {
-        if fd >= 3 {
-            if self.fds[fd as usize].is_some() {
-                self.fds[fd as usize] = None;
-            }
+    pub fn close(&mut self, fd: RawFd) {
+        if fd < 0 || fd >= 256 {
+            return;
         }
-
-        if fd >= 0 {
-            let _ = unistd::close(fd);
-        }
+        self.fds[fd as usize] = None;
+        let _ = unistd::close(fd);
     }
 
     pub fn pipe(&mut self) -> (RawFd, RawFd) {
@@ -84,7 +84,7 @@ impl FileDescriptors {
     
         match unistd::dup2(from, to) {
             Ok(_) => {
-                self.close(from, &format!("sush(fatal): {from}: cannot be closed"));
+                self.close(from);
                 true
             }
             Err(Errno::EBADF) => {
