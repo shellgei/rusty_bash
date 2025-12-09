@@ -5,17 +5,18 @@ pub mod builtins;
 pub mod database;
 pub mod history;
 pub mod jobtable;
+mod file_descs;
 
-use self::database::DataBase;
-use std::collections::HashMap;
-use std::os::fd::{FromRawFd, OwnedFd};
-use std::{io, env, path, process};
-use nix::{fcntl, unistd};
-use nix::sys::signal::Signal;
-use nix::unistd::Pid;
+use crate::file_check;
 use crate::core::jobtable::JobEntry;
 use crate::elements::substitution::Substitution;
 use crate::{proc_ctrl, signal};
+use nix::sys::signal::Signal;
+use nix::unistd::Pid;
+use self::database::DataBase;
+use std::{io, env, path, process};
+use std::collections::HashMap;
+use std::os::fd::OwnedFd;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
@@ -39,12 +40,13 @@ pub struct ShellCore {
     tcwd: Option<path::PathBuf>, // the_current_working_directory
 }
 
+/*
 fn is_interactive() -> bool {
-    match unistd::isatty(0) {
+    match file_check::is_tty(0) {
         Ok(result) => result,
         Err(err) => panic!("{}", err),
     }
-}
+}*/
 
 impl ShellCore {
     pub fn new() -> ShellCore {
@@ -57,11 +59,14 @@ impl ShellCore {
         core.set_initial_parameters();
         core.set_builtins();
 
-        if is_interactive() {
+        if file_check::is_tty(0) {
             core.flags += "i";
+            /*
             let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
                 .expect("sush(fatal): Can't allocate fd for tty FD");
             core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
+            */
+            core.tty_fd = Some(self.fds.dupfd_cloexec(0, 255)?);
         }
 
         let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
