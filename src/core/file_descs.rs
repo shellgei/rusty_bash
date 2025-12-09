@@ -13,6 +13,9 @@ use nix::unistd;
 use std::os::fd::AsRawFd;
 use std::fs::File;
 
+/* We want to control all opening FDs with this. 
+ * However, I have no idea how to handle
+ * files and std{in, out, err}. */
 #[derive(Default, Debug)]
 pub struct FileDescriptors {
     fds: Vec<Option<OwnedFd>>,
@@ -24,12 +27,6 @@ impl FileDescriptors {
         for _ in 0..256 {
             data.fds.push(None);
         }
-
-        /*
-        data.fds[0] = Some(unsafe{OwnedFd::from_raw_fd(0)});
-        data.fds[1] = Some(unsafe{OwnedFd::from_raw_fd(1)});
-        data.fds[2] = Some(unsafe{OwnedFd::from_raw_fd(2)});
-        */
 
         data
     }
