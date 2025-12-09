@@ -33,7 +33,7 @@ pub fn wait_pipeline(
         }
     }
 
-    set_foreground(core);
+    let _ = set_foreground(core);
 
     ans
 }
@@ -72,30 +72,33 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     ws.expect("SUSH INTERNAL ERROR: no wait status")
 }
 
-fn set_foreground(core: &ShellCore) {
+fn set_foreground(core: &mut ShellCore) -> Result<(), ExecError> {
     let fd = match core.tty_fd.as_ref() {
         Some(fd) => fd,
-        _ => return,
+        _ => return Ok(()),
     };
 
     let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
                .expect("sush(fatal): cannot get pgid");
 
-    if unistd::tcgetpgrp(fd) == Ok(pgid) {
-        return;
+    if let Ok(n) = core.fds.tcgetpgrp(*fd) {
+        if n == pgid { 
+            return Ok(());
+        }       
     }
 
     signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視
-    unistd::tcsetpgrp(fd, pgid)
+    core.fds.tcsetpgrp(*fd, pgid)
         .expect("sush(fatal): cannot get the terminal");
     signal::restore(Signal::SIGTTOU); //SIGTTOUを受け付け
+    Ok(())
 }
 
-pub fn set_pgid(core: &ShellCore, pid: Pid, pgid: Pid) {
+pub fn set_pgid(core: &mut ShellCore, pid: Pid, pgid: Pid) {
     let _ = unistd::setpgid(pid, pgid);
 
     if pid.as_raw() == 0 && pgid.as_raw() == 0 {
-        set_foreground(core);
+        let _ = set_foreground(core);
     }
 }
 

@@ -54,7 +54,7 @@ impl Job {
     }
 
     fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<(), ExecError> {
-        let backup = core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
+        let backup = core.tty_fd.clone();
         core.tty_fd = None;
 
         let pids = if self.pipelines.len() == 1 {

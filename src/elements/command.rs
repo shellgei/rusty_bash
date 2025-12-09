@@ -63,7 +63,7 @@ pub trait Command {
             },
             ForkResult::Parent { child } => {
                 proc_ctrl::set_pgid(core, child, pipe.pgid);
-                pipe.parent_close();
+                pipe.parent_close(core);
                 Ok(Some(child))
             },
         }
@@ -82,7 +82,7 @@ pub trait Command {
         }else{
             core.db.set_param("?", "1", None)?;
         }
-        self.get_redirects().iter_mut().rev().for_each(|r| r.restore());
+        self.get_redirects().iter_mut().rev().for_each(|r| r.restore(core));
         result
     }  
 

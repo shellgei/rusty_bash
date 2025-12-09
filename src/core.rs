@@ -16,9 +16,10 @@ use nix::unistd::Pid;
 use self::database::DataBase;
 use std::{io, env, path, process};
 use std::collections::HashMap;
-use std::os::fd::OwnedFd;
+use std::os::fd::RawFd;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+use self::file_descs::FileDescriptors;
 
 type BuiltinFn = fn(&mut ShellCore, &[String]) -> i32;
 type SubstBuiltinFn = fn(&mut ShellCore, &[String], &mut [Substitution]) -> i32;
@@ -35,7 +36,8 @@ pub struct ShellCore {
     pub is_subshell: bool,
     pub source_function_level: i32,
     pub return_flag: bool,
-    pub tty_fd: Option<OwnedFd>,
+    pub fds: FileDescriptors,
+    pub tty_fd: Option<RawFd>,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory
 }
@@ -52,6 +54,7 @@ impl ShellCore {
     pub fn new() -> ShellCore {
         let mut core = ShellCore {
             db: DataBase::new(),
+            fds: FileDescriptors::new(),
             ..Default::default()
         };
 
@@ -61,12 +64,7 @@ impl ShellCore {
 
         if file_check::is_tty(0) {
             core.flags += "i";
-            /*
-            let fd = fcntl::fcntl(2, fcntl::F_DUPFD_CLOEXEC(255))
-                .expect("sush(fatal): Can't allocate fd for tty FD");
-            core.tty_fd = Some(unsafe{OwnedFd::from_raw_fd(fd)});
-            */
-            core.tty_fd = Some(self.fds.dupfd_cloexec(0, 255)?);
+            core.tty_fd = Some(core.fds.dupfd_cloexec(0, 255).unwrap());
         }
 
         let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();

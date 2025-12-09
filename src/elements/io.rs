@@ -11,7 +11,7 @@ use crate::elements::io::redirect::Redirect;
 
 pub fn connect(pipe: &mut Pipe, rs: &mut [Redirect],
                core: &mut ShellCore) -> Result<(), ExecError> {
-    pipe.connect()?;
+    pipe.connect(core)?;
 
     for r in rs.iter_mut() {
         r.connect(false, core)?;

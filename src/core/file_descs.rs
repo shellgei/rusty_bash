@@ -15,7 +15,8 @@ use std::fs::File;
 
 /* We want to control all opening FDs with this. 
  * However, I have no idea how to handle
- * files and std{in, out, err}. */
+ * files and std{in, out, err}. 
+ * With the same reason, I use raw libc functions. */
 #[derive(Default, Debug)]
 pub struct FileDescriptors {
     fds: Vec<Option<OwnedFd>>,

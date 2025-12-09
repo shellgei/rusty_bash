@@ -4,7 +4,6 @@
 use std::fs::{File, OpenOptions};
 use std::os::fd::{IntoRawFd, RawFd};
 use std::io::Error;
-use crate::elements::io;
 use crate::elements::word::Word;
 use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
@@ -31,10 +30,10 @@ impl Redirect {
         self.right.text = args[0].clone();
 
         match self.symbol.as_str() {
-            "<" => self.redirect_simple_input(restore),
-            ">" => self.redirect_simple_output(restore),
-            ">>" => self.redirect_append(restore),
-            "&>" => self.redirect_both_output(restore),
+            "<" => self.redirect_simple_input(restore, core),
+            ">" => self.redirect_simple_output(restore, core),
+            ">>" => self.redirect_append(restore, core),
+            "&>" => self.redirect_both_output(restore, core),
             _ => panic!("SUSH INTERNAL ERROR (Unknown redirect symbol)"),
         }
     }
@@ -47,20 +46,18 @@ impl Redirect {
         };
     }
 
-    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool) -> Result<(), ExecError> {
+    fn connect_to_file(&mut self, file_open_result: Result<File,Error>, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if restore {
-            self.left_backup = io::backup(self.left_fd);
+            self.left_backup = core.fds.backup(self.left_fd);
         }   
 
         match file_open_result {
             Ok(file) => {
                 let fd = file.into_raw_fd();
-                let result = io::replace(fd, self.left_fd);
-                if ! result {
-                    io::close(fd, "sush(fatal): file does not close");
+                if let Err(e) = core.fds.replace(fd, self.left_fd) {
+                    core.fds.close(fd);
                     self.left_fd = -1; 
-                    let msg = format!("{}: cannot replace", &fd);
-                    return Err(ExecError::Other(msg));
+                    return Err(e);
                 }
                 Ok(())
             },
@@ -71,38 +68,38 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_simple_input(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         self.set_left_fd(0);
-        self.connect_to_file(File::open(&self.right.text), restore)
+        self.connect_to_file(File::open(&self.right.text), restore, core)
     }
 
-    fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_simple_output(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         self.set_left_fd(1);
-        self.connect_to_file(File::create(&self.right.text), restore)
+        self.connect_to_file(File::create(&self.right.text), restore, core)
     }
 
-    fn redirect_append(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_append(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         self.set_left_fd(1);
         self.connect_to_file(OpenOptions::new().create(true)
-                .append(true).open(&self.right.text), restore)
+                .append(true).open(&self.right.text), restore, core)
     }
 
-    fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_both_output(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         self.left_fd = 1;
-        self.connect_to_file(File::create(&self.right.text), restore)?;
+        self.connect_to_file(File::create(&self.right.text), restore, core)?;
 
         if restore {
-            self.extra_left_backup = io::backup(2);
+            self.extra_left_backup = core.fds.backup(2);
         }
-        io::share(1, 2)
+        core.fds.share(1, 2)
     }
 
-    pub fn restore(&mut self) {
+    pub fn restore(&mut self, core: &mut ShellCore) {
         if self.left_backup >= 0 && self.left_fd >= 0 {
-            io::replace(self.left_backup, self.left_fd);
+            let _ = core.fds.replace(self.left_backup, self.left_fd);
         }
         if self.extra_left_backup >= 0 {
-            io::replace(self.extra_left_backup, 2);
+            let _ = core.fds.replace(self.extra_left_backup, 2);
         }
     }
 

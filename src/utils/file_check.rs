@@ -14,11 +14,11 @@ pub fn is_tty(fd: RawFd) -> bool {
     unsafe{isatty(fd) == 1}
 }
 
+/*
 pub fn is_tty_str(name: &str) -> bool {
     let fd = match name.parse::<i32>() {
         Ok(n) => n,
         _ => return false,
     };
     is_tty(fd)
-  //  unistd::isatty(fd) == Ok(true)
-}
+}*/
