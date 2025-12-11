@@ -1,9 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-extern crate libc;
-use libc::{dup2, close};
-
 use crate::{Feeder, ShellCore};
 use nix::sys::signal;
 use nix::sys::signal::{Signal, SigHandler};
@@ -25,7 +22,7 @@ pub fn restore(sig: Signal) {
 
 pub fn run_signal_check(core: &mut ShellCore) {
     for fd in 3..10 { //use FD 3~9 to prevent signal-hool from using these FDs
-        let _ = unsafe{dup2(2, fd)};
+        let _ = unsafe{libc::dup2(2, fd)};
     }
 
     let sigint = Arc::clone(&core.sigint); //追加
@@ -35,7 +32,7 @@ pub fn run_signal_check(core: &mut ShellCore) {
                           .expect("sush(fatal): cannot prepare signal data");
 
         for fd in 3..10 { // release FD 3~9
-            let _ = unsafe{close(fd)};
+            let _ = unsafe{libc::close(fd)};
         }
 
         loop {

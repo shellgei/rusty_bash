@@ -1,10 +1,6 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use libc::dup2;
-use libc::fcntl;
-use libc::{F_GETFD, F_DUPFD_CLOEXEC};
-
 use crate::error::exec::ExecError;
 use nix::unistd::Pid;
 use std::os::fd::{OwnedFd, FromRawFd, RawFd};
@@ -34,7 +30,7 @@ impl FileDescriptors {
     pub(super) fn dupfd_cloexec(&mut self, from: RawFd,
                                 hereafter: RawFd) -> Result<RawFd, ExecError> {
         //let fd = fcntl::fcntl(from, fcntl::F_DUPFD_CLOEXEC(hereafter))?;
-        let fd = unsafe{fcntl(from, F_DUPFD_CLOEXEC, hereafter)};
+        let fd = unsafe{libc::fcntl(from, libc::F_DUPFD_CLOEXEC, hereafter)};
         self.fds[fd as usize] = Some(unsafe { OwnedFd::from_raw_fd(fd) });
 
         Ok(fd)
@@ -75,7 +71,7 @@ impl FileDescriptors {
 
     pub fn backup(&mut self, from: RawFd) -> RawFd {
         //if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
-        if unsafe{fcntl(from, F_GETFD)} == -1 {
+        if unsafe{libc::fcntl(from, libc::F_GETFD)} == -1 {
             return from;
         }
         self.dupfd_cloexec(from, 10).unwrap()
@@ -86,7 +82,7 @@ impl FileDescriptors {
             return Ok(());
         }
 
-        if unsafe{dup2(from, to)} < 0 {
+        if unsafe{libc::dup2(from, to)} < 0 {
             return Err(ExecError::Other("dup2 error".to_string()));
         }
 
@@ -100,7 +96,7 @@ impl FileDescriptors {
             return Err(ExecError::Other("minus fd number".to_string()));
         }
 
-        if unsafe{dup2(from, to)} < 0 {
+        if unsafe{libc::dup2(from, to)} < 0 {
             return Err(ExecError::Other("dup2 error".to_string()));
         }
         /*
