@@ -1,7 +1,6 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-extern crate libc;
 use libc::dup2;
 use libc::fcntl;
 use libc::{F_GETFD, F_DUPFD_CLOEXEC};
