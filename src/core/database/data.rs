@@ -9,13 +9,18 @@ use std::fmt::Debug;
 
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(&self.get_print_string()).finish()
+        fmt.debug_struct(&self._get_fmt_string()).finish()
     }
 }
 
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
-    fn get_print_string(&self) -> String;
+
+    fn _get_fmt_string(&self) -> String;
+
+    fn get_fmt_string(&mut self) -> String {
+        self.get_as_single().unwrap()
+    }
 
     fn set_as_single(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("Undefined call set_as_single".to_string()))
