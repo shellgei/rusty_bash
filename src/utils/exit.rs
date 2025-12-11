@@ -11,7 +11,7 @@ pub fn normal(core: &mut ShellCore) -> ! {
     let exit_status = match es_str.parse::<i32>() {
         Ok(n)  => n%256,
         Err(_) => {
-            eprintln!("exit: {}: numeric argument required", es_str);
+            eprintln!("exit: {es_str}: numeric argument required");
             2
         },
     };

@@ -55,26 +55,26 @@ impl From<&ExecError> for String {
     fn from(e: &ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
-            ExecError::AmbiguousRedirect(name) => format!("{}: ambiguous redirect", name),
-            ExecError::ArrayIndexInvalid(name) => format!("`{}': not a valid index", name),
-            ExecError::BadSubstitution(s) => format!("`{}': bad substitution", s),
-            ExecError::BadFd(fd) => format!("{}: bad file descriptor", fd),
+            ExecError::AmbiguousRedirect(name) => format!("{name}: ambiguous redirect"),
+            ExecError::ArrayIndexInvalid(name) => format!("`{name}': not a valid index"),
+            ExecError::BadSubstitution(s) => format!("`{s}': bad substitution"),
+            ExecError::BadFd(fd) => format!("{fd}: bad file descriptor"),
             ExecError::DivZero => "divided by 0".to_string(),
-            ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{}\")", s),
-            ExecError::InvalidName(name) => format!("`{}': invalid name", name),
-            ExecError::InvalidBase(b) => format!("{0}: invalid arithmetic base (error token is \"{0}\")", b),
-            ExecError::InvalidOption(opt) => format!("{}: invalid option", opt),
+            ExecError::Exponent(s) => format!("exponent less than 0 (error token is \"{s}\")"),
+            ExecError::InvalidName(name) => format!("`{name}': invalid name"),
+            ExecError::InvalidBase(b) => format!("{b}: invalid arithmetic base (error token is \"{b}\")"),
+            ExecError::InvalidOption(opt) => format!("{opt}: invalid option"),
             ExecError::Interrupted => "interrupted".to_string(),
-            ExecError::AssignmentToNonVariable(right) => format!("attempted assignment to non-variable (error token is \"{}\")", right),
+            ExecError::AssignmentToNonVariable(right) => format!("attempted assignment to non-variable (error token is \"{right}\")"),
             ExecError::ValidOnlyInFunction => "can only be used in a function".to_string(),
-            ExecError::VariableReadOnly(name) => format!("{}: readonly variable", name),
-            ExecError::VariableInvalid(name) => format!("`{}': not a valid identifier", name),
-            ExecError::OperandExpected(token) => format!("{0}: syntax error: operand expected (error token is \"{0}\")", token),
+            ExecError::VariableReadOnly(name) => format!("{name}: readonly variable"),
+            ExecError::VariableInvalid(name) => format!("`{name}': not a valid identifier"),
+            ExecError::OperandExpected(token) => format!("{token}: syntax error: operand expected (error token is \"{token}\")"),
             ExecError::ParseError(p) => From::from(p),
-            ExecError::Recursion(token) => format!("{0}: expression recursion level exceeded (error token is \"{0}\")", token), 
-            ExecError::SubstringMinus(n) => format!("{}: substring expression < 0", n),
+            ExecError::Recursion(token) => format!("{token}: expression recursion level exceeded (error token is \"{token}\")"), 
+            ExecError::SubstringMinus(n) => format!("{n}: substring expression < 0"),
             ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {ws:?}"),
-            ExecError::Errno(e) => format!("system error {:?}", e),
+            ExecError::Errno(e) => format!("system error {e:?}"),
             ExecError::Other(name) => name.to_string(),
         }
     }
@@ -83,6 +83,6 @@ impl From<&ExecError> for String {
 impl ExecError {
     pub fn print(&self, _: &mut ShellCore) {
         let s: String = From::<&ExecError>::from(self);
-        eprintln!("sush: {}", s);
+        eprintln!("sush: {s}");
     }
 }

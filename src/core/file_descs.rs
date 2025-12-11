@@ -51,7 +51,7 @@ impl FileDescriptors {
     }
 
     pub fn close(&mut self, fd: RawFd) {
-        if fd < 0 || fd >= 256 {
+        if !(0..256).contains(&fd) {
             return;
         }
         self.fds[fd as usize] = None;

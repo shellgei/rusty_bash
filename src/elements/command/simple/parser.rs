@@ -73,10 +73,9 @@ impl SimpleCommand {
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
 
-            if core.subst_builtins.contains_key(&ans.command_name) {
-                if ans.eat_substitution_as_arg(feeder, core)? {
-                    continue;
-                }
+            if core.subst_builtins.contains_key(&ans.command_name) 
+            && ans.eat_substitution_as_arg(feeder, core)? {
+                continue;
             }
 
             if ! ans.eat_word(feeder, core)? {

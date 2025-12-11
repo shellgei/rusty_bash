@@ -81,7 +81,7 @@ impl Terminal {
 
         let replaced_prompt = Self::make_prompt_string(&ansi_on_prompt);
         let prompt = replaced_prompt.replace("\\[", "").replace("\\]", "").to_string();
-        print!("{}", prompt);
+        print!("{prompt}");
         io::stdout().flush().unwrap();
 
         let mut sout = io::stdout().into_raw_mode().unwrap();
@@ -175,7 +175,7 @@ impl Terminal {
     }
 
     fn write(&mut self, s: &str) {
-        write!(self.stdout, "{}", s).unwrap();
+        write!(self.stdout, "{s}").unwrap();
     }
 
     fn flush(&mut self) {

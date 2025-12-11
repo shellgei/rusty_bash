@@ -49,7 +49,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     let exit_status = match ws {
         Ok(WaitStatus::Exited(_pid, status)) => status,
         Ok(WaitStatus::Signaled(pid, signal, _coredump)) => {
-            eprintln!("Pid: {:?}, Signal: {:?}", pid, signal);
+            eprintln!("Pid: {pid:?}, Signal: {signal:?}");
             128+signal as i32
         },
         Ok(WaitStatus::Stopped(pid, signal)) => {
@@ -61,7 +61,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
             1
         }
         Err(err) => {
-            panic!("Error: {:?}", err);
+            panic!("Error: {err:?}");
         }
     };
 
@@ -116,7 +116,7 @@ pub fn exec_command(args: &[String]) -> ! {
             process::exit(127)
         },
         Err(err) => {
-            println!("Failed to execute. {:?}", err);
+            println!("Failed to execute. {err:?}");
             process::exit(127)
         }
         _ => panic!("SUSH INTERNAL ERROR (never come here)")

@@ -28,7 +28,7 @@ fn cd_1arg(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = args.to_vec();
     args.push(var);
     set_oldpwd(core);
-    change_directory(core, &mut args)
+    change_directory(core, &args)
 }
 
 fn cd_oldpwd(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -42,7 +42,7 @@ fn cd_oldpwd(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     set_oldpwd(core);
-    change_directory(core, &mut args)
+    change_directory(core, &args)
 }
 
 fn set_oldpwd(core: &mut ShellCore) {

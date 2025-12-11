@@ -16,8 +16,7 @@ impl Variable {
         if len == 0 {
             return Ok(None);
         }
-        let mut ans = Self::default();
-        ans.text = feeder.consume(len);
+        let ans = Variable { text: feeder.consume(len) };
         Ok(Some(ans))
     }
 }

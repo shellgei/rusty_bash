@@ -54,7 +54,7 @@ impl Job {
     }
 
     fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<(), ExecError> {
-        let backup = core.tty_fd.clone();
+        let backup = core.tty_fd;
         core.tty_fd = None;
 
         let pids = if self.pipelines.len() == 1 {
@@ -85,7 +85,7 @@ impl Job {
                 proc_ctrl::set_pgid(core, child, pgid);
                 Some(child) 
             },
-            Err(err) => panic!("sush(fatal): Failed to fork. {}", err),
+            Err(err) => panic!("sush(fatal): Failed to fork. {err}"),
         }
     }
 

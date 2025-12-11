@@ -37,7 +37,7 @@ impl DataBase {
 
         for params in self.params.iter_mut().rev() {
             if params.contains_key(name) {
-                return Ok(params.get_mut(name).unwrap().get_as_single()?);
+                return params.get_mut(name).unwrap().get_as_single();
             }
         }
 
@@ -57,8 +57,8 @@ impl DataBase {
 
     pub fn solve_set_layer(&mut self, name: &str,
                            layer: Option<usize>) -> usize {
-        if layer.is_some() {
-            return layer.unwrap();
+        if let Some(ly) = layer {
+            return ly;
         }
 
         self.get_layer_pos(name).unwrap_or(0)
@@ -83,7 +83,7 @@ impl DataBase {
         }
 
         if layer == 0 && env::var(name).is_ok() {
-            unsafe{env::set_var(name, val.to_string())};
+            unsafe{env::set_var(name, val)};
         }
         Ok(())
     }

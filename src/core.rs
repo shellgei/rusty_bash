@@ -67,7 +67,7 @@ impl ShellCore {
             core.tty_fd = Some(core.fds.dupfd_cloexec(0, 255).unwrap());
         }
 
-        let home = core.db.get_param("HOME").unwrap_or(String::new()).to_string();
+        let home = core.db.get_param("HOME").unwrap_or_default().to_string();
         core.db.set_param("HISTFILE", &(home + "/.sush_history"), None).unwrap();
         core.db.set_param("HISTFILESIZE", "2000", None).unwrap();
 
@@ -103,7 +103,7 @@ impl ShellCore {
         true
     }
 
-    pub fn run_function(&mut self, args: &mut Vec<String>) -> bool {
+    pub fn run_function(&mut self, args: &mut [String]) -> bool {
         match self.db.functions.get_mut(&args[0]) {
             Some(f) => {f.clone().run_as_command(args, self); true},
             None => false,
@@ -131,7 +131,7 @@ impl ShellCore {
     pub fn init_current_directory(&mut self) {
         match env::current_dir() {
             Ok(path) => self.tcwd = Some(path),
-            Err(err) => eprintln!("pwd: error retrieving current directory: {:?}", err),
+            Err(err) => eprintln!("pwd: error retrieving current directory: {err:?}"),
         }
     }
 
