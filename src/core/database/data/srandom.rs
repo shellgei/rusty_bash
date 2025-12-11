@@ -17,7 +17,7 @@ impl Data for SRandomVar {
         Box::new(self.clone())
     }
 
-    fn get_print_string_fix(&self) -> String {
+    fn get_debug_string(&self) -> String {
         self.prev.clone()
     }
 

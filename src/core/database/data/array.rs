@@ -28,10 +28,10 @@ impl Data for ArrayData {
     }
 
     fn get_print_string(&mut self) -> String {
-        self.get_print_string_fix()
+        self.get_debug_string()
     }
 
-    fn get_print_string_fix(&self) -> String {
+    fn get_debug_string(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
             let ansi = utils::to_ansi_c(&self.body[&i]);

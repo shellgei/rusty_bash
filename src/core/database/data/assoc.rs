@@ -29,10 +29,10 @@ impl Data for AssocData {
     }
 
     fn get_print_string(&mut self) -> String {
-        self.get_print_string_fix()
+        self.get_debug_string()
     }
 
-    fn get_print_string_fix(&self) -> String {
+    fn get_debug_string(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
