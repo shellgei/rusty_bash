@@ -27,7 +27,7 @@ impl Data for SingleData {
 
     fn _get_fmt_string(&self) -> String {
         self.body.clone()
-    } 
+    }
 
     fn set_as_single(&mut self, name: &str,
                      value: &str) -> Result<(), ExecError> {

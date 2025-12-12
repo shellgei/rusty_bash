@@ -20,7 +20,7 @@ pub trait Data {
 
     fn get_fmt_string(&mut self) -> String {
         self._get_fmt_string()
-    } 
+    }
 
     fn set_as_single(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("Undefined call set_as_single".to_string()))
