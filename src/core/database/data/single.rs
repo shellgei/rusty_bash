@@ -25,9 +25,9 @@ impl Data for SingleData {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         self.body.clone()
-    }
+    } 
 
     fn set_as_single(&mut self, name: &str,
                      value: &str) -> Result<(), ExecError> {
