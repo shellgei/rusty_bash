@@ -5,7 +5,8 @@ use crate::ShellCore;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
-fn declare_print(_: &mut ShellCore, _: &[String]) -> i32 {
+fn declare_print(core: &mut ShellCore, _: &[String]) -> i32 {
+    dbg!("{:?}", &core.db.get_keys());
     0
 }
 

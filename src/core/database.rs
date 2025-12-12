@@ -7,7 +7,7 @@ use self::data::Data;
 use self::data::single::SingleData;
 use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::env;
 
 #[derive(Debug, Default)]
@@ -62,6 +62,23 @@ impl DataBase {
         }
 
         self.get_layer_pos(name).unwrap_or(0)
+    }
+
+    pub fn get_keys(&mut self) -> Vec<String> {
+        let mut keys = HashSet::new();
+        for layer in &self.params {
+            layer.keys().for_each(|k| {
+                keys.insert(k);
+            });
+        }
+        for f in &self.functions {
+            keys.insert(f.0);
+        }
+        let mut ans = keys.iter()
+                          .map(|c| c.to_string())
+                          .collect::<Vec<String>>();
+        ans.sort();
+        ans
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
