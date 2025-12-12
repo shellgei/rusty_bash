@@ -25,11 +25,11 @@ impl Data for SingleData {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&mut self) -> String {
-        self.get_debug_string()
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
     }
 
-    fn get_debug_string(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         let mut s = self.body.replace("'", "\\'");
         if s.contains('~') || s.starts_with('#') {
             s = "'".to_owned() + &s + "'";

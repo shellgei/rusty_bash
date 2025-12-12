@@ -18,13 +18,16 @@ impl Data for RandomVar {
         Box::new(self.clone())
     }
 
-    fn get_debug_string(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         "".to_string()
+    }
+
+    fn get_fmt_string(&mut self) -> String {
+        self.get_as_single().unwrap()
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         let rand = self.rng.next_u32() & 0x7FFF;
-        //self.prev = rand.to_string();
         Ok(rand.to_string())
     }
 

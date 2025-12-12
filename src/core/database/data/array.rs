@@ -27,11 +27,11 @@ impl Data for ArrayData {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&mut self) -> String {
-        self.get_debug_string()
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
     }
 
-    fn get_debug_string(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
             let ansi = utils::to_ansi_c(&self.body[&i]);

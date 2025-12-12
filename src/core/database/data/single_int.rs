@@ -16,7 +16,7 @@ impl Data for IntData {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn get_debug_string(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         utils::to_ansi_c(&self.body.to_string())
     }
 

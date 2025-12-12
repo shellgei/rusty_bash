@@ -19,11 +19,11 @@ impl Data for IntAssocData {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&mut self) -> String {
-        self.get_debug_string()
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
     }
 
-    fn get_debug_string(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
