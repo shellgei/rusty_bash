@@ -15,10 +15,7 @@ fn declare_print_params(core: &mut ShellCore) -> i32 {
 }
 
 fn declare_print(core: &mut ShellCore) -> i32 {
-    for key in core.db.get_param_keys() {
-        let value = core.db.get_param(&key).unwrap();
-        println!("{key}={value}");
-    }
+    declare_print_params(core);
 
     0
 }
