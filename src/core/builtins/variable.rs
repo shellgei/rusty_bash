@@ -5,9 +5,18 @@ use crate::ShellCore;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
+fn declare_print_params(core: &mut ShellCore, _: &[String]) -> i32 {
+    for key in core.db.get_param_keys() {
+        let value = core.db.get_param(&key).unwrap();
+        println!("{key}={value}");
+    }
+
+    0
+}
+
 fn declare_print(core: &mut ShellCore, _: &[String]) -> i32 {
     for key in core.db.get_param_keys() {
-        let value = core.db.get_param(&key)?;
+        let value = core.db.get_param(&key).unwrap();
         println!("{key}={value}");
     }
 
