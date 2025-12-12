@@ -14,8 +14,17 @@ fn declare_print_params(core: &mut ShellCore) -> i32 {
     0
 }
 
+fn declare_print_funcs(core: &mut ShellCore) -> i32 {
+    for key in core.db.get_func_keys() {
+        println!("{}", &core.db.functions[&key].text);
+    }
+
+    0
+}
+
 fn declare_print(core: &mut ShellCore) -> i32 {
     declare_print_params(core);
+    declare_print_funcs(core);
 
     0
 }
