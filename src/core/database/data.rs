@@ -19,7 +19,7 @@ pub trait Data {
     fn _get_fmt_string(&self) -> String;
 
     fn get_fmt_string(&mut self) -> String {
-        self.get_as_single().unwrap()
+        self._get_fmt_string()
     }
 
     fn set_as_single(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
