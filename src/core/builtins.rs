@@ -34,9 +34,9 @@ impl ShellCore {
         self.subst_builtins
             .insert("readonly".to_string(), variable::readonly);
         self.subst_builtins
-            .insert("typeset".to_string(), variable::readonly);
+            .insert("typeset".to_string(), variable::declare);
         self.subst_builtins
-            .insert("declare".to_string(), variable::readonly);
+            .insert("declare".to_string(), variable::declare);
     }
 }
 

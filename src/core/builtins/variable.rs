@@ -5,13 +5,14 @@ use crate::ShellCore;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
-pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
-    /*
-    let mut args = arg::dissolve_options(args);
+fn declare_print_all(core: &mut ShellCore, args: &[String]) -> i32 {
+    0
+}
 
-    if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
+pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
+    if args.len() == 1 && subs.is_empty() {
         return declare_print_all(core, &args);
-    }*/
+    }
     0
 }
 
