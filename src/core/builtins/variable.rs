@@ -9,7 +9,8 @@ fn declare_print_all(core: &mut ShellCore, args: &[String]) -> i32 {
     0
 }
 
-pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
+pub fn declare(core: &mut ShellCore, args: &[String],
+               subs: &mut [Substitution]) -> i32 {
     if args.len() == 1 && subs.is_empty() {
         return declare_print_all(core, &args);
     }
