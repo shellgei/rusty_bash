@@ -6,7 +6,11 @@ use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
 fn declare_print(core: &mut ShellCore, _: &[String]) -> i32 {
-    dbg!("{:?}", &core.db.get_keys());
+    for key in core.db.get_param_keys() {
+        let value = core.db.get_param(&key)?;
+        println!("{key}={value}");
+    }
+
     0
 }
 

@@ -64,21 +64,26 @@ impl DataBase {
         self.get_layer_pos(name).unwrap_or(0)
     }
 
-    pub fn get_keys(&mut self) -> Vec<String> {
+    pub fn get_param_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();
         for layer in &self.params {
-            layer.keys().for_each(|k| {
-                keys.insert(k);
-            });
-        }
-        for f in &self.functions {
-            keys.insert(f.0);
+            layer.keys()
+                 .for_each(|k| { keys.insert(k); });
         }
         let mut ans = keys.iter()
                           .map(|c| c.to_string())
                           .collect::<Vec<String>>();
         ans.sort();
         ans
+    }
+
+    pub fn get_func_keys(&mut self) -> Vec<String> {
+        let mut keys = self.functions
+                           .keys()
+                           .map(|c| c.to_string())
+                           .collect::<Vec<String>>();
+        keys.sort();
+        keys 
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
