@@ -18,7 +18,7 @@ fn declare_print_funcs(core: &mut ShellCore) {
     }
 }
 
-fn declare_print(core: &mut ShellCore) -> i32 {
+fn declare_print(core: &mut ShellCore) {
     declare_print_params(core);
     declare_print_funcs(core);
     0
@@ -27,7 +27,7 @@ fn declare_print(core: &mut ShellCore) -> i32 {
 pub fn declare(core: &mut ShellCore, args: &[String],
                subs: &mut [Substitution]) -> i32 {
     if args.len() == 1 && subs.is_empty() {
-        return declare_print(core);
+        declare_print(core);
     }
     0
 }
