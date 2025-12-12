@@ -33,6 +33,10 @@ impl ShellCore {
             .insert("local".to_string(), variable::local);
         self.subst_builtins
             .insert("readonly".to_string(), variable::readonly);
+        self.subst_builtins
+            .insert("typeset".to_string(), variable::readonly);
+        self.subst_builtins
+            .insert("declare".to_string(), variable::readonly);
     }
 }
 

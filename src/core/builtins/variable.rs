@@ -5,6 +5,16 @@ use crate::ShellCore;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
+pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
+    /*
+    let mut args = arg::dissolve_options(args);
+
+    if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
+        return declare_print_all(core, &args);
+    }*/
+    0
+}
+
 pub fn local(core: &mut ShellCore, args: &[String],
              subs: &mut [Substitution]) -> i32 {
     let layer = if core.db.get_layer_num() > 2 {
