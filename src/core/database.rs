@@ -6,6 +6,7 @@ pub mod data;
 mod database_appenders;
 mod database_checkers;
 mod database_getters;
+mod database_print;
 mod database_setters;
 mod database_unsetters;
 mod database_initializers;
@@ -68,22 +69,6 @@ impl DataBase {
     pub fn init(&mut self, name: &str, layer: usize) {
         if let Some(d) = self.params[layer].get_mut(name) {
             d.clear();
-        }
-    }
-
-    pub fn print(&mut self, name: &str) {
-        if let Some(d) = self.get_ref(name) {
-            d.print_with_name(name, false);
-        } else if let Some(f) = self.functions.get(name) {
-            println!("{}", &f.text);
-        }
-    }
-
-    pub fn declare_print(&mut self, name: &str) {
-        if let Some(d) = self.get_ref(name) {
-            d.print_with_name(name, true);
-        } else if let Some(f) = self.functions.get(name) {
-            println!("{}", &f.text);
         }
     }
 

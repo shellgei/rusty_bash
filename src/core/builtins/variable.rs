@@ -166,7 +166,7 @@ fn declare_p(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
             true => format!("{com} -{opt} "),
         };
         print!("{prefix}");
-        core.db.declare_print(n);
+        core.db.print_for_declare(n);
     }
     0
 }
@@ -228,7 +228,7 @@ fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
             print!("r");
         }
         print!(" ");
-        core.db.declare_print(&name);
+        core.db.print_for_declare(&name);
     }
     0
 }

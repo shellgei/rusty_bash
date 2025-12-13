@@ -58,21 +58,6 @@ pub trait Data {
         self.boxed_clone()
     }
 
-    fn print_with_name(&mut self, name: &str, declare_print: bool) {
-        let body = self.get_fmt_string();
-        if !self.is_initialized() {
-            println!("{name}");
-        } else if declare_print
-            && (self.is_single() || self.is_special() )
-            && !body.starts_with("\"")
-            && !body.ends_with("\"")
-        {
-            println!("{name}=\"{body}\"");
-        } else {
-            println!("{name}={body}");
-        }
-    }
-
     fn is_initialized(&self) -> bool {
         true
     }
