@@ -31,18 +31,31 @@ impl DataBase {
     }
 
     pub fn get_keys(&mut self) -> Vec<String> {
+        let mut keys = self.get_param_keys();
+        keys.append(&mut self.get_func_keys());
+        keys
+    }
+
+    pub fn get_param_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();
         for layer in &self.params {
-            layer.keys().for_each(|k| {
-                keys.insert(k);
-            });
+            layer.keys()
+                 .for_each(|k| { keys.insert(k); });
         }
-        for f in &self.functions {
-            keys.insert(f.0);
-        }
-        let mut ans: Vec<String> = keys.iter().map(|c| c.to_string()).collect();
+        let mut ans = keys.iter()
+                          .map(|c| c.to_string())
+                          .collect::<Vec<String>>();
         ans.sort();
         ans
+    }
+
+    pub fn get_func_keys(&mut self) -> Vec<String> {
+        let mut keys = self.functions
+                           .keys()
+                           .map(|c| c.to_string())
+                           .collect::<Vec<String>>();
+        keys.sort();
+        keys 
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
