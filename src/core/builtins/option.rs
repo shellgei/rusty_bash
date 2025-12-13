@@ -100,7 +100,11 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
         /* print */
         core.db
-            .get_keys()
+            .get_param_keys()
+            .into_iter()
+            .for_each(|k| core.db.print(&k));
+        core.db
+            .get_func_keys()
             .into_iter()
             .for_each(|k| core.db.print(&k));
         return 0;

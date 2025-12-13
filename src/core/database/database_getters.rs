@@ -30,11 +30,12 @@ impl DataBase {
         self.params.len()
     }
 
+    /*
     pub fn get_keys(&mut self) -> Vec<String> {
         let mut keys = self.get_param_keys();
         keys.append(&mut self.get_func_keys());
         keys
-    }
+    }*/
 
     pub fn get_param_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();

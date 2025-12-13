@@ -174,7 +174,11 @@ fn declare_p(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
 fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() < 2 {
         core.db
-            .get_keys()
+            .get_param_keys()
+            .into_iter()
+            .for_each(|k| core.db.print(&k));
+        core.db
+            .get_func_keys()
             .into_iter()
             .for_each(|k| core.db.print(&k));
         return 0;
@@ -190,7 +194,7 @@ fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
-    let mut names = core.db.get_keys();
+    let mut names = core.db.get_param_keys();
     let mut options = String::new();
 
     if arg::has_option("-i", args) {
@@ -305,7 +309,7 @@ pub fn readonly_print(core: &mut ShellCore, args: &mut [String]) -> i32 {
 
     let mut names: Vec<String> = core
         .db
-        .get_keys()
+        .get_param_keys()
         .iter()
         .filter(|e| core.db.is_readonly(e))
         .map(|e| e.to_string())
