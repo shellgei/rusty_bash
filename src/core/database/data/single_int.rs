@@ -98,6 +98,10 @@ impl Data for IntData {
         }
         self.flags.contains(flag)
     }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
+    }
 }
 
 impl IntData {

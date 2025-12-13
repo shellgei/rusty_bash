@@ -246,6 +246,14 @@ impl DataBase {
             Err(e) => Err(e), 
         }
     }
+
+    pub fn get_flags(&mut self, name: &str) -> String {
+        if let Some(v) = self.get_ref(name) {
+            v.get_flags()
+        }else{
+            "".to_string()
+        }
+    }
 }
 
 fn special_param(db: &DataBase, name: &str) -> Option<String> {

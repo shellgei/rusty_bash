@@ -113,6 +113,10 @@ impl Data for Uninit {
     fn is_array(&self) -> bool {
         self.flags.contains('a')
     }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
+    }
 }
 
 impl Uninit {

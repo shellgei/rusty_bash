@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::error_exit_text;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
@@ -150,39 +149,16 @@ fn set_substitution(
 
 fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
     for n in names {
-        let mut opt = if core.db.is_assoc(n) {
-            "A"
-        } else if core.db.is_array(n) {
-            "a"
-        } else if core.db.exist(n) || core.db.exist_nameref(n) {
-            ""
-        } else {
-            return error_exit_text(1, n, "not found", core);
-        }
-        .to_string();
-
-        if core.db.is_int(n) {
-            opt += "i";
-        }
-        if core.db.has_flag(n, 'l') {
-            opt += "l";
-        }
-        if core.db.has_flag(n, 'u') {
-            opt += "u";
-        }
-        if core.db.has_flag(n, 'x') {
-            opt += "x";
-        }
-        if core.db.has_flag(n, 'n') {
-            opt += "n";
+        if ! core.db.exist(n) && ! core.db.exist_nameref(n) {
+            return super::error_exit_text(1, n, "not found", core);
         }
 
-        if core.db.is_readonly(n) && !opt.contains('r') && !core.options.query("posix") {
-            opt += "r";
-        }
+        let mut opts: Vec<char> = core.db.get_flags(n).chars().collect();
+        opts.sort();
 
-        if opt.is_empty() {
-            opt += "-";
+        let mut opt: String = opts.into_iter().collect();
+        while opt.len() == 0 {
+            opt.push('-');
         }
 
         let prefix = match core.options.query("posix") {

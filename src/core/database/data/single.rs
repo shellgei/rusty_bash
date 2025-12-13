@@ -35,6 +35,15 @@ impl Data for SingleData {
             s = "'".to_owned() + &s + "'";
         }
         let ansi = utils::to_ansi_c(&s);
+        /*
+        if ansi.starts_with("\"")
+        && ansi.ends_with("\"") && ansi.len() > 1 {
+            ansi.remove(0);
+            ansi.pop();
+            ansi.push('\'');
+            ansi.insert(0, '\'');
+        }*/
+
         if ansi == s {
             ansi.replace("$", "\\$")
         } else {
@@ -97,6 +106,10 @@ impl Data for SingleData {
 
     fn has_flag(&mut self, flag: char) -> bool {
         self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 

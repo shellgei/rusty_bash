@@ -217,4 +217,5 @@ pub trait Data {
         false
     }
 
+    fn get_flags(&mut self) -> String;
 }

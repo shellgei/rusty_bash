@@ -49,6 +49,10 @@ impl Data for EpochRealTime {
     fn has_flag(&mut self, flag: char) -> bool {
         self.flags.contains(flag)
     }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
+    }
 }
 
 impl EpochRealTime {
