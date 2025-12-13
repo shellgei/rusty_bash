@@ -147,7 +147,7 @@ fn set_substitution(
     res
 }
 
-fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
+fn declare_p(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
     for n in names {
         if ! core.db.exist(n) && ! core.db.exist_nameref(n) {
             return super::error_exit_text(1, n, "not found", core);
@@ -171,7 +171,7 @@ fn declare_print(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
     0
 }
 
-fn declare_print_all(core: &mut ShellCore, args: &[String]) -> i32 {
+fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() < 2 {
         core.db
             .get_keys()
@@ -254,7 +254,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
     let mut args = arg::dissolve_options(args);
 
     if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
-        return declare_print_all(core, &args);
+        return declare_print(core, &args);
     }
 
     if arg::has_option("-f", &args) {
@@ -266,7 +266,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
         for sub in subs {
             print_args.push(sub.text.clone());
         }
-        return declare_print(core, &print_args[1..], &args[0]);
+        return declare_p(core, &print_args[1..], &args[0]);
     }
 
     let layer = core.db.get_layer_num() - 2;
@@ -321,7 +321,7 @@ pub fn readonly_print(core: &mut ShellCore, args: &mut [String]) -> i32 {
         names.retain(|e| core.db.is_single_num(e));
     }
 
-    declare_print(core, &names, &args[0]);
+    declare_p(core, &names, &args[0]);
     0
 }
 
