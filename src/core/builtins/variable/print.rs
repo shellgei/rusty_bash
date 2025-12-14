@@ -10,12 +10,11 @@ fn format_options(name: &String, core: &mut ShellCore) -> String {
     let mut opts: Vec<char> = core.db.get_flags(name).chars().collect();
     opts.sort();
 
-    let mut opt: String = opts.into_iter().collect();
-    while opt.len() == 0 {
-        opt.push('-');
+    let ans: String = opts.into_iter().collect();
+    match ans.len() {
+        0 => "--".to_string(),
+        _ =>  "-".to_owned() + &ans,
     }
-    opt.insert(0, '-');
-    opt
 }
 
 pub(super) fn p_option(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
@@ -25,14 +24,39 @@ pub(super) fn p_option(core: &mut ShellCore, names: &[String], com: &str) -> i32
         }
 
         let opt = format_options(n, core);
-        let prefix = match core.options.query("posix") {
-            false => format!("declare {opt} "),
-            true => format!("{com} {opt} "),
+        match core.options.query("posix") {
+            false => print!("declare {opt} "),
+            true => print!("{com} {opt} "),
         };
-        print!("{prefix}");
         core.db.print_for_declare(n);
     }
     0
+}
+
+fn select_with_flags(core: &mut ShellCore,
+                     names: &mut Vec<String>, args: &[String]) {
+    for flag in ['i', 'a', 'A', 'r'] {
+        let opt = "-".to_owned() + &flag.to_string();
+        if arg::has_option(&opt, args) {
+            names.retain(|n| core.db.has_flag(n, flag));
+        }
+    }
+    /*
+    if arg::has_option("-i", args) {
+        names.retain(|n| core.db.has_flag(n, 'i'));
+    }
+
+    if arg::has_option("-a", args) {
+        names.retain(|n| core.db.is_array(n));
+    }
+
+    if arg::has_option("-A", args) {
+        names.retain(|n| core.db.is_assoc(n));
+    }
+
+    if arg::has_option("-r", args) {
+        names.retain(|n| core.db.is_readonly(n));
+    }*/
 }
 
 pub(super) fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -47,43 +71,15 @@ pub(super) fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut names = core.db.get_param_keys();
-    let mut options = String::new();
+    select_with_flags(core, &mut names, args);
 
-    if arg::has_option("-i", args) {
-        names.retain(|n| core.db.has_flag(n, 'i'));
-        options += "i";
-    }
-
-    if arg::has_option("-a", args) {
-        names.retain(|n| core.db.is_array(n));
-        options += "a";
-    }
-
-    if arg::has_option("-A", args) {
-        names.retain(|n| core.db.is_assoc(n));
-        options += "A";
-    }
-
-    if arg::has_option("-r", args) {
-        names.retain(|n| core.db.is_readonly(n));
-        if !core.options.query("posix") {
-            options += "r";
-        }
-    }
-
-    let prefix = format!("declare -{options}");
     for name in names {
-        print!("{prefix}");
-        if core.db.has_flag(&name, 'i') && !options.contains('i') {
-            print!("i");
+        let mut options = format_options(&name, core);
+        if core.options.query("posix") {
+            options.retain(|e| e != 'r');
         }
-        if core.db.has_flag(&name, 'x') && !options.contains('x') {
-            print!("x");
-        }
-        if core.db.is_readonly(&name) && !options.contains('r') && !core.options.query("posix") {
-            print!("r");
-        }
-        print!(" ");
+
+        print!("declare {options} ");
         core.db.print_for_declare(&name);
     }
     0
