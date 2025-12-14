@@ -3,7 +3,6 @@
 
 mod print;
 
-use crate::core::database::DataBase;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
@@ -154,14 +153,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
     let mut args = arg::dissolve_options(args);
 
     if subs.is_empty() {
-        if args.len() <= 1 {
-            DataBase::print_params_and_funcs(core);
-            return 0;
-        }
-        if arg::has_option("-f", &args) {
-            return print::all_functions(core, &args);
-        }
-        return print::all_with_flags(core, &args);
+        return print::all_match(core, &mut args);
     }
 
     if arg::has_option("-f", &args) {
@@ -169,11 +161,11 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
     }
 
     if arg::consume_arg("-p", &mut args) {
-        let mut print_args = args.to_vec();
+        let mut names = vec![];
         for sub in subs {
-            print_args.push(sub.text.clone());
+            names.push(sub.text.clone());
         }
-        return print::p_option(core, &print_args[1..], &args[0]);
+        return print::p_option(core, &names, &args);
     }
 
     let layer = core.db.get_layer_num() - 2;
@@ -209,8 +201,9 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
     let args = arg::dissolve_options(args);
 
     if subs.is_empty() {
-        let mut args_mut = args;
-        return print::readonly_params(core, &mut args_mut);
+        let mut args = args.to_vec();
+        args.push("-r".to_string()); 
+        return print::all_match(core, &mut args);
     }
 
     for sub in subs {
