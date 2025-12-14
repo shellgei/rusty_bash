@@ -33,30 +33,14 @@ pub(super) fn p_option(core: &mut ShellCore, names: &[String], com: &str) -> i32
     0
 }
 
-fn select_with_flags(core: &mut ShellCore,
-                     names: &mut Vec<String>, args: &[String]) {
-    for flag in ['i', 'a', 'A', 'r'] {
+fn select_with_flags(core: &mut ShellCore, names: &mut Vec<String>,
+                     flags: &[char], args: &[String]) {
+    for flag in flags {
         let opt = "-".to_owned() + &flag.to_string();
         if arg::has_option(&opt, args) {
-            names.retain(|n| core.db.has_flag(n, flag));
+            names.retain(|n| core.db.has_flag(n, *flag));
         }
     }
-    /*
-    if arg::has_option("-i", args) {
-        names.retain(|n| core.db.has_flag(n, 'i'));
-    }
-
-    if arg::has_option("-a", args) {
-        names.retain(|n| core.db.is_array(n));
-    }
-
-    if arg::has_option("-A", args) {
-        names.retain(|n| core.db.is_assoc(n));
-    }
-
-    if arg::has_option("-r", args) {
-        names.retain(|n| core.db.is_readonly(n));
-    }*/
 }
 
 pub(super) fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -71,7 +55,7 @@ pub(super) fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut names = core.db.get_param_keys();
-    select_with_flags(core, &mut names, args);
+    select_with_flags(core, &mut names, &['i', 'a', 'A', 'r'], args);
 
     for name in names {
         let mut options = format_options(&name, core);
@@ -96,27 +80,9 @@ pub(super) fn functions(core: &mut ShellCore, subs: &mut [Substitution]) -> i32 
 }
 
 pub(super) fn readonly_params(core: &mut ShellCore, args: &mut [String]) -> i32 {
-    let array_opt = arg::has_option("-a", args);
-    let assoc_opt = arg::has_option("-A", args);
-    let int_opt = arg::has_option("-i", args);
-
-    let mut names: Vec<String> = core
-        .db
-        .get_param_keys()
-        .iter()
-        .filter(|e| core.db.is_readonly(e))
-        .map(|e| e.to_string())
-        .collect();
-
-    if array_opt {
-        names.retain(|e| core.db.is_array(e));
-    }
-    if assoc_opt {
-        names.retain(|e| core.db.is_assoc(e));
-    }
-    if int_opt {
-        names.retain(|e| core.db.is_single_num(e));
-    }
+    let mut names = core.db.get_param_keys();
+    names.retain(|n| core.db.has_flag(n, 'r'));
+    select_with_flags(core, &mut names, &['a', 'A', 'i'], args);
 
     p_option(core, &names, &args[0]);
     0
