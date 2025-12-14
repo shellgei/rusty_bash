@@ -48,7 +48,7 @@ fn all_params(core: &mut ShellCore, args: &[String]) -> i32 {
 
 fn all_functions(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() != 2 {
-        return 0;
+        return 1;
     }
 
     let mut names = core.db.get_func_keys();
@@ -78,7 +78,7 @@ pub(super) fn params(core: &mut ShellCore,
 pub(super) fn functions(core: &mut ShellCore, args: &[String],
                         subs: &mut [Substitution]) -> i32 {
     if args.len() != 2 {
-        return 0;
+        return 1;
     }
 
     let mut names: Vec<String> = subs.
