@@ -72,6 +72,18 @@ impl Substitution {
         }
     }
 
+    fn restore_flag(core: &mut ShellCore, name: &str,
+                    old_flags: &str, layer: usize) {
+        for flag in old_flags.chars() {
+            if flag == 'A' || flag == 'a' {
+                continue;
+            }
+            if old_flags.contains(flag) {
+                core.db.set_flag(&name, flag, layer);
+            }
+        }
+    }
+
     fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
         let r = self.right_hand.as_mut().unwrap();
         if r.evaluated_array.is_none() {
@@ -80,21 +92,32 @@ impl Substitution {
 
         let a = r.evaluated_array.as_ref().unwrap();
         let name = &self.left_hand.name;
+        let old_flags = core.db.get_flags(&name);
+
         if a.is_empty() && !self.append {
-            let old_flags = core.db.get_flags(&name);
             if core.db.is_assoc(name) {
                 core.db.init_assoc(name, Some(layer), true, false)?;
             } else {
                 core.db
                     .init_array(name, Some(vec![]), Some(layer), false)?;
             }
-            if old_flags.contains('i') {
-                core.db.set_flag(&name, 'i', layer);
-            }
+
+            Self::restore_flag(core, name, &old_flags, layer);
+
+            /*
+            for flag in old_flags.chars() {
+                if flag == 'A' || flag == 'a' {
+                    continue;
+                }
+                if old_flags.contains(flag) {
+                    core.db.set_flag(&name, flag, layer);
+                }
+            }*/
 
             return Ok(());
         } else if !self.append {
             core.db.init(name, layer);
+            Self::restore_flag(core, name, &old_flags, layer);
         }
 
         for e in a {
