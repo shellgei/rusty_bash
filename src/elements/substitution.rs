@@ -81,12 +81,17 @@ impl Substitution {
         let a = r.evaluated_array.as_ref().unwrap();
         let name = &self.left_hand.name;
         if a.is_empty() && !self.append {
+            let old_flags = core.db.get_flags(&name);
             if core.db.is_assoc(name) {
                 core.db.init_assoc(name, Some(layer), true, false)?;
             } else {
                 core.db
                     .init_array(name, Some(vec![]), Some(layer), false)?;
             }
+            if old_flags.contains('i') {
+                core.db.set_flag(&name, 'i', layer);
+            }
+
             return Ok(());
         } else if !self.append {
             core.db.init(name, layer);
@@ -95,11 +100,9 @@ impl Substitution {
         for e in a {
             match e.1 {
                 //true if append
-                false => core
-                    .db
+                false => core.db
                     .set_param2(name, &e.0, &e.2, Some(layer))?,
-                true => core
-                    .db
+                true => core.db
                     .append_param2(name, &e.0, &e.2, Some(layer))?,
             }
         }
