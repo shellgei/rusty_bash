@@ -165,7 +165,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
         for sub in subs {
             names.push(sub.text.clone());
         }
-        return print::p_option(core, &names, &args);
+        return print::params(core, &names, &args);
     }
 
     let layer = core.db.get_layer_num() - 2;
