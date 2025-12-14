@@ -1,6 +1,9 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+mod print;
+
+use crate::core::database::DataBase;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
@@ -147,122 +150,20 @@ fn set_substitution(
     res
 }
 
-fn declare_p(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
-    for n in names {
-        if ! core.db.exist(n) && ! core.db.exist_nameref(n) {
-            return super::error_exit_text(1, n, "not found", core);
-        }
-
-        let mut opts: Vec<char> = core.db.get_flags(n).chars().collect();
-        opts.sort();
-
-        let mut opt: String = opts.into_iter().collect();
-        while opt.len() == 0 {
-            opt.push('-');
-        }
-
-        let prefix = match core.options.query("posix") {
-            false => format!("declare -{opt} "),
-            true => format!("{com} -{opt} "),
-        };
-        print!("{prefix}");
-        core.db.print_for_declare(n);
-    }
-    0
-}
-
-fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
-    if args.len() < 2 {
-        core.db
-            .get_param_keys()
-            .into_iter()
-            .for_each(|k| core.db.print(&k));
-        core.db
-            .get_func_keys()
-            .into_iter()
-            .for_each(|k| core.db.print(&k));
-        return 0;
-    }
-
-    if args.len() == 2 && args[1] == "-f" {
-        let mut names: Vec<String> = core.db.functions.keys().map(|k| k.to_string()).collect();
-        names.sort();
-
-        for n in names {
-            core.db.functions.get_mut(&n).unwrap().pretty_print(0);
-        }
-        return 0;
-    }
-
-    let mut names = core.db.get_param_keys();
-    let mut options = String::new();
-
-    if arg::has_option("-i", args) {
-        names.retain(|n| core.db.has_flag(n, 'i'));
-        options += "i";
-    }
-
-    if arg::has_option("-a", args) {
-        names.retain(|n| core.db.is_array(n));
-        options += "a";
-    }
-
-    if arg::has_option("-A", args) {
-        names.retain(|n| core.db.is_assoc(n));
-        options += "A";
-    }
-
-    if arg::has_option("-r", args) {
-        names.retain(|n| core.db.is_readonly(n));
-        if !core.options.query("posix") {
-            options += "r";
-        }
-    }
-
-    let prefix = format!("declare -{options}");
-    for name in names {
-        print!("{prefix}");
-        if core.db.has_flag(&name, 'i') && !options.contains('i') {
-            print!("i");
-        }
-        if core.db.has_flag(&name, 'x') && !options.contains('x') {
-            print!("x");
-        }
-        if core.db.is_readonly(&name) && !options.contains('r') && !core.options.query("posix") {
-            print!("r");
-        }
-        print!(" ");
-        core.db.print_for_declare(&name);
-    }
-    0
-}
-
-fn declare_print_function(core: &mut ShellCore, subs: &mut [Substitution]) -> i32 {
-    let mut names: Vec<String> = subs.iter().map(|s| s.left_hand.name.clone()).collect();
-    names.sort();
-
-    for n in &names {
-        if n.is_empty() {
-            return 1;
-        }
-
-        match core.db.functions.get_mut(n) {
-            Some(f) => f.pretty_print(0),
-            None => return 1,
-        }
-    }
-    0
-}
-
 pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
+    if args.len() <= 1 && subs.is_empty() {
+        DataBase::print_params_and_funcs(core);
+        return 0;//declare_print_all(core);
+    }
+
     if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
-        return declare_print(core, &args);
+        return print::declare_print(core, &args);
     }
 
     if arg::has_option("-f", &args) {
-        return declare_print_function(core, subs);
+        return print::declare_print_function(core, subs);
     }
 
     if arg::consume_arg("-p", &mut args) {
@@ -270,7 +171,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
         for sub in subs {
             print_args.push(sub.text.clone());
         }
-        return declare_p(core, &print_args[1..], &args[0]);
+        return print::declare_p(core, &print_args[1..], &args[0]);
     }
 
     let layer = core.db.get_layer_num() - 2;
@@ -302,39 +203,12 @@ pub fn export(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) 
     0
 }
 
-pub fn readonly_print(core: &mut ShellCore, args: &mut [String]) -> i32 {
-    let array_opt = arg::has_option("-a", args);
-    let assoc_opt = arg::has_option("-A", args);
-    let int_opt = arg::has_option("-i", args);
-
-    let mut names: Vec<String> = core
-        .db
-        .get_param_keys()
-        .iter()
-        .filter(|e| core.db.is_readonly(e))
-        .map(|e| e.to_string())
-        .collect();
-
-    if array_opt {
-        names.retain(|e| core.db.is_array(e));
-    }
-    if assoc_opt {
-        names.retain(|e| core.db.is_assoc(e));
-    }
-    if int_opt {
-        names.retain(|e| core.db.is_single_num(e));
-    }
-
-    declare_p(core, &names, &args[0]);
-    0
-}
-
 pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
     let args = arg::dissolve_options(args);
 
     if subs.is_empty() {
         let mut args_mut = args;
-        return readonly_print(core, &mut args_mut);
+        return print::readonly_print(core, &mut args_mut);
     }
 
     for sub in subs {
