@@ -18,7 +18,7 @@ fn format_options(name: &String, core: &mut ShellCore) -> String {
 }
 
 fn drop_by_args(core: &mut ShellCore, names: &mut Vec<String>, args: &[String]) {
-    for flag in ['i', 'a', 'A', 'r', 'x'] {
+    for flag in ['i', 'a', 'A', 'r', 'x', 'u', 'n', 'l'] {
         let opt = "-".to_owned() + &flag.to_string();
         if arg::has_option(&opt, args) {
             names.retain(|n| core.db.has_flag(n, flag));
