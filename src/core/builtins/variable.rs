@@ -155,7 +155,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
 
     if args.len() <= 1 && subs.is_empty() {
         DataBase::print_params_and_funcs(core);
-        return 0;//declare_print_all(core);
+        return 0;//p_optionrint_all(core);
     }
 
     if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
@@ -163,7 +163,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
     }
 
     if arg::has_option("-f", &args) {
-        return print::declare_print_function(core, subs);
+        return print::functions(core, subs);
     }
 
     if arg::consume_arg("-p", &mut args) {
@@ -171,7 +171,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
         for sub in subs {
             print_args.push(sub.text.clone());
         }
-        return print::declare_p(core, &print_args[1..], &args[0]);
+        return print::p_option(core, &print_args[1..], &args[0]);
     }
 
     let layer = core.db.get_layer_num() - 2;
@@ -208,7 +208,7 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
 
     if subs.is_empty() {
         let mut args_mut = args;
-        return print::readonly_print(core, &mut args_mut);
+        return print::readonly_params(core, &mut args_mut);
     }
 
     for sub in subs {
