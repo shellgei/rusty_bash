@@ -6,23 +6,28 @@ use crate::elements::substitution::Substitution;
 use crate::utils::arg;
 use crate::ShellCore;
 
+fn format_options(name: &String, core: &mut ShellCore) -> String {
+    let mut opts: Vec<char> = core.db.get_flags(name).chars().collect();
+    opts.sort();
+
+    let mut opt: String = opts.into_iter().collect();
+    while opt.len() == 0 {
+        opt.push('-');
+    }
+    opt.insert(0, '-');
+    opt
+}
+
 pub(super) fn p_option(core: &mut ShellCore, names: &[String], com: &str) -> i32 {
     for n in names {
         if ! core.db.exist(n) && ! core.db.exist_nameref(n) {
             return builtins::error_exit_text(1, n, "not found", core);
         }
 
-        let mut opts: Vec<char> = core.db.get_flags(n).chars().collect();
-        opts.sort();
-
-        let mut opt: String = opts.into_iter().collect();
-        while opt.len() == 0 {
-            opt.push('-');
-        }
-
+        let opt = format_options(n, core);
         let prefix = match core.options.query("posix") {
-            false => format!("declare -{opt} "),
-            true => format!("{com} -{opt} "),
+            false => format!("declare {opt} "),
+            true => format!("{com} {opt} "),
         };
         print!("{prefix}");
         core.db.print_for_declare(n);
