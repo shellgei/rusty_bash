@@ -166,12 +166,11 @@ impl BracedParam {
         let mut arr = vec![];
         let op = self.optional_operation.as_mut().unwrap();
         op.init_array(&self.param, &mut arr, &mut self.text, core)?;
-        self.array = Some(arr);
-        if self.param.index.is_some()
-            && self.param.index.as_ref().unwrap().text == "[*]"
-        {
-            self.text = self.array.clone().unwrap().join(&core.db.get_ifs_head());
-            //    self.array = None;
+        self.array = Some(arr.clone());
+        if let Some(index) = &self.param.index {
+            if index.text == "[*]" || index.text == "[@]" {
+                self.text = arr.join(&core.db.get_ifs_head());
+            }
         }
 
         Ok(())

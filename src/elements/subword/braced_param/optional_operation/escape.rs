@@ -6,6 +6,12 @@ use super::OptionalOperation;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
 
+#[derive(Debug, Clone, Default)]
+pub struct Escape {
+    pub text: String,
+    pub symbol: String,
+}
+
 impl OptionalOperation for Escape {
     fn get_text(&self) -> String {
         self.text.clone()
@@ -43,16 +49,6 @@ impl OptionalOperation for Escape {
             *elem = self.replace_array_elem(&i.to_string(), elem)?;
         }
 
-        /*
-        if param.name == "@"
-        || (param.index.is_some() && param.index.as_ref().unwrap().text == "[@]") {
-            *text = array.join(" ");
-            return Ok(());
-        }
-
-        let ifs = core.db.get_ifs_head();
-        *text = array.join(&ifs);
-        */
         Ok(())
     }
 
@@ -62,12 +58,6 @@ impl OptionalOperation for Escape {
     fn has_array_replace(&self) -> bool {
         true
     }
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct Escape {
-    pub text: String,
-    pub symbol: String,
 }
 
 impl Escape {
