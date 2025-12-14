@@ -43,9 +43,12 @@ fn select_with_flags(core: &mut ShellCore, names: &mut Vec<String>,
     }
 }
 
-pub(super) fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
+pub(super) fn all_with_flags(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() == 2 && args[1] == "-f" {
-        let mut names: Vec<String> = core.db.functions.keys().map(|k| k.to_string()).collect();
+        let mut names: Vec<String> = core.db.functions
+            .keys()
+            .map(|k| k.to_string())
+            .collect();
         names.sort();
 
         if names.iter().all(|n| core.db.print_func(n)) {
@@ -69,8 +72,30 @@ pub(super) fn declare_print(core: &mut ShellCore, args: &[String]) -> i32 {
     0
 }
 
-pub(super) fn functions(core: &mut ShellCore, subs: &mut [Substitution]) -> i32 {
-    let mut names: Vec<String> = subs.iter().map(|s| s.left_hand.name.clone()).collect();
+pub(super) fn all_functions(core: &mut ShellCore, args: &[String]) -> i32 {
+    if args.len() != 2 {
+        return 0;
+    }
+
+    let mut names = core.db.get_func_keys();
+    names.sort();
+
+    if names.iter().all(|n| core.db.print_func(n)) {
+        return 0;
+    }
+    1
+}
+
+pub(super) fn functions(core: &mut ShellCore, args: &[String],
+                        subs: &mut [Substitution]) -> i32 {
+    if args.len() != 2 {
+        return 0;
+    }
+
+    let mut names: Vec<String> = subs.
+        iter()
+        .map(|s| s.left_hand.name.clone())
+        .collect();
     names.sort();
 
     if names.iter().all(|n| core.db.print_func(n)) {

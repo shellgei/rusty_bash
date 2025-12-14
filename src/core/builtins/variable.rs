@@ -153,17 +153,19 @@ fn set_substitution(
 pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if args.len() <= 1 && subs.is_empty() {
-        DataBase::print_params_and_funcs(core);
-        return 0;//p_optionrint_all(core);
-    }
-
-    if args[1..].iter().all(|a| a.starts_with("-")) && subs.is_empty() {
-        return print::declare_print(core, &args);
+    if subs.is_empty() {
+        if args.len() <= 1 {
+            DataBase::print_params_and_funcs(core);
+            return 0;
+        }
+        if arg::has_option("-f", &args) {
+            return print::all_functions(core, &args);
+        }
+        return print::all_with_flags(core, &args);
     }
 
     if arg::has_option("-f", &args) {
-        return print::functions(core, subs);
+        return print::functions(core, &args, subs);
     }
 
     if arg::consume_arg("-p", &mut args) {
