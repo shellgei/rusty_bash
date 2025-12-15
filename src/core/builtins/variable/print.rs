@@ -60,12 +60,11 @@ fn all_functions(core: &mut ShellCore, args: &[String]) -> i32 {
     1
 }
 
-pub(super) fn params(core: &mut ShellCore,
-                     names: &[String], args: &[String]) -> i32 {
-    let mut names = names.to_vec();
-    drop_by_args(core, &mut names, args);
+pub(super) fn names_match(core: &mut ShellCore, names: &mut Vec<String>,
+                          args: &[String]) -> i32 {
+    drop_by_args(core, names, args);
 
-    for n in &names {
+    for n in names {
         if ! core.db.exist(n) && ! core.db.exist_nameref(n) {
             return builtins::error_exit_text(1, n, "not found", core);
         }
@@ -75,8 +74,12 @@ pub(super) fn params(core: &mut ShellCore,
     0
 }
 
-pub(super) fn functions(core: &mut ShellCore, args: &[String],
+pub(super) fn f_option(core: &mut ShellCore, args: &[String],
                         subs: &mut [Substitution]) -> i32 {
+    if subs.is_empty() {
+        return all_functions(core, &args);
+    }
+
     if args.len() != 2 {
         return 1;
     }
@@ -93,13 +96,10 @@ pub(super) fn functions(core: &mut ShellCore, args: &[String],
     1
 }
 
-pub(super) fn all_match(core: &mut ShellCore, args: &mut [String]) -> i32 {
+pub(super) fn args_match(core: &mut ShellCore, args: &mut [String]) -> i32 {
     if args.len() <= 1 {
         DataBase::print_params_and_funcs(core);
         return 0;
-    }
-    if arg::has_option("-f", &args) {
-        return all_functions(core, &args);
     }
     all_params(core, &args)
 }

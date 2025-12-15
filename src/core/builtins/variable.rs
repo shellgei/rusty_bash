@@ -35,20 +35,13 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
 pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if subs.is_empty() {
-        return print::all_match(core, &mut args);
-    }
-
     if arg::has_option("-f", &args) {
-        return print::functions(core, &args, subs);
-    }
-
-    if arg::consume_arg("-p", &mut args) {
-        let mut names = vec![];
-        for sub in subs {
-            names.push(sub.text.clone());
-        }
-        return print::params(core, &names, &args);
+        return print::f_option(core, &args, subs);
+    }else if subs.is_empty() {
+        return print::args_match(core, &mut args);
+    }else if arg::consume_arg("-p", &mut args) { //declare -p hoge
+        let mut names = subs.iter().map(|s| s.text.clone()).collect();
+        return print::names_match(core, &mut names, &args);
     }
 
     let layer = core.db.get_layer_num() - 2;
@@ -86,7 +79,7 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
     if subs.is_empty() {
         let mut args = args.to_vec();
         args.push("-r".to_string()); 
-        return print::all_match(core, &mut args);
+        return print::args_match(core, &mut args);
     }
 
     for sub in subs {
