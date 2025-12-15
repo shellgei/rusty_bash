@@ -31,6 +31,31 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
     0
 }
 
+pub fn set_options_pre(core: &mut ShellCore, name: &String,
+                       layer: usize, args: &[String]) {
+    if arg::has_option("-x", args) {
+        core.db.set_flag(name, 'x', layer);
+    }
+
+    if arg::has_option("-n", args) {
+        core.db.set_flag(name, 'n', layer);
+    }
+
+    if arg::has_option("-i", args) {
+        core.db.set_flag(name, 'i', layer);
+    }
+
+    if arg::has_option("-l", args) {
+        core.db.unset_flag(name, 'u', layer);
+        core.db.set_flag(name, 'l', layer);
+    }
+
+    if arg::has_option("-u", args) {
+        core.db.unset_flag(name, 'l', layer);
+        core.db.set_flag(name, 'u', layer);
+    }
+}
+
 fn set_substitution(
     core: &mut ShellCore,
     sub: &mut Substitution,
@@ -51,7 +76,7 @@ fn set_substitution(
 
     let read_only = arg::has_option("-r", args);
     let export_opt = arg::has_option("-x", args);
-    let nameref_opt = arg::has_option("-n", args);
+    //let nameref_opt = arg::has_option("-n", args);
 
     let mut layer = layer;
     if arg::has_option("-g", args) && layer != 0 {
@@ -100,34 +125,13 @@ fn set_substitution(
         sub.reparse(core)?;
     }
 
-    if export_opt {
-        core.db.set_flag(&sub.left_hand.name, 'x', layer);
-    }
-
-    if nameref_opt {
-        core.db.set_flag(&sub.left_hand.name, 'n', layer);
-    }
-
-    if arg::has_option("-i", args) {
-        core.db.set_flag(&sub.left_hand.name, 'i', layer);
-    }
-
-    if arg::has_option("-l", args) {
-        core.db.unset_flag(&sub.left_hand.name, 'u', layer);
-        core.db.set_flag(&sub.left_hand.name, 'l', layer);
-    }
-
-    if arg::has_option("-u", args) {
-        core.db.unset_flag(&sub.left_hand.name, 'l', layer);
-        core.db.set_flag(&sub.left_hand.name, 'u', layer);
-    }
+    set_options_pre(core, &sub.left_hand.name, layer, args);
 
     let mut res = Ok(());
 
     match sub.right_hand.is_some() {
         true => res = sub.eval(core, Some(layer), true),
         false => {
-            //if !core.db.params[layer].contains_key(&sub.left_hand.name)
             if !core.db.exist_l(&sub.left_hand.name, layer)
                 || (!core.db.is_array(&sub.left_hand.name) && arg::has_option("-a", args))
                 || (!core.db.is_assoc(&sub.left_hand.name) && arg::has_option("-A", args))
