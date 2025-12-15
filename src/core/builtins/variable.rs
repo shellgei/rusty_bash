@@ -84,8 +84,6 @@ fn set_substitution(
     readonly_check(core, &name)?;
     array_to_element_check(sub)?;
 
-    let read_only = arg::has_option("-r", args);
-    let export_opt = arg::has_option("-x", args);
 
     let mut layer = layer;
     if arg::has_option("-g", args) && layer != 0 {
@@ -116,7 +114,7 @@ fn set_substitution(
     let treat_as_array =
         core.db.is_array(&name) || core.db.is_assoc(&name);
     let option_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
-    let treat_as_export = core.db.has_flag(&name, 'x') || export_opt;
+    let treat_as_export = core.db.has_flag(&name, 'x') || arg::has_option("-x", args);
     let subs_elem_quoted_string = match sub.right_hand.as_mut() {
         Some(r) => sub.left_hand.index.is_some() && r.text.starts_with("'"),
         _ => false,
@@ -137,23 +135,20 @@ fn set_substitution(
     set_options_pre(core, &name, layer, args);
 
 
-    let mut res = Ok(());
-    match sub.right_hand.is_some() {
-        true => res = sub.eval(core, Some(layer), true),
+    let res = match sub.right_hand.is_some() {
+        true => sub.eval(core, Some(layer), true),
         false => {
             let change_type = (!core.db.is_array(&name) && arg::has_option("-a", args))
                             || (!core.db.is_assoc(&name) && arg::has_option("-A", args));
 
             if !core.db.exist_l(&name, layer) || change_type {
-                //let mut args_clone = args.to_vec();
-                res = sub
-                    .left_hand
-                    .init_variable(core, Some(layer), &mut args.to_vec());
+                sub.left_hand.init_variable(core, Some(layer), &mut args.to_vec())?;
             }
-        }
-    }
+            Ok(())
+        },
+    };
 
-    if read_only {
+    if arg::has_option("-r", args) {
         core.db.set_flag(&name, 'r', layer);
     }
 
