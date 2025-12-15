@@ -11,7 +11,7 @@ fn print_args_match(core: &mut ShellCore) -> i32 {
 
 pub fn declare(core: &mut ShellCore, args: &[String],
                subs: &mut [Substitution]) -> i32 {
-    if args.len() == 1 && subs.is_empty() {
+    if subs.is_empty() {
         return print_args_match(core);
     }
     0
