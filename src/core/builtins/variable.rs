@@ -56,18 +56,14 @@ pub fn set_options_pre(core: &mut ShellCore, name: &String,
     }
 }
 
-fn set_substitution(
-    core: &mut ShellCore,
-    sub: &mut Substitution,
-    args: &[String],
-    layer: usize,
-) -> Result<(), ExecError> {
-    let name = sub.left_hand.name.clone();
-
+fn readonly_check(core: &mut ShellCore, name: &str) -> Result<(), ExecError> {
     if core.db.is_readonly(&name) {
-        return Err(ExecError::VariableReadOnly(name.clone()));
+        return Err(ExecError::VariableReadOnly(name.to_string()));
     }
+    Ok(())
+}
 
+fn array_to_element_check(sub: &mut Substitution) -> Result<(), ExecError> {
     if let Some(r) = sub.right_hand.as_mut() {
         if sub.left_hand.index.is_some()
         && r.text.starts_with("(") {
@@ -75,10 +71,21 @@ fn set_substitution(
             return Err(ExecError::Other(msg));
         }
     }
+    Ok(())
+}
+
+fn set_substitution(
+    core: &mut ShellCore,
+    sub: &mut Substitution,
+    args: &[String],
+    layer: usize,
+) -> Result<(), ExecError> {
+    let name = sub.left_hand.name.clone();
+    readonly_check(core, &name)?;
+    array_to_element_check(sub)?;
 
     let read_only = arg::has_option("-r", args);
     let export_opt = arg::has_option("-x", args);
-    //let nameref_opt = arg::has_option("-n", args);
 
     let mut layer = layer;
     if arg::has_option("-g", args) && layer != 0 {
