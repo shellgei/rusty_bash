@@ -73,30 +73,31 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
             .init_variable(core, Some(layer), &mut args_clone)?;
     }
 
+    let arg_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
+
     if let Some(r) = sub.right_hand.as_mut() {
-        if (arg::has_option("-A", args) || arg::has_option("-a", args))
-            && (r.text.starts_with("(") || r.text.starts_with("'(")) {
+        let right_is_array = r.text.starts_with("(") || r.text.starts_with("'(");
+
+        if arg_indicate_array && right_is_array {
             sub.left_hand.index = None;
         }
     }
 
-    /* TODO: chaos!!!! */
     let already_array = core.db.is_array(&name) || core.db.is_assoc(&name);
-    let option_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
-    let treat_as_export = core.db.has_flag(&name, 'x') || arg::has_option("-x", args);
     let subs_elem_quoted_string = match sub.right_hand.as_mut() {
         Some(r) => sub.left_hand.index.is_some() && r.text.starts_with("'"),
         _ => false,
     };
 
-    if option_indicate_array {
+    if arg_indicate_array {
         sub.quoted = false;
     }
 
+    let treat_as_export = core.db.has_flag(&name, 'x') || arg::has_option("-x", args);
     if sub.right_hand.is_some()
         && already_array
         && !subs_elem_quoted_string
-        && (!treat_as_export || option_indicate_array)
+        && (!treat_as_export || arg_indicate_array)
     {
         sub.reparse(core)?;
     }
