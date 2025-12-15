@@ -76,8 +76,7 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
     let arg_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
 
     if let Some(r) = sub.right_hand.as_mut() {
-        let right_is_array = r.text.starts_with("(") || r.text.starts_with("'(");
-
+        let right_is_array = ["(", "'(", "\"("].iter().any(|e| r.text.starts_with(e));
         if arg_indicate_array && right_is_array {
             sub.left_hand.index = None;
         }
@@ -89,8 +88,8 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
         _ => false,
     };
 
-    if arg_indicate_array {
-        sub.quoted = false;
+    if arg_indicate_array || (already_array && args[0] == "declare") {
+        sub.quoted = false;   //^ Bash bug???
     }
 
     let treat_as_export = core.db.has_flag(&name, 'x') || arg::has_option("-x", args);
