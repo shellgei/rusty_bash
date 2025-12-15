@@ -49,31 +49,31 @@ fn array_to_element_check(sub: &mut Substitution) -> Result<(), ExecError> {
     Ok(())
 }
 
+fn check_global_option(core: &mut ShellCore, args: &[String],
+                       name: &str, layer: usize) -> usize {
+    if arg::has_option("-g", args) && layer != 0 {
+        let _ = core.db.unset(&name, None);
+        return 0;
+    }
+    layer
+}
+
 pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String],
                layer: usize) -> Result<(), ExecError> {
     let name = sub.left_hand.name.clone();
     readonly_check(core, &name)?;
     array_to_element_check(sub)?;
-
-    let mut layer = layer;
-    if arg::has_option("-g", args) && layer != 0 {
-        core.db.unset(&name, None)?;
-        layer = 0;
-    }
+    let layer = check_global_option(core, args, &name, layer);
 
     if arg::has_option("+i", args) && core.db.has_flag_layer(&name, 'i', layer) {
         core.db.int_to_str_type(&name, layer)?;
     }
 
-    if (arg::has_option("-A", args) || arg::has_option("-a", args))
-        && !core.db.exist(&name)
-    {
-        let mut args_clone = args.to_vec();
-        sub.left_hand
-            .init_variable(core, Some(layer), &mut args_clone)?;
-    }
-
     let arg_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
+
+    if arg_indicate_array && !core.db.exist(&name) && !core.db.exist_nameref(&name) {
+        sub.left_hand.init_variable(core, Some(layer), &mut args.to_vec())?;
+    }
 
     if let Some(r) = sub.right_hand.as_mut() {
         let right_is_array = ["(", "'(", "\"("].iter().any(|e| r.text.starts_with(e));
@@ -84,7 +84,8 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
 
     let already_array = core.db.is_array(&name) || core.db.is_assoc(&name);
     let subs_elem_quoted_string = match sub.right_hand.as_mut() {
-        Some(r) => sub.left_hand.index.is_some() && r.text.starts_with("'"),
+        Some(r) => sub.left_hand.index.is_some()
+                   && (r.text.starts_with("'") || r.text.starts_with("\"")),
         _ => false,
     };
 
