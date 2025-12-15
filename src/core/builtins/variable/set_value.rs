@@ -31,6 +31,13 @@ fn set_options_pre(core: &mut ShellCore, name: &String,
     }
 }
 
+fn set_options_post(core: &mut ShellCore, name: &String,
+                       layer: usize, args: &[String]) {
+    if arg::has_option("-r", args) {
+        core.db.set_flag(&name, 'r', layer);
+    }
+}
+
 fn readonly_check(core: &mut ShellCore, name: &str) -> Result<(), ExecError> {
     if core.db.is_readonly(&name) {
         return Err(ExecError::VariableReadOnly(name.to_string()));
@@ -56,6 +63,23 @@ fn check_global_option(core: &mut ShellCore, args: &[String],
         return 0;
     }
     layer
+}
+
+fn eval(core: &mut ShellCore, args: &[String], sub: &mut Substitution,
+        name: &str, layer: usize) -> Result<(), ExecError> {
+    if sub.right_hand.is_some() {
+        return sub.eval(core, Some(layer), true);
+    }
+
+    let change_type = (!core.db.is_array(&name) && arg::has_option("-a", args))
+                    || (!core.db.is_assoc(&name) && arg::has_option("-A", args));
+
+    if !core.db.exist_l(&name, layer) || change_type {
+        sub.left_hand.init_variable(core, Some(layer), &mut args.to_vec())?;
+    }
+
+
+    Ok(())
 }
 
 pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String],
@@ -97,30 +121,13 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
     if sub.right_hand.is_some()
         && already_array
         && !subs_elem_quoted_string
-        && (!treat_as_export || arg_indicate_array)
-    {
+        && (!treat_as_export || arg_indicate_array) {
         sub.reparse(core)?;
     }
 
     set_options_pre(core, &name, layer, args);
-
-
-    let res = match sub.right_hand.is_some() {
-        true => sub.eval(core, Some(layer), true),
-        false => {
-            let change_type = (!core.db.is_array(&name) && arg::has_option("-a", args))
-                            || (!core.db.is_assoc(&name) && arg::has_option("-A", args));
-
-            if !core.db.exist_l(&name, layer) || change_type {
-                sub.left_hand.init_variable(core, Some(layer), &mut args.to_vec())?;
-            }
-            Ok(())
-        },
-    };
-
-    if arg::has_option("-r", args) {
-        core.db.set_flag(&name, 'r', layer);
-    }
+    let res = eval(core, args, sub, &name, layer);
+    set_options_post(core, &name, layer, args);
 
     res
 }
