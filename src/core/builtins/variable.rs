@@ -51,8 +51,6 @@ fn set_substitution(
 
     let read_only = arg::has_option("-r", args);
     let export_opt = arg::has_option("-x", args);
-    let little_opt = arg::has_option("-l", args);
-    let upper_opt = arg::has_option("-u", args);
     let nameref_opt = arg::has_option("-n", args);
 
     let mut layer = layer;
@@ -114,12 +112,12 @@ fn set_substitution(
         core.db.set_flag(&sub.left_hand.name, 'i', layer);
     }
 
-    if little_opt {
+    if arg::has_option("-l", args) {
         core.db.unset_flag(&sub.left_hand.name, 'u', layer);
         core.db.set_flag(&sub.left_hand.name, 'l', layer);
     }
 
-    if upper_opt {
+    if arg::has_option("-u", args) {
         core.db.unset_flag(&sub.left_hand.name, 'l', layer);
         core.db.set_flag(&sub.left_hand.name, 'u', layer);
     }
