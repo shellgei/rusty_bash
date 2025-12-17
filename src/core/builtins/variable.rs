@@ -5,14 +5,14 @@ use crate::ShellCore;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
-fn print_args_match(core: &mut ShellCore) -> i32 {
+fn print_args_match(_: &mut ShellCore, _: &[String]) -> i32 {
     0
 }
 
 pub fn declare(core: &mut ShellCore, args: &[String],
                subs: &mut [Substitution]) -> i32 {
     if subs.is_empty() {
-        return print_args_match(core);
+        return print_args_match(core, args);
     }
     0
 }
