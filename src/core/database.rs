@@ -96,8 +96,10 @@ impl DataBase {
     }
 
     pub fn print_param(&mut self, name: &str) {
-        if let Some(d) = self.get_ref(name) {
-            Self::print_with_name(d, name);
+        if let Some(layer) = self.get_layer_pos(name) {
+            if let Some(d) = self.params[layer].get_mut(name) {
+                Self::print_with_name(d, name);
+            }
         }
     }
 
