@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub fn has_option(option: &str, args: &[String]) -> bool {
+pub fn _has_option(option: &str, args: &[String]) -> bool {
     args.iter().any(|arg| arg == option)
 }
 
-pub fn consume_arg(option: &str, args: &mut Vec<String>) -> bool {
+pub fn _consume_arg(option: &str, args: &mut Vec<String>) -> bool {
     let found = args.iter().any(|arg| arg == option);
     if found {
         args.retain(|arg| arg != option);
@@ -13,7 +13,7 @@ pub fn consume_arg(option: &str, args: &mut Vec<String>) -> bool {
     found
 }
 
-pub fn consume_option(option: &str, args: &mut Vec<String>) -> bool {
+pub fn _consume_option(option: &str, args: &mut Vec<String>) -> bool {
     for (i, a) in args.iter().enumerate() {
         if a.starts_with("--") {
             return false;
@@ -28,14 +28,14 @@ pub fn consume_option(option: &str, args: &mut Vec<String>) -> bool {
     false
 }
 
-pub fn consume_starts_with(s: &str, args: &mut Vec<String>) -> Vec<String> {
+pub fn _consume_starts_with(s: &str, args: &mut Vec<String>) -> Vec<String> {
     let mut ans = args.clone();
     ans.retain(|a| a.starts_with(s));
     args.retain(|a| !a.starts_with(s));
     ans
 }
 
-pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> Option<String> {
+pub fn _consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> Option<String> {
     match args.iter().position(|a| a == prev_opt) {
         Some(pos) => match pos + 1 >= args.len() {
             true => None,
@@ -48,7 +48,7 @@ pub fn consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> Option<S
     }
 }
 
-pub fn consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<String> {
+pub fn _consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<String> {
     match args.iter().position(|a| a == prev_opt) {
         Some(pos) => {
             let ans = args[pos..].to_vec();
@@ -102,7 +102,7 @@ pub fn dissolve_options(args: &[String]) -> Vec<String> {
     ans
 }
 
-pub fn dissolve_options_main() -> Vec<String> {
+pub fn _dissolve_options_main() -> Vec<String> {
     let mut ans = vec![];
     let mut stop = false;
     for (i, a) in std::env::args().enumerate() {
