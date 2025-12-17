@@ -106,7 +106,7 @@ impl DataBase {
 
     pub fn print_func(&mut self, name: &str) -> bool {
         if let Some(f) = self.functions.get_mut(name) {
-            print!("{}", &f.text);
+            println!("{}", &f.text);
             return true;
         }
         false

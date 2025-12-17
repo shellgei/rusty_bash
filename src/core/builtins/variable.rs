@@ -5,33 +5,18 @@ use crate::ShellCore;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
-/*
-fn declare_print_params(core: &mut ShellCore) {
-    for key in core.db.get_param_keys() {
-        let value = core.db.get_param(&key).unwrap();
-        println!("{key}={value}");
+fn print_args_match(core: &mut ShellCore, args: &[String]) -> i32 {
+    if args.len() <= 1 { 
+        core.db.print_params_and_funcs();
+        return 0;
     }
-}
-
-fn declare_print_funcs(core: &mut ShellCore) {
-    for key in core.db.get_func_keys() {
-        println!("{}", &core.db.functions[&key].text);
-    }
-}
-
-fn declare_print(core: &mut ShellCore) -> i32 {
-    declare_print_params(core);
-    declare_print_funcs(core);
-*/
-
-fn print_args_match(core: &mut ShellCore) -> i32 {
     0
 }
 
 pub fn declare(core: &mut ShellCore, args: &[String],
                subs: &mut [Substitution]) -> i32 {
     if subs.is_empty() {
-        return print_args_match(core);
+        return print_args_match(core, args);
     }
     0
 }
