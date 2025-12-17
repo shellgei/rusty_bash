@@ -1,19 +1,16 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::core::ShellCore;
 use super::{Data, DataBase};
 
 impl DataBase {
-    pub fn print_params_and_funcs(core: &mut ShellCore) {
-        core.db
-            .get_param_keys()
+    pub fn print_params_and_funcs(&mut self) {
+        self.get_param_keys()
             .into_iter()
-            .for_each(|k| core.db.print_param(&k));
-        core.db
-            .get_func_keys()
+            .for_each(|k| self.print_param(&k));
+        self.get_func_keys()
             .into_iter()
-            .for_each(|k| { core.db.print_func(&k); });
+            .for_each(|k| { self.print_func(&k); });
     }
 
     pub fn print_param(&mut self, name: &str) {

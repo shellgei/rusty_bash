@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{builtins, ShellCore};
-use crate::core::DataBase;
 use crate::elements::substitution::Substitution;
 use crate::utils::arg;
 
@@ -98,7 +97,7 @@ pub(super) fn f_option(core: &mut ShellCore, args: &[String],
 
 pub(super) fn args_match(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
-        DataBase::print_params_and_funcs(core);
+        core.db.print_params_and_funcs();
         return 0;
     }
     all_params(core, &args)

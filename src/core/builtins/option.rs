@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::core::database::DataBase;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
 use crate::{error, ShellCore};
@@ -99,18 +98,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if args.len() <= 1 {
-        DataBase::print_params_and_funcs(core);
-        /* print */
-        /*
-        core.db
-            .get_param_keys()
-            .into_iter()
-            .for_each(|k| core.db.print_param(&k));
-        core.db
-            .get_func_keys()
-            .into_iter()
-            .for_each(|k| core.db.print_func(&k));
-        */
+        core.db.print_params_and_funcs();
         return 0;
     }
 
