@@ -96,7 +96,7 @@ pub(super) fn f_option(core: &mut ShellCore, args: &[String],
     1
 }
 
-pub(super) fn args_match(core: &mut ShellCore, args: &mut [String]) -> i32 {
+pub(super) fn args_match(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
         DataBase::print_params_and_funcs(core);
         return 0;
