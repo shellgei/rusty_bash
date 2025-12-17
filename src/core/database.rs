@@ -86,6 +86,34 @@ impl DataBase {
         keys 
     }
 
+    pub fn print_params_and_funcs(&mut self) {
+        self.get_param_keys()
+            .into_iter()
+            .for_each(|k| self.print_param(&k));
+        self.get_func_keys()
+            .into_iter()
+            .for_each(|k| { self.print_func(&k); });
+    }
+
+    pub fn print_param(&mut self, name: &str) {
+        if let Some(d) = self.get_ref(name) {
+            Self::print_with_name(d, name);
+        }
+    }
+
+    pub fn print_func(&mut self, name: &str) -> bool {
+        if let Some(f) = self.functions.get_mut(name) {
+            print!("{}", &f.text);
+            return true;
+        }
+        false
+    }
+
+    fn print_with_name(d: &mut Box::<dyn Data>, name: &str) {
+        let body = d.get_fmt_string();
+        println!("{name}={body}");
+    }
+
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
         let num = self.params.len();
         (0..num)
