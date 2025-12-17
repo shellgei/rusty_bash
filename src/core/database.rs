@@ -98,7 +98,8 @@ impl DataBase {
     pub fn print_param(&mut self, name: &str) {
         if let Some(layer) = self.get_layer_pos(name) {
             if let Some(d) = self.params[layer].get_mut(name) {
-                Self::print_with_name(d, name);
+                let body = d.get_fmt_string();
+                println!("{name}={body}");
             }
         }
     }
@@ -109,11 +110,6 @@ impl DataBase {
             return true;
         }
         false
-    }
-
-    fn print_with_name(d: &mut Box::<dyn Data>, name: &str) {
-        let body = d.get_fmt_string();
-        println!("{name}={body}");
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
