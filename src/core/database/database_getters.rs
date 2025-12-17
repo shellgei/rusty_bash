@@ -9,13 +9,8 @@ use std::env;
 
 impl DataBase {
     pub fn get_ref(&mut self, name: &str) -> Option<&mut Box<dyn Data>> {
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            if self.params[layer].contains_key(name) {
-                return self.params[layer].get_mut(name);
-            }
-        }
-        None
+        let layer = self.get_layer_pos(name)?;
+        self.params[layer].get_mut(name)
     }
 
     pub fn get_ifs_head(&mut self) -> String {
@@ -29,13 +24,6 @@ impl DataBase {
     pub fn get_layer_num(&mut self) -> usize {
         self.params.len()
     }
-
-    /*
-    pub fn get_keys(&mut self) -> Vec<String> {
-        let mut keys = self.get_param_keys();
-        keys.append(&mut self.get_func_keys());
-        keys
-    }*/
 
     pub fn get_param_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();
