@@ -1,6 +1,10 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub fn has_option(option: &str, args: &[String]) -> bool {
+    args.iter().any(|arg| arg == option)
+}
+
 fn add_prefix(prefix: char, opts: &str) -> Vec<String> {
     if opts.is_empty() {
         return vec![prefix.to_string()];
