@@ -67,15 +67,15 @@ fn add_prefix(prefix: char, opts: &str) -> Vec<String> {
     opts.chars().map(|c| format!("{prefix}{c}")).collect()
 }
 
-pub fn dissolve_option(opt: &str) -> Vec<String> {
-    if opt.starts_with("--") {
-        vec![opt.to_string()]
-    } else if let Some(opts) = opt.strip_prefix('-') {
+pub fn dissolve_option(arg: &str) -> Vec<String> {
+    if arg.starts_with("--") {
+        vec![arg.to_string()]
+    } else if let Some(opts) = arg.strip_prefix('-') {
         add_prefix('-', opts)
-    } else if let Some(opts) = opt.strip_prefix('+') {
+    } else if let Some(opts) = arg.strip_prefix('+') {
         add_prefix('+', opts)
     } else {
-        vec![opt.to_string()]
+        vec![arg.to_string()]
     }
 }
 
