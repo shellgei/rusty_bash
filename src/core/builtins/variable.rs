@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::utils::arg;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
@@ -15,8 +16,10 @@ fn print_args_match(core: &mut ShellCore, args: &[String]) -> i32 {
 
 pub fn declare(core: &mut ShellCore, args: &[String],
                subs: &mut [Substitution]) -> i32 {
+    let mut args = arg::dissolve_options(args);
+
     if subs.is_empty() {
-        return print_args_match(core, args);
+        return print_args_match(core, &args);
     }
     0
 }
