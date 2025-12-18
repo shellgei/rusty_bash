@@ -18,7 +18,9 @@ pub fn declare(core: &mut ShellCore, args: &[String],
                subs: &mut [Substitution]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
-    if subs.is_empty() {
+    if arg::has_option("-f", &args) {
+        return print::f_option(core, &args, subs);
+    else if subs.is_empty() {
         return print_args_match(core, &args);
     }
     0
