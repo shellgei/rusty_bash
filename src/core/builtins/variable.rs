@@ -6,21 +6,41 @@ use crate::utils::arg;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 
+fn drop_by_args(core: &mut ShellCore, names: &mut Vec<String>, args: &[String]) {
+    for flag in ['i', 'a', 'A', 'r', 'x', 'u', 'n', 'l'] {
+        let opt = "-".to_owned() + &flag.to_string();
+        if arg::has_option(&opt, args) {
+            names.retain(|n| core.db.has_flag(n, flag));
+        }
+    }
+}
+
+fn output(core: &mut ShellCore, name: &String, args: &[String]) {
+    let mut options = format_options(name, core);
+    print!("declare {options} ");
+    core.db.print_for_declare(name);
+}
+
+fn print_args_matched_params(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut names = core.db.get_param_keys();
+    drop_by_args(core, &mut names, args);
+    names.iter().for_each(|n| {output(core, n, args); });
+    0
+}
+
 fn print_args_match(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 { 
         core.db.print_params_and_funcs();
         return 0;
     }
-    0
+    print_args_matched_params(core, &args)
 }
 
 pub fn declare(core: &mut ShellCore, args: &[String],
                subs: &mut [Substitution]) -> i32 {
-    let mut args = arg::dissolve_options(args);
+    let args = arg::dissolve_options(args);
 
-    if arg::has_option("-f", &args) {
-        return print::f_option(core, &args, subs);
-    else if subs.is_empty() {
+    if subs.is_empty() {
         return print_args_match(core, &args);
     }
     0
