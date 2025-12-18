@@ -157,4 +157,13 @@ impl DataBase {
             d.set_flag(flag);
         }
     }
+
+    pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
+        let layer = match self.get_layer_pos(name) {
+            Some(n) => n,
+            None => return false,
+        };
+
+        self.params[layer].get_mut(name).unwrap().has_flag(flag)
+    }
 }

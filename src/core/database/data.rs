@@ -31,4 +31,6 @@ pub trait Data {
     }
 
     fn set_flag(&mut self, _: char) {}
+
+    fn has_flag(&mut self, _: char) -> bool;
 }

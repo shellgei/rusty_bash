@@ -48,4 +48,8 @@ impl Data for SingleData {
             self.flags.push(flag);
         }
     }
+
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.flags.contains(flag)
+    }
 }
