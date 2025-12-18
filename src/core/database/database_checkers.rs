@@ -19,18 +19,6 @@ impl DataBase {
             Some(d) => d.has_key(index).unwrap_or(false),
             None => false,
         }
-        /*
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            if let Some(e) = self.params[layer].get(name) {
-                let mut a = e.clone();
-                if a.has_key(index).unwrap_or(false) {
-                    return true;
-                }
-            }
-        }
-        false
-        */
     }
 
     pub fn has_flag_layer(&mut self, name: &str, flag: char, layer: usize) -> bool {
@@ -45,15 +33,6 @@ impl DataBase {
             Some(d) => d.has_flag(flag),
             None => false,
         }
-
-        /*
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            if let Some(e) = self.params[layer].get_mut(name) {
-                return e.has_flag(flag);
-            }
-        }
-        false*/
     }
 
     pub fn exist(&mut self, name: &str) -> bool {
