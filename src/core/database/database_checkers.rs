@@ -15,6 +15,11 @@ impl DataBase {
     }
 
     pub fn has_array_value(&mut self, name: &str, index: &str) -> bool {
+        match self.get_ref(name) {
+            Some(d) => d.has_key(index).unwrap_or(false),
+            None => false,
+        }
+        /*
         let num = self.params.len();
         for layer in (0..num).rev() {
             if let Some(e) = self.params[layer].get(name) {
@@ -25,6 +30,7 @@ impl DataBase {
             }
         }
         false
+        */
     }
 
     pub fn has_flag_layer(&mut self, name: &str, flag: char, layer: usize) -> bool {
@@ -35,13 +41,19 @@ impl DataBase {
     }
 
     pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
+        match self.get_ref(name) {
+            Some(d) => d.has_flag(flag),
+            None => false,
+        }
+
+        /*
         let num = self.params.len();
         for layer in (0..num).rev() {
             if let Some(e) = self.params[layer].get_mut(name) {
                 return e.has_flag(flag);
             }
         }
-        false
+        false*/
     }
 
     pub fn exist(&mut self, name: &str) -> bool {
