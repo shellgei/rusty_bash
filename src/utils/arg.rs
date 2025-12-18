@@ -1,87 +1,23 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub fn _has_option(option: &str, args: &[String]) -> bool {
-    args.iter().any(|arg| arg == option)
-}
-
-pub fn _consume_arg(option: &str, args: &mut Vec<String>) -> bool {
-    let found = args.iter().any(|arg| arg == option);
-    if found {
-        args.retain(|arg| arg != option);
-    }
-    found
-}
-
-pub fn _consume_option(option: &str, args: &mut Vec<String>) -> bool {
-    for (i, a) in args.iter().enumerate() {
-        if a.starts_with("--") {
-            return false;
-        }
-
-        if a == option {
-            args.remove(i);
-            return true;
-        }
+fn add_prefix(prefix: char, opts: &str) -> Vec<String> {
+    if opts.is_empty() {
+        return vec![prefix.to_string()];
     }
 
-    false
+    opts.chars().map(|c| format!("{prefix}{c}")).collect()
 }
 
-pub fn _consume_starts_with(s: &str, args: &mut Vec<String>) -> Vec<String> {
-    let mut ans = args.clone();
-    ans.retain(|a| a.starts_with(s));
-    args.retain(|a| !a.starts_with(s));
-    ans
-}
-
-pub fn _consume_with_next_arg(prev_opt: &str, args: &mut Vec<String>) -> Option<String> {
-    match args.iter().position(|a| a == prev_opt) {
-        Some(pos) => match pos + 1 >= args.len() {
-            true => None,
-            false => {
-                args.remove(pos);
-                Some(args.remove(pos))
-            }
-        },
-        None => None,
-    }
-}
-
-pub fn _consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<String> {
-    match args.iter().position(|a| a == prev_opt) {
-        Some(pos) => {
-            let ans = args[pos..].to_vec();
-            *args = args[..pos].to_vec();
-            ans
-        }
-        None => vec![],
-    }
-}
-
-pub fn dissolve_option(opt: &str) -> Vec<String> {
-    if opt.starts_with("--") {
-        vec![opt.to_string()]
-    } else if let Some(stripped) = opt.strip_prefix('-') {
-        if stripped.is_empty() {
-            return vec!["-".to_string()];
-        }
-
-        stripped
-            .chars()
-            .map(|c| ("-".to_owned() + &c.to_string()).to_string())
-            .collect()
-    } else if let Some(stripped) = opt.strip_prefix('+') {
-        if stripped.is_empty() {
-            return vec!["+".to_string()];
-        }
-
-        stripped
-            .chars()
-            .map(|c| ("+".to_owned() + &c.to_string()).to_string())
-            .collect()
+pub fn dissolve_option(arg: &str) -> Vec<String> {
+    if arg.starts_with("--") {
+        vec![arg.to_string()]
+    } else if let Some(opts) = arg.strip_prefix('-') {
+        add_prefix('-', opts)
+    } else if let Some(opts) = arg.strip_prefix('+') {
+        add_prefix('+', opts)
     } else {
-        vec![opt.to_string()]
+        vec![arg.to_string()]
     }
 }
 
@@ -96,23 +32,6 @@ pub fn dissolve_options(args: &[String]) -> Vec<String> {
         match stop {
             true => ans.push(a.to_string()),
             false => ans.append(&mut dissolve_option(a)),
-        }
-    }
-
-    ans
-}
-
-pub fn _dissolve_options_main() -> Vec<String> {
-    let mut ans = vec![];
-    let mut stop = false;
-    for (i, a) in std::env::args().enumerate() {
-        if i != 0 && !a.starts_with("-") || a == "--" {
-            stop = true;
-        }
-
-        match stop {
-            true => ans.push(a),
-            false => ans.append(&mut dissolve_option(&a)),
         }
     }
 
