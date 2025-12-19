@@ -168,8 +168,10 @@ impl BracedParam {
         op.init_array(&self.param, &mut arr, &mut self.text, core)?;
         self.array = Some(arr.clone());
         if let Some(index) = &self.param.index {
-            if index.text == "[*]" || index.text == "[@]" {
+            if index.text == "[*]" {
                 self.text = arr.join(&core.db.get_ifs_head());
+            }else if index.text == "[@]" {
+                self.text = arr.join(" ");
             }
         }
 
