@@ -1,8 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
+use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
+use crate::elements::expr::arithmetic::ArithmeticExpr;
 
 fn unset_all(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
     if ! core.shopts.query("localvar_unset") {
@@ -105,6 +106,29 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             index.remove(0);
             index.pop();
+            let mut index = index;
+
+            if core.db.is_array(&name) {
+                if let Err(_) = index.parse::<isize>() {
+                    let mut f = Feeder::new(&index);
+                    match ArithmeticExpr::parse(&mut f, core, false, "[") {
+                        Ok(Some(mut v)) => {
+                            if !f.is_empty() {
+                                let e = ExecError::ArrayIndexInvalid(index.to_string());
+                                return super::error_exit(1, &args[0], &e, core);
+                            }
+                            if let Ok(n) = v.eval(core) {
+                                index = n;
+                            }
+                        },
+                        _ => {
+                            let e = ExecError::ArrayIndexInvalid(index.to_string());
+                            return super::error_exit(1, &args[0], &e, core);
+                        },
+                    }
+                }
+            }
+
             if let Err(e) = core.db.unset_array_elem(&name, &index) {
                 return super::error_exit_text(1, &args[0], &String::from(&e), core);
             }

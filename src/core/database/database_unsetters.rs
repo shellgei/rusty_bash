@@ -54,7 +54,6 @@ impl DataBase {
                 return Ok(());
             }
             self.remove_entry(layer, name)?;
-            //self.params[layer].remove(name);
 
             unsafe{env::set_var(name, "")};
             for layer in self.params.iter_mut() {
