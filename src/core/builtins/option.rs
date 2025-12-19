@@ -108,7 +108,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
-    if args[1].starts_with("--") {
+    if args[1] == "--" || args[1] == "-" {
         args[1] = core.db.position_parameters[0][0].clone();
         args.remove(0);
         match set_positions(core, &args) {
