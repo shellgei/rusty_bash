@@ -6,9 +6,12 @@ use crate::core::DataBase;
 use crate::error::exec::ExecError;
 
 impl DataBase {
-    pub fn set_elem(&mut self, layer: usize, name: &str,
+    pub(super) fn set_elem(&mut self, layer: usize, name: &str,
         pos: isize, val: &String, i_flag: bool
         ) -> Result<(), ExecError> {
+        if self.is_readonly(name) {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
         if ! self.params[layer].contains_key(name) {
             self.set_uninit_array(layer, name, i_flag)?;
             return self.set_elem(layer, name, pos, val, i_flag);
@@ -24,7 +27,7 @@ impl DataBase {
             d.set_as_array(name, &pos.to_string(), val)
         } else if d.is_assoc() {
             d.set_as_assoc(name, &pos.to_string(), val)
-        } else /*if d.is_single()*/ {
+        } else {
             let data = d.get_as_single()?;
             self.set_uninit_array(layer, name, i_flag)?;
 
@@ -32,13 +35,10 @@ impl DataBase {
                 self.set_elem(layer, name, 0, &data, i_flag)?;
             }
             self.set_elem(layer, name, pos, val, i_flag)
-        } /*else {
-            self.set_uninit_array(layer, name, &flags)?;
-            self.set_elem(layer, name, pos, val, flags)
-        }*/
+        } 
     }
 
-    pub fn append_elem(&mut self, layer: usize, 
+    pub(super) fn append_elem(&mut self, layer: usize, 
         name: &str, pos: isize, val: &String,
     ) -> Result<(), ExecError> {
         if ! self.params[layer].contains_key(name) {
@@ -63,14 +63,11 @@ impl DataBase {
         }
     }
 
-    pub fn set_uninit_array(&mut self, layer: usize,
+    pub(super) fn set_uninit_array(&mut self, layer: usize,
         name: &str, i_flag: bool,
     ) -> Result<(), ExecError> {
-        //let v = Some(vec![]);
         let obj = if i_flag {
             Box::new(Uninit::new("ai")) as Box::<dyn Data>
-        //}else if v.is_none() {
-        //    Box::new(Uninit::new("a")) as Box::<dyn Data>
         }else {
             Box::new(ArrayData::from(Some(vec![]))) as Box::<dyn Data>
         };

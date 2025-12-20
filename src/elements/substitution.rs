@@ -103,17 +103,6 @@ impl Substitution {
             }
 
             Self::restore_flag(core, name, &old_flags, layer);
-
-            /*
-            for flag in old_flags.chars() {
-                if flag == 'A' || flag == 'a' {
-                    continue;
-                }
-                if old_flags.contains(flag) {
-                    core.db.set_flag(&name, flag, layer);
-                }
-            }*/
-
             return Ok(());
         } else if !self.append {
             core.db.init(name, layer);
