@@ -59,7 +59,12 @@ impl Data for SingleData {
         self.readonly_check(name)?;
 
         if self.has_flag('n') {
-            if ! utils::is_var(value) {
+            if value.contains('[') {
+                let splits: Vec<&str> = value.split('[').collect();
+                if ! utils::is_var(&splits[0]) || ! splits[1].ends_with(']') {
+                        return Err(ExecError::InvalidNameRef(value.to_string()));
+                }
+            }else if ! utils::is_var(value) {
                 return Err(ExecError::InvalidNameRef(value.to_string()));
             }
         }

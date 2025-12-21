@@ -197,7 +197,6 @@ impl DataBase {
         }
 
         if name == "@" || name == "*" {
-            //return connected position params
             return connected_position_params(self, name == "*");
         } //in double quoted subword, this method should not be used
 
