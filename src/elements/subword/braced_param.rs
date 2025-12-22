@@ -33,7 +33,10 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        self.param.check_nameref(core)?;
+        if ! self.indirect {
+            self.param.check_nameref(core)?;
+        }
+        //dbg!("{:?}", &self.param);
         self.check()?;
 
         if self.indirect {
