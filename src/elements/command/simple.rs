@@ -127,6 +127,13 @@ impl SimpleCommand {
             return Err(ExecError::Other(msg));
         }
 
+        if self.args[0] == "command" && self.args.len() > 1 {
+            if core.subst_builtins.contains_key(&self.args[1])
+            || core.db.functions.contains_key(&self.args[1]) {
+                self.args.remove(0);
+            }
+        }
+
         if self.force_fork
             || (!pipe.lastpipe && pipe.is_connected())
             || (!core.builtins.contains_key(&self.args[0])

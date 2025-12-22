@@ -59,6 +59,9 @@ impl SimpleCommand {
             }
 
             self.command_name = w.text.clone();
+        }else if self.command_name == "command" && self.words.len() == 1 {
+            self.lineno = feeder.lineno;
+            self.command_name = w.text.clone();
         }
 
         if (self.words.is_empty()
