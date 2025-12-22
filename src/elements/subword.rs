@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod ansi_c_quoted;
-mod braced_param;
+pub mod braced_param;
 mod command_sub;
 pub mod simple;
 pub mod single_quoted;
@@ -128,6 +128,9 @@ pub trait Subword {
         false
     }
     fn is_to_proc_sub(&self) -> bool {
+        false
+    }
+    fn is_simple_param(&self) -> bool {
         false
     }
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> {

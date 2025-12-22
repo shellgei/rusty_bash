@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::subword::parameter::Parameter;
 use crate::elements::subword::Subword;
+use crate::elements::subword::braced_param::BracedParam;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
 use crate::ShellCore;
@@ -43,10 +43,7 @@ fn connect_names(subwords: &mut [Box<dyn Subword>]) {
     }
 
     if pos > 1 {
-        let sw = Parameter {
-            text,
-            ..Default::default()
-        };
+        let sw = BracedParam::from(&text[1..]);
         subwords[0] = Box::new(sw);
         subwords[1..pos].iter_mut().for_each(|s| s.set_text(""));
     }

@@ -83,6 +83,15 @@ impl Variable {
         sub == "[*]" || sub == "[@]"
     }
 
+    /*
+    pub fn get_value(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        if self.index.is_none() {
+            return core.db.get_param(&self.name);
+        }else{
+            return core.db.get_param(&self.name);
+        }
+    }*/
+
     pub fn set_value(&mut self, value: &str, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.index.is_none() {
             return core.db.set_param(&self.name, value, None);

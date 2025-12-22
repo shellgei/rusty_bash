@@ -34,7 +34,9 @@ impl Substitution {
             return Ok(());
         }
 
-        self.left_hand.check_nameref(core)?;
+        if core.db.exist_nameref(&self.left_hand.name) {
+            self.left_hand.check_nameref(core)?;
+        }
 
         let r = self.right_hand.as_mut().unwrap();
         r.eval(core, &self.left_hand.name, self.append)?;

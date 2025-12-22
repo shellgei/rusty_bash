@@ -24,6 +24,16 @@ pub struct BracedParam {
     indirect: bool,
 }
 
+impl From<&str> for BracedParam {
+    fn from(s: &str) -> Self {
+        let mut ans: Self = Default::default();
+        ans.text = "$".to_owned() + s;
+        ans.param.text = s.to_string();
+        ans.param.name = s.to_string();
+        ans
+    }
+}
+
 impl Subword for BracedParam {
     fn get_text(&self) -> &str {
         self.text.as_ref()
@@ -33,7 +43,7 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if core.db.has_flag(&self.param.name, 'n') && ! self.indirect {
+        if core.db.exist_nameref(&self.param.name) && ! self.indirect {
             let bkup = self.param.name.clone();
             self.param.check_nameref(core)?;
             if self.param.name == bkup {
