@@ -17,6 +17,26 @@ pub struct Variable {
 }
 
 impl Variable {
+    pub fn check_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let nameref = match core.db.get_nameref(&self.name)? {
+            Some(nref) => nref,
+            None => return Ok(()),
+        };
+
+        if ! nameref.contains('[') {
+            self.name = nameref;
+            return Ok(());
+        }else {
+            let mut f = Feeder::new(&nameref);
+            if let Some(v) = Self::parse(&mut f, core)? {
+                self.name = v.name;
+                self.index = v.index;
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn get_index(
         &mut self,
         core: &mut ShellCore,
