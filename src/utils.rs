@@ -262,3 +262,11 @@ pub fn string_to_calculated_string(from: &str, core: &mut ShellCore) -> Result<S
 
     Err(ExecError::SyntaxError(f.consume(f.len())))
 }
+
+pub fn gen_not_exist_var(core: &mut ShellCore) -> String {
+    let mut nm = "fjoeeojwa".to_string();
+    while core.db.exist(&nm) || core.db.exist_nameref(&nm) {
+        nm.push('a');
+    }
+    nm
+}

@@ -33,10 +33,13 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if ! self.indirect {
+        if core.db.has_flag(&self.param.name, 'n') && ! self.indirect {
+            let bkup = self.param.name.clone();
             self.param.check_nameref(core)?;
+            if self.param.name == bkup {
+                self.param.name = utils::gen_not_exist_var(core);
+            }
         }
-        //dbg!("{:?}", &self.param);
         self.check()?;
 
         if self.indirect {
