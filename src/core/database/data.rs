@@ -32,6 +32,9 @@ pub trait Data {
 
     fn set_flag(&mut self, _: char) {}
 
-    fn has_flag(&mut self, _: char) -> bool;
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.get_flags().contains(flag)
+    }
+
     fn get_flags(&self) -> &str;
 }

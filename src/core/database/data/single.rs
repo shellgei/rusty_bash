@@ -49,10 +49,6 @@ impl Data for SingleData {
         }
     }
 
-    fn has_flag(&mut self, flag: char) -> bool {
-        self.flags.contains(flag)
-    }
-
     fn get_flags(&self) -> &str {
         &self.flags
     }
