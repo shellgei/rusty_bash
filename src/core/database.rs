@@ -158,14 +158,14 @@ impl DataBase {
         }
     }
 
-    pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
-        self.get_flags(name).contains(flag)
-    }
-
     pub fn get_flags(&mut self, name: &str) -> &str {
         match self.get_layer_pos(name) {
             Some(n) => self.params[n].get_mut(name).unwrap().get_flags(),
             None => "",
         }
+    }
+
+    pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
+        self.get_flags(name).contains(flag)
     }
 }
