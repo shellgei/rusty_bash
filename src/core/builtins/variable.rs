@@ -11,10 +11,10 @@ fn print_args_match(core: &mut ShellCore, args: &[String]) -> i32 {
         core.db.print_params_and_funcs();
         return 0;
     }
-    print_args_matched_params(core, args)
+    print_args_match_params(core, args)
 }
 
-fn print_args_matched_params(core: &mut ShellCore, args: &[String]) -> i32 {
+fn print_args_match_params(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut names = core.db.get_param_keys();
     drop_by_args(core, &mut names, args);
     names.iter().for_each(|n| {print_with_flags(core, n); });
