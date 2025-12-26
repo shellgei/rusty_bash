@@ -31,13 +31,13 @@ fn drop_by_args(core: &mut ShellCore, names: &mut Vec<String>, args: &[String]) 
 }
 
 fn print_with_flags(core: &mut ShellCore, name: &String) {
-    let mut options = core.db.get_flags(name).to_string();
-    if options.is_empty() {
-        options.push('-');
+    let mut flags = core.db.get_flags(name).to_string();
+    if flags.is_empty() {
+        flags.push('-');
     }
 
     let value = core.db.get_param(name).unwrap_or("".to_string());
-    println!("declare -{options} {name}={value}");
+    println!("declare -{flags} {name}={value}");
 }
 
 pub fn declare(core: &mut ShellCore, args: &[String],
