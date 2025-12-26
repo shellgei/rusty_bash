@@ -15,8 +15,12 @@ fn drop_by_args(core: &mut ShellCore, names: &mut Vec<String>, args: &[String]) 
     }
 }
 
-fn output(core: &mut ShellCore, name: &String, args: &[String]) {
-    let mut options = "";//format_options(name, core);
+fn print_with_flags(core: &mut ShellCore, name: &String) {
+    let mut options = core.db.get_flags(name).to_string();
+    if options.is_empty() {
+        options.push('-');
+    }
+
     let value = core.db.get_param(name).unwrap_or("".to_string());
     println!("declare -{options} {name}={value}");
 }
@@ -24,7 +28,7 @@ fn output(core: &mut ShellCore, name: &String, args: &[String]) {
 fn print_args_matched_params(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut names = core.db.get_param_keys();
     drop_by_args(core, &mut names, args);
-    names.iter().for_each(|n| {output(core, n, args); });
+    names.iter().for_each(|n| {print_with_flags(core, n); });
     0
 }
 
