@@ -16,7 +16,9 @@ impl Debug for dyn Data {
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
 
-    fn _get_fmt_string(&self) -> String;
+    fn _get_fmt_string(&self) -> String {
+        "*****".to_string()
+    }
 
     fn get_fmt_string(&mut self) -> String {
         self._get_fmt_string()
