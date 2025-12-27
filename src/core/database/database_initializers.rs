@@ -18,12 +18,15 @@ impl DataBase {
     
         self.set_param("$", &process::id().to_string(), None)?;
         self.set_param("BASHPID", &process::id().to_string(), None)?;
+        self.set_flag("BASHPID", 'i', 0);
         self.set_param("BASH_SUBSHELL", "0", None)?;
         self.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
         self.set_param("OPTIND", "1", None)?;
+        self.set_flag("BASHPID", 'i', 0);
         self.set_param("IFS", " \t\n", None)?;
     
         self.init_as_num("UID", &unistd::getuid().to_string(), None)?;
+        self.set_flag("UID", 'i', 0);
         self.set_flag("UID", 'r', 0);
     
         self.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
