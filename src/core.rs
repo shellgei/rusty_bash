@@ -77,6 +77,7 @@ impl ShellCore {
     fn set_initial_parameters(&mut self) {
         self.db.set_param("$", &process::id().to_string(), None).unwrap();
         self.db.set_param("BASHPID", &process::id().to_string(), None).unwrap();
+        self.db.set_flag("BASHPID", 'i', 0);
         self.db.set_param("BASH_SUBSHELL", "0", None).unwrap();
         self.db.set_param("?", "0", None).unwrap();
         self.db.set_param("PS1", "\\[\\033[01;36m\\]\\b\\[\\033[00m\\]\\[\\033[01;35m\\]\\w\\[\\033[00m\\](debug)🍣 ", None).unwrap();

@@ -14,6 +14,17 @@ fn print_args_match(core: &mut ShellCore, args: &[String]) -> i32 {
     print_args_match_params(core, args)
 }
 
+fn print_params_match(core: &mut ShellCore, args: &[String],
+                      subs: &mut [Substitution]) -> i32 {
+    let mut names = subs.iter()
+                        .map(|e| e.left_hand.text.clone())
+                        .collect::<Vec<String>>();
+
+    drop_by_args(core, &mut names, args);
+    names.iter().for_each(|n| {print_with_flags(core, n); });
+    0
+}
+
 fn print_args_match_params(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut names = core.db.get_param_keys();
     drop_by_args(core, &mut names, args);
@@ -45,9 +56,10 @@ pub fn declare(core: &mut ShellCore, args: &[String],
     let args = arg::dissolve_options(args);
 
     if subs.is_empty() {
-        return print_args_match(core, &args);
+        print_args_match(core, &args)
+    }else{
+        print_params_match(core, &args, subs)
     }
-    0
 }
 
 pub fn local(core: &mut ShellCore, args: &[String],
