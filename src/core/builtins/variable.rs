@@ -57,8 +57,10 @@ pub fn declare(core: &mut ShellCore, args: &[String],
 
     if subs.is_empty() {
         print_args_match(core, &args)
-    }else{
+    } else if args.len() > 1 {
         print_params_match(core, &args, subs)
+    } else {
+        0
     }
 }
 
