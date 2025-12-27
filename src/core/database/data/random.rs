@@ -16,10 +16,6 @@ impl Data for RandomVar {
         Box::new(self.clone())
     }   
 
-    fn _get_fmt_string(&self) -> String {
-        "00000".to_string()
-    }   
-
     fn get_fmt_string(&mut self) -> String {
         self.get_as_single().unwrap()
     }   
