@@ -4,6 +4,7 @@
 mod data;
 
 use self::data::Data;
+use self::data::random::RandomVar;
 use self::data::single::SingleData;
 use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
@@ -19,11 +20,14 @@ pub struct DataBase {
 
 impl DataBase {
     pub fn new() -> Self {
-        Self {
+        let mut ans = Self {
             position_parameters: vec![vec!["sush".to_string()]],
             params: vec![HashMap::new()],
             ..Default::default()
-        }
+        };
+
+        ans.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
+        ans
     }
 
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {

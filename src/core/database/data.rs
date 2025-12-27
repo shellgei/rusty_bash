@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-mod random;
+pub mod random;
 pub mod single;
 
 use crate::error::exec::ExecError;
