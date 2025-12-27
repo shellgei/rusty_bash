@@ -14,13 +14,12 @@ fn print_args_match(core: &mut ShellCore, args: &[String]) -> i32 {
     print_args_match_params(core, args)
 }
 
-fn print_params_match(core: &mut ShellCore, args: &[String],
+fn print_params_match(core: &mut ShellCore,
                       subs: &mut [Substitution]) -> i32 {
-    let mut names = subs.iter()
-                        .map(|e| e.left_hand.text.clone())
-                        .collect::<Vec<String>>();
+    let names = subs.iter()
+                    .map(|e| e.left_hand.text.clone())
+                    .collect::<Vec<String>>();
 
-    drop_by_args(core, &mut names, args);
     names.iter().for_each(|n| {print_with_flags(core, n); });
     0
 }
@@ -57,8 +56,8 @@ pub fn declare(core: &mut ShellCore, args: &[String],
 
     if subs.is_empty() {
         print_args_match(core, &args)
-    } else if args.len() > 1 {
-        print_params_match(core, &args, subs)
+    } else if arg::has_option("-p", &args) {
+        print_params_match(core, subs)
     } else {
         0
     }
