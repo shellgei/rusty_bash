@@ -37,6 +37,7 @@ pub fn reserved(w: &str) -> bool {
             | "else"
             | "fi"
             | "case"
+            | "coproc"
             | "esac"
             | "repeat"
     )

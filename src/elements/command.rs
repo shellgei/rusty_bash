@@ -4,6 +4,7 @@
 pub mod arithmetic;
 pub mod brace;
 pub mod case;
+pub mod coproc;
 pub mod r#for;
 pub mod function_def;
 pub mod r#if;
@@ -16,6 +17,7 @@ pub mod r#while;
 use self::arithmetic::ArithmeticCommand;
 use self::brace::BraceCommand;
 use self::case::CaseCommand;
+use self::coproc::Coprocess;
 use self::function_def::FunctionDefinition;
 use self::paren::ParenCommand;
 use self::r#for::ForCommand;
@@ -263,6 +265,8 @@ pub fn parse(
     } else if let Some(a) = ParenCommand::parse(feeder, core, false)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = BraceCommand::parse(feeder, core)? {
+        Ok(Some(Box::new(a)))
+    } else if let Some(a) = Coprocess::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ForCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
