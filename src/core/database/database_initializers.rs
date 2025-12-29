@@ -35,7 +35,6 @@ impl DataBase {
         self.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds::new()));
         self.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime::new()));
     
-        self.init_array("FUNCNAME", None, None, false)?;
         self.init_array("BASH_SOURCE", Some(vec![]), None, false)?;
         self.init_array("BASH_ARGC", Some(vec![]), None, false)?;
         self.init_array("BASH_ARGV", Some(vec![]), None, false)?;
