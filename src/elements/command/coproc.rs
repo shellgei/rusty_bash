@@ -8,6 +8,7 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
+use nix::unistd;
 use nix::unistd::Pid;
 
 #[derive(Debug, Clone, Default)]
@@ -22,16 +23,21 @@ pub struct Coprocess {
 
 impl Command for Coprocess {
     fn exec(&mut self, core: &mut ShellCore, _: &mut Pipe) -> Result<Option<Pid>, ExecError> {
-        dbg!("{:?}", &self);
-        /*
         if core.break_counter > 0 || core.continue_counter > 0 {
             return Ok(None);
         }
 
-        core.db
-            .functions
-            .insert(self.name.to_string(), self.clone());
+        let mut pipe = Pipe::new("|".to_string());
+        pipe.set(-1, unistd::getpgrp(), core);
+        let pid = self.command.clone().unwrap().exec(core, &mut pipe)?;
+        /*
+        let result = self.read(pipe.recv, core);
+        proc_ctrl::wait_pipeline(core, vec![pid], false, false);
+        result?;
+        self.text = self.text.trim_end_matches("\n").to_string();
         */
+
+
         Ok(None)
     }
 
