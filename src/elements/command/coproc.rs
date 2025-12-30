@@ -36,12 +36,23 @@ impl Command for Coprocess {
 
         let mut prevp = Pipe::new("|".to_string());
         prevp.set(-1, pgid, core);
+        prevp.send = core.fds.dupfd_cloexec(prevp.send, 60).unwrap();
+        prevp.recv = core.fds.dupfd_cloexec(prevp.recv, 60).unwrap();
+
         let mut lastp = Pipe::new("|".to_string());
         lastp.set(prevp.recv, pgid, core);
+        lastp.send = core.fds.dupfd_cloexec(lastp.send, 60).unwrap();
+        lastp.recv = core.fds.dupfd_cloexec(lastp.recv, 60).unwrap();
+
         let pid = com.exec(core, &mut lastp)?.unwrap();
+        let fds = Some(vec![lastp.recv.to_string(), prevp.send.to_string()]);
 
-        let _ = core.db.init_array(&self.name, Some(vec![lastp.recv.to_string(), prevp.send.to_string()]), Some(0), true);
+        let _ = core.db.init_array(&self.name, fds, Some(0), true);
+        let pid_name = format!("{}_PID", &self.name);
+        let _ = core.db.set_param(&pid_name, &pid.to_string(), Some(0));
 
+        core.fds.close(lastp.send);
+        core.fds.close(prevp.recv);
 
         let _ = core.db.set_param("!", &pid.to_string(), None);
         let new_job_id = core.generate_new_job_id();
