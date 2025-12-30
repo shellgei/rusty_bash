@@ -47,6 +47,9 @@ impl Command for Coprocess {
             let err = ExecError::Other(msg);
             err.print(core);
         }
+
+        let _ = core.db.init_array(&self.name, Some(vec![lastp.recv.to_string(), prevp.send.to_string()]), Some(0), true);
+
         core.coprocs.insert(self.name.clone(), pid);
 
         let _ = core.db.set_param("!", &pid.to_string(), None);
