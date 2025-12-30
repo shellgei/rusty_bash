@@ -72,18 +72,19 @@ impl Pipeline {
         (pids, self.exclamation, self.time, err)
     }
 
+    /*
     pub fn exec_coproc(
         &mut self,
         core: &mut ShellCore,
         pgid: Pid,
     ) -> (Vec<Option<Pid>>, bool, bool, Option<ExecError>) {
-        let mut pids = vec![];
+        //let mut pids = vec![];
 
         let mut prevp = Pipe::new("|".to_string());
         prevp.set(-1, pgid, core);
         let mut lastp = Pipe::new("|".to_string());
         lastp.set(prevp.recv, pgid, core);
-        let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
+        let result = com.exec(core, &mut lastp);
 
         match result {
             Ok(pid) => pids.push(pid),
@@ -91,7 +92,7 @@ impl Pipeline {
         }
 
         (pids, self.exclamation, self.time, None)
-    }
+    }*/
 
 
     fn set_time(&mut self, core: &mut ShellCore) {
