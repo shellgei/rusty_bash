@@ -10,7 +10,6 @@ use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
 use nix::unistd::Pid;
-use nix::unistd;
 
 #[derive(Debug, Clone, Default)]
 pub struct Coprocess {
