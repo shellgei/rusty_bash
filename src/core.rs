@@ -62,7 +62,6 @@ pub struct ShellCore {
     pub is_subshell: bool,
     pub source_function_level: i32,
     pub source_files: Vec<String>,
-    pub coprocs: HashMap<String, Pid>,
     pub eval_level: i32,
     pub loop_level: i32,
     pub break_counter: i32,

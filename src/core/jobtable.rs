@@ -18,6 +18,7 @@ pub struct JobEntry {
     pub text: String,
     change: bool,
     pub no_control: bool,
+    pub coproc_name: Option<String>,
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) -> Result<(), ExecError> {
@@ -273,6 +274,13 @@ impl ShellCore {
             None => 1,
             Some(job) => job.id + 1,
         }
+    }
+
+    pub fn get_jobentry_pid_by_coproc_name(&mut self, name: &str) -> Option<Pid> {
+        let ans = self.job_table.iter_mut().find(|e| e.coproc_name.is_some() 
+                                                 && e.coproc_name.as_ref().unwrap() == name)?;
+
+        Some(ans.pids[0])
     }
 }
 

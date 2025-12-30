@@ -40,17 +40,8 @@ impl Command for Coprocess {
         lastp.set(prevp.recv, pgid, core);
         let pid = com.exec(core, &mut lastp)?.unwrap();
 
-        if core.coprocs.contains_key(&self.name) {
-            let pid = core.coprocs[&self.name];
-            let msg = format!("warning: execute_coproc: coproc [{}:{}] still exists",
-                              &pid, &self.name);
-            let err = ExecError::Other(msg);
-            err.print(core);
-        }
-
         let _ = core.db.init_array(&self.name, Some(vec![lastp.recv.to_string(), prevp.send.to_string()]), Some(0), true);
 
-        core.coprocs.insert(self.name.clone(), pid);
 
         let _ = core.db.set_param("!", &pid.to_string(), None);
         let new_job_id = core.generate_new_job_id();
@@ -63,6 +54,14 @@ impl Command for Coprocess {
             "Running",
             new_job_id,
         );
+        entry.coproc_name = Some(self.name.clone());
+
+        if let Some(pid) = core.get_jobentry_pid_by_coproc_name(&self.name) {
+            let msg = format!("warning: execute_coproc: coproc [{}:{}] still exists",
+                              &pid, &self.name);
+            let err = ExecError::Other(msg);
+            err.print(core);
+        }
 
         if !core.options.query("monitor") {
             entry.no_control = true;
