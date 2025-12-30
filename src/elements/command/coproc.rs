@@ -3,13 +3,14 @@
 
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
+use crate::elements::pipeline::Pipeline;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
-use nix::unistd;
 use nix::unistd::Pid;
+use nix::unistd;
 
 #[derive(Debug, Clone, Default)]
 pub struct Coprocess {
@@ -27,17 +28,27 @@ impl Command for Coprocess {
             return Ok(None);
         }
 
-        let mut pipe = Pipe::new("|".to_string());
-        pipe.set(-1, unistd::getpgrp(), core);
-        let pid = self.command.clone().unwrap().exec(core, &mut pipe)?;
+
+        let mut pipeline = Pipeline::default();
+        let mut com = self.command.clone().unwrap().clone();
+        com.set_force_fork();
+        pipeline.commands.push(com);
+        let backup = core.tty_fd.clone();
+        core.tty_fd = None;
+        pipeline.exec_coproc(core, Pid::from_raw(0));
+        core.tty_fd = backup;
         /*
-        let result = self.read(pipe.recv, core);
-        proc_ctrl::wait_pipeline(core, vec![pid], false, false);
-        result?;
-        self.text = self.text.trim_end_matches("\n").to_string();
+        let mut job = Job::default();
+        job.pipelines.push(pipeline);
+        job.exec_bg_as_coproc(core, Pid::from_raw(0));
         */
 
-
+        /*
+        let mut pipe = Pipe::new("|".to_string());
+        pipe.set(-1, unistd::getpgrp(), core);
+        let mut com = self.command.clone().unwrap();
+        let pid = com.exec(core, &mut pipe)?;
+        */
         Ok(None)
     }
 

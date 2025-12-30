@@ -109,12 +109,6 @@ pub trait Command {
         for r in self.get_redirects().iter_mut().rev() {
             r.restore(core)?;
         }
-        /*
-        self.get_redirects()
-            .iter_mut()
-            .rev()
-            .for_each(|r| r.restore(core).expect("err"));
-        */
         result
     }
 

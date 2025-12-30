@@ -72,6 +72,49 @@ impl Pipeline {
         (pids, self.exclamation, self.time, err)
     }
 
+    pub fn exec_coproc(
+        &mut self,
+        core: &mut ShellCore,
+        pgid: Pid,
+    ) -> (Vec<Option<Pid>>, bool, bool, Option<ExecError>) {
+        let mut prev = -1;
+        let mut pids = vec![];
+        let mut pgid = pgid;
+
+        /*
+        self.set_time(core);
+
+        for (i, p) in self.pipes.iter_mut().enumerate() {
+            p.set(prev, pgid, core);
+
+            match self.commands[i].exec(core, p) {
+                Ok(pid) => pids.push(pid),
+                Err(e) => return (pids, self.exclamation, self.time, Some(e)),
+            }
+
+            if i == 0 && pgid.as_raw() == 0 {
+                // 最初のexecが終わったら、pgidにコマンドのPIDを記録
+                pgid = pids[0].unwrap();
+            }
+            prev = p.recv;
+        }*/
+
+        let mut lastp = Pipe::new("|".to_string());
+        lastp.set(prev, pgid, core);
+        let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
+        let mut err = None;
+
+        dbg!("{:?}", &lastp);
+
+        match result {
+            Ok(pid) => pids.push(pid),
+            Err(e) => return (pids, self.exclamation, self.time, Some(e)),
+        }
+
+        (pids, self.exclamation, self.time, err)
+    }
+
+
     fn set_time(&mut self, core: &mut ShellCore) {
         if !self.time {
             return;
