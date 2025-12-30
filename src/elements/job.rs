@@ -130,17 +130,6 @@ impl Job {
         core.tty_fd = backup;
     }
 
-    /*
-    pub fn exec_bg_as_coproc(&mut self, core: &mut ShellCore, pgid: Pid) {
-        let backup = core.tty_fd.clone();
-        core.tty_fd = None;
-
-        self.pipelines[0].commands[0].set_force_fork();
-        let pids = self.pipelines[0].exec(core, pgid).0;
-
-        core.tty_fd = backup;
-    }*/
-
     fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<Option<Pid>, ExecError> {
         match unsafe { unistd::fork()? } {
             ForkResult::Child => {

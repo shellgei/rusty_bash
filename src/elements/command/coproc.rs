@@ -9,6 +9,8 @@ use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
 use nix::unistd::Pid;
+use nix::sys::wait::WaitStatus;
+use crate::core::jobtable::JobEntry;
 
 #[derive(Debug, Clone, Default)]
 pub struct Coprocess {
@@ -26,19 +28,44 @@ impl Command for Coprocess {
             return Ok(None);
         }
 
-        let mut com = self.command.clone().unwrap().clone();
-        com.set_force_fork();
-
         let backup = core.tty_fd.clone();
         core.tty_fd = None;
         let pgid = Pid::from_raw(0);
+        let mut com = self.command.clone().unwrap().clone();
+        com.set_force_fork();
 
         let mut prevp = Pipe::new("|".to_string());
         prevp.set(-1, pgid, core);
         let mut lastp = Pipe::new("|".to_string());
         lastp.set(prevp.recv, pgid, core);
-        let _ = com.exec(core, &mut lastp);
+        let pid = com.exec(core, &mut lastp)?.unwrap();
 
+        if core.coprocs.contains_key(&self.name) {
+            let pid = core.coprocs[&self.name];
+            let msg = format!("warning: execute_coproc: coproc [{}:{}] still exists",
+                              &pid, &self.name);
+            let err = ExecError::Other(msg);
+            err.print(core);
+        }
+        core.coprocs.insert(self.name.clone(), pid);
+
+        let _ = core.db.set_param("!", &pid.to_string(), None);
+        let new_job_id = core.generate_new_job_id();
+        eprintln!("[{}] {}", &new_job_id, &pid);
+        core.job_table_priority.insert(0, new_job_id);
+        let mut entry = JobEntry::new(
+            vec![Some(pid)],
+            &vec![WaitStatus::StillAlive; 1],
+            &self.get_one_line_text(),
+            "Running",
+            new_job_id,
+        );
+
+        if !core.options.query("monitor") {
+            entry.no_control = true;
+        }
+
+        core.job_table.push(entry);
         core.tty_fd = backup;
 
         Ok(None)
@@ -79,59 +106,6 @@ impl Coprocess {
         }
     }
 
-    /*
-    pub fn run_as_command(&mut self, args: &mut [String], core: &mut ShellCore) {
-        if ! core.db.exist("FUNCNAME") {
-            if  core.script_name == "-" {
-                let _ = core.db.init_array("FUNCNAME", None, Some(0), false);
-            }else {
-                let _ = core.db.init_array("FUNCNAME", Some(vec!["main".to_string()]),
-                                           Some(0), false);
-            }
-        }
-
-        let mut array = core.db.get_vec("FUNCNAME", false).unwrap(); //TODO: implement array push
-        array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
-        let _ = core.db.init_array("FUNCNAME", Some(array.clone()), None, false);
-
-        let mut linenos = core.db.get_vec("BASH_LINENO", false).unwrap();
-        let lineno = core.db.get_param("LINENO").unwrap_or("0".to_string());
-        linenos.insert(0, lineno.to_string());
-        let _ = core.db.init_array("BASH_LINENO", Some(linenos.clone()), None, false);
-
-        let mut source = core.db.get_vec("BASH_SOURCE", false).unwrap();
-        source.insert(0, self.file.clone());
-        let _ = core.db.init_array("BASH_SOURCE", Some(source.clone()), None, false);
-
-        args[0] = core.db.position_parameters[0][0].clone();
-        core.db.position_parameters.push(args.to_vec());
-
-        let mut dummy = Pipe::new("|".to_string());
-
-        core.source_function_level += 1;
-        if let Err(e) = self.command.as_mut().unwrap().exec(core, &mut dummy) {
-            e.print(core);
-        }
-        core.return_flag = false;
-        core.source_function_level -= 1;
-
-        core.db.position_parameters.pop();
-
-        array.remove(0);
-        if array.is_empty() 
-        || ( core.script_name != "-" && array[0] == "main" ) {
-            let _ = core.db.unset("FUNCNAME", Some(0));
-        }else {
-            let _ = core.db.init_array("FUNCNAME", Some(array), Some(0), false);
-        }
-
-        linenos.remove(0);
-        source.remove(0);
-        let _ = core.db.init_array("BASH_LINENO", Some(linenos), None, false);
-        let _ = core.db.init_array("BASH_SOURCE", Some(source), None, false);
-    }
-    */
-
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<(), ParseError> {
         self.text += &feeder.consume(6);
         command::eat_blank_with_comment(feeder, core, &mut self.text);
@@ -140,8 +114,10 @@ impl Coprocess {
         self.name = feeder.consume(len).to_string();
         self.text += &self.name;
 
-        if self.name.is_empty() && utils::reserved(&self.name) {
+        if utils::reserved(&self.name) {
             return Err(ParseError::UnexpectedSymbol("coproc".to_string()));
+        }else if self.name.is_empty() {
+            self.name = "COPROC".to_string();
         }
 
         command::eat_blank_with_comment(feeder, core, &mut self.text);
