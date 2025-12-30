@@ -99,8 +99,10 @@ impl Pipeline {
             prev = p.recv;
         }*/
 
+        let mut prevp = Pipe::new("|".to_string());
+        prevp.set(-1, pgid, core);
         let mut lastp = Pipe::new("|".to_string());
-        lastp.set(prev, pgid, core);
+        lastp.set(prevp.recv, pgid, core);
         let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
         let mut err = None;
 
