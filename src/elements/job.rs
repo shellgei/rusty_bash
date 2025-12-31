@@ -108,7 +108,10 @@ impl Job {
                 }
             }
         };
-        eprintln!("{}", &pids[0].unwrap().as_raw());
+
+        if core.db.flags.contains('i') {
+            eprintln!("{}", &pids[0].unwrap().as_raw());
+        }
         let _ = core.db.set_param("!", &pids[0].unwrap().to_string(), None);
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
