@@ -243,11 +243,15 @@ impl ShellCore {
                 stopped.push(i);
             }
 
-            if table.display_status == "Done" 
-            || table.display_status == "Killed" {
+            if  table.coproc_name.is_some() 
+            && (table.display_status == "Done" || table.display_status == "Killed") {
                 table.coproc_fds
                      .iter()
                      .for_each(|fd| {self.fds.close(*fd);});
+
+                let name = table.coproc_name.clone().unwrap();
+                let _ = self.db.unset(&name, None);
+                let _ = self.db.unset(&(name + "_PID"), None);
             }
         }
 

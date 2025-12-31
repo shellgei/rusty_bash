@@ -58,7 +58,10 @@ impl Command for Coprocess {
 
         let _ = core.db.set_param("!", &pid.to_string(), None);
         let new_job_id = core.generate_new_job_id();
-        eprintln!("[{}] {}", &new_job_id, &pid);
+
+        if core.db.flags.contains('i') {
+            eprintln!("[{}] {}", &new_job_id, &pid);
+        }
         core.job_table_priority.insert(0, new_job_id);
         let mut entry = JobEntry::new(
             vec![Some(pid)],

@@ -292,8 +292,20 @@ fn print(core: &mut ShellCore, args: &[String]) {
     }
 }
 
+fn remove_coproc(core: &mut ShellCore, pos: usize) {
+    core.job_table[pos].coproc_fds
+        .iter()
+        .for_each(|fd| {core.fds.close(*fd);});
+
+    if let Some(name) = &core.job_table[pos].coproc_name {
+        let _ = core.db.unset(&name, None);
+        let _ = core.db.unset(&(name.to_owned() + "_PID"), None);
+    }
+}
+
 fn remove(core: &mut ShellCore, pos: usize) {
     let job_id = core.job_table[pos].id;
+    remove_coproc(core, pos);
     core.job_table.remove(pos);
     core.job_table_priority.retain(|id| *id != job_id);
 }
@@ -570,6 +582,7 @@ pub fn disown(core: &mut ShellCore, args: &[String]) -> i32 {
         let ids = jobspec_to_array_poss(core, "%%");
 
         if ids.len() == 1 {
+            remove_coproc(core, ids[0]);
             core.job_table.remove(ids[0]);
             core.job_table_priority.remove(0);
             return 0;
