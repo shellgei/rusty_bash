@@ -293,9 +293,9 @@ fn print(core: &mut ShellCore, args: &[String]) {
 }
 
 fn remove_coproc(core: &mut ShellCore, pos: usize) {
-    core.job_table[pos].coproc_fds
+ /*   core.job_table[pos].coproc_fds
         .iter()
-        .for_each(|fd| {core.fds.close(*fd);});
+        .for_each(|fd| {core.fds.close(*fd);}); */
 
     if let Some(name) = &core.job_table[pos].coproc_name {
         let _ = core.db.unset(&name, None);

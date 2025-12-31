@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use libc;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{
@@ -10,11 +11,11 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
-use nix::unistd;
+//use nix::unistd;
 use nix::unistd::Pid;
 use nix::sys::wait;
-use nix::sys::wait::{WaitPidFlag, WaitStatus};
-use std::{thread, time};
+use nix::sys::wait::WaitStatus;
+use std::thread;
 use crate::core::jobtable::JobEntry;
 
 #[derive(Debug, Clone, Default)]
@@ -42,13 +43,19 @@ impl Command for Coprocess {
 
         let mut prevp = Pipe::new("|".to_string());
         prevp.set(-1, pgid, core);
-        prevp.send = core.fds.dupfd_cloexec(prevp.send, 60).unwrap();
-        prevp.recv = core.fds.dupfd_cloexec(prevp.recv, 60).unwrap();
+        //prevp.send = core.fds.dupfd_cloexec(prevp.send, 60).unwrap();
+        //prevp.recv = core.fds.dupfd_cloexec(prevp.recv, 60).unwrap();
+
+        prevp.send = unsafe{libc::fcntl(prevp.send, libc::F_DUPFD_CLOEXEC, 60)};
+        prevp.recv = unsafe{libc::fcntl(prevp.recv, libc::F_DUPFD_CLOEXEC, 60)};
 
         let mut lastp = Pipe::new("|".to_string());
         lastp.set(prevp.recv, pgid, core);
-        lastp.send = core.fds.dupfd_cloexec(lastp.send, 60).unwrap();
-        lastp.recv = core.fds.dupfd_cloexec(lastp.recv, 60).unwrap();
+        //lastp.send = core.fds.dupfd_cloexec(lastp.send, 60).unwrap();
+       // lastp.recv = core.fds.dupfd_cloexec(lastp.recv, 60).unwrap();
+
+        lastp.send = unsafe{libc::fcntl(lastp.send, libc::F_DUPFD_CLOEXEC, 60)};
+        lastp.recv = unsafe{libc::fcntl(lastp.recv, libc::F_DUPFD_CLOEXEC, 60)};
 
         let pid = com.exec(core, &mut lastp)?.unwrap();
         let fds = vec![lastp.recv.clone(), prevp.send.clone()];
@@ -93,17 +100,17 @@ impl Command for Coprocess {
         core.tty_fd = backup;
 
         thread::spawn(move || {
-            loop {
-                match wait::waitpid(pid, Some(WaitPidFlag::WUNTRACED)) {
+            //loop {
+                match wait::waitpid(pid, None) {
                     Ok(WaitStatus::Exited(_, _)) | Err(_) => {
-                        let _ = unistd::close(fds[0]);
-                        let _ = unistd::close(fds[1]);
+                        let _ = unsafe{libc::close(fds[0])};
+                        let _ = unsafe{libc::close(fds[1])};
                         return;
                     }
                     _ => {},
                 }
-                thread::sleep(time::Duration::from_millis(10));
-            }
+             //   thread::sleep(time::Duration::from_millis(10));
+            //}
         });
 
         Ok(None)

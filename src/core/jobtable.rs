@@ -241,8 +241,8 @@ impl JobEntry {
 
 impl ShellCore {
     fn close_coproc(&mut self, pos: usize) {
-        self.job_table[pos].coproc_fds
-             .iter().for_each(|fd| {self.fds.close(*fd);});
+       // self.job_table[pos].coproc_fds
+       //      .iter().for_each(|fd| {self.fds.close(*fd);});
 
         let name = self.job_table[pos].coproc_name.clone().unwrap();
         let _ = self.db.unset(&name, None);
