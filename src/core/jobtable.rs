@@ -22,13 +22,23 @@ pub struct JobEntry {
     pub coproc_fds: Vec<i32>,
 }
 
-fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) -> Result<(), ExecError> {
+fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool) -> Result<(), ExecError> {
     let waitflags = WaitPidFlag::WNOHANG | WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
 
-    let s = wait::waitpid(*pid, Some(waitflags))?;
-    if s != WaitStatus::StillAlive || !still(status) {
-        *status = s;
+    match wait::waitpid(*pid, Some(waitflags)) {
+        Ok(s) => {
+            if s != WaitStatus::StillAlive || !still(status) {
+                *status = s;
+            }
+        },
+        Err(e) => {
+            if ! coproc {
+                return Err(ExecError::Errno(e));
+            }
+            *status = WaitStatus::Exited(*pid, 0);
+        },
     }
+
     Ok(())
 }
 
@@ -77,7 +87,7 @@ impl JobEntry {
                 match wait {
                     true => exit_status = wait_block(pid, status)?,
                     false => {
-                        wait_nonblock(pid, status)?;
+                        wait_nonblock(pid, status, self.coproc_name.is_some())?;
                     }
                 }
             }

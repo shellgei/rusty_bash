@@ -10,9 +10,11 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
+use nix::unistd;
 use nix::unistd::Pid;
-use nix::sys::wait::WaitStatus;
-//use std::{thread, time};
+use nix::sys::wait;
+use nix::sys::wait::{WaitPidFlag, WaitStatus};
+use std::{thread, time};
 use crate::core::jobtable::JobEntry;
 
 #[derive(Debug, Clone, Default)]
@@ -74,7 +76,7 @@ impl Command for Coprocess {
             new_job_id,
         );
         entry.coproc_name = Some(self.name.clone());
-        entry.coproc_fds = fds;
+        entry.coproc_fds = fds.clone();
 
         if let Some(pid) = core.get_jobentry_pid_by_coproc_name(&self.name) {
             let msg = format!("warning: execute_coproc: coproc [{}:{}] still exists",
@@ -90,8 +92,20 @@ impl Command for Coprocess {
         core.job_table.push(entry);
         core.tty_fd = backup;
 
-        //thread::sleep(time::Duration::from_millis(100));
-        //core.jobtable_check_status()?;
+        thread::spawn(move || {
+            loop {
+                match wait::waitpid(pid, Some(WaitPidFlag::WUNTRACED)) {
+                    Ok(WaitStatus::Exited(_, _)) | Err(_) => {
+                        let _ = unistd::close(fds[0]);
+                        let _ = unistd::close(fds[1]);
+                        return;
+                    }
+                    _ => {},
+                }
+                thread::sleep(time::Duration::from_millis(10));
+            }
+        });
+
         Ok(None)
     }
 
@@ -177,6 +191,7 @@ impl Coprocess {
         ans.command = if let Some(a) = SimpleCommand::parse(feeder, core)? {
             ans.text += &a.get_text();
             ans.name = "COPROC".to_string();
+
             Some(a)
         }else{
             return Err(ParseError::UnexpectedSymbol("coproc".to_string()));
