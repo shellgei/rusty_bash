@@ -146,7 +146,8 @@ impl Redirect {
         core.fds.share(right_fd, self.left_fd)
     }
 
-    fn redirect_input_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_input_fd(&mut self, restore: bool,
+                         core: &mut ShellCore) -> Result<(), ExecError> {
         if self.right.text == "-" {
             self.set_left_fd(0);
             core.fds.close(self.left_fd);

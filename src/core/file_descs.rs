@@ -100,15 +100,9 @@ impl FileDescriptors {
         }
 
         if unsafe{dup2(from, to)} < 0 {
-            return Err(ExecError::Other("dup2 error".to_string()));
+            //return Err(ExecError::Other("dup2 error".to_string()));
+            return Err(ExecError:: BadFd(from));
         }
-        /*
-        if let Err(e) = unistd::dup2(from, to) {
-            return match e {
-                Errno::EBADF => Err(ExecError::BadFd(to)),
-                _ => Err(ExecError::Other("dup2 Unknown error".to_string())),
-            };
-        }*/
 
         Ok(())
     }

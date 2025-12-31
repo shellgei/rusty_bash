@@ -3,13 +3,16 @@
 
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
-use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
+use crate::elements::command::{
+    BraceCommand, IfCommand, ParenCommand, SimpleCommand, WhileCommand
+};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
 use nix::unistd::Pid;
 use nix::sys::wait::WaitStatus;
+//use std::{thread, time};
 use crate::core::jobtable::JobEntry;
 
 #[derive(Debug, Clone, Default)]
@@ -87,6 +90,8 @@ impl Command for Coprocess {
         core.job_table.push(entry);
         core.tty_fd = backup;
 
+        //thread::sleep(time::Duration::from_millis(100));
+        //core.jobtable_check_status()?;
         Ok(None)
     }
 
@@ -162,6 +167,24 @@ impl Coprocess {
         Ok(())
     }
 
+    fn parse_simple_command(feeder: &mut Feeder,
+        core: &mut ShellCore
+    ) -> Result<Option<Self>, ParseError> {
+        let mut ans = Self::default();
+        ans.text += &feeder.consume(6);
+        command::eat_blank_with_comment(feeder, core, &mut ans.text);
+
+        ans.command = if let Some(a) = SimpleCommand::parse(feeder, core)? {
+            ans.text += &a.get_text();
+            ans.name = "COPROC".to_string();
+            Some(a)
+        }else{
+            return Err(ParseError::UnexpectedSymbol("coproc".to_string()));
+        };
+
+        Ok(Some(ans))
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if ! feeder.starts_with("coproc") {
             return Ok(None);
@@ -169,13 +192,17 @@ impl Coprocess {
         let mut ans = Self::default();
         ans.lineno = feeder.lineno;
 
+        feeder.set_backup();
+
         ans.eat_header(feeder, core)?;
         ans.eat_body(feeder, core)?;
 
         if ans.command.is_some() {
+            feeder.pop_backup();
             Ok(Some(ans))
         } else {
-            Ok(None)
+            feeder.rewind();
+            Self::parse_simple_command(feeder, core)
         }
     }
 }

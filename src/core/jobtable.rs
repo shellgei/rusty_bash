@@ -230,6 +230,15 @@ impl JobEntry {
 }
 
 impl ShellCore {
+    fn close_coproc(&mut self, pos: usize) {
+        self.job_table[pos].coproc_fds
+             .iter().for_each(|fd| {self.fds.close(*fd);});
+
+        let name = self.job_table[pos].coproc_name.clone().unwrap();
+        let _ = self.db.unset(&name, None);
+        let _ = self.db.unset(&(name + "_PID"), None);
+    }
+
     pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {
         if self.is_subshell {
             return Ok(());
@@ -244,14 +253,9 @@ impl ShellCore {
             }
 
             if  table.coproc_name.is_some() 
-            && (table.display_status == "Done" || table.display_status == "Killed") {
-                table.coproc_fds
-                     .iter()
-                     .for_each(|fd| {self.fds.close(*fd);});
-
-                let name = table.coproc_name.clone().unwrap();
-                let _ = self.db.unset(&name, None);
-                let _ = self.db.unset(&(name + "_PID"), None);
+            && (table.display_status == "Done" 
+                || table.display_status == "Killed") {
+                self.close_coproc(i);
             }
         }
 
