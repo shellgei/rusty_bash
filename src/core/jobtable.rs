@@ -19,6 +19,7 @@ pub struct JobEntry {
     change: bool,
     pub no_control: bool,
     pub coproc_name: Option<String>,
+    pub coproc_fds: Vec<i32>,
 }
 
 fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) -> Result<(), ExecError> {
@@ -236,8 +237,17 @@ impl ShellCore {
 
         let mut stopped = vec![];
         for i in 0..self.job_table.len() {
-            if self.job_table[i].update_status(false, false)? == 148 {
+            let table = &mut self.job_table[i];
+
+            if table.update_status(false, false)? == 148 {
                 stopped.push(i);
+            }
+
+            if table.display_status == "Done" 
+            || table.display_status == "Killed" {
+                table.coproc_fds
+                     .iter()
+                     .for_each(|fd| {self.fds.close(*fd);});
             }
         }
 
@@ -282,9 +292,7 @@ impl ShellCore {
 
         Some(ans.pids[0])
     }
-}
 
-impl ShellCore {
     pub fn get_stopped_job_commands(&self) -> Vec<String> {
         self.job_table
             .iter()

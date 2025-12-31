@@ -27,6 +27,7 @@ impl Command for Coprocess {
         if core.break_counter > 0 || core.continue_counter > 0 {
             return Ok(None);
         }
+        core.jobtable_check_status()?;
 
         let backup = core.tty_fd.clone();
         core.tty_fd = None;
@@ -45,9 +46,10 @@ impl Command for Coprocess {
         lastp.recv = core.fds.dupfd_cloexec(lastp.recv, 60).unwrap();
 
         let pid = com.exec(core, &mut lastp)?.unwrap();
-        let fds = Some(vec![lastp.recv.to_string(), prevp.send.to_string()]);
+        let fds = vec![lastp.recv.clone(), prevp.send.clone()];
+        let fds_str = Some(vec![lastp.recv.to_string(), prevp.send.to_string()]);
 
-        let _ = core.db.init_array(&self.name, fds, Some(0), true);
+        let _ = core.db.init_array(&self.name, fds_str, Some(0), true);
         let pid_name = format!("{}_PID", &self.name);
         let _ = core.db.set_param(&pid_name, &pid.to_string(), Some(0));
 
@@ -66,6 +68,7 @@ impl Command for Coprocess {
             new_job_id,
         );
         entry.coproc_name = Some(self.name.clone());
+        entry.coproc_fds = fds;
 
         if let Some(pid) = core.get_jobentry_pid_by_coproc_name(&self.name) {
             let msg = format!("warning: execute_coproc: coproc [{}:{}] still exists",
