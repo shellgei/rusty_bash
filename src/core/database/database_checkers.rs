@@ -4,20 +4,21 @@
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
 use crate::utils;
+use crate::utils::restricted_shell;
 
 impl DataBase {
+    pub(super) fn check_on_write(&mut self, name: &str, values: &Option<Vec<String>>
+    ) -> Result<(), ExecError> {
+        Self::name_check(name)?;
+        restricted_shell::check(self, name, values)?;
+        Ok(())
+    }
+
     pub fn has_array_value(&mut self, name: &str, index: &str) -> bool {
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            if let Some(e) = self.params[layer].get(name) {
-                let mut a = e.clone();
-                if a.has_key(index).unwrap_or(false) {
-                    return true;
-                }
-                //return a.get_as_array_or_assoc(index, "").is_ok();
-            }
+        match self.get_ref(name) {
+            Some(d) => d.has_key(index).unwrap_or(false),
+            None => false,
         }
-        false
     }
 
     pub fn has_flag_layer(&mut self, name: &str, flag: char, layer: usize) -> bool {
@@ -28,16 +29,17 @@ impl DataBase {
     }
 
     pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            if let Some(e) = self.params[layer].get_mut(name) {
-                return e.has_flag(flag);
-            }
+        match self.get_ref(name) {
+            Some(d) => d.has_flag(flag),
+            None => false,
         }
-        false
     }
 
     pub fn exist(&mut self, name: &str) -> bool {
+        if let Ok(Some(nameref)) = self.get_nameref(name) {
+            return self.exist(&nameref);
+        }
+
         if let Ok(n) = name.parse::<usize>() {
             let layer = self.position_parameters.len() - 1;
             return n < self.position_parameters[layer].len();
@@ -50,6 +52,22 @@ impl DataBase {
             }
         }
         false
+    }
+
+    pub fn exist_nameref(&mut self, name: &str) -> bool {
+        if let Some(d) = self.get_ref(name) {
+            return d.has_flag('n');
+        }
+
+        false
+    }
+
+    pub fn exist_l(&mut self, name: &str, layer: usize) -> bool {
+        if layer >= self.params.len() {
+            return false;
+        }
+
+        self.params[layer].contains_key(name)
     }
 
     pub fn has_key(&mut self, name: &str, key: &str) -> Result<bool, ExecError> {

@@ -78,6 +78,13 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
 }
 
 pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
+    if args.len() > 1 {
+        if core.subst_builtins.contains_key(&args[1]) {
+            //TODO
+            return super::error_exit_text(1, &args[0], "substitution command are not supported", core);
+        }
+    }
+
     let mut args = arg::dissolve_options(args);
     if core.db.flags.contains('r') && arg::consume_arg("-p", &mut args) {
         return super::error_exit_text(1, &args[0], "-p: restricted", core);

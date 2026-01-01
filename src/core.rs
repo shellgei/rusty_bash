@@ -8,23 +8,26 @@ pub mod database;
 pub mod history;
 pub mod jobtable;
 pub mod options;
+mod file_descs;
 
 use self::completion::{Completion, CompletionEntry};
 use self::database::DataBase;
 use self::options::Options;
+use self::file_descs::FileDescriptors;
 use crate::core::jobtable::JobEntry;
 use crate::elements::substitution::Substitution;
 use crate::{error, proc_ctrl, signal};
 use nix::sys::signal::Signal;
 use nix::sys::time::{TimeSpec, TimeVal};
 use nix::unistd::Pid;
-use nix::{fcntl, unistd};
 use std::collections::HashMap;
 use std::os::fd::RawFd;
-use std::os::fd::{FromRawFd, OwnedFd};
+//use std::os::fd::{FromRawFd, OwnedFd};
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::{env, io, path};
+use crate::error::exec::ExecError;
+use crate::file_check;
 
 pub struct MeasuredTime {
     pub real: TimeSpec,
@@ -48,7 +51,6 @@ type SubstBuiltinFn = fn(&mut ShellCore, &[String], &mut [Substitution]) -> i32;
 #[derive(Default)]
 pub struct ShellCore {
     pub db: DataBase,
-    //pub aliases: HashMap<String, String>,
     pub alias_memo: Vec<(String, String)>,
     pub rewritten_history: HashMap<usize, String>,
     pub history: Vec<String>,
@@ -66,7 +68,9 @@ pub struct ShellCore {
     pub continue_counter: i32,
     pub return_flag: bool,
     pub compat_bash: bool,
-    pub tty_fd: Option<OwnedFd>,
+    pub fds: FileDescriptors,
+    pub tty_fd: Option<RawFd>,
+    //pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     pub job_table_priority: Vec<usize>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
@@ -85,7 +89,7 @@ pub struct ShellCore {
 }
 
 impl ShellCore {
-    pub fn configure(&mut self) {
+    pub fn configure(&mut self) -> Result<(), ExecError> {
         self.init_current_directory();
         self.set_initial_parameters();
         self.set_builtins();
@@ -94,13 +98,11 @@ impl ShellCore {
 
         let _ = self.db.set_param("PS4", "+ ", None);
 
-        if unistd::isatty(0) == Ok(true) && self.script_name == "-" {
+        if file_check::is_tty(0) && self.script_name == "-" {
             self.db.flags += "himH";
             let _ = self.db.set_param("PS1", "🍣 ", None);
             let _ = self.db.set_param("PS2", "> ", None);
-            let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
-                .expect("sush(fatal): Can't allocate fd for tty FD");
-            self.tty_fd = Some(unsafe { OwnedFd::from_raw_fd(fd) });
+            self.tty_fd = Some(self.fds.dupfd_cloexec(0, 255)?);
         } else {
             self.db.flags += "h";
         }
@@ -125,6 +127,7 @@ impl ShellCore {
                 .db
                 .set_param2("BASH_SOURCE", &zero, &self.script_name, None);
         }
+        Ok(())
     }
 
     pub fn new() -> Self {
@@ -134,15 +137,14 @@ impl ShellCore {
             options: Options::new_as_basic_opts(),
             shopts: Options::new_as_shopts(),
             script_name: "-".to_string(),
+            fds: FileDescriptors::new(),
             ..Default::default()
         }
     }
 
-    pub fn configure_c_mode(&mut self) {
-        if unistd::isatty(0) == Ok(true) {
-            let fd = fcntl::fcntl(0, fcntl::F_DUPFD_CLOEXEC(255))
-                .expect("sush(fatal): Can't allocate fd for tty FD");
-            self.tty_fd = Some(unsafe { OwnedFd::from_raw_fd(fd) });
+    pub fn configure_c_mode(&mut self) -> Result<(), ExecError> {
+        if file_check::is_tty(0) {
+            self.tty_fd = Some(self.fds.dupfd_cloexec(0, 255)?);
         }
 
         self.init_current_directory();
@@ -154,6 +156,7 @@ impl ShellCore {
         if let Ok("1") = env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
             self.compat_bash = true
         };
+        Ok(())
     }
 
     fn set_initial_parameters(&mut self) {
@@ -194,19 +197,19 @@ impl ShellCore {
         }else{
             let _ = self
                 .db
-                .set_array("SUSH_VERSINFO", Some(sush_versinfo), None, false);
+                .init_array("SUSH_VERSINFO", Some(sush_versinfo), None, false);
             let _ = self.db.set_param(
                 "SUSH_VERSION",
                 &format!("{version}({symbol})-{profile}"),
                 None,
             );
-            self.db.set_flag("SUSH_VERSINFO", 'r', None);
+            self.db.set_flag("SUSH_VERSINFO", 'r', 0);
         }
 
         let _ = self
             .db
-            .set_array("BASH_VERSINFO", Some(bash_versinfo), None, false);
-        self.db.set_flag("BASH_VERSINFO", 'r', None);
+            .init_array("BASH_VERSINFO", Some(bash_versinfo), None, false);
+        self.db.set_flag("BASH_VERSINFO", 'r', 0);
     }
 
     pub fn flip_exit_status(&mut self) {

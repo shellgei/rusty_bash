@@ -140,12 +140,11 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
         None => "\n".to_string(),
     };
 
-    if limit_str.is_some() {
-        let s = limit_str.unwrap();
-        match s.parse::<usize>() {
+    if let Some(limit_str) = limit_str {
+        match limit_str.parse::<usize>() {
             Ok(n) => limit = n,
             Err(_) => {
-                let err = format!("{}: invalid number", &s);
+                let err = format!("{}: invalid number", &limit_str);
                 return error_exit_text(1, "read", &err, core);
             }
         };

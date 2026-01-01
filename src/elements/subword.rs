@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod ansi_c_quoted;
-mod braced_param;
+pub mod braced_param;
 mod command_sub;
 pub mod simple;
 pub mod single_quoted;
@@ -130,12 +130,15 @@ pub trait Subword {
     fn is_to_proc_sub(&self) -> bool {
         false
     }
+    fn is_simple_param(&self) -> bool {
+        false
+    }
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> {
         vec![]
     }
     fn set_heredoc_flag(&mut self) {}
 
-    fn set_pipe(&mut self) {}
+    fn set_pipe(&mut self, _: &mut ShellCore) {}
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
@@ -171,7 +174,7 @@ fn last_resort(
 ) -> Result<Option<Box<dyn Subword>>, ParseError> {
     match mode {
         None => Ok(None),
-        Some(WordMode::ParamOption(ref v)) => {
+        Some(WordMode::ParamOption(v)) => {
             if feeder.is_empty() || feeder.starts_withs(v) {
                 return Ok(None);
             }

@@ -18,15 +18,27 @@ pub struct JobEntry {
     pub text: String,
     change: bool,
     pub no_control: bool,
+    pub coproc_name: Option<String>,
+    pub coproc_fds: Vec<i32>,
 }
 
-fn wait_nonblock(pid: &Pid, status: &mut WaitStatus) -> Result<(), ExecError> {
+fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool) -> Result<(), ExecError> {
     let waitflags = WaitPidFlag::WNOHANG | WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
 
-    let s = wait::waitpid(*pid, Some(waitflags))?;
-    if s != WaitStatus::StillAlive || !still(status) {
-        *status = s;
+    match wait::waitpid(*pid, Some(waitflags)) {
+        Ok(s) => {
+            if s != WaitStatus::StillAlive || !still(status) {
+                *status = s;
+            }
+        },
+        Err(e) => {
+            if ! coproc {
+                return Err(ExecError::Errno(e));
+            }
+            *status = WaitStatus::Exited(*pid, 0);
+        },
     }
+
     Ok(())
 }
 
@@ -75,7 +87,7 @@ impl JobEntry {
                 match wait {
                     true => exit_status = wait_block(pid, status)?,
                     false => {
-                        wait_nonblock(pid, status)?;
+                        wait_nonblock(pid, status, self.coproc_name.is_some())?;
                     }
                 }
             }
@@ -228,6 +240,15 @@ impl JobEntry {
 }
 
 impl ShellCore {
+    fn close_coproc(&mut self, pos: usize) {
+       // self.job_table[pos].coproc_fds
+       //      .iter().for_each(|fd| {self.fds.close(*fd);});
+
+        let name = self.job_table[pos].coproc_name.clone().unwrap();
+        let _ = self.db.unset(&name, None);
+        let _ = self.db.unset(&(name + "_PID"), None);
+    }
+
     pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {
         if self.is_subshell {
             return Ok(());
@@ -235,8 +256,16 @@ impl ShellCore {
 
         let mut stopped = vec![];
         for i in 0..self.job_table.len() {
-            if self.job_table[i].update_status(false, false)? == 148 {
+            let table = &mut self.job_table[i];
+
+            if table.update_status(false, false)? == 148 {
                 stopped.push(i);
+            }
+
+            if  table.coproc_name.is_some() 
+            && (table.display_status == "Done" 
+                || table.display_status == "Killed") {
+                self.close_coproc(i);
             }
         }
 
@@ -274,9 +303,14 @@ impl ShellCore {
             Some(job) => job.id + 1,
         }
     }
-}
 
-impl ShellCore {
+    pub fn get_jobentry_pid_by_coproc_name(&mut self, name: &str) -> Option<Pid> {
+        let ans = self.job_table.iter_mut().find(|e| e.coproc_name.is_some() 
+                                                 && e.coproc_name.as_ref().unwrap() == name)?;
+
+        Some(ans.pids[0])
+    }
+
     pub fn get_stopped_job_commands(&self) -> Vec<String> {
         self.job_table
             .iter()

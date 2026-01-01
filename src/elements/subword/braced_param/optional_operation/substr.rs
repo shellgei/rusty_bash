@@ -35,7 +35,7 @@ impl OptionalOperation for Substr {
         true
     }
 
-    fn set_array(
+    fn init_array(
         &mut self,
         param: &Variable,
         array: &mut Vec<String>,

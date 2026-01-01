@@ -16,13 +16,15 @@ impl Data for IntData {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn get_print_string(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         utils::to_ansi_c(&self.body.to_string())
     }
 
     fn clear(&mut self) {}
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         match value.parse::<isize>() {
             Ok(n) => self.body = n,
             Err(e) => {
@@ -32,7 +34,9 @@ impl Data for IntData {
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         match value.parse::<isize>() {
             Ok(n) => self.body += n,
             Err(e) => {
@@ -78,16 +82,14 @@ impl Data for IntData {
         Ok(key == "0")
     }
 
-    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
         }
-        Ok(())
     }
 
-    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn unset_flag(&mut self, flag: char) {
         self.flags.retain(|e| e != flag);
-        Ok(())
     }
 
     fn has_flag(&mut self, flag: char) -> bool {
@@ -95,6 +97,10 @@ impl Data for IntData {
             return true;
         }
         self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 

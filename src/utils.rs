@@ -37,6 +37,7 @@ pub fn reserved(w: &str) -> bool {
             | "else"
             | "fi"
             | "case"
+            | "coproc"
             | "esac"
             | "repeat"
     )
@@ -127,7 +128,25 @@ pub fn is_param(s: &str) -> bool {
         return n > 0;
     }
 
+    is_var(s)
+    /*
     /* variable */
+    if first_ch.is_ascii_digit() {
+        return false;
+    }
+
+    let name_c = |c: char| {
+        c.is_ascii_lowercase() || c.is_ascii_uppercase() || c.is_ascii_digit() || '_' == c
+    };
+    !s.chars().any(|c| !name_c(c))
+        */
+}
+
+pub fn is_var(s: &str) -> bool {
+    if s.is_empty() {
+        return false;
+    }
+    let first_ch = s.chars().next().unwrap();
     if first_ch.is_ascii_digit() {
         return false;
     }
@@ -243,4 +262,12 @@ pub fn string_to_calculated_string(from: &str, core: &mut ShellCore) -> Result<S
     }
 
     Err(ExecError::SyntaxError(f.consume(f.len())))
+}
+
+pub fn gen_not_exist_var(core: &mut ShellCore) -> String {
+    let mut nm = "fjoeeojwa".to_string();
+    while core.db.exist(&nm) || core.db.exist_nameref(&nm) {
+        nm.push('a');
+    }
+    nm
 }

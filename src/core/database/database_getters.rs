@@ -9,13 +9,8 @@ use std::env;
 
 impl DataBase {
     pub fn get_ref(&mut self, name: &str) -> Option<&mut Box<dyn Data>> {
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            if self.params[layer].contains_key(name) {
-                return self.params[layer].get_mut(name);
-            }
-        }
-        None
+        let layer = self.get_layer_pos(name)?;
+        self.params[layer].get_mut(name)
     }
 
     pub fn get_ifs_head(&mut self) -> String {
@@ -30,19 +25,26 @@ impl DataBase {
         self.params.len()
     }
 
-    pub fn get_keys(&mut self) -> Vec<String> {
+    pub fn get_param_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();
         for layer in &self.params {
-            layer.keys().for_each(|k| {
-                keys.insert(k);
-            });
+            layer.keys()
+                 .for_each(|k| { keys.insert(k); });
         }
-        for f in &self.functions {
-            keys.insert(f.0);
-        }
-        let mut ans: Vec<String> = keys.iter().map(|c| c.to_string()).collect();
+        let mut ans = keys.iter()
+                          .map(|c| c.to_string())
+                          .collect::<Vec<String>>();
         ans.sort();
         ans
+    }
+
+    pub fn get_func_keys(&mut self) -> Vec<String> {
+        let mut keys = self.functions
+                           .keys()
+                           .map(|c| c.to_string())
+                           .collect::<Vec<String>>();
+        keys.sort();
+        keys 
     }
 
     pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
@@ -98,7 +100,7 @@ impl DataBase {
         }
     }
 
-    pub fn len(&mut self, name: &str) -> usize {
+    pub fn get_var_len(&mut self, name: &str) -> usize {
         if let Some(d) = self.get_ref(name) {
             return d.len();
         }
@@ -156,7 +158,7 @@ impl DataBase {
         Ok(0)
     }
 
-    pub fn get_len(&mut self, name: &str) -> Result<usize, ExecError> {
+    pub fn get_braced_param_hash_length(&mut self, name: &str) -> Result<usize, ExecError> {
         Self::name_check(name)?;
 
         if name == "@" || name == "*" {
@@ -186,12 +188,15 @@ impl DataBase {
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
 
+        if let Some(nameref) = self.get_nameref(name)? {
+            return self.get_param(&nameref);
+        }
+
         if let Some(val) = special_param(self, name) {
             return Ok(val);
         }
 
         if name == "@" || name == "*" {
-            //return connected position params
             return connected_position_params(self, name == "*");
         } //in double quoted subword, this method should not be used
 
@@ -222,9 +227,37 @@ impl DataBase {
 
         Ok("".to_string())
     }
+
+    pub fn get_nameref(&mut self, name: &str) -> Result<Option<String>, ExecError> {
+        let d = match self.get_ref(name) {
+            Some(d) => d,
+            None => return Ok(None),
+        };
+
+        if ! d.has_flag('n') {
+            return Ok(None);
+        }
+
+        if ! d.is_initialized() {
+            return Ok(None);
+        }
+
+        match d.get_as_single() {
+            Ok(nameref) => Ok(Some(nameref)),
+            Err(e) => Err(e), 
+        }
+    }
+
+    pub fn get_flags(&mut self, name: &str) -> String {
+        if let Some(v) = self.get_ref(name) {
+            v.get_flags()
+        }else{
+            "".to_string()
+        }
+    }
 }
 
-pub fn special_param(db: &DataBase, name: &str) -> Option<String> {
+fn special_param(db: &DataBase, name: &str) -> Option<String> {
     let val = match name {
         "-" => db.flags.clone(),
         "?" => db.exit_status.to_string(),
@@ -239,7 +272,7 @@ pub fn special_param(db: &DataBase, name: &str) -> Option<String> {
     Some(val)
 }
 
-pub fn connected_position_params(db: &mut DataBase, aster: bool) -> Result<String, ExecError> {
+fn connected_position_params(db: &mut DataBase, aster: bool) -> Result<String, ExecError> {
     let mut joint = " ".to_string();
     if aster {
         joint = db.get_ifs_head();
@@ -251,7 +284,7 @@ pub fn connected_position_params(db: &mut DataBase, aster: bool) -> Result<Strin
     }
 }
 
-pub fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
+fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
     let layer = db.position_parameters.len();
     match db.position_parameters[layer - 1].len() > pos {
         true => Ok(db.position_parameters[layer - 1][pos].to_string()),

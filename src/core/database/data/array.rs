@@ -27,7 +27,11 @@ impl Data for ArrayData {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&self) -> String {
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
+    }
+
+    fn _get_fmt_string(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
             let ansi = utils::to_ansi_c(&self.body[&i]);
@@ -48,14 +52,18 @@ impl Data for ArrayData {
         self.body.clear();
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let mut value = value.to_string();
         case_change(&self.flags, &mut value);
         self.body.insert(0, value);
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let mut value = if let Some(v) = self.body.get(&0) {
             v.to_owned() + value
         } else {
@@ -67,7 +75,10 @@ impl Data for ArrayData {
         Ok(())
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, key: &str,
+                    value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = self.index_of(key)?;
 
         let mut value = value.to_string();
@@ -77,7 +88,9 @@ impl Data for ArrayData {
         Ok(())
     }
 
-    fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let n = self.index_of(key)?;
         let mut value = if let Some(v) = self.body.get(&n) {
             v.to_owned() + value
@@ -178,20 +191,22 @@ impl Data for ArrayData {
         Ok(())
     }
 
-    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
         }
-        Ok(())
     }
 
-    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn unset_flag(&mut self, flag: char) {
         self.flags.retain(|e| e != flag);
-        Ok(())
     }
 
     fn has_flag(&mut self, flag: char) -> bool {
         self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 

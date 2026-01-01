@@ -18,7 +18,9 @@ pub enum ExecError {
     BadFd(RawFd),
     Bug(String),
     CannotOverwriteExistingFile(String),
+    InvalidIndirectExpansion(String),
     InvalidName(String),
+    InvalidNameRef(String),
     InvalidOption(String),
     Interrupted,
     ValidOnlyInFunction,
@@ -78,8 +80,9 @@ impl From<&ExecError> for String {
             ExecError::CannotOverwriteExistingFile(file) => {
                 format!("{file}: cannot overwrite existing file")
             }
-            //ExecError::InvalidName(name) => format!("`{}': invalid name", name),
+            ExecError::InvalidIndirectExpansion(name) => format!("{name}: invalid indirect expansion"),
             ExecError::InvalidName(name) => format!("`{name}': not a valid identifier"),
+            ExecError::InvalidNameRef(name) => format!("`{name}': invalid variable name for name reference"),
             ExecError::InvalidOption(opt) => format!("{opt}: invalid option"),
             ExecError::Interrupted => "interrupted".to_string(),
             ExecError::ValidOnlyInFunction => "can only be used in a function".to_string(),

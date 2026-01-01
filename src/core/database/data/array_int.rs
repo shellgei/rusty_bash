@@ -17,7 +17,11 @@ impl Data for IntArrayData {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&self) -> String {
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
+    }
+
+    fn _get_fmt_string(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
             formatted += &format!("[{}]=\"{}\" ", i, &self.body[&i]);
@@ -41,13 +45,17 @@ impl Data for IntArrayData {
         Ok(self.body.contains_key(&n))
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = super::to_int(value)?;
         self.body.insert(0, n);
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = match value.parse::<isize>() {
             Ok(n) => n,
             Err(e) => return Err(ExecError::Other(e.to_string())),
@@ -61,14 +69,19 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, key: &str, value: &str)
+    -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let key = self.index_of(key)?;
         let n = super::to_int(value)?;
         self.body.insert(key, n);
         Ok(())
     }
 
-    fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let key = self.index_of(key)?;
         let n = super::to_int(value)?;
 
@@ -159,7 +172,7 @@ impl Data for IntArrayData {
             body: hash,
             flags: self.flags.clone(),
         };
-        let _ = str_d.unset_flag('i');
+        str_d.unset_flag('i');
 
         Box::new(str_d)
     }
@@ -197,16 +210,14 @@ impl Data for IntArrayData {
         Err(ExecError::Other("invalid index".to_string()))
     }
 
-    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
         }
-        Ok(())
     }
 
-    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn unset_flag(&mut self, flag: char) {
         self.flags.retain(|e| e != flag);
-        Ok(())
     }
 
     fn has_flag(&mut self, flag: char) -> bool {
@@ -214,6 +225,10 @@ impl Data for IntArrayData {
             return true;
         }
         self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 

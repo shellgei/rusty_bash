@@ -19,7 +19,11 @@ impl Data for IntAssocData {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&self) -> String {
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
+    }
+
+    fn _get_fmt_string(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
@@ -29,22 +33,7 @@ impl Data for IntAssocData {
                 ansi = format!("\"{}\"", &ansi);
             }
 
-            /*
-            let mut k = k.clone();
-            if k.contains(" ") {
-                k = "\"".to_owned() + &k + "\"";
-            }*/
             let k = utils::to_ansi_c(&k);
-            /*
-            if k.contains('\'')
-            || k.contains('$')
-            || k.contains(' ')
-            || k.contains('`') {
-                if ! k.starts_with("$'") && ! k.ends_with("'") {
-                    k = format!("\"{}\"", &k);
-                }
-            }*/
-
             formatted += &format!("[{}]={} ", k, &ansi);
         }
 
@@ -56,20 +45,26 @@ impl Data for IntAssocData {
         self.body.clear();
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = super::to_int(value)?;
         self.body.insert("0".to_string(), n);
         Ok(())
     }
 
-    fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_assoc(&mut self, name: &str, key: &str,
+                    value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let n = super::to_int(value)?;
         self.body.insert(key.to_string(), n);
         self.last = Some(value.to_string());
         Ok(())
     }
 
-    fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let n = super::to_int(value)?;
 
         if let Some(v) = self.body.get(key) {
@@ -110,7 +105,7 @@ impl Data for IntAssocData {
 
         let mut new_d = AssocData::from(hash);
         new_d.flags = self.flags.clone();
-        let _ = new_d.unset_flag('i');
+        new_d.unset_flag('i');
         Box::new(new_d)
     }
 
@@ -177,16 +172,14 @@ impl Data for IntAssocData {
         Ok(())
     }
 
-    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
         }
-        Ok(())
     }
 
-    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn unset_flag(&mut self, flag: char) {
         self.flags.retain(|e| e != flag);
-        Ok(())
     }
 
     fn has_flag(&mut self, flag: char) -> bool {
@@ -194,6 +187,10 @@ impl Data for IntAssocData {
             return true;
         }
         self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 

@@ -1,7 +1,7 @@
 [package]
 name = "sush"
-version = "1.2.3"
-edition = "2021"
+version = "1.2.4"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -9,7 +9,7 @@ edition = "2021"
 target_bash_version = "5.2.37" # Ubuntu 25.04
 
 [dependencies]
-nix = { version = "0.29.0", features = ["fs", "process", "signal", "term", "user", "time", "hostname", "resource"]}
+nix = { version = "0.30.1", features = ["fs", "process", "signal", "term", "user", "time", "hostname", "resource"]}
 termion = "4.0.5"
 unicode-width = "0.1.11"
 signal-hook = "0.3.17"
@@ -21,6 +21,7 @@ rand = "0.9"
 rand_chacha = { version = "0.9.0", features = [ "os_rng" ]}
 time = "0.3"
 sprintf = "0.4"
+libc = "0.2.178"
 
 # Internationalization
 fluent-bundle = "0.16"

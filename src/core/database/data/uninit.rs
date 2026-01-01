@@ -16,7 +16,7 @@ impl Data for Uninit {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn get_print_string(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         "".to_string()
     }
 
@@ -57,11 +57,11 @@ impl Data for Uninit {
             true => {
                 let mut d = IntData::new();
                 d.flags = self.flags.clone();
-                return Some(Box::new(d));
+                Some(Box::new(d))
             },
             false => {
                 let d = SingleData::new(&self.flags);
-                return Some(Box::new(d));
+                Some(Box::new(d))
             },
         }
     }
@@ -92,16 +92,14 @@ impl Data for Uninit {
         Ok(())
     }
 
-    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
         }
-        Ok(())
     }
 
-    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn unset_flag(&mut self, flag: char) {
         self.flags.retain(|e| e != flag);
-        Ok(())
     }
 
     fn has_flag(&mut self, flag: char) -> bool {
@@ -114,6 +112,10 @@ impl Data for Uninit {
 
     fn is_array(&self) -> bool {
         self.flags.contains('a')
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 

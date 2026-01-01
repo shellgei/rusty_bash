@@ -24,12 +24,26 @@ impl Data for SingleData {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn get_print_string(&self) -> String {
+
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
+    }
+
+    fn _get_fmt_string(&self) -> String {
         let mut s = self.body.replace("'", "\\'");
         if s.contains('~') || s.starts_with('#') {
             s = "'".to_owned() + &s + "'";
         }
         let ansi = utils::to_ansi_c(&s);
+        /*
+        if ansi.starts_with("\"")
+        && ansi.ends_with("\"") && ansi.len() > 1 {
+            ansi.remove(0);
+            ansi.pop();
+            ansi.push('\'');
+            ansi.insert(0, '\'');
+        }*/
+
         if ansi == s {
             ansi.replace("$", "\\$")
         } else {
@@ -41,13 +55,28 @@ impl Data for SingleData {
         self.body.clear();
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
+        if self.has_flag('n') {
+            if value.contains('[') {
+                let splits: Vec<&str> = value.split('[').collect();
+                if ! utils::is_var(&splits[0]) || ! splits[1].ends_with(']') {
+                        return Err(ExecError::InvalidNameRef(value.to_string()));
+                }
+            }else if ! utils::is_var(value) {
+                return Err(ExecError::InvalidNameRef(value.to_string()));
+            }
+        }
+
         self.body = value.to_string();
         case_change(&self.flags, &mut self.body);
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         self.body += value;
         case_change(&self.flags, &mut self.body);
         Ok(())
@@ -70,20 +99,22 @@ impl Data for SingleData {
         Ok(key == "0")
     }
 
-    fn set_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
         }
-        Ok(())
     }
 
-    fn unset_flag(&mut self, flag: char) -> Result<(), ExecError> {
+    fn unset_flag(&mut self, flag: char) {
         self.flags.retain(|e| e != flag);
-        Ok(())
     }
 
     fn has_flag(&mut self, flag: char) -> bool {
         self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 

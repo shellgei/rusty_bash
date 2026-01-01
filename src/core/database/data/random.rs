@@ -10,7 +10,7 @@ use rand_chacha::ChaCha20Rng;
 #[derive(Debug, Clone)]
 pub struct RandomVar {
     rng: ChaCha20Rng,
-    prev: String,
+    flags: String, 
 }
 
 impl Data for RandomVar {
@@ -18,21 +18,26 @@ impl Data for RandomVar {
         Box::new(self.clone())
     }
 
-    fn get_print_string(&self) -> String {
-        self.prev.clone()
+    fn _get_fmt_string(&self) -> String {
+        "".to_string()
+    }
+
+    fn get_fmt_string(&mut self) -> String {
+        self.get_as_single().unwrap()
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         let rand = self.rng.next_u32() & 0x7FFF;
-        self.prev = rand.to_string();
-        Ok(self.prev.clone())
+        Ok(rand.to_string())
     }
 
     fn len(&mut self) -> usize {
-        self.prev.len()
+        self.get_as_single().unwrap().len()
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let seed = value.parse::<u64>().unwrap_or(0);
         self.rng = ChaCha20Rng::seed_from_u64(seed + 4011); //4011: for bash test
         Ok(())
@@ -42,8 +47,22 @@ impl Data for RandomVar {
         true
     }
 
+    fn set_flag(&mut self, flag: char) {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+    }
+
+    fn unset_flag(&mut self, flag: char) {
+        self.flags.retain(|e| e != flag);
+    }
+
     fn has_flag(&mut self, flag: char) -> bool {
-        flag == 'i'
+        self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 
@@ -51,7 +70,7 @@ impl RandomVar {
     pub fn new() -> Self {
         Self {
             rng: ChaCha20Rng::seed_from_u64(0),
-            prev: "".to_string(),
+            flags: "i".to_string(),
         }
     }
 }

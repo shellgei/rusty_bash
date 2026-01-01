@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::Subword;
+//use crate::elements::substitution::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::utils::splitter;
 use crate::{Feeder, ShellCore};
@@ -29,6 +30,24 @@ impl Subword for Parameter {
             self.array = Some(core.db.get_position_params());
         }
 
+        /*
+        if core.db.exist_nameref(&self.text[1..]) {
+            let name = self.text[1..].to_string();
+            let mut v = Variable{ text: name.to_string(),
+                                  name: name.to_string(),
+                                  index: None,
+                                  lineno: 0,
+            };
+            v.check_nameref(core)?;
+            if v.name == name {
+                self.text = "".to_string();
+                return Ok(());
+            }else {
+                self.text = core.db.get_param(&v.name)?;
+                return Ok(());
+            }
+        }*/
+
         self.text = core.db.get_param(&self.text[1..])?;
         Ok(())
     }
@@ -55,6 +74,10 @@ impl Subword for Parameter {
             ans.push((From::from(&p), true));
         }
         ans
+    }
+
+    fn is_simple_param(&self) -> bool {
+        true
     }
 }
 

@@ -3,6 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod alias;
+mod caller;
 mod cd;
 mod command;
 pub mod compgen;
@@ -67,6 +68,7 @@ impl ShellCore {
         self.builtins
             .insert("builtin".to_string(), command::builtin);
         self.builtins.insert("cd".to_string(), cd::cd);
+        self.builtins.insert("caller".to_string(), caller::caller);
         self.builtins
             .insert("command".to_string(), command::command);
         self.builtins

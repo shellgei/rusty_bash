@@ -1,12 +1,15 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
 //The methods of DataBase are distributed in database/database_*.rs files.
 pub mod data;
-mod database_checker;
-mod database_getter;
-mod database_setter;
-mod database_initializer;
+mod database_appenders;
+mod database_checkers;
+mod database_getters;
+mod database_print;
+mod database_setters;
+mod database_unsetters;
+mod database_initializers;
 
 use self::data::array::ArrayData;
 use self::data::array_int::IntArrayData;
@@ -18,13 +21,12 @@ use self::data::single_int::IntData;
 use self::data::Data;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::error::exec::ExecError;
-use crate::env;
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
-    pub params: Vec<HashMap<String, Box<dyn Data>>>,
+    params: Vec<HashMap<String, Box<dyn Data>>>,
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
     pub exit_status: i32,
@@ -41,7 +43,7 @@ impl DataBase {
             ..Default::default()
         };
 
-        database_initializer::initialize(&mut data).unwrap();
+        data.initialize().unwrap();
         data
     }
 
@@ -67,69 +69,6 @@ impl DataBase {
     pub fn init(&mut self, name: &str, layer: usize) {
         if let Some(d) = self.params[layer].get_mut(name) {
             d.clear();
-        }
-    }
-
-    pub fn unset_var(&mut self, name: &str, called_layer: Option<usize>) {
-        if let Some(layer) = called_layer {
-            if layer == 0 {
-                return;
-            }
-            self.params[layer].remove(name);
-
-            env::set_var(name, "");
-            for layer in self.params.iter_mut() {
-                if let Some(val) = layer.get_mut(name) {
-                    *val = Box::new( Uninit::new("") );
-                }
-            }
-
-            return;
-        }
-
-        env::remove_var(name);
-
-        for layer in &mut self.params {
-            layer.remove(name);
-        }
-    }
-
-    pub fn unset_function(&mut self, name: &str) {
-        self.functions.remove(name);
-    }
-
-    pub fn unset(&mut self, name: &str, called_layer: Option<usize>) {
-        self.unset_var(name, called_layer);
-        self.unset_function(name);
-    }
-
-    pub fn unset_array_elem(&mut self, name: &str, key: &str) -> Result<(), ExecError> {
-        if self.is_single(name) && (key == "0" || key == "@" || key == "*") {
-            self.unset_var(name, None);
-            return Ok(());
-        }
-
-        for layer in &mut self.params {
-            if let Some(d) = layer.get_mut(name) {
-                d.remove_elem(key)?;
-            }
-        }
-        Ok(())
-    }
-
-    pub fn print(&mut self, name: &str) {
-        if let Some(d) = self.get_ref(name) {
-            d.print_with_name(name, false);
-        } else if let Some(f) = self.functions.get(name) {
-            println!("{}", &f.text);
-        }
-    }
-
-    pub fn declare_print(&mut self, name: &str) {
-        if let Some(d) = self.get_ref(name) {
-            d.print_with_name(name, true);
-        } else if let Some(f) = self.functions.get(name) {
-            println!("{}", &f.text);
         }
     }
 

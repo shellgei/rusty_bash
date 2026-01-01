@@ -18,22 +18,25 @@ impl From<SimpleCommand> for ParenCommand {
         pip.text = c.get_text();
         pip.commands.push(c.boxed_clone());
 
-        let mut job = Job::default();
-        job.text = pip.text.clone();
-        job.pipelines.push(pip);
-        job.pipeline_ends.push("".to_string());
 
-        let mut script = Script::default();
-        script.text = job.text.clone();
-        script.jobs.push(job);
-        script.job_ends.push("".to_string());
+        let job = Job {
+            text: pip.text.clone(),
+            pipelines: vec![pip],
+            pipeline_ends: vec!["".to_string()]
+        };
 
-        let mut com = ParenCommand::default();
-        com.lineno = c.lineno;
-        com.text = script.text.clone();
-        com.script = Some(script);
+        let script = Script {
+            text: job.text.clone(),
+            jobs: vec![job.clone()],
+            job_ends: vec!["".to_string()],
+        };
 
-        com
+        ParenCommand {
+            text: script.text.clone(),
+            script: Some(script),
+            lineno: c.lineno,
+            ..Default::default()
+        }
     }
 }
 
@@ -104,10 +107,8 @@ impl ParenCommand {
         };
 
         let mut start = "(";
-        if substitution {
-            if feeder.starts_with("`") {
-                start = "`";
-            }
+        if substitution && feeder.starts_with("`") {
+            start = "`";
         }
 
         if command::eat_inner_script(feeder, core, start, vec![")"], &mut ans.script, substitution)? {

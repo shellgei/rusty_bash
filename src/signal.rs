@@ -1,6 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+extern crate libc;
+use libc::{dup2, close};
+
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
 use crate::Script;
@@ -23,7 +26,7 @@ pub fn restore(sig: Signal) {
 pub fn run_signal_check(core: &mut ShellCore) {
     for fd in 3..10 {
         //use FD 3~9 to prevent signal-hool from using these FDs
-        nix::unistd::dup2(2, fd).expect("sush(fatal): init error");
+            let _ = unsafe{dup2(2, fd)};
     }
 
     core.sigint.store(true, Relaxed);
@@ -35,7 +38,8 @@ pub fn run_signal_check(core: &mut ShellCore) {
 
         for fd in 3..10 {
             // release FD 3~9
-            nix::unistd::close(fd).expect("sush(fatal): init error");
+            //nix::unistd::close(fd).expect("sush(fatal): init error");
+            let _ = unsafe{close(fd)};
         }
         sigint.store(false, Relaxed);
 

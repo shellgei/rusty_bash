@@ -129,7 +129,7 @@ impl fmt::Display for ArithElem {
 impl ArithElem {
     pub fn change_to_value(&mut self, add: i128, core: &mut ShellCore) -> Result<(), ExecError> {
         *self = match self {
-            ArithElem::InParen(ref mut a) => a.eval_elems(core, false)?,
+            ArithElem::InParen(a) => a.eval_elems(core, false)?,
             ArithElem::Variable(name, s, inc) => {
                 if add != 0 && *inc != 0 || !utils::is_name(name, core) {
                     return Err(ArithError::OperandExpected(name.to_string()).into());

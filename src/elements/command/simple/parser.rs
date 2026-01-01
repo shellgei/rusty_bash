@@ -59,6 +59,9 @@ impl SimpleCommand {
             }
 
             self.command_name = w.text.clone();
+        }else if self.command_name == "command" && self.words.len() == 1 {
+            self.lineno = feeder.lineno;
+            self.command_name = w.text.clone();
         }
 
         if (self.words.is_empty()
@@ -84,10 +87,8 @@ impl SimpleCommand {
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
 
-            if core.subst_builtins.contains_key(&ans.command_name) {
-                if ans.eat_substitution_as_arg(feeder, core)? {
-                    continue;
-                }
+            if core.subst_builtins.contains_key(&ans.command_name) && ans.eat_substitution_as_arg(feeder, core)? {
+                continue;
             }
 
             command::eat_blank_with_comment(feeder, core, &mut ans.text);

@@ -130,7 +130,7 @@ impl ForCommand {
     fn eval_arithmetic(a: &mut Option<ArithmeticExpr>, core: &mut ShellCore) -> (bool, String) {
         match a {
             None => (true, "1".to_string()),
-            Some(ref mut arith) => match arith.eval(core) {
+            Some(arith) => match arith.eval(core) {
                 Ok(n) => (true, n),
                 _ => (false, "0".to_string()),
             },
