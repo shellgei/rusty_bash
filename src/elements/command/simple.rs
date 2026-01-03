@@ -11,7 +11,6 @@ use crate::{proc_ctrl, ShellCore};
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
-use crate::env;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
 use nix::unistd::Pid;
@@ -21,6 +20,15 @@ use std::sync::atomic::Ordering::Relaxed;
 enum SubsArgType {
     Subs(Box<Substitution>),
     Other(Word),
+}
+
+impl SubsArgType {
+    pub fn get_text(&self) -> &str {
+        match self {
+            Self::Subs(e) => &e.text,
+            Self::Other(w) => &w.text,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -33,7 +41,7 @@ pub struct SimpleCommand {
     force_fork: bool,
     substitutions_as_args: Vec<SubsArgType>,
     command_name: String,
-    lineno: usize,
+    pub lineno: usize,
     continue_alias_check: bool,
     invalid_alias: bool,
     command_path: String,
@@ -99,6 +107,10 @@ impl Command for SimpleCommand {
     fn force_fork(&self) -> bool {
         self.force_fork
     }
+
+    fn get_lineno(&mut self) -> usize {
+        self.lineno
+    }
 }
 
 impl SimpleCommand {
@@ -124,10 +136,17 @@ impl SimpleCommand {
             return Err(ExecError::Other(msg));
         }
 
+        if self.args[0] == "command" && self.args.len() > 1 {
+            if core.subst_builtins.contains_key(&self.args[1])
+            || core.db.functions.contains_key(&self.args[1]) {
+                self.args.remove(0);
+            }
+        }
+
         if self.force_fork
             || (!pipe.lastpipe && pipe.is_connected())
             || (!core.builtins.contains_key(&self.args[0])
-                && !core.substitution_builtins.contains_key(&self.args[0])
+                && !core.subst_builtins.contains_key(&self.args[0])
                 && !core.db.functions.contains_key(&self.args[0]))
         {
             self.command_path = hash::get_and_regist(self, core)?;
@@ -142,7 +161,10 @@ impl SimpleCommand {
             }
             Ok(None)
         } else {
-            pipe.connect_lastpipe();
+            if let Err(e) = pipe.connect_lastpipe(core) {
+                e.print(core);
+                core.db.exit_status = 1;
+            }
             if let Err(e) = self.nofork_exec(core) {
                 e.print(core);
                 core.db.exit_status = 1;
@@ -196,9 +218,7 @@ impl SimpleCommand {
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let layer = core.db.get_layer_num() - 1;
-        for (k, v) in &mut core.db.params[layer] {
-            env::set_var(&k, v.get_as_single().unwrap_or("".to_string()));
-        }
+        core.db.set_layer_to_env(layer);
         Ok(())
     }
 
@@ -237,6 +257,13 @@ impl SimpleCommand {
             match a.contains(" ") {
                 false => eprint!(" {}", &a),
                 true => eprint!(" '{}'", &a),
+            }
+        }
+
+        for a in &self.substitutions_as_args {
+            match a.get_text().contains(" ") {
+                false => eprint!(" {}", &a.get_text()),
+                true => eprint!(" '{}'", &a.get_text()),
             }
         }
 

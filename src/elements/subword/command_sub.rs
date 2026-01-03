@@ -9,9 +9,8 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{proc_ctrl, Feeder, ShellCore};
 use nix::unistd;
-use std::fs::File;
 use std::io::{BufRead, BufReader, Error};
-use std::os::fd::{FromRawFd, RawFd};
+use std::os::fd::RawFd;
 use std::sync::atomic::Ordering::Relaxed;
 use std::{thread, time};
 
@@ -31,7 +30,7 @@ impl Subword for CommandSubstitution {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut pipe = Pipe::new("|".to_string());
-        pipe.set(-1, unistd::getpgrp());
+        pipe.set(-1, unistd::getpgrp(), core);
         let pid = self.command.exec(core, &mut pipe)?;
         let result = self.read(pipe.recv, core);
         proc_ctrl::wait_pipeline(core, vec![pid], false, false);
@@ -63,7 +62,8 @@ impl CommandSubstitution {
     }
 
     fn read(&mut self, fd: RawFd, core: &mut ShellCore) -> Result<(), ExecError> {
-        let f = unsafe { File::from_raw_fd(fd) };
+        //let f = unsafe { File::from_raw_fd(fd) };
+        let f = core.fds.get_file(fd);
         let reader = BufReader::new(f);
         self.text.clear();
         for (i, line) in reader.lines().enumerate() {
@@ -115,13 +115,11 @@ impl CommandSubstitution {
 
         ans.text += &feeder.consume(1);
         let mut paren = ans.text.clone();
-        paren.remove(0);
-        paren.insert(0, '(');
         paren.pop();
         paren.push(')');
 
         let mut f = Feeder::new(&paren);
-        if let Some(s) = ParenCommand::parse(&mut f, core, false)? {
+        if let Some(s) = ParenCommand::parse(&mut f, core, true)? {
             ans.command = s;
             return Ok(Some(ans));
         }

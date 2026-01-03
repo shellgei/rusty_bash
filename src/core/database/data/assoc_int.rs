@@ -11,21 +11,19 @@ use std::collections::HashMap;
 pub struct IntAssocData {
     body: HashMap<String, isize>,
     last: Option<String>,
+    pub flags: String,
 }
-
-/*
-impl From<HashMap<String, String>> for IntAssocData {
-    fn from(hm: HashMap<String, String>) -> Self {
-        Self { body: hm, last: None, }
-    }
-}*/
 
 impl Data for IntAssocData {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
+    }
+
+    fn _get_fmt_string(&self) -> String {
         let mut formatted = String::new();
         formatted += "(";
         for k in self.keys() {
@@ -35,22 +33,7 @@ impl Data for IntAssocData {
                 ansi = format!("\"{}\"", &ansi);
             }
 
-            /*
-            let mut k = k.clone();
-            if k.contains(" ") {
-                k = "\"".to_owned() + &k + "\"";
-            }*/
             let k = utils::to_ansi_c(&k);
-            /*
-            if k.contains('\'')
-            || k.contains('$')
-            || k.contains(' ')
-            || k.contains('`') {
-                if ! k.starts_with("$'") && ! k.ends_with("'") {
-                    k = format!("\"{}\"", &k);
-                }
-            }*/
-
             formatted += &format!("[{}]={} ", k, &ansi);
         }
 
@@ -62,20 +45,26 @@ impl Data for IntAssocData {
         self.body.clear();
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = super::to_int(value)?;
         self.body.insert("0".to_string(), n);
         Ok(())
     }
 
-    fn set_as_assoc(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_assoc(&mut self, name: &str, key: &str,
+                    value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let n = super::to_int(value)?;
         self.body.insert(key.to_string(), n);
         self.last = Some(value.to_string());
         Ok(())
     }
 
-    fn append_to_assoc_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let n = super::to_int(value)?;
 
         if let Some(v) = self.body.get(key) {
@@ -114,7 +103,10 @@ impl Data for IntAssocData {
             hash.insert(d.0.to_string(), d.1.to_string());
         }
 
-        Box::new(AssocData::from(hash))
+        let mut new_d = AssocData::from(hash);
+        new_d.flags = self.flags.clone();
+        new_d.unset_flag('i');
+        Box::new(new_d)
     }
 
     fn is_assoc(&self) -> bool {
@@ -179,30 +171,33 @@ impl Data for IntAssocData {
         self.body.remove(key);
         Ok(())
     }
+
+    fn set_flag(&mut self, flag: char) {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+    }
+
+    fn unset_flag(&mut self, flag: char) {
+        self.flags.retain(|e| e != flag);
+    }
+
+    fn has_flag(&mut self, flag: char) -> bool {
+        if flag == 'i' {
+            return true;
+        }
+        self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
+    }
 }
 
 impl IntAssocData {
-    /*
-    pub fn set_new_entry(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), Box::new(IntAssocData::default()));
-        Ok(())
+    pub fn new() -> Self {
+        Self { body: HashMap::new(), last: None, flags: "i".to_string() }
     }
-
-    pub fn set_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
-                     key: &String, val: &String) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(v) => v.set_as_assoc(key, val),
-            _ => Err(ExecError::Other("TODO".to_string())),
-        }
-    }
-
-    pub fn append_elem(db_layer: &mut HashMap<String, Box<dyn Data>>, name: &str,
-                     key: &String, val: &String) -> Result<(), ExecError> {
-        match db_layer.get_mut(name) {
-            Some(v) => v.append_to_assoc_elem(key, val),
-            _ => Err(ExecError::Other("TODO".to_string())),
-        }
-    }*/
 
     pub fn get(&self, key: &str) -> Option<String> {
         Some(self.body.get(key).unwrap_or(&0).to_string())

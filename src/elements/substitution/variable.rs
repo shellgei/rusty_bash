@@ -1,11 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::subscript::Subscript;
+use crate::core::database::data::uninit::Uninit;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::arg;
 use crate::{Feeder, ShellCore};
+use super::subscript::Subscript;
 
 #[derive(Debug, Clone, Default)]
 pub struct Variable {
@@ -16,6 +17,26 @@ pub struct Variable {
 }
 
 impl Variable {
+    pub fn check_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let nameref = match core.db.get_nameref(&self.name)? {
+            Some(nref) => nref,
+            None => return Ok(()),
+        };
+
+        if ! nameref.contains('[') {
+            self.name = nameref;
+            return Ok(());
+        }else {
+            let mut f = Feeder::new(&nameref);
+            if let Some(v) = Self::parse(&mut f, core)? {
+                self.name = v.name;
+                self.index = v.index;
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn get_index(
         &mut self,
         core: &mut ShellCore,
@@ -62,6 +83,15 @@ impl Variable {
         sub == "[*]" || sub == "[@]"
     }
 
+    /*
+    pub fn get_value(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        if self.index.is_none() {
+            return core.db.get_param(&self.name);
+        }else{
+            return core.db.get_param(&self.name);
+        }
+    }*/
+
     pub fn set_value(&mut self, value: &str, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.index.is_none() {
             return core.db.set_param(&self.name, value, None);
@@ -93,7 +123,7 @@ impl Variable {
         let mut prev = vec![];
 
         let exists_in_layer = if let Some(l) = layer {
-            core.db.params[l].contains_key(&self.name)
+            core.db.exist_l(&self.name, l)
         } else {
             false
         };
@@ -103,39 +133,47 @@ impl Variable {
 
         let i_opt = arg::consume_arg("-i", args);
         let a_opt = arg::consume_arg("-a", args);
-        if a_opt || (!arg::has_option("-A", args) && self.index.is_some()) {
-            if prev.is_empty() {
-                //TODO: ^ Maybe, there is a case where an assoc must be
-                //prepared.
-                return match i_opt {
-                    true => core.db.set_int_array(&self.name, None, layer),
-                    false => core.db.set_array(&self.name, None, layer),
-                };
-            }
+        let la_opt = arg::consume_arg("-A", args);
 
-            return match i_opt {
-                true => core.db.set_int_array(&self.name, Some(prev), layer),
-                false => core.db.set_array(&self.name, Some(prev), layer),
+        if a_opt || (!la_opt && self.index.is_some()) {
+            let data = match prev.is_empty() {
+                true  => None,
+                false => Some(prev),
             };
-        } else if arg::consume_arg("-A", args) {
-            match i_opt {
-                true => core.db.set_int_assoc(&self.name, layer)?,
-                false => core.db.set_assoc(&self.name, layer, false)?,
-            }
+            return core.db.init_array(&self.name, data, layer, i_opt);
+            //TODO: ^ Maybe, there is a case where an assoc must be
+            //prepared.
+        } else if la_opt {
+            core.db.init_assoc(&self.name, layer, false, i_opt)?;
             if !prev.is_empty() {
                 core.db.set_assoc_elem(&self.name, "0", &prev[0], layer)?;
             }
             return Ok(());
         }
 
-        let value = match prev.len() {
-            0 => "".to_string(),
-            _ => prev[0].clone(),
-        };
-
-        match i_opt {
-            true => core.db.init_as_num(&self.name, &value, layer),
-            false => core.db.set_param(&self.name, &value, layer),
+        match prev.len() {
+            0 => {
+                match i_opt {
+                    true =>  core.db.init_as_num(&self.name, "", layer),
+                    false => {
+                        let mut opts = String::new();
+                        if a_opt {
+                            opts.push('a');
+                        }
+                        if la_opt {
+                            opts.push('A');
+                        }
+                        let d = Box::new(Uninit::new(&opts));
+                        core.db.set_entry(layer.unwrap_or(0), &self.name, d)
+                    },
+                }
+            },
+            _ => {
+                match i_opt {
+                    true => core.db.init_as_num(&self.name, &prev[0], layer),
+                    false => core.db.set_param(&self.name, &prev[0], layer),
+                }
+            },
         }
     }
 

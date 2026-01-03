@@ -294,7 +294,7 @@ pub fn compgen_v(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     commands.append(&mut aliases);
     let mut functions: Vec<String> = core.db.functions.keys().cloned().collect();
     commands.append(&mut functions);
-    let mut vars: Vec<String> = core.db.get_keys();
+    let mut vars: Vec<String> = core.db.get_param_keys();
     commands.append(&mut vars);
 
     let head = get_head(args, 2);

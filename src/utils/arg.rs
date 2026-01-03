@@ -59,29 +59,23 @@ pub fn consume_with_subsequents(prev_opt: &str, args: &mut Vec<String>) -> Vec<S
     }
 }
 
-pub fn dissolve_option(opt: &str) -> Vec<String> {
-    if opt.starts_with("--") {
-        vec![opt.to_string()]
-    } else if let Some(stripped) = opt.strip_prefix('-') {
-        if stripped == "" {
-            return vec!["-".to_string()];
-        }
+fn add_prefix(prefix: char, opts: &str) -> Vec<String> {
+    if opts.is_empty() {
+        return vec![prefix.to_string()];
+    }
 
-        stripped
-            .chars()
-            .map(|c| ("-".to_owned() + &c.to_string()).to_string())
-            .collect()
-    } else if let Some(stripped) = opt.strip_prefix('+') {
-        if stripped == "" {
-            return vec!["+".to_string()];
-        }
+    opts.chars().map(|c| format!("{prefix}{c}")).collect()
+}
 
-        stripped
-            .chars()
-            .map(|c| ("+".to_owned() + &c.to_string()).to_string())
-            .collect()
+pub fn dissolve_option(arg: &str) -> Vec<String> {
+    if arg.starts_with("--") {
+        vec![arg.to_string()]
+    } else if let Some(opts) = arg.strip_prefix('-') {
+        add_prefix('-', opts)
+    } else if let Some(opts) = arg.strip_prefix('+') {
+        add_prefix('+', opts)
     } else {
-        vec![opt.to_string()]
+        vec![arg.to_string()]
     }
 }
 

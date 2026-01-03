@@ -16,7 +16,7 @@ enum Status {
 pub struct Script {
     pub jobs: Vec<Job>,
     pub job_ends: Vec<String>,
-    text: String,
+    pub text: String,
 }
 
 impl Script {
@@ -35,7 +35,7 @@ impl Script {
     pub fn pretty_print(&mut self, indent_num: usize) {
         let mut semicolon = false;
         let mut printed = false;
-        let mut end_pos = self.jobs.len()-1;
+        let mut end_pos = self.jobs.len() - 1;
 
         for job in self.jobs.iter_mut().rev() {
             if job.pipelines.is_empty() {
@@ -45,8 +45,13 @@ impl Script {
         }
 
         for (i, job) in self.jobs.iter_mut().enumerate() {
-            job.pretty_print(indent_num, &mut semicolon, &mut printed,
-                             &self.job_ends[i], i==end_pos);
+            job.pretty_print(
+                indent_num,
+                &mut semicolon,
+                &mut printed,
+                &self.job_ends[i],
+                i == end_pos,
+            );
         }
         println!();
     }
@@ -130,6 +135,7 @@ impl Script {
         self.jobs.iter().map(|j| j.pipelines.len()).sum()
     }
 
+    /*
     fn read_heredoc(
         &mut self,
         feeder: &mut Feeder,
@@ -139,7 +145,7 @@ impl Script {
             job.read_heredoc(feeder, core)?;
         }
         Ok(())
-    }
+    }*/
 
     pub fn parse(
         feeder: &mut Feeder,
@@ -153,11 +159,11 @@ impl Script {
             match ans.check_nest(feeder, permit_empty) {
                 Status::NormalEnd => {
                     ans.unalias(core);
-                    ans.read_heredoc(feeder, core)?;
+                    //ans.read_heredoc(feeder, core)?;
                     return Ok(Some(ans));
                 }
                 Status::NeedMoreLine => {
-                    ans.read_heredoc(feeder, core)?;
+                    //ans.read_heredoc(feeder, core)?;
                     feeder.feed_additional_line(core)?
                 }
                 Status::UnexpectedSymbol(s) => {

@@ -92,17 +92,13 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
     if core.db.flags.contains('r') && arg::consume_arg("+r", &mut args) {
-        let _ = super::error_exit(1, &args[0], "+r: invalid option", core);
+        let _ = super::error_exit_text(1, &args[0], "+r: invalid option", core);
         eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
         return 1;
     }
 
     if args.len() <= 1 {
-        /* print */
-        core.db
-            .get_keys()
-            .into_iter()
-            .for_each(|k| core.db.print(&k));
+        core.db.print_params_and_funcs();
         return 0;
     }
 
@@ -112,13 +108,13 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
-    if args[1].starts_with("--") {
+    if args[1] == "--" || args[1] == "-" {
         args[1] = core.db.position_parameters[0][0].clone();
         args.remove(0);
         match set_positions(core, &args) {
             Ok(()) => return 0,
             Err(e) => {
-                return super::error_exit(1, &args[0], &String::from(&e), core);
+                return super::error_exit_text(1, &args[0], &String::from(&e), core);
             }
         }
     }
@@ -141,7 +137,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
             return match core.options.set(&args[2], positive) {
                 Ok(()) => 0,
                 Err(e) => {
-                    return super::error_exit(2, &args[0], &String::from(&e), core);
+                    return super::error_exit_text(2, &args[0], &String::from(&e), core);
                 }
             };
         }
@@ -151,7 +147,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
         if let Err(e) = set_positions(core, &args) {
             e.print(core);
             return 2;
-        }else{
+        } else {
             return 0;
         }
     }
@@ -239,6 +235,15 @@ pub fn shopt(core: &mut ShellCore, args: &[String]) -> i32 {
             core.options.print_all(false);
         }
         return 0;
+    }
+
+    /* q option */
+    if q_opt {
+        for a in &args[1..] {
+            if ! core.shopts.query(a) {
+                return 1;
+            }
+        }
     }
 
     if args.len() < 3 {

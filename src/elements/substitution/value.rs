@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::array::Array;
+use crate::core::database::data::Data;
 use crate::elements::word::Word;
 use crate::elements::word::WordMode;
 use crate::error::exec::ExecError;
@@ -14,6 +15,7 @@ pub enum ParsedDataType {
     None,
     Single(Word),
     Array(Array),
+    Obj(Box::<dyn Data>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -22,6 +24,16 @@ pub struct Value {
     pub value: ParsedDataType,
     pub evaluated_string: Option<String>,
     pub evaluated_array: Option<Vec<(String, bool, String)>>, //bool: true if append
+}
+
+impl From<Box::<dyn Data>> for Value {
+    fn from(mut d: Box::<dyn Data>) -> Self {
+        Self {
+            text: (*d.get_fmt_string()).to_string(),
+            value: ParsedDataType::Obj(d),
+            ..Default::default()
+        }
+    }
 }
 
 impl Value {
@@ -34,10 +46,18 @@ impl Value {
         match self.value.clone() {
             ParsedDataType::Single(v) => self.eval_as_value(&v, core, name),
             ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core, name, append),
+            ParsedDataType::Obj(_) => {Ok(())},
             ParsedDataType::None => {
                 self.evaluated_string = Some("".to_string());
                 Ok(())
             }
+        }
+    }
+
+    pub fn is_obj(&self) -> bool {
+        match self.value {
+            ParsedDataType::Obj(_) => true,
+            _ => false,
         }
     }
 
@@ -164,14 +184,14 @@ impl Value {
         match v {
             ParsedDataType::Single(mut w) => self.reparse_word(&mut w, core),
             ParsedDataType::Array(a) => {
-                if ! quoted {
+                if !quoted {
                     return Ok(());
                 }
                 let txt = "'".to_owned() + &a.text + "'";
                 let mut w = Word::from(txt.as_str());
-                return self.reparse_word(&mut w, core);
-            },
-            ParsedDataType::None => Ok(()),
+                self.reparse_word(&mut w, core)
+            }
+            _ => Ok(()),
         }
     }
 
@@ -183,7 +203,7 @@ impl Value {
         let mut ans = Self::default();
 
         let wm = match permit_space {
-            true => WordMode::ReparseOfValue,
+            true => WordMode::PermitAnyChar,
             false => WordMode::Value,
         };
 

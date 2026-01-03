@@ -4,6 +4,7 @@
 pub mod arithmetic;
 pub mod brace;
 pub mod case;
+pub mod coproc;
 pub mod r#for;
 pub mod function_def;
 pub mod r#if;
@@ -16,6 +17,7 @@ pub mod r#while;
 use self::arithmetic::ArithmeticCommand;
 use self::brace::BraceCommand;
 use self::case::CaseCommand;
+use self::coproc::Coprocess;
 use self::function_def::FunctionDefinition;
 use self::paren::ParenCommand;
 use self::r#for::ForCommand;
@@ -58,7 +60,7 @@ pub trait Command {
         if self.force_fork() || (!pipe.lastpipe && pipe.is_connected()) {
             self.fork_exec(core, pipe)
         } else {
-            pipe.connect_lastpipe();
+            pipe.connect_lastpipe(core)?;
             self.nofork_exec(core)
         }
     }
@@ -85,7 +87,7 @@ pub trait Command {
             }
             ForkResult::Parent { child } => {
                 proc_ctrl::set_pgid(core, child, pipe.pgid);
-                pipe.parent_close();
+                pipe.parent_close(core);
                 Ok(Some(child))
             }
         }
@@ -104,10 +106,9 @@ pub trait Command {
         } else {
             core.db.exit_status = 1;
         }
-        self.get_redirects()
-            .iter_mut()
-            .rev()
-            .for_each(|r| r.restore());
+        for r in self.get_redirects().iter_mut().rev() {
+            r.restore(core)?;
+        }
         result
     }
 
@@ -117,9 +118,7 @@ pub trait Command {
         self.get_text().replace("\n", " ")
     }
     fn get_redirects(&mut self) -> &mut Vec<Redirect>;
-    fn get_lineno(&mut self) -> usize {
-        panic!("IMPLEMENT!!")
-    }
+    fn get_lineno(&mut self) -> usize;
     fn set_force_fork(&mut self);
     fn boxed_clone(&self) -> Box<dyn Command>;
     fn force_fork(&self) -> bool;
@@ -129,13 +128,16 @@ pub trait Command {
         feeder: &mut Feeder,
         core: &mut ShellCore,
     ) -> Result<(), ParseError> {
+        let lineno = self.get_lineno();
         for r in self.get_redirects().iter_mut() {
             if r.called_as_heredoc {
                 continue;
             }
             if r.symbol == "<<" || r.symbol == "<<-" {
                 r.called_as_heredoc = true;
-                r.eat_heredoc(feeder, core)?;
+                r.eat_heredoc(feeder, core, lineno)?;
+                let mut tmp = String::new();
+                eat_blank_with_comment(feeder, core, &mut tmp);
             }
         }
         Ok(())
@@ -249,7 +251,7 @@ pub fn parse(
     if let Some(a) = FunctionDefinition::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = SimpleCommand::parse(feeder, core)? {
-        Ok(Some(Box::new(a)))
+        Ok(Some(a))
     } else if let Some(a) = IfCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ArithmeticCommand::parse(feeder, core)? {
@@ -257,6 +259,8 @@ pub fn parse(
     } else if let Some(a) = ParenCommand::parse(feeder, core, false)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = BraceCommand::parse(feeder, core)? {
+        Ok(Some(Box::new(a)))
+    } else if let Some(a) = Coprocess::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ForCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))

@@ -2,14 +2,14 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::array::ArrayData;
-use super::array_uninit::UninitArray;
 use super::Data;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct IntArrayData {
     body: HashMap<usize, isize>,
+    pub flags: String,
 }
 
 impl Data for IntArrayData {
@@ -17,7 +17,11 @@ impl Data for IntArrayData {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
+    }
+
+    fn _get_fmt_string(&self) -> String {
         let mut formatted = "(".to_string();
         for i in self.keys() {
             formatted += &format!("[{}]=\"{}\" ", i, &self.body[&i]);
@@ -32,9 +36,6 @@ impl Data for IntArrayData {
     fn clear(&mut self) {
         self.body.clear();
     }
-    fn is_initialized(&self) -> bool {
-        true
-    }
 
     fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
         if key == "@" || key == "*" {
@@ -44,13 +45,17 @@ impl Data for IntArrayData {
         Ok(self.body.contains_key(&n))
     }
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = super::to_int(value)?;
         self.body.insert(0, n);
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let n = match value.parse::<isize>() {
             Ok(n) => n,
             Err(e) => return Err(ExecError::Other(e.to_string())),
@@ -64,28 +69,19 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn set_as_array(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, key: &str, value: &str)
+    -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         let key = self.index_of(key)?;
         let n = super::to_int(value)?;
         self.body.insert(key, n);
         Ok(())
     }
 
-    /*
-    fn push_elems(&mut self, values: Vec<String>) -> Result<(), ExecError> {
-        let mut index = match self.body.is_empty() {
-            true  => 0,
-            false => *self.keys().iter().max().unwrap(),
-        };
-
-        for v in values {
-            self.body.insert(index, v);
-            index += 1;
-        }
-        Ok(())
-    }*/
-
-    fn append_to_array_elem(&mut self, key: &str, value: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, name: &str, key: &str,
+                            value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         let key = self.index_of(key)?;
         let n = super::to_int(value)?;
 
@@ -97,13 +93,14 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
+    fn get_as_array(&mut self, key: &str, _: &str) -> Result<String, ExecError> {
         if key == "@" {
             return Ok(self.values().join(" "));
         }
+        /*
         if key == "@" {
             return Ok(self.values().join(ifs));
-        }
+        }*/
 
         let n = key
             .parse::<usize>()
@@ -171,7 +168,13 @@ impl Data for IntArrayData {
             hash.insert(*d.0, d.1.to_string());
         }
 
-        Box::new(ArrayData::from(hash))
+        let mut str_d = ArrayData {
+            body: hash,
+            flags: self.flags.clone(),
+        };
+        str_d.unset_flag('i');
+
+        Box::new(str_d)
     }
 
     fn is_array(&self) -> bool {
@@ -206,48 +209,35 @@ impl Data for IntArrayData {
         }
         Err(ExecError::Other("invalid index".to_string()))
     }
-}
 
-impl IntArrayData {
-    pub fn set_elem(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-        pos: isize,
-        val: &String,
-    ) -> Result<(), ExecError> {
-        if let Some(d) = db_layer.get_mut(name) {
-            if d.is_array() {
-                if !d.is_initialized() {
-                    *d = IntArrayData::default().boxed_clone();
-                }
-
-                d.set_as_array(&pos.to_string(), val)
-            } else if d.is_assoc() {
-                return d.set_as_assoc(&pos.to_string(), val);
-            } else if d.is_single() {
-                let data = d.get_as_single()?;
-                IntArrayData::set_new_entry(db_layer, name)?;
-
-                if !data.is_empty() {
-                    Self::set_elem(db_layer, name, 0, &data)?;
-                }
-                Self::set_elem(db_layer, name, pos, val)
-            } else {
-                IntArrayData::set_new_entry(db_layer, name)?;
-                Self::set_elem(db_layer, name, pos, val)
-            }
-        } else {
-            IntArrayData::set_new_entry(db_layer, name)?;
-            Self::set_elem(db_layer, name, pos, val)
+    fn set_flag(&mut self, flag: char) {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
         }
     }
 
-    pub fn set_new_entry(
-        db_layer: &mut HashMap<String, Box<dyn Data>>,
-        name: &str,
-    ) -> Result<(), ExecError> {
-        db_layer.insert(name.to_string(), UninitArray {}.boxed_clone());
-        Ok(())
+    fn unset_flag(&mut self, flag: char) {
+        self.flags.retain(|e| e != flag);
+    }
+
+    fn has_flag(&mut self, flag: char) -> bool {
+        if flag == 'i' {
+            return true;
+        }
+        self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
+    }
+}
+
+impl IntArrayData {
+    pub fn new() -> Self {
+        Self {
+            body: HashMap::new(),
+            flags: "ai".to_string(),
+        }
     }
 
     pub fn values(&self) -> Vec<String> {

@@ -32,7 +32,7 @@ pub trait OptionalOperation {
     fn is_value_check(&self) -> bool {
         false
     }
-    fn set_array(
+    fn init_array(
         &mut self,
         _: &Variable,
         _: &mut Vec<String>,

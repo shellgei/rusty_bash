@@ -10,6 +10,7 @@ use rand_chacha::ChaCha20Rng;
 pub struct SRandomVar {
     rng: ChaCha20Rng,
     prev: String,
+    flags: String,
 }
 
 impl Data for SRandomVar {
@@ -17,7 +18,7 @@ impl Data for SRandomVar {
         Box::new(self.clone())
     }
 
-    fn print_body(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         self.prev.clone()
     }
 
@@ -31,12 +32,16 @@ impl Data for SRandomVar {
         self.prev.len()
     }
 
-    fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {
-        Ok(())
-    }
-
     fn is_special(&self) -> bool {
         true
+    }
+
+    fn has_flag(&mut self, flag: char) -> bool {
+        flag == 'i'
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
     }
 }
 
@@ -45,6 +50,7 @@ impl SRandomVar {
         Self {
             rng: ChaCha20Rng::from_os_rng(),
             prev: "".to_string(),
+            flags: "i".to_string(),
         }
     }
 }

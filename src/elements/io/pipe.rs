@@ -1,12 +1,9 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::io;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
-use nix::unistd;
 use nix::unistd::Pid;
-use std::os::fd::IntoRawFd;
 use std::os::unix::prelude::RawFd;
 
 #[derive(Debug, Clone)]
@@ -45,17 +42,19 @@ impl Pipe {
         p
     }
 
-    pub fn connect_lastpipe(&mut self) {
+    pub fn connect_lastpipe(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.lastpipe && self.prev != 0 {
-            self.lastpipe_backup = io::backup(0);
-            io::replace(self.prev, 0);
+            self.lastpipe_backup = core.fds.backup(0);
+            core.fds.replace(self.prev, 0)?;
         }
+        Ok(())
     }
 
-    pub fn restore_lastpipe(&mut self) {
+    pub fn restore_lastpipe(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.lastpipe && self.lastpipe_backup != -1 {
-            io::replace(self.lastpipe_backup, 0);
+            core.fds.replace(self.lastpipe_backup, 0)?;
         }
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Pipe> {
@@ -68,42 +67,38 @@ impl Pipe {
         }
     }
 
-    pub fn set(&mut self, prev: RawFd, pgid: Pid) {
+    pub fn set(&mut self, prev: RawFd, pgid: Pid, core: &mut ShellCore) {
         if self.text != ">()" {
-            let (recv, send) = unistd::pipe().expect("Cannot open pipe");
-            self.recv = recv.into_raw_fd();
-            self.send = send.into_raw_fd();
+            (self.recv, self.send) = core.fds.pipe();
             self.prev = prev;
         }
 
         if self.text == ">()" {
-            let (recv, send) = unistd::pipe().expect("Cannot open pipe");
-            self.proc_sub_recv = recv.into_raw_fd();
-            self.proc_sub_send = send.into_raw_fd();
+            (self.proc_sub_recv, self.proc_sub_send) = core.fds.pipe();
             self.prev = self.proc_sub_recv;
         }
 
         self.pgid = pgid;
     }
 
-    pub fn connect(&mut self) -> Result<(), ExecError> {
+    pub fn connect(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.text == ">()" {
-            io::replace(self.proc_sub_send, 0);
+            core.fds.replace(self.proc_sub_send, 0)?;
         }
 
-        io::close(self.recv, "Cannot close in-pipe");
-        io::replace(self.send, 1);
-        io::replace(self.prev, 0);
+        core.fds.close(self.recv);
+        core.fds.replace(self.send, 1)?;
+        core.fds.replace(self.prev, 0)?;
 
         if self.text == "|&" {
-            io::share(1, 2)?;
+            core.fds.share(1, 2)?;
         }
         Ok(())
     }
 
-    pub fn parent_close(&mut self) {
-        io::close(self.send, "Cannot close parent pipe out");
-        io::close(self.prev, "Cannot close parent prev pipe out");
+    pub fn parent_close(&mut self, core: &mut ShellCore) {
+        core.fds.close(self.send);
+        core.fds.close(self.prev);
     }
 
     pub fn is_connected(&self) -> bool {

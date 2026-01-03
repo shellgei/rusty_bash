@@ -75,7 +75,7 @@ fn main() {
         main_c_option::run_and_exit(&args, &script_parts, &mut core);
     }
 
-    core.configure();
+    let _ = core.configure();
     signal::run_signal_check(&mut core);
 
     if core.script_name == "-" {

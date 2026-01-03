@@ -32,7 +32,7 @@ impl CondElem {
     }
 
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if let CondElem::Word(ref mut w) = self {
+        if let CondElem::Word(w) = self {
             let new_w = w.tilde_and_dollar_expansion(core)?;
             *w = new_w;
         }

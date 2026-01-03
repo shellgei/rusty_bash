@@ -4,7 +4,7 @@
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
-use crate::{error, file_check, proc_ctrl, ShellCore, utils};
+use crate::{error, file_check, proc_ctrl, utils, ShellCore};
 
 pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
@@ -13,7 +13,7 @@ pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if !core.builtins.contains_key(&args[1]) {
         let msg = format!("{}: not a shell builtin", &args[1]);
-        return super::error_exit(1, &args[0], &msg, core);
+        return super::error_exit_text(1, &args[0], &msg, core);
     }
 
     core.builtins[&args[1]](core, &args[1..])
@@ -53,7 +53,7 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
                 true => {
                     println!("{} is a function", &com);
                     core.db.functions.get_mut(com).unwrap().pretty_print(0);
-                },
+                }
                 false => println!("{}", &com),
             }
         } else if let Some(path) = file::search_command(com) {
@@ -78,9 +78,16 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
 }
 
 pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
+    if args.len() > 1 {
+        if core.subst_builtins.contains_key(&args[1]) {
+            //TODO
+            return super::error_exit_text(1, &args[0], "substitution command are not supported", core);
+        }
+    }
+
     let mut args = arg::dissolve_options(args);
     if core.db.flags.contains('r') && arg::consume_arg("-p", &mut args) {
-        return super::error_exit(1, &args[0], "-p: restricted", core);
+        return super::error_exit_text(1, &args[0], "-p: restricted", core);
     }
 
     if args.len() <= 1 {

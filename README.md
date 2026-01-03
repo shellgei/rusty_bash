@@ -129,22 +129,22 @@ Followings are not difficult but very important tasks.
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: |
 | shopt | :construction: | : | :heavy_check_mark: | . | :heavy_check_mark: | [ | :no_good: |
 | alias | :heavy_check_mark: | bg | :construction: | bind | :no_good: |
-| break | :heavy_check_mark: | builtin | :heavy_check_mark: | caller | :no_good: |
+| break | :heavy_check_mark: | builtin | :heavy_check_mark: | caller | :under_construction: |
 | command | :heavy_check_mark: | compgen | :construction: | complete | :construction: |
 | compopt | :no_good: | continue | :heavy_check_mark: | declare | :no_good: |
-| dirs | :no_good: | disown | :no_good: | echo | :no_good: |
+| dirs | :no_good: | disown | :heavy_check_mark: | echo | :no_good: |
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
 | fc | :no_good: | fg | :construction: | getopts | :construction: |
 | hash | :no_good: | help | :no_good: | history | :construction: |
-| jobs | :construction: | kill | :no_good: | let | :no_good: |
+| jobs | :construction: | kill | :under_construction: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
-| popd | :no_good: | printf | :no_good: | pushd | :no_good: |
+| popd | :no_good: | printf | :heavy_check_mark: | pushd | :no_good: |
 | readonly | :no_good: | return | :heavy_check_mark: | false | :heavy_check_mark: |
-| shift | :heavy_check_mark: | suspend | :no_good: | test | :no_good: |
+| shift | :heavy_check_mark: | suspend | :no_good: | test | :heavy_check_mark: |
 | times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
-| type | :no_good: | typeset | :no_good: | ulimit | :no_good: |
+| type | :no_good: | typeset | :no_good: | ulimit | :heavy_check_mark: |
 | umask | :no_good: | unalias | :heavy_check_mark: | unset | :construction: |
-| wait | :construction: | export | :no_good: |
+| wait | :construction: | export | :heavy_check_mark: |
 
 ### options
 
@@ -155,7 +155,7 @@ Followings are not difficult but very important tasks.
 | [-+]O | :no_good: | -- | :no_good: | --debugger | :no_good: |
 | --dimp-po-strings | :no_good: | --help | :heavy_check_mark: | --init-file | :no_good: |
 | --rcfile | :no_good: | --noediting | :no_good: | --noprofile | :no_good: |
-| --norc | :no_good: | --posix | :no_good: | --restricted | :no_good: |
+| --norc | :no_good: | --posix | :under_construction: | --restricted | :heavy_check_mark: |
 | -v, --verbose | :no_good: | --version | :heavy_check_mark: | -e | :heavy_check_mark: |
 | --pipefail | :heavy_check_mark: | -B | :heavy_check_mark: |  |  |
 
@@ -170,13 +170,13 @@ Followings are not difficult but very important tasks.
 | compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
 | dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :no_good: |
 | extdebug | :no_good: | extglob | :heavy_check_mark: | extquote | :no_good: |
-| failglob | :no_good: | force_fignore | :no_good: | globstar | :no_good: |
+| failglob | :no_good: | force_fignore | :no_good: | globstar | :heavy_check_mark: |
 | gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
 | histverify | :no_good: | hostcomplete | :no_good: | huponexit | :no_good: |
 | interactive_comments | :no_good: | lastpipe | :no_good: | lithist | :no_good: |
 | login_shell | :no_good: | mailwarn | :no_good: | no_empty_cmd_completion | :no_good: |
 | nocaseglob | :no_good: | nocasematch | :no_good: | nullglob | :heavy_check_mark: |
-| progcomp | :heavy_check_mark: | promptvars | :no_good: | restricted_shell | :no_good: |
+| progcomp | :heavy_check_mark: | promptvars | :no_good: | restricted_shell | :heavy_check_mark: |
 | shift_verbose | :no_good: | sourcepath | :no_good: | xpg_echo | :no_good: |
 
 ### variables
@@ -185,7 +185,7 @@ Born Shell Variables
 
 |features | status |features | status |features | status |
 |-------------------|----|-------------------|----|-------------------|----|
-| CDPATH | :no_good: | HOME | :heavy_check_mark: | IFS | :construction: |
+| CDPATH | :no_good: | HOME | :heavy_check_mark: | IFS | :heavy_check_mark: |
 | MAIL | :no_good: | MAILPATH | :no_good: | OPTARG | :heavy_check_mark: |
 | OPTIND | :heavy_check_mark: | PATH | :heavy_check_mark: | PS1 | :heavy_check_mark: |
 | PS2 | :heavy_check_mark: | | | | |
@@ -207,7 +207,7 @@ Bash Variables
 | COMPREPLY | :no_good: | COPROC | :no_good: | DIRSTACK | :no_good: |
 | EMACS | :no_good: | ENV | :no_good: | EPOCHREALTIME | :heavy_check_mark: |
 | EPOCHSECONDS | :heavy_check_mark: | EUID | :no_good: | EXECIGNORE | :no_good: |
-| FCEDIT | :no_good: | FIGNORE | :no_good: | FUNCNAME | :no_good: |
+| FCEDIT | :no_good: | FIGNORE | :no_good: | FUNCNAME | :heavy_check_mark: |
 | FUNCNEST | :no_good: | GLOBIGNORE | :no_good: | GROUPS | :no_good: |
 | histchars | :no_good: | HISTCMD | :no_good: | HISTCONTROL | :no_good: |
 | HISTFILE | :heavy_check_mark: | HISTFILESIZE | :heavy_check_mark: | HISTIGNORE | :no_good: |

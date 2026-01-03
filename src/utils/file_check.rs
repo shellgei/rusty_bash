@@ -1,11 +1,15 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+extern crate libc;
+use libc::isatty;
+
 use faccess;
 use faccess::PathExt;
 use nix::unistd;
 use std::fs;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
+use std::os::fd::RawFd;
 
 #[cfg(target_os = "android")]
 use std::os::android::fs::MetadataExt;
@@ -103,10 +107,15 @@ pub fn is_writable(name: &str) -> bool {
     Path::new(&name).writable()
 }
 
-pub fn is_tty(name: &str) -> bool {
+pub fn is_tty(fd: RawFd) -> bool {
+    unsafe{isatty(fd) == 1}
+}
+
+pub fn is_tty_str(name: &str) -> bool {
     let fd = match name.parse::<i32>() {
         Ok(n) => n,
         _ => return false,
     };
-    unistd::isatty(fd) == Ok(true)
+    is_tty(fd)
+  //  unistd::isatty(fd) == Ok(true)
 }

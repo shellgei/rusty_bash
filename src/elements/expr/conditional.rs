@@ -141,8 +141,8 @@ impl ConditionalExpr {
                     stack.push(e.clone());
                     Ok(())
                 }
-                CondElem::UnaryOp(ref op) => Self::unary_operation(op, &mut stack, core),
-                CondElem::BinaryOp(ref op) => {
+                CondElem::UnaryOp(op) => Self::unary_operation(op, &mut stack, core),
+                CondElem::BinaryOp(op) => {
                     if stack.is_empty() {
                         return Ok(vec![CondElem::Ans(true)]); //for [[ -ot ]] [[ == ]] [[ = ]] ...
                     }
@@ -250,13 +250,13 @@ impl ConditionalExpr {
             Err(e) => return Err(ExecError::Other(e.to_string())),
         };
 
-        core.db.set_array("BASH_REMATCH", Some(vec![]), None)?;
+        core.db.init_array("BASH_REMATCH", Some(vec![]), None, false)?;
         if let Some(res) = re.captures(&left) {
             for i in 0.. {
                 if let Some(e) = res.get(i) {
                     let s = e.as_str().to_string();
                     core.db
-                        .set_array_elem("BASH_REMATCH", &s, i as isize, None)?;
+                        .set_array_elem("BASH_REMATCH", &s, i as isize, None, false)?;
                 } else {
                     break;
                 }
@@ -372,7 +372,7 @@ impl ConditionalExpr {
             "-f" => file_check::is_regular_file(s),
             "-h" | "-L" => file_check::is_symlink(s),
             "-r" => file_check::is_readable(s),
-            "-t" => file_check::is_tty(s),
+            "-t" => file_check::is_tty_str(s),
             "-w" => file_check::is_writable(s),
             "-x" => file_check::is_executable(s),
             "-b" | "-c" | "-g" | "-k" | "-p" | "-s" | "-u" | "-G" | "-N" | "-O" | "-S" => {

@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::pipeline::Pipeline;
@@ -91,7 +91,7 @@ impl Job {
     }
 
     fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
-        let backup = core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
+        let backup = core.tty_fd.clone();//core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
         core.tty_fd = None;
 
         let pids = if self.pipelines.len() == 1 {
@@ -108,7 +108,10 @@ impl Job {
                 }
             }
         };
-        eprintln!("{}", &pids[0].unwrap().as_raw());
+
+        if core.db.flags.contains('i') {
+            eprintln!("{}", &pids[0].unwrap().as_raw());
+        }
         let _ = core.db.set_param("!", &pids[0].unwrap().to_string(), None);
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
@@ -146,9 +149,14 @@ impl Job {
         }
     }
 
-    pub fn pretty_print(&mut self, indent_num: usize,
-                        semicolon: &mut bool, printed: &mut bool,
-                        job_end: &str, end: bool) -> bool {
+    pub fn pretty_print(
+        &mut self,
+        indent_num: usize,
+        semicolon: &mut bool,
+        printed: &mut bool,
+        job_end: &str,
+        end: bool,
+    ) -> bool {
         let tmp = self.text.clone();
         let job_text = tmp.trim_ascii();
 
@@ -169,7 +177,7 @@ impl Job {
 
         let text = match end {
             false => job_text.to_owned() + job_end,
-            true  => job_text.to_owned(),
+            true => job_text.to_owned(),
         };
 
         for _ in 0..indent_num {
@@ -261,7 +269,10 @@ impl Job {
         ans.text += &feeder.consume(com_num);
 
         match !ans.pipelines.is_empty() {
-            true => Ok(Some(ans)),
+            true => {
+                ans.read_heredoc(feeder, core)?;
+                Ok(Some(ans))
+            },
             false => Ok(None),
         }
     }

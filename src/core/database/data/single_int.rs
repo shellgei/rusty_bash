@@ -1,4 +1,4 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::single::SingleData;
@@ -9,19 +9,22 @@ use crate::utils;
 #[derive(Debug, Clone)]
 pub struct IntData {
     pub body: isize,
+    pub flags: String,
 }
 
 impl Data for IntData {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    fn print_body(&self) -> String {
+    fn _get_fmt_string(&self) -> String {
         utils::to_ansi_c(&self.body.to_string())
     }
 
     fn clear(&mut self) {}
 
-    fn set_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         match value.parse::<isize>() {
             Ok(n) => self.body = n,
             Err(e) => {
@@ -31,7 +34,9 @@ impl Data for IntData {
         Ok(())
     }
 
-    fn append_as_single(&mut self, value: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
+
         match value.parse::<isize>() {
             Ok(n) => self.body += n,
             Err(e) => {
@@ -54,7 +59,10 @@ impl Data for IntData {
     }
 
     fn get_str_type(&self) -> Box<dyn Data> {
-        Box::new(SingleData::from(self.body.to_string().as_ref()))
+        let mut d = SingleData::from(self.body.to_string().as_ref());
+        d.flags = self.flags.clone();
+        let _ = d.unset_flag('i');
+        Box::new(d)
     }
 
     fn len(&mut self) -> usize {
@@ -72,5 +80,35 @@ impl Data for IntData {
             return Ok(true);
         }
         Ok(key == "0")
+    }
+
+    fn set_flag(&mut self, flag: char) {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }
+    }
+
+    fn unset_flag(&mut self, flag: char) {
+        self.flags.retain(|e| e != flag);
+    }
+
+    fn has_flag(&mut self, flag: char) -> bool {
+        if flag == 'i' {
+            return true;
+        }
+        self.flags.contains(flag)
+    }
+
+    fn get_flags(&mut self) -> String {
+        self.flags.clone()
+    }
+}
+
+impl IntData {
+    pub fn new() -> Self {
+        Self {
+            body: 0,
+            flags: "i".to_string(),
+        }
     }
 }

@@ -31,11 +31,11 @@ pub fn bg(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut args = arg::dissolve_options(&args);
     if !core.db.flags.contains('m') {
-        return super::error_exit(1, &args[0], "no job control", core);
+        return super::error_exit_text(1, &args[0], "no job control", core);
     }
 
     if arg::consume_arg("-s", &mut args) {
-        return super::error_exit(1, &args[0], "-s: invalid option", core);
+        return super::error_exit_text(1, &args[0], "-s: invalid option", core);
     }
 
     let pos = match args.len() {
@@ -53,12 +53,12 @@ pub fn bg(core: &mut ShellCore, args: &[String]) -> i32 {
 
             if core.job_table[p].no_control {
                 let msg = format!("job {} started without job control", &id);
-                return super::error_exit(1, &args[0], &msg, core);
+                return super::error_exit_text(1, &args[0], &msg, core);
             }
 
             if core.job_table[p].display_status == "Running" {
                 let msg = format!("job {} already in background", &id);
-                return super::error_exit(0, &args[0], &msg, core);
+                return super::error_exit_text(0, &args[0], &msg, core);
             }
 
             let priority = get_priority(core, p);
@@ -79,11 +79,11 @@ pub fn fg(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
     let mut args = arg::dissolve_options(&args);
     if !core.db.flags.contains('m') {
-        return super::error_exit(1, &args[0], "no job control", core);
+        return super::error_exit_text(1, &args[0], "no job control", core);
     }
 
     if arg::consume_arg("-s", &mut args) {
-        return super::error_exit(1, &args[0], "-s: invalid option", core);
+        return super::error_exit_text(1, &args[0], "-s: invalid option", core);
     }
 
     let id = if args.len() == 1 {
@@ -108,7 +108,7 @@ pub fn fg(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.job_table[pos].no_control {
         let id = core.job_table[pos].id;
         let msg = format!("job {} started without job control", &id);
-        return super::error_exit(1, &args[0], &msg, core);
+        return super::error_exit_text(1, &args[0], &msg, core);
     }
 
     let pgid = core.job_table[pos].solve_pgid();
@@ -120,13 +120,14 @@ pub fn fg(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut exit_status = 1;
     if let Some(fd) = core.tty_fd.as_ref() {
-        if unistd::tcsetpgrp(fd, pgid).is_ok() {
+        //if unistd::tcsetpgrp(fd, pgid).is_ok() {
+        if core.fds.tcsetpgrp(*fd, pgid).is_ok() {
             println!("{}", &core.job_table[pos].text);
             core.job_table[pos].send_cont();
             exit_status = core.job_table[pos].update_status(true, false).unwrap_or(1);
 
             if let Ok(mypgid) = unistd::getpgid(Some(Pid::from_raw(0))) {
-                let _ = unistd::tcsetpgrp(fd, mypgid);
+                let _ = core.fds.tcsetpgrp(*fd, mypgid);
             }
         }
     } else {
@@ -144,14 +145,14 @@ fn jobspec_to_array_pos(core: &mut ShellCore, com: &str, jobspec: &str) -> Optio
     let poss = jobspec_to_array_poss(core, jobspec);
     if poss.is_empty() {
         let msg = format!("{}: no such job", &jobspec);
-        super::error_exit(127, com, &msg, core);
+        super::error_exit_text(127, com, &msg, core);
         return None;
     } else if poss.len() > 1 {
         let msg = format!(
             "{}: ambiguous job spec",
             jobspec.strip_prefix('%').unwrap_or(jobspec)
         );
-        super::error_exit(127, com, &msg, core);
+        super::error_exit_text(127, com, &msg, core);
         return None;
     }
 
@@ -230,16 +231,16 @@ pub fn jobs(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if poss.is_empty() {
         let msg = format!("{}: no such job", &jobspec);
-        return super::error_exit(127, "jobs", &msg, core);
+        return super::error_exit_text(127, "jobs", &msg, core);
     }
     if poss.len() > 1 && !jobspec.is_empty() {
         let msg = format!(
             "{}: ambiguous job spec",
             jobspec.strip_prefix('%').unwrap_or(&jobspec)
         );
-        super::error_exit(127, "jobs", &msg, core);
+        super::error_exit_text(127, "jobs", &msg, core);
         let msg = format!("{}: no such job", &jobspec);
-        return super::error_exit(127, "jobs", &msg, core);
+        return super::error_exit_text(127, "jobs", &msg, core);
     }
 
     if arg::consume_arg("-p", &mut args) {
@@ -291,8 +292,20 @@ fn print(core: &mut ShellCore, args: &[String]) {
     }
 }
 
+fn remove_coproc(core: &mut ShellCore, pos: usize) {
+ /*   core.job_table[pos].coproc_fds
+        .iter()
+        .for_each(|fd| {core.fds.close(*fd);}); */
+
+    if let Some(name) = &core.job_table[pos].coproc_name {
+        let _ = core.db.unset(&name, None, false);
+        let _ = core.db.unset(&(name.to_owned() + "_PID"), None, false);
+    }
+}
+
 fn remove(core: &mut ShellCore, pos: usize) {
     let job_id = core.job_table[pos].id;
+    remove_coproc(core, pos);
     core.job_table.remove(pos);
     core.job_table_priority.retain(|id| *id != job_id);
 }
@@ -354,7 +367,7 @@ fn wait_next(
     }
 
     if let Some(var) = var_name {
-        core.db.unset(var);
+        let _ = core.db.unset(var, None, false);
         if let Err(e) = core.db.set_param(var, &pid, None) {
             e.print(core);
         }
@@ -381,7 +394,7 @@ fn wait_a_job(
 ) -> (i32, bool) {
     if core.job_table.len() < pos {
         return (
-            super::error_exit(127, "wait", "invalpos jobpos", core),
+            super::error_exit_text(127, "wait", "invalpos jobpos", core),
             false,
         );
     }
@@ -391,7 +404,7 @@ fn wait_a_job(
     let ans = match core.job_table[pos].update_status(true, false) {
         Ok(n) => {
             if let Some(var) = var_name {
-                core.db.unset(var);
+                let _ = core.db.unset(var, None, false);
                 if let Err(e) = core.db.set_param(var, &pid, None) {
                     e.print(core);
                 }
@@ -502,7 +515,7 @@ fn wait_n(
 pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
     if core.is_subshell {
-        super::error_exit(127, &args[0], "called from subshell", core);
+        super::error_exit_text(127, &args[0], "called from subshell", core);
     }
 
     if args.len() <= 1 {
@@ -551,7 +564,7 @@ pub fn kill(core: &mut ShellCore, args: &[String]) -> i32 {
                 *arg = core.job_table[pos].pids[0].to_string();
             } else {
                 let msg = format!("{}: no such job", &arg);
-                return super::error_exit(127, "jobs", &msg, core);
+                return super::error_exit_text(127, "jobs", &msg, core);
             }
         }
     }
@@ -569,6 +582,7 @@ pub fn disown(core: &mut ShellCore, args: &[String]) -> i32 {
         let ids = jobspec_to_array_poss(core, "%%");
 
         if ids.len() == 1 {
+            remove_coproc(core, ids[0]);
             core.job_table.remove(ids[0]);
             core.job_table_priority.remove(0);
             return 0;
@@ -586,7 +600,7 @@ pub fn disown(core: &mut ShellCore, args: &[String]) -> i32 {
     for a in &args[1..] {
         if a.starts_with("-") {
             let msg = format!("{}: invalid option", &a);
-            super::error_exit(127, &args[0], &msg, core);
+            super::error_exit_text(127, &args[0], &msg, core);
             eprintln!("disown: usage: disown [-h] [-ar] [jobspec ... | pid ...]");
             return 127;
         }

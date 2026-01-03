@@ -31,10 +31,10 @@ pub fn hash(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if arg::consume_arg("-p", &mut args) {
         if args.len() == 1 {
-            return super::error_exit(1, "hash", "-p: option requires an argument", core);
+            return super::error_exit_text(1, "hash", "-p: option requires an argument", core);
         }
         if args.len() == 2 {
-            return super::error_exit(1, "hash", "still not implemented", core);
+            return super::error_exit_text(1, "hash", "still not implemented", core);
         }
 
         if let Err(e) = core
@@ -42,7 +42,7 @@ pub fn hash(core: &mut ShellCore, args: &[String]) -> i32 {
             .set_assoc_elem("BASH_CMDS", &args[2], &args[1], Some(0))
         {
             let msg = String::from(&e);
-            return super::error_exit(1, "hash", &msg, core);
+            return super::error_exit_text(1, "hash", &msg, core);
         }
     }
     0

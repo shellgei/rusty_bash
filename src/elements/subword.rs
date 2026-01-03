@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod ansi_c_quoted;
-mod braced_param;
+pub mod braced_param;
 mod command_sub;
 pub mod simple;
 pub mod single_quoted;
@@ -127,12 +127,18 @@ pub trait Subword {
     fn is_escaped_char(&self) -> bool {
         false
     }
+    fn is_to_proc_sub(&self) -> bool {
+        false
+    }
+    fn is_simple_param(&self) -> bool {
+        false
+    }
     fn get_child_subwords(&self) -> Vec<Box<dyn Subword>> {
         vec![]
     }
     fn set_heredoc_flag(&mut self) {}
 
-    fn set_pipe(&mut self) {}
+    fn set_pipe(&mut self, _: &mut ShellCore) {}
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
@@ -161,14 +167,14 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
-pub fn parse_special_subword(
+fn last_resort(
     feeder: &mut Feeder,
     core: &mut ShellCore,
     mode: &Option<WordMode>,
 ) -> Result<Option<Box<dyn Subword>>, ParseError> {
     match mode {
         None => Ok(None),
-        Some(WordMode::ParamOption(ref v)) => {
+        Some(WordMode::ParamOption(v)) => {
             if feeder.is_empty() || feeder.starts_withs(v) {
                 return Ok(None);
             }
@@ -203,7 +209,7 @@ pub fn parse_special_subword(
                 Ok(None)
             }
         }
-        Some(WordMode::ReparseOfValue) => {
+        Some(WordMode::PermitAnyChar) => {
             if feeder.is_empty() {
                 Ok(None)
             } else {
@@ -254,6 +260,6 @@ pub fn parse(
     } else if let Some(a) = EvalLetParen::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
     } else {
-        parse_special_subword(feeder, core, mode)
+        last_resort(feeder, core, mode)
     }
 }

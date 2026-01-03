@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::io;
 use crate::elements::subword;
 use crate::elements::subword::filler::FillerSubword;
 use crate::elements::word::Word;
@@ -9,7 +8,7 @@ use crate::elements::word::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::{exit, file_check};
-use crate::{Feeder, ShellCore};
+use crate::{error, Feeder, ShellCore};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::fs::{File, OpenOptions};
@@ -68,12 +67,12 @@ impl Redirect {
         }
 
         match self.symbol.as_str() {
-            "<" => self.redirect_simple_input(restore),  // <
-            ">" => self.redirect_simple_output(restore), // >
-            ">&" => self.redirect_output_fd(restore),    // >&2
-            "<&" => self.redirect_input_fd(restore),     // <&2
-            ">>" => self.redirect_append(restore),
-            "&>" => self.redirect_both_output(restore),
+            "<" => self.redirect_simple_input(restore, core),  // <
+            ">" => self.redirect_simple_output(restore, core), // >
+            ">&" => self.redirect_output_fd(restore, core),    // >&2
+            "<&" => self.redirect_input_fd(restore, core),     // <&2
+            ">>" => self.redirect_append(restore, core),
+            "&>" => self.redirect_both_output(restore, core),
             _ => exit::internal(" (Unknown redirect symbol)"),
         }
     }
@@ -89,20 +88,23 @@ impl Redirect {
         &mut self,
         file_open_result: Result<File, Error>,
         restore: bool,
+        core: &mut ShellCore,
     ) -> Result<(), ExecError> {
         if restore {
-            self.left_backup = io::backup(self.left_fd);
+            self.left_backup = core.fds.backup(self.left_fd);
+        }
+
+        if self.left_fd < 0 {
+            return Err(ExecError::BadFd(self.left_fd));
         }
 
         match file_open_result {
             Ok(file) => {
                 let fd = file.into_raw_fd();
-                let result = io::replace(fd, self.left_fd);
-                if !result {
-                    io::close(fd, "sush(fatal): file does not close");
+                if let Err(e) = core.fds.replace(fd, self.left_fd) {
+                    core.fds.close(fd);
                     self.left_fd = -1;
-                    let msg = format!("{}: cannot replace", &fd);
-                    return Err(ExecError::Other(msg));
+                    return Err(e);
                 }
                 Ok(())
             }
@@ -113,20 +115,21 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_input(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_simple_input(&mut self, restore: bool,
+                             core: &mut ShellCore) -> Result<(), ExecError> {
         self.set_left_fd(0);
-        self.connect_to_file(File::open(&self.right.text), restore)
+        self.connect_to_file(File::open(&self.right.text), restore, core)
     }
 
-    fn redirect_simple_output(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_simple_output(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         self.set_left_fd(1);
-        self.connect_to_file(File::create(&self.right.text), restore)
+        self.connect_to_file(File::create(&self.right.text), restore, core)
     }
 
-    fn redirect_output_fd(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_output_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.right.text == "-" {
             self.set_left_fd(1);
-            io::close(self.left_fd, "cannot close");
+            core.fds.close(self.left_fd);
             return Ok(());
         }
 
@@ -137,16 +140,17 @@ impl Redirect {
         self.set_left_fd(1);
 
         if restore {
-            self.left_backup = io::backup(self.left_fd);
+            self.left_backup = core.fds.backup(self.left_fd);
         }
 
-        io::share(right_fd, self.left_fd)
+        core.fds.share(right_fd, self.left_fd)
     }
 
-    fn redirect_input_fd(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_input_fd(&mut self, restore: bool,
+                         core: &mut ShellCore) -> Result<(), ExecError> {
         if self.right.text == "-" {
             self.set_left_fd(0);
-            io::close(self.left_fd, "cannot close");
+            core.fds.close(self.left_fd);
             return Ok(());
         }
 
@@ -157,13 +161,13 @@ impl Redirect {
         self.set_left_fd(0);
 
         if restore {
-            self.left_backup = io::backup(self.left_fd);
+            self.left_backup = core.fds.backup(self.left_fd);
         }
 
-        io::share(right_fd, self.left_fd)
+        core.fds.share(right_fd, self.left_fd)
     }
 
-    fn redirect_append(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_append(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         self.set_left_fd(1);
         self.connect_to_file(
             OpenOptions::new()
@@ -171,17 +175,18 @@ impl Redirect {
                 .append(true)
                 .open(&self.right.text),
             restore,
+            core,
         )
     }
 
-    fn redirect_both_output(&mut self, restore: bool) -> Result<(), ExecError> {
+    fn redirect_both_output(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         self.left_fd = 1;
-        self.connect_to_file(File::create(&self.right.text), restore)?;
+        self.connect_to_file(File::create(&self.right.text), restore, core)?;
 
         if restore {
-            self.extra_left_backup = io::backup(2);
+            self.extra_left_backup = core.fds.backup(2);
         }
-        io::share(1, 2)
+        core.fds.share(1, 2)
     }
 
     fn redirect_heredocument(
@@ -190,12 +195,10 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (r, s) = unistd::pipe().expect("Cannot open pipe");
-        let recv = r.into_raw_fd();
-        let send = s.into_raw_fd();
+        let (recv, send) = core.fds.pipe();
 
         if restore {
-            self.left_backup = io::backup(0);
+            self.left_backup = core.fds.backup(0);
         }
 
         let right = self.right.make_unquoted_word().unwrap_or("".to_string());
@@ -208,16 +211,16 @@ impl Redirect {
 
         match unsafe { unistd::fork()? } {
             ForkResult::Child => {
-                io::close(recv, "here_data close error (child recv)");
+                core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}", &text);
                 f.flush().unwrap();
-                io::close(send, "here_data close error (child send)");
+                core.fds.close(send);
                 process::exit(0);
             }
             ForkResult::Parent { child: _ } => {
-                io::close(send, "here_data close error (parent send)");
-                io::replace(recv, 0);
+                core.fds.close(send);
+                core.fds.replace(recv, 0)?;
             }
         }
         Ok(())
@@ -229,44 +232,43 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (r, s) = unistd::pipe().expect("Cannot open pipe");
-        let recv = r.into_raw_fd();
-        let send = s.into_raw_fd();
+        let (recv, send) = core.fds.pipe();
 
         if restore {
-            self.left_backup = io::backup(0);
+            self.left_backup = core.fds.backup(0);
         }
 
         let text = self.right.eval_as_herestring(core)?;
 
         match unsafe { unistd::fork()? } {
             ForkResult::Child => {
-                io::close(recv, "here_data close error (child recv)");
+                core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = writeln!(&mut f, "{}", &text);
                 f.flush().unwrap();
-                io::close(send, "here_data close error (child send)");
+                core.fds.close(send);
                 process::exit(0);
             }
             ForkResult::Parent { child: _ } => {
-                io::close(send, "here_data close error (parent send)");
-                io::replace(recv, 0);
+                core.fds.close(send);
+                core.fds.replace(recv, 0)?;
             }
         }
         Ok(())
     }
 
-    pub fn restore(&mut self) {
+    pub fn restore(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.left_backup >= 0 && self.left_fd >= 0 {
             if self.left_backup == self.left_fd {
-                io::close(self.left_fd, "cannot close");
+                core.fds.close(self.left_fd);
             } else {
-                io::replace(self.left_backup, self.left_fd);
+                core.fds.replace(self.left_backup, self.left_fd)?;
             }
         }
         if self.extra_left_backup >= 0 {
-            io::replace(self.extra_left_backup, 2);
+            core.fds.replace(self.extra_left_backup, 2)?;
         }
+        Ok(())
     }
 
     pub fn new() -> Redirect {
@@ -278,10 +280,17 @@ impl Redirect {
         }
     }
 
+    fn show_heredoc_warning(&self, lineno: usize, feeder_lineno: usize, core: &mut ShellCore) {
+        let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text.replace("\\", ""));
+        let _ = core.db.set_param("LINENO", &feeder_lineno.to_string(), None);
+        error::print(&msg, core);
+    }
+
     pub fn eat_heredoc(
         &mut self,
         feeder: &mut Feeder,
         core: &mut ShellCore,
+        lineno: usize,
     ) -> Result<(), ParseError> {
         let remove_tab = self.symbol == "<<-";
         let end = match self.right.eval_as_value(core) {
@@ -289,25 +298,43 @@ impl Redirect {
             Err(_) => return Err(ParseError::UnexpectedSymbol(self.right.text.clone())),
         };
 
+        let mut end_nest = end.clone();
+        let mut back_quote = false;
         let end_return = end.clone() + "\n";
+        match feeder.nest.last().unwrap().0.as_str() {
+            "(" => end_nest += ")",
+            "`" => {
+                back_quote = true;
+                end_nest += ")";
+            },
+            _ => end_nest += "\n",
+        }
 
         if feeder.starts_with("\n") {
             feeder.consume(1);
         }
 
         loop {
-            if feeder.is_empty() {
-                feeder.feed_additional_line(core)?;
+            if feeder.is_empty() &&feeder.feed_additional_line(core).is_err() {
+                self.show_heredoc_warning(lineno, feeder.lineno-1, core);
+                break;
+            }
 
-                if remove_tab {
-                    let len = feeder.scanner_tabs();
-                    feeder.consume(len);
-                }
+            if remove_tab {
+                let len = feeder.scanner_tabs();
+                feeder.consume(len);
+            }
 
-                if feeder.starts_with(&end_return) {
-                    feeder.consume(end.len());
-                    break;
+            if feeder.starts_with(&end_nest) || feeder.starts_with(&end_return) {
+                feeder.consume(end.len());
+                if !back_quote && feeder.starts_with(")") {
+                    self.show_heredoc_warning(lineno, feeder.lineno, core);
                 }
+                break;
+            }else if feeder.starts_with(&(end.clone())) {
+                feeder.consume(end.len());
+                self.show_heredoc_warning(lineno, feeder.lineno, core);
+                break;
             }
 
             if let Some(mut sw) = subword::parse(feeder, core, &Some(WordMode::Heredoc))? {

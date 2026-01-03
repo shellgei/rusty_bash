@@ -4,13 +4,22 @@
 use crate::core::builtins::compgen;
 use crate::core::completion::CompletionEntry;
 use crate::elements::command::simple::SimpleCommand;
-use crate::elements::command::Command;
 use crate::elements::io::pipe::Pipe;
 use crate::error::exec::ExecError;
 use crate::feeder::terminal::Terminal;
 use crate::utils::arg;
 use crate::{file_check, utils, Feeder, ShellCore};
 use unicode_width::UnicodeWidthStr;
+
+struct Entry<'a> {
+    list: &'a [String],
+    widths: &'a [usize],
+    row: usize,
+    col: usize,
+    row_num: usize,
+    width: usize,
+    pointed: bool,
+}
 
 fn str_width(s: &str) -> usize {
     UnicodeWidthStr::width(s)
@@ -75,7 +84,7 @@ fn apply_o_options(cand: &mut String, core: &mut ShellCore, o_options: &[String]
 impl Terminal {
     pub fn completion(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.escape_at_completion = true;
-        let _ = core.db.set_array("COMPREPLY", Some(vec![]), None);
+        let _ = core.db.init_array("COMPREPLY", Some(vec![]), None, false);
         self.set_completion_info(core)?;
 
         if self.set_custom_compreply(core).is_err() && self.set_default_compreply(core).is_err() {
@@ -140,7 +149,7 @@ impl Terminal {
     fn set_custom_compreply(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let cur_pos = Self::get_cur_pos(core);
         let prev_pos = cur_pos - 1;
-        let word_num = core.db.len("COMP_WORDS") as i32;
+        let word_num = core.db.get_var_len("COMP_WORDS") as i32;
 
         if prev_pos < 0 || prev_pos >= word_num {
             return Err(ExecError::Other("pos error".to_string()));
@@ -163,7 +172,7 @@ impl Terminal {
             Self::exec_action(cur_pos, core)?;
         }
 
-        match core.db.len("COMPREPLY") {
+        match core.db.get_var_len("COMPREPLY") {
             0 => Err(ExecError::Other("no completion cand".to_string())),
             _ => Ok(()),
         }
@@ -201,7 +210,7 @@ impl Terminal {
             .iter()
             .map(|p| p.replacen(&tilde_path, &tilde_prefix, 1))
             .collect();
-        core.db.set_array("COMPREPLY", Some(tmp), None)
+        core.db.init_array("COMPREPLY", Some(tmp), None, false)
     }
 
     fn make_default_compreply(
@@ -243,7 +252,7 @@ impl Terminal {
         }
 
         if pos == "0" {
-            return if core.db.len("COMP_WORDS") == 0 {
+            return if core.db.get_var_len("COMP_WORDS") == 0 {
                 self.escape_at_completion = false;
                 compgen::compgen_h(core, args)
                     .to_vec()
@@ -304,7 +313,16 @@ impl Terminal {
         for row in 0..row_num {
             for col in 0..col_num {
                 let tab = self.tab_row == row as i32 && self.tab_col == col as i32;
-                self.print_an_entry(list, &widths, row, col, row_num, max_entry_width, tab);
+                let entry = Entry {
+                    list,
+                    widths: &widths,
+                    row,
+                    col,
+                    row_num,
+                    width: max_entry_width,
+                    pointed: tab,
+                };
+                self.print_an_entry(&entry);
             }
             print!("\r\n");
         }
@@ -323,28 +341,19 @@ impl Terminal {
         }
     }
 
-    fn print_an_entry(
-        &mut self,
-        list: &[String],
-        widths: &[usize],
-        row: usize,
-        col: usize,
-        row_num: usize,
-        width: usize,
-        pointed: bool,
-    ) {
-        let i = col * row_num + row;
-        let space_num = match i < list.len() {
-            true => width - widths[i],
-            false => width,
+    fn print_an_entry(&mut self, entry: &Entry) {
+        let i = entry.col * entry.row_num + entry.row;
+        let space_num = match i < entry.list.len() {
+            true => entry.width - entry.widths[i],
+            false => entry.width,
         };
-        let cand = match i < list.len() {
-            true => list[i].clone(),
+        let cand = match i < entry.list.len() {
+            true => entry.list[i].clone(),
             false => "".to_string(),
         };
 
         let s = String::from_utf8(vec![b' '; space_num]).unwrap();
-        if pointed {
+        if entry.pointed {
             print!("\x1b[01;7m{}{}\x1b[00m", &cand, &s);
             self.completion_candidate = cand;
         } else {
@@ -417,7 +426,7 @@ impl Terminal {
 
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
-        let _ = core.db.set_array("COMP_WORDS", Some(words_all), None);
+        let _ = core.db.init_array("COMP_WORDS", Some(words_all), None, false);
 
         let mut num = words_left.len();
         match left_string.chars().last() {

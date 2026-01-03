@@ -3,18 +3,16 @@
 
 pub mod array;
 pub mod array_int;
-pub mod array_uninit;
 pub mod assoc;
 pub mod assoc_int;
-pub mod assoc_uninit;
 pub mod epochrealtime;
 pub mod epochseconds;
 pub mod random;
 pub mod seconds;
 pub mod single;
 pub mod single_int;
-//pub mod special;
 pub mod srandom;
+pub mod uninit;
 
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
@@ -28,9 +26,17 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
     }
 }
 
+fn case_change(flags: &str, text: &mut String) {
+    if flags.contains('l') {
+        *text = text.to_lowercase();
+    }else if flags.contains('u') {
+        *text = text.to_uppercase();
+    }
+}
+
 impl Debug for dyn Data {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct(&self.print_body()).finish()
+        fmt.debug_struct(&self._get_fmt_string()).finish()
     }
 }
 
@@ -42,34 +48,22 @@ impl Clone for Box<dyn Data> {
 
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
-    fn print_body(&self) -> String;
+    fn _get_fmt_string(&self) -> String;
+
+    fn get_fmt_string(&mut self) -> String {
+        self._get_fmt_string()
+    }
 
     fn get_str_type(&self) -> Box<dyn Data> {
         self.boxed_clone()
     }
 
-    fn print_with_name(&self, name: &str, declare_print: bool) {
-        if self.is_special() {
-            println!("{name}");
-            return;
-        }
-
-        let body = self.print_body(); //.replace("$", "\\$");
-        if !self.is_initialized() {
-            println!("{name}");
-        } else if declare_print
-            && self.is_single()
-            && !body.starts_with("\"")
-            && !body.ends_with("\"")
-        {
-            println!("{name}=\"{body}\"");
-        } else {
-            println!("{name}={body}");
-        }
-    }
-
     fn is_initialized(&self) -> bool {
         true
+    }
+
+    fn initialize(&mut self) -> Option<Box<dyn Data>> {
+        None
     }
 
     fn has_key(&mut self, _: &str) -> Result<bool, ExecError> {
@@ -77,27 +71,35 @@ pub trait Data {
     }
 
     fn clear(&mut self) {}
-    fn set_as_single(&mut self, _: &str) -> Result<(), ExecError> {
-        Err(ExecError::Other("Undefined call set_as_single".to_string()))
+
+    fn set_as_single(&mut self, name: &str,  _: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)
     }
-    fn append_as_single(&mut self, _: &str) -> Result<(), ExecError> {
+    fn append_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         Err(ExecError::Other("Undefined call set_as_single".to_string()))
     }
     fn get_as_single_num(&mut self) -> Result<isize, ExecError> {
         Err(ExecError::Other("not a single variable".to_string()))
     }
 
-    fn set_as_array(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, _: &str, _: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         Err(ExecError::Other("not an array".to_string()))
     }
-    fn append_to_array_elem(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, name: &str, _: &str,
+                            _: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         Err(ExecError::Other("not an array".to_string()))
     }
 
-    fn set_as_assoc(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn set_as_assoc(&mut self, name: &str, _: &str, _: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         Err(ExecError::Other("not an associative table".to_string()))
     }
-    fn append_to_assoc_elem(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, name: &str, _: &str,
+                            _: &str) -> Result<(), ExecError> {
+        self.readonly_check(name)?;
         Err(ExecError::Other("not an associative table".to_string()))
     }
 
@@ -184,4 +186,21 @@ pub trait Data {
     fn remove_elem(&mut self, _: &str) -> Result<(), ExecError> {
         Err(ExecError::Other("Undefined call remove_elem".to_string()))
     }
+
+    fn readonly_check(&mut self, name: &str) -> Result<(), ExecError> {
+        if self.has_flag('r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
+        Ok(())
+    }
+
+    fn set_flag(&mut self, _: char) {}
+
+    fn unset_flag(&mut self, _: char) {}
+
+    fn has_flag(&mut self, _: char) -> bool {
+        false
+    }
+
+    fn get_flags(&mut self) -> String;
 }

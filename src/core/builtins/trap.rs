@@ -56,7 +56,7 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
         };
 
         let msg = format!("trap: {n}: invalid signal specification");
-        return super::error_exit(1, &args[0], &msg, core);
+        return super::error_exit_text(1, &args[0], &msg, core);
     }
 
     if !valid_signals.is_empty() {
