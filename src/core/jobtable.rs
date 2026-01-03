@@ -245,8 +245,8 @@ impl ShellCore {
        //      .iter().for_each(|fd| {self.fds.close(*fd);});
 
         let name = self.job_table[pos].coproc_name.clone().unwrap();
-        let _ = self.db.unset(&name, None);
-        let _ = self.db.unset(&(name + "_PID"), None);
+        let _ = self.db.unset(&name, None, false);
+        let _ = self.db.unset(&(name + "_PID"), None, false);
     }
 
     pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {

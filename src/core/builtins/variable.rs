@@ -34,6 +34,7 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
 
 pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
     let mut args = arg::dissolve_options(args);
+    arg::consume_arg("--", &mut args);
 
     if arg::has_option("-f", &args) {
         return print::f_option(core, &args, subs);

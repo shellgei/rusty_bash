@@ -7,32 +7,32 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 
 fn unset_all(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
     if ! core.shopts.query("localvar_unset") {
-        core.db.unset(name, None)?;
+        core.db.unset(name, None, false)?;
         return Ok(0);
     }
 
     let mut layer = core.db.get_layer_num()-1;
     if layer <= 1 {
-        core.db.unset(name, None)?;
+        core.db.unset(name, None, true)?;
     }else{
         layer -= 1;
-        core.db.unset(name, Some(layer))?;
+        core.db.unset(name, Some(layer), true)?;
     }
     Ok(0)
 }
 
 fn unset_var(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
     if ! core.shopts.query("localvar_unset") {
-        core.db.unset_var(name, None)?;
+        core.db.unset_var(name, None, false)?;
         return Ok(0);
     }
 
     let mut layer = core.db.get_layer_num()-1;
     if layer <= 1 {
-        core.db.unset_var(name, None)?;
+        core.db.unset_var(name, None, true)?;
     }else{
         layer -= 1;
-        core.db.unset_var(name, Some(layer))?;
+        core.db.unset_var(name, Some(layer), true)?;
     }
 
     Ok(0)

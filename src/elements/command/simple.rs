@@ -22,6 +22,15 @@ enum SubsArgType {
     Other(Word),
 }
 
+impl SubsArgType {
+    pub fn get_text(&self) -> &str {
+        match self {
+            Self::Subs(e) => &e.text,
+            Self::Other(w) => &w.text,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct SimpleCommand {
     text: String,
@@ -248,6 +257,13 @@ impl SimpleCommand {
             match a.contains(" ") {
                 false => eprint!(" {}", &a),
                 true => eprint!(" '{}'", &a),
+            }
+        }
+
+        for a in &self.substitutions_as_args {
+            match a.get_text().contains(" ") {
+                false => eprint!(" {}", &a.get_text()),
+                true => eprint!(" '{}'", &a.get_text()),
             }
         }
 
