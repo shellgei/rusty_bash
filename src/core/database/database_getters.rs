@@ -148,6 +148,15 @@ impl DataBase {
         Self::name_check(name)?;
 
         if let Some(v) = self.get_ref(name) {
+            if key == "@" || key == "*" {
+                if ! v.is_initialized() {
+                    return Ok(0);
+                }
+                if ! v.is_array() && ! v.is_assoc() {
+                    return Ok(1);
+                }
+            }
+
             return v.elem_len(key);
         }
 
