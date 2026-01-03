@@ -237,6 +237,15 @@ pub fn shopt(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
+    /* q option */
+    if q_opt {
+        for a in &args[1..] {
+            if ! core.shopts.query(a) {
+                return 1;
+            }
+        }
+    }
+
     if args.len() < 3 {
         // "shopt" or "shopt option"
         if !q_opt {
