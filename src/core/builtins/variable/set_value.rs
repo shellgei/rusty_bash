@@ -59,7 +59,7 @@ fn array_to_element_check(sub: &mut Substitution) -> Result<(), ExecError> {
 fn check_global_option(core: &mut ShellCore, args: &[String],
                        name: &str, layer: usize) -> usize {
     if arg::has_option("-g", args) && layer != 0 {
-        let _ = core.db.unset(&name, None);
+        let _ = core.db.unset(&name, None, false);
         return 0;
     }
     layer

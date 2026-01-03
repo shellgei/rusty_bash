@@ -108,7 +108,7 @@ impl FunctionDefinition {
         array.remove(0);
         if array.is_empty() 
         || ( core.script_name != "-" && array[0] == "main" ) {
-            let _ = core.db.unset("FUNCNAME", Some(0));
+            let _ = core.db.unset("FUNCNAME", Some(0), core.shopts.query("localvar_unset"));
         }else {
             let _ = core.db.init_array("FUNCNAME", Some(array), Some(0), false);
         }

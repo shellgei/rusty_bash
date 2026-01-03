@@ -38,7 +38,7 @@ pub fn unalias(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if args.iter().any(|s| s == "-a") {
-        let _ = core.db.unset("BASH_ALIASES", None);
+        let _ = core.db.unset("BASH_ALIASES", None, false);
         let _ = core.db.init_assoc("BASH_ALIASES", None, true, false);
         return 0;
     }

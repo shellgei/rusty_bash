@@ -298,8 +298,8 @@ fn remove_coproc(core: &mut ShellCore, pos: usize) {
         .for_each(|fd| {core.fds.close(*fd);}); */
 
     if let Some(name) = &core.job_table[pos].coproc_name {
-        let _ = core.db.unset(&name, None);
-        let _ = core.db.unset(&(name.to_owned() + "_PID"), None);
+        let _ = core.db.unset(&name, None, false);
+        let _ = core.db.unset(&(name.to_owned() + "_PID"), None, false);
     }
 }
 
@@ -367,7 +367,7 @@ fn wait_next(
     }
 
     if let Some(var) = var_name {
-        let _ = core.db.unset(var, None);
+        let _ = core.db.unset(var, None, false);
         if let Err(e) = core.db.set_param(var, &pid, None) {
             e.print(core);
         }
@@ -404,7 +404,7 @@ fn wait_a_job(
     let ans = match core.job_table[pos].update_status(true, false) {
         Ok(n) => {
             if let Some(var) = var_name {
-                let _ = core.db.unset(var, None);
+                let _ = core.db.unset(var, None, false);
                 if let Err(e) = core.db.set_param(var, &pid, None) {
                     e.print(core);
                 }
