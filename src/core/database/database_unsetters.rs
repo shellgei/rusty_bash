@@ -2,7 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::DataBase;
-use crate::core::database::Uninit;
+//use crate::core::database::Uninit;
 use crate::error::exec::ExecError;
 use std::env;
 
@@ -57,8 +57,8 @@ impl DataBase {
 
             unsafe{env::set_var(name, "")};
             for layer in self.params.iter_mut() {
-                if let Some(val) = layer.get_mut(name) {
-                    *val = Box::new( Uninit::new("") );
+                if layer.get_mut(name).is_some() {
+                    layer.remove(name);
                 }
             }
 

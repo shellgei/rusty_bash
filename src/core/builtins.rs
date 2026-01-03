@@ -198,9 +198,12 @@ pub fn bind(_: &mut ShellCore, _: &[String]) -> i32 {
     0
 }
 
-pub fn debug(core: &mut ShellCore, args: &[String]) -> i32 {
-    dbg!("{:?}", &args);
-    dbg!("{:?}", &core.db.get_param("depth"));
+pub fn debug(core: &mut ShellCore, _: &[String]) -> i32 {
+    let pos = core.db.get_layer_pos("words").unwrap();
+
+    dbg!("{:?}", &core.db.params.len());
+    dbg!("{:?}", &pos);
+    dbg!("{:?}", &core.db.params[pos].get("words"));
     0
 }
 
