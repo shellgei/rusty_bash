@@ -2,6 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 pub mod random;
+pub mod srandom;
 pub mod single;
 
 use crate::error::exec::ExecError;

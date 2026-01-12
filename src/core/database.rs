@@ -5,6 +5,7 @@ mod data;
 
 use self::data::Data;
 use self::data::random::RandomVar;
+use self::data::srandom::SRandomVar;
 use self::data::single::SingleData;
 use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
@@ -27,6 +28,7 @@ impl DataBase {
         };
 
         ans.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
+        ans.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
         ans
     }
 
