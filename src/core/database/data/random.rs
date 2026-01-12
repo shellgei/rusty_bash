@@ -33,7 +33,7 @@ impl Data for RandomVar {
 impl RandomVar {
     pub fn new() -> Self {
         Self {
-            rng: ChaCha20Rng::seed_from_u64(0),
+            rng: ChaCha20Rng::from_os_rng(),
             flags: "i".to_string(),
         }
     }
