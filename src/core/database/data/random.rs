@@ -36,7 +36,7 @@ impl Data for RandomVar {
     fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
-        }   
+        }
     }
 
     fn get_flags(&self) -> &str {
