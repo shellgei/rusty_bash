@@ -14,11 +14,11 @@ pub struct RandomVar {
 impl Data for RandomVar {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
-    }   
+    }
 
     fn get_fmt_string(&mut self) -> String {
         self.get_as_single().unwrap()
-    }   
+    }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         let rand = self.rng.next_u32() & 0x7FFF;
