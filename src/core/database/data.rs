@@ -32,6 +32,13 @@ pub trait Data {
         Err(ExecError::Other("not a single variable".to_string()))
     }
 
+    fn readonly_check(&mut self, name: &str) -> Result<(), ExecError> {
+        if self.has_flag('r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
+        Ok(())
+    }
+
     fn set_flag(&mut self, _: char) {}
 
     fn get_flags(&self) -> &str;
