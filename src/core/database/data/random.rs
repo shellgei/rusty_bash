@@ -26,13 +26,17 @@ impl Data for RandomVar {
     }
 
     fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
-        if self.flags.contains('r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
+        self.readonly_check(name)?;
 
         let seed = value.parse::<u64>().unwrap_or(0);
         self.rng = ChaCha20Rng::seed_from_u64(seed + 4011); //4011: for bash test
         Ok(())
+    }
+
+    fn set_flag(&mut self, flag: char) {
+        if ! self.flags.contains(flag) {
+            self.flags.push(flag);
+        }   
     }
 
     fn get_flags(&self) -> &str {
