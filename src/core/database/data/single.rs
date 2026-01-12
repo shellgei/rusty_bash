@@ -31,10 +31,7 @@ impl Data for SingleData {
 
     fn set_as_single(&mut self, name: &str,
                      value: &str) -> Result<(), ExecError> {
-        if self.flags.contains('r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
-
+        self.readonly_check(name)?;
         self.body = value.to_string();
         Ok(())
     }
