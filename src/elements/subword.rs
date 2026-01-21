@@ -202,6 +202,21 @@ fn last_resort(
                 Ok(None)
             }
         }
+        /*
+        Some(WordMode::AlterWord) => {
+            if feeder.is_empty() || feeder.starts_with("}") {
+                return Ok(None);
+            }
+
+            let len = feeder.scanner_char();
+            let c = FillerSubword {
+                text: feeder.consume(len),
+            };
+            if feeder.is_empty() {
+                feeder.feed_additional_line(core)?;
+            }
+            Ok(Some(Box::new(c)))
+        }*/
         Some(WordMode::AssocIndex) => {
             if !feeder.starts_with("]") {
                 Ok(Some(From::from(&feeder.consume(1))))
@@ -243,7 +258,7 @@ pub fn parse(
     //else if let Some(a) = CommandSubstitutionOld::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = ProcessSubstitution::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
-    } else if let Some(a) = SingleQuoted::parse(feeder, core) {
+    } else if let Some(a) = SingleQuoted::parse(feeder, core, mode) {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = DoubleQuoted::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
