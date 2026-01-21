@@ -16,6 +16,7 @@ use crate::{utils, Feeder, ShellCore};
 #[derive(Debug, Clone)]
 pub enum WordMode {
     Alias,
+    AlterWord,
     Arithmetic,
     AssocIndex,
     EvalLet,
@@ -268,7 +269,9 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::Arithmetic) | Some(WordMode::CompgenF) => {
+            Some(WordMode::Arithmetic) 
+            | Some(WordMode::AlterWord) 
+            | Some(WordMode::CompgenF) => {
                 if feeder.starts_with("}") {
                     return false;
                 }
@@ -293,7 +296,12 @@ impl Word {
                 if feeder.starts_withs(&["]", "}"]) || feeder.scanner_math_symbol(core) != 0 {
                     return false;
                 }
-            }
+            },
+            Some(WordMode::AlterWord) => {
+                if feeder.starts_with("}") {
+                    return false;
+                }
+            },
             Some(WordMode::ParamOption(v)) => {
                 if feeder.starts_withs(v) {
                     return false;

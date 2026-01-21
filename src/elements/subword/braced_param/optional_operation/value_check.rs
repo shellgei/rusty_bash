@@ -92,8 +92,8 @@ impl ValueCheck {
         };
 
         if self.in_double_quoted {
-            for e in v.subwords.iter_mut() {
-                if e.is_escaped_char() {
+            for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
+//                if e.is_escaped_char() {
                     match e.get_text() {
                         "\\$" | "\\\\" | "\\\"" | "\\`" => {}
                         txt => {
@@ -103,7 +103,7 @@ impl ValueCheck {
                             *e = Box::new(sw);
                         }
                     }
-                }
+ //               }
             }
 
             self.alternative_value = Some(v.dollar_expansion(core)?);
@@ -192,7 +192,8 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        let mode = WordMode::ParamOption(vec!["}".to_string()]);
+        //let mode = WordMode::ParamOption(vec!["}".to_string()]);
+        let mode = WordMode::AlterWord;
         ans.alternative_value = Some(Word::default());
 
         if let Some(w) = Word::parse(feeder, core, Some(mode))? {
