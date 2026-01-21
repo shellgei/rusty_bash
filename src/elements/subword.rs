@@ -202,6 +202,7 @@ fn last_resort(
                 Ok(None)
             }
         }
+        /*
         Some(WordMode::AlterWord) => {
             if feeder.is_empty() || feeder.starts_with("}") {
                 return Ok(None);
@@ -215,7 +216,7 @@ fn last_resort(
                 feeder.feed_additional_line(core)?;
             }
             Ok(Some(Box::new(c)))
-        }
+        }*/
         Some(WordMode::AssocIndex) => {
             if !feeder.starts_with("]") {
                 Ok(Some(From::from(&feeder.consume(1))))

@@ -192,8 +192,8 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        //let mode = WordMode::ParamOption(vec!["}".to_string()]);
-        let mode = WordMode::AlterWord;
+        let mode = WordMode::ParamOption(vec!["}".to_string()]);
+        //let mode = WordMode::AlterWord;
         ans.alternative_value = Some(Word::default());
 
         if let Some(w) = Word::parse(feeder, core, Some(mode))? {

@@ -217,8 +217,8 @@ impl Replace {
         if let Some(w) = Word::parse(
             feeder,
             core,
-            //Some(WordMode::ParamOption(vec!["}".to_string()])),
-            Some(WordMode::AlterWord),
+            Some(WordMode::ParamOption(vec!["}".to_string()])),
+            //Some(WordMode::AlterWord),
         )? {
             ans.text += &w.text.clone();
             ans.replace_to = Some(w);
