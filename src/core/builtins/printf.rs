@@ -160,7 +160,7 @@ impl PrintfToken {
             }
             Self::Q => {
                 let a = pop(args);
-                let q = a
+                let mut q = a
                     .replace("\\", "\\\\")
                     .replace("$", "\\$")
                     .replace("|", "\\|")
@@ -173,6 +173,11 @@ impl PrintfToken {
                     .replace("}", "\\}")
                     .replace("!", "\\!")
                     .replace("&", "\\&");
+
+                if q == "" {
+                    q = "''".to_string();
+                }
+
                 Ok(q)
             }
             Self::Other(s) => {
