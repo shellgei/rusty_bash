@@ -70,8 +70,6 @@ impl DataBase {
             return Ok(());
         }
 
-        unsafe{env::remove_var(name)};
-
         let num = self.params.len();
         for layer in (0..num).rev() {
             self.remove_entry(layer, name)?;

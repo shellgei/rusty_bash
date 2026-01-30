@@ -1,6 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use std::env;
 use super::{ArrayData, Data, Uninit};
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
@@ -90,6 +91,7 @@ impl DataBase {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
+        unsafe{env::remove_var(name)};
         if self.params[layer].contains_key(name) {
             self.params[layer].remove(name);
         }
