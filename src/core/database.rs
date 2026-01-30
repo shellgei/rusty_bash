@@ -176,20 +176,22 @@ impl DataBase {
     }
 
     pub fn unset(&mut self, name: &str) -> Result<(), ExecError> {
-        self.unset_var(name)?;
-        self.functions.remove(name);
-        Ok(())
-    }
-
-    pub fn unset_var(&mut self, name: &str) -> Result<(), ExecError> {
-        let num = self.params.len();
-        for layer in (0..num).rev() {
-            self.remove_param(layer, name)?;
+        if ! self.unset_var(name)? {
+            self.functions.remove(name);
         }
         Ok(())
     }
 
-    fn remove_param(&mut self, layer: usize, name: &str) -> Result<(), ExecError> {
+    pub fn unset_var(&mut self, name: &str) -> Result<bool, ExecError> {
+        let mut removed = false;
+        let num = self.params.len();
+        for layer in 0..num {
+            removed |= self.remove_param(layer, name)?;
+        }
+        Ok(removed)
+    }
+
+    fn remove_param(&mut self, layer: usize, name: &str) -> Result<bool, ExecError> {
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
@@ -197,9 +199,12 @@ impl DataBase {
         if layer == 0 {
             unsafe{env::remove_var(name)};
         }
+
+        let mut removed = false;
         if self.params[layer].contains_key(name) {
             self.params[layer].remove(name);
+            removed = true;
         }
-        Ok(())
+        Ok(removed)
     }
 }
