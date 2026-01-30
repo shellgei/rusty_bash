@@ -86,7 +86,7 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn remove_entry(&mut self, layer: usize, name: &str) -> Result<(), ExecError> {
+    pub fn remove_entry(&mut self, layer: usize, name: &str) -> Result<bool, ExecError> {
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
@@ -94,9 +94,12 @@ impl DataBase {
         if layer == 0 {
             unsafe{env::remove_var(name)};
         }
+        
+        let mut res = false;
         if self.params[layer].contains_key(name) {
             self.params[layer].remove(name);
+            res = true;
         }
-        Ok(())
+        Ok(res)
     }
 }

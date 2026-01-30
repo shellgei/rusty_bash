@@ -42,23 +42,26 @@ impl DataBase {
 
     pub fn unset_var(&mut self, name: &str,
                      called_layer: Option<usize>,
-                     localvar_unset: bool) -> Result<(), ExecError> {
+                     localvar_unset: bool) -> Result<bool, ExecError> {
         if let Ok(Some(nameref)) = self.get_nameref(name) {
             if nameref != "" {
                  return self.unset_var(&nameref, called_layer, localvar_unset);
             }
-            return Ok(());
+            return Ok(false);
         }
+
+        let mut res = false;
 
         if let Some(layer) = called_layer {
             if layer == 0 {
-                return Ok(());
+                return Ok(false);
             }
-            self.remove_entry(layer, name)?;
+            res = self.remove_entry(layer, name)?;
 
             unsafe{env::set_var(name, "")};
             for layer in self.params.iter_mut() {
                 if let Some(d) = layer.get_mut(name) {
+                    res = true;
                     if localvar_unset {
                         *d = Box::new( Uninit::new("") );
                     }else {
@@ -67,14 +70,14 @@ impl DataBase {
                 }
             }
 
-            return Ok(());
+            return Ok(res);
         }
 
         let num = self.params.len();
         for layer in (0..num).rev() {
-            self.remove_entry(layer, name)?;
+            res |= self.remove_entry(layer, name)?;
         }
-        Ok(())
+        Ok(res)
     }
 
     pub fn unset_function(&mut self, name: &str) {
@@ -83,14 +86,17 @@ impl DataBase {
 
     pub fn unset(&mut self, name: &str, called_layer: Option<usize>,
                  localvar_unset: bool) -> Result<(), ExecError> {
-        self.unset_var(name, called_layer, localvar_unset)?;
+        if self.unset_var(name, called_layer, localvar_unset)? {
+            return Ok(());
+        }
         self.unset_function(name);
         Ok(())
     }
 
-    pub fn unset_array_elem(&mut self, name: &str,key: &str) -> Result<(), ExecError> {
+    pub fn unset_array_elem(&mut self, name: &str, key: &str) -> Result<(), ExecError> {
         if self.is_single(name) && (key == "0" || key == "@" || key == "*") {
-            return self.unset_var(name, None, false);
+            self.unset_var(name, None, false)?;
+            return Ok(());
         }
 
         for layer in &mut self.params {
