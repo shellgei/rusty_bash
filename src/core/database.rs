@@ -180,6 +180,7 @@ impl DataBase {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
+        unsafe{env::remove_var(name)};
         if self.params[layer].contains_key(name) {
             self.params[layer].remove(name);
         }
@@ -187,8 +188,6 @@ impl DataBase {
     }
 
     pub fn unset_var(&mut self, name: &str) -> Result<(), ExecError> {
-        unsafe{env::remove_var(name)};
-
         let num = self.params.len();
         for layer in (0..num).rev() {
             self.remove_param(layer, name)?;
