@@ -91,7 +91,9 @@ impl DataBase {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
-        unsafe{env::remove_var(name)};
+        if layer == 0 {
+            unsafe{env::remove_var(name)};
+        }
         if self.params[layer].contains_key(name) {
             self.params[layer].remove(name);
         }
