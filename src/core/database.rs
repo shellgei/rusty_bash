@@ -175,7 +175,7 @@ impl DataBase {
         self.get_flags(name).contains(flag)
     }
 
-    fn remove_entry(&mut self, layer: usize, name: &str) -> Result<(), ExecError> {
+    fn remove_param(&mut self, layer: usize, name: &str) -> Result<(), ExecError> {
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
@@ -191,7 +191,7 @@ impl DataBase {
 
         let num = self.params.len();
         for layer in (0..num).rev() {
-            self.remove_entry(layer, name)?;
+            self.remove_param(layer, name)?;
         }
         Ok(())
     }
