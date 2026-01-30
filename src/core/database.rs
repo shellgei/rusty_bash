@@ -174,4 +174,35 @@ impl DataBase {
     pub fn has_flag(&mut self, name: &str, flag: char) -> bool {
         self.get_flags(name).contains(flag)
     }
+
+    fn remove_entry(&mut self, layer: usize, name: &str) -> Result<(), ExecError> {
+        if self.has_flag(name, 'r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
+
+        if self.params[layer].contains_key(name) {
+            self.params[layer].remove(name);
+        }
+        Ok(())
+    }
+
+    pub fn unset_var(&mut self, name: &str) -> Result<(), ExecError> {
+        unsafe{env::remove_var(name)};
+
+        let num = self.params.len();
+        for layer in (0..num).rev() {
+            self.remove_entry(layer, name)?;
+        }
+        Ok(())
+    }
+
+    pub fn unset_function(&mut self, name: &str) {
+        self.functions.remove(name);
+    }   
+
+    pub fn unset(&mut self, name: &str) -> Result<(), ExecError> {
+        self.unset_var(name)?;
+        self.unset_function(name);
+        Ok(())
+    }
 }

@@ -28,6 +28,7 @@ impl ShellCore {
         self.builtins.insert("pwd".to_string(), pwd::pwd);
         self.builtins.insert("return".to_string(), return_);
         self.builtins.insert("true".to_string(), true_);
+        self.builtins.insert("unset".to_string(), unset);
 
         self.subst_builtins
             .insert("local".to_string(), variable::local);
@@ -71,4 +72,17 @@ pub fn return_(core: &mut ShellCore, args: &[String]) -> i32 {
 
 pub fn true_(_: &mut ShellCore, _: &[String]) -> i32 {
     0
+}
+
+pub fn unset(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut err_flag = false;
+
+    for name in &args[1..] {
+        if let Err(e) = core.db.unset(name) {
+            error_exit(1, &args[0], &e, core); //exitしない
+            err_flag = true;
+        }
+    }
+
+    if err_flag { 1 } else { 0 }
 }
