@@ -175,17 +175,9 @@ impl DataBase {
         self.get_flags(name).contains(flag)
     }
 
-    fn remove_param(&mut self, layer: usize, name: &str) -> Result<(), ExecError> {
-        if self.has_flag(name, 'r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
-
-        if layer == 0 {
-            unsafe{env::remove_var(name)};
-        }
-        if self.params[layer].contains_key(name) {
-            self.params[layer].remove(name);
-        }
+    pub fn unset(&mut self, name: &str) -> Result<(), ExecError> {
+        self.unset_var(name)?;
+        self.functions.remove(name);
         Ok(())
     }
 
@@ -197,13 +189,17 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn unset_function(&mut self, name: &str) {
-        self.functions.remove(name);
-    }
+    fn remove_param(&mut self, layer: usize, name: &str) -> Result<(), ExecError> {
+        if self.has_flag(name, 'r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
+        }
 
-    pub fn unset(&mut self, name: &str) -> Result<(), ExecError> {
-        self.unset_var(name)?;
-        self.unset_function(name);
+        if layer == 0 {
+            unsafe{env::remove_var(name)};
+        }
+        if self.params[layer].contains_key(name) {
+            self.params[layer].remove(name);
+        }
         Ok(())
     }
 }
