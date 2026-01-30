@@ -198,7 +198,7 @@ impl DataBase {
 
     pub fn unset_function(&mut self, name: &str) {
         self.functions.remove(name);
-    }   
+    }
 
     pub fn unset(&mut self, name: &str) -> Result<(), ExecError> {
         self.unset_var(name)?;
