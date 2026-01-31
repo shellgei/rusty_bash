@@ -71,7 +71,7 @@ impl Command for SimpleCommand {
 
         if !run_internal::run(self, core)? {
             self.set_environment_variables(core)?;
-            proc_ctrl::exec_command(&self.args);
+            proc_ctrl::exec_command(&self.args, core);
         }
 
         core.db.pop_local();
