@@ -91,16 +91,16 @@ impl Command for SimpleCommand {
 
 impl SimpleCommand {
     fn set_local_params(&mut self,core: &mut ShellCore) -> Result<(), ExecError> {
-        let layer = Some(core.db.get_layer_num() - 1);
+        let scope = Some(core.db.get_scope_num() - 1);
         for s in self.substitutions.iter_mut() {
-            s.eval(core, layer)?;
+            s.eval(core, scope)?;
         }   
         Ok(())
     }
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let layer = core.db.get_layer_num() - 1;
-        for entry in core.db.get_param_layer_ref(layer) {
+        let scope = core.db.get_scope_num() - 1;
+        for entry in core.db.get_param_scope_ref(scope) {
             unsafe{std::env::set_var(entry.0, entry.1.get_as_single()?)};
         }
         Ok(())
