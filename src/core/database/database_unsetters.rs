@@ -75,7 +75,9 @@ impl DataBase {
 
         let num = self.params.len();
         for layer in (0..num).rev() {
-            res |= self.remove_entry(layer, name)?;
+            if self.remove_entry(layer, name)? {
+                return Ok(true);
+            }
         }
         Ok(res)
     }

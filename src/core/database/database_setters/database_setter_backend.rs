@@ -90,16 +90,15 @@ impl DataBase {
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
-
-        if layer == 0 {
-            unsafe{env::remove_var(name)};
-        }
         
-        let mut res = false;
         if self.params[layer].contains_key(name) {
             self.params[layer].remove(name);
-            res = true;
+            if layer == 0 {
+                unsafe{env::remove_var(name)};
+            }
+
+            return Ok(true);
         }
-        Ok(res)
+        Ok(false)
     }
 }
