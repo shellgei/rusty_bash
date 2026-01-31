@@ -43,16 +43,12 @@ impl Command for Coprocess {
 
         let mut prevp = Pipe::new("|".to_string());
         prevp.set(-1, pgid, core);
-        //prevp.send = core.fds.dupfd_cloexec(prevp.send, 60).unwrap();
-        //prevp.recv = core.fds.dupfd_cloexec(prevp.recv, 60).unwrap();
 
         prevp.send = unsafe{libc::fcntl(prevp.send, libc::F_DUPFD_CLOEXEC, 60)};
         prevp.recv = unsafe{libc::fcntl(prevp.recv, libc::F_DUPFD_CLOEXEC, 60)};
 
         let mut lastp = Pipe::new("|".to_string());
         lastp.set(prevp.recv, pgid, core);
-        //lastp.send = core.fds.dupfd_cloexec(lastp.send, 60).unwrap();
-       // lastp.recv = core.fds.dupfd_cloexec(lastp.recv, 60).unwrap();
 
         lastp.send = unsafe{libc::fcntl(lastp.send, libc::F_DUPFD_CLOEXEC, 60)};
         lastp.recv = unsafe{libc::fcntl(lastp.recv, libc::F_DUPFD_CLOEXEC, 60)};
@@ -64,6 +60,7 @@ impl Command for Coprocess {
         let _ = core.db.init_array(&self.name, fds_str, Some(0), true);
         let pid_name = format!("{}_PID", &self.name);
         let _ = core.db.set_param(&pid_name, &pid.to_string(), Some(0));
+        let _ = core.db.set_flag(&pid_name, 'i', 0);
 
         core.fds.close(lastp.send);
         core.fds.close(prevp.recv);
@@ -100,17 +97,14 @@ impl Command for Coprocess {
         core.tty_fd = backup;
 
         thread::spawn(move || {
-            //loop {
-                match wait::waitpid(pid, None) {
-                    Ok(WaitStatus::Exited(_, _)) | Err(_) => {
-                        let _ = unsafe{libc::close(fds[0])};
-                        let _ = unsafe{libc::close(fds[1])};
-                        return;
-                    }
-                    _ => {},
+            match wait::waitpid(pid, None) {
+                Ok(WaitStatus::Exited(_, _)) | Err(_) => {
+                    let _ = unsafe{libc::close(fds[0])};
+                    let _ = unsafe{libc::close(fds[1])};
+                    return;
                 }
-             //   thread::sleep(time::Duration::from_millis(10));
-            //}
+                _ => {},
+            }
         });
 
         Ok(None)

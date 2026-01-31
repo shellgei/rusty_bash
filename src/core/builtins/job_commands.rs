@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use libc;
 use crate::core::JobEntry;
 use crate::utils::arg;
 use crate::ShellCore;
@@ -9,6 +10,7 @@ use nix::sys::signal::Signal;
 use nix::unistd;
 use nix::unistd::Pid;
 use std::{thread, time};
+//use std::sync::atomic::Ordering::Relaxed;
 
 fn pid_to_array_pos(pid: i32, jobs: &[JobEntry]) -> Option<usize> {
     (0..jobs.len()).find(|&i| jobs[i].pids[0].as_raw() == pid)
@@ -293,13 +295,22 @@ fn print(core: &mut ShellCore, args: &[String]) {
 }
 
 fn remove_coproc(core: &mut ShellCore, pos: usize) {
- /*   core.job_table[pos].coproc_fds
-        .iter()
-        .for_each(|fd| {core.fds.close(*fd);}); */
-
     if let Some(name) = &core.job_table[pos].coproc_name {
         let _ = core.db.unset(&name, None, false);
         let _ = core.db.unset(&(name.to_owned() + "_PID"), None, false);
+
+        if let Ok(fd0) = core.db.get_elem(&name, "0") {
+            if let Ok(n) = fd0.parse::<i32>() {
+                let _ = unsafe{libc::close(n)};
+            }
+        }
+        if let Ok(fd1) = core.db.get_elem(&name, "1") {
+            if let Ok(n) = fd1.parse::<i32>() {
+                let _ = unsafe{libc::close(n)};
+            }
+        }
+
+        let _ = core.db.unset(&(name), None, false);
     }
 }
 
@@ -340,6 +351,12 @@ fn wait_next(
     let mut remove_job = false;
 
     loop {
+        /*
+        dbg!("H");
+        if core.sigint.load(Relaxed) {
+            dbg!("!!!");
+        }*/
+
         thread::sleep(time::Duration::from_millis(10)); //0.1秒周期に変更
         for (i, job) in core.job_table.iter_mut().enumerate() {
             if !ids.contains(&i) && !ids.is_empty() {
