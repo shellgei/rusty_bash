@@ -79,7 +79,7 @@ pub fn unset(core: &mut ShellCore, args: &[String]) -> i32 {
 
     for name in &args[1..] {
         if let Err(e) = core.db.unset(name) {
-            error_exit(1, &args[0], &e, core); //exit（return）しない
+            error(1, &args[0], &e, core); //exit（return）しない
             err_flag = true;
         }
     }

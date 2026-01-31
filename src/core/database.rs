@@ -185,26 +185,26 @@ impl DataBase {
     pub fn unset_var(&mut self, name: &str)
                      -> Result<bool, ExecError> {
         let num = self.params.len();
-        for layer in (0..num).rev() {
-            if self.unset_var_layer(layer, name)? {
+        for scope in (0..num).rev() {
+            if self.unset_var_scope(scope, name)? {
                 return Ok(true)
             }
         }
         Ok(false)
     }
 
-    fn unset_var_layer(&mut self, layer: usize, name: &str)
+    fn unset_var_scope(&mut self, scope: usize, name: &str)
                                   -> Result<bool, ExecError> {
-        if ! self.params[layer].contains_key(name) {
+        if ! self.params[scope].contains_key(name) {
             return Ok(false)
         }
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
-        self.params[layer].remove(name);
+        self.params[scope].remove(name);
 
-        if layer == 0 {
+        if scope == 0 {
             unsafe{env::remove_var(name)};
         }
         Ok(true)
