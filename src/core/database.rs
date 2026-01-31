@@ -198,9 +198,9 @@ impl DataBase {
         if ! self.params[scope].contains_key(name) {
             return Ok(false)
         }
-        if self.has_flag(name, 'r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
+        self.params[scope].get_mut(name)
+                          .unwrap()
+                          .readonly_check(name)?;
 
         self.params[scope].remove(name);
 
