@@ -19,25 +19,25 @@ pub struct Substitution {
 
 impl Substitution {
     pub fn eval(&mut self, core: &mut ShellCore,
-                layer: Option<usize>) -> Result<(), ExecError> {
+                scope: Option<usize>) -> Result<(), ExecError> {
         if self.right_hand.is_none() {
-            return self.eval_no_right(core, layer);
+            return self.eval_no_right(core, scope);
         }
 
         let r = self.right_hand.as_mut().unwrap();
         r.eval(core)?;
         core.db.set_param(&self.left_hand.text,
-                          &r.evaluated_string, layer)
+                          &r.evaluated_string, scope)
     }
 
     fn eval_no_right(&mut self, core: &mut ShellCore,
-                     layer: Option<usize>) -> Result<(), ExecError> {
-        let old_layer = core.db.get_layer_pos(&self.left_hand.text);
-        let already_exit = old_layer.is_some()
-                           && (layer.is_none() || old_layer == layer);
+                     scope: Option<usize>) -> Result<(), ExecError> {
+        let old_scope = core.db.get_scope_pos(&self.left_hand.text);
+        let already_exit = old_scope.is_some()
+                           && (scope.is_none() || old_scope == scope);
 
         if ! already_exit {
-            core.db.set_param(&self.left_hand.text, "", layer)?;
+            core.db.set_param(&self.left_hand.text, "", scope)?;
         }
         Ok(())
     }

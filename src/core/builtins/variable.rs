@@ -65,16 +65,16 @@ pub fn declare(core: &mut ShellCore, args: &[String],
 
 pub fn local(core: &mut ShellCore, args: &[String],
              subs: &mut [Substitution]) -> i32 {
-    let layer = if core.db.get_layer_num() > 2 {
-        core.db.get_layer_num() - 2
+    let scope = if core.db.get_scope_num() > 2 {
+        core.db.get_scope_num() - 2
     } else {
         let e = &ExecError::ValidOnlyInFunction;
-        return super::error_exit(1, &args[0], e, core);
+        return super::error(1, &args[0], e, core);
     };
 
     for sub in subs.iter_mut() {
-        if let Err(e) = sub.eval(core, Some(layer)) {
-            return super::error_exit(1, &args[0], &e, core);
+        if let Err(e) = sub.eval(core, Some(scope)) {
+            return super::error(1, &args[0], &e, core);
         }
     }
 
@@ -84,12 +84,12 @@ pub fn local(core: &mut ShellCore, args: &[String],
 pub fn readonly(core: &mut ShellCore, args: &[String],
                 subs: &mut [Substitution]) -> i32 {
     for sub in subs.iter_mut() {
-        let layer = core.db.solve_set_layer(&sub.left_hand.text, None);
-        if let Err(e) = sub.eval(core, Some(layer)) {
-            return super::error_exit(1, &args[0], &e, core);
+        let scope = core.db.solve_set_scope(&sub.left_hand.text, None);
+        if let Err(e) = sub.eval(core, Some(scope)) {
+            return super::error(1, &args[0], &e, core);
         }
 
-        core.db.set_flag(&sub.left_hand.text, 'r', layer);
+        core.db.set_flag(&sub.left_hand.text, 'r', scope);
     }
 
     0
