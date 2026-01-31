@@ -195,11 +195,11 @@ impl DataBase {
 
     fn unset_var_layer(&mut self, layer: usize, name: &str)
                                   -> Result<bool, ExecError> {
-        if self.has_flag(name, 'r') {
-            return Err(ExecError::VariableReadOnly(name.to_string()));
-        }
         if ! self.params[layer].contains_key(name) {
             return Ok(false)
+        }
+        if self.has_flag(name, 'r') {
+            return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
         self.params[layer].remove(name);
