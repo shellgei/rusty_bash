@@ -45,7 +45,7 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn init_as_num(&mut self, name: &str, value: &str, layer: Option<usize>,
+    pub fn init_as_num(&mut self, name: &str, value: &str, scope: Option<usize>,
     ) -> Result<(), ExecError> {
         self.check_on_write(name, &Some(vec![]))?;
 
@@ -58,20 +58,20 @@ impl DataBase {
             }
         }
 
-        let layer = self.get_target_layer(name, layer);
-        self.set_entry(layer, name, Box::new(data))
+        let scope = self.get_target_scope(name, scope);
+        self.set_entry(scope, name, Box::new(data))
     }
 
     pub fn init_array(
         &mut self,
         name: &str,
         v: Option<Vec<String>>,
-        layer: Option<usize>,
+        scope: Option<usize>,
         i_flag: bool,
     ) -> Result<(), ExecError> {
         self.check_on_write(name, &v)?;
 
-        let layer = self.get_target_layer(name, layer);
+        let scope = self.get_target_scope(name, scope);
         if i_flag {
             let mut obj = IntArrayData::new();
             if let Some(v) = v {
@@ -79,24 +79,24 @@ impl DataBase {
                     obj.set_as_array(name, &i.to_string(), &e)?;
                 }
             }
-            return self.set_entry(layer, name, Box::new(obj));
+            return self.set_entry(scope, name, Box::new(obj));
         }
 
         if v.is_none() {
-            return self.set_entry(layer, name, Box::new(Uninit::new("a")));
+            return self.set_entry(scope, name, Box::new(Uninit::new("a")));
         }
 
         let mut obj = ArrayData::new();
         for (i, e) in v.unwrap().into_iter().enumerate() {
             obj.set_as_array(name, &i.to_string(), &e)?;
         }
-        self.set_entry(layer, name, Box::new(obj))
+        self.set_entry(scope, name, Box::new(obj))
     }
 
     pub fn init_assoc(
         &mut self,
         name: &str,
-        layer: Option<usize>,
+        scope: Option<usize>,
         set_array: bool,
         i_flag: bool,
     ) -> Result<(), ExecError> {
@@ -110,7 +110,7 @@ impl DataBase {
             Box::new(Uninit::new("A")) as Box::<dyn Data>
         };
 
-        let layer = self.get_target_layer(name, layer);
-        self.set_entry(layer, name, obj)
+        let scope = self.get_target_scope(name, scope);
+        self.set_entry(scope, name, obj)
     }
 }

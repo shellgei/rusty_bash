@@ -11,8 +11,8 @@ use crate::{env, ShellCore};
 
 pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
     let args = args.to_owned();
-    let layer = if core.db.get_layer_num() > 2 {
-        core.db.get_layer_num() - 2 //The last element of data.parameters is for local itself.
+    let scope = if core.db.get_scope_num() > 2 {
+        core.db.get_scope_num() - 2 //The last element of data.parameters is for local itself.
     } else {
         let e = &ExecError::ValidOnlyInFunction;
         return super::error(1, &args[0], e, core);
@@ -23,7 +23,7 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
     }
 
     for sub in subs.iter_mut() {
-        if let Err(e) = set_value::exec(core, sub, &args, layer) {
+        if let Err(e) = set_value::exec(core, sub, &args, scope) {
             e.print(core);
             return 1;
         }
@@ -45,9 +45,9 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
         return print::names_match(core, &mut names, &args);
     }
 
-    let layer = core.db.get_layer_num() - 2;
+    let scope = core.db.get_scope_num() - 2;
     for sub in subs {
-        if let Err(e) = set_value::exec(core, sub, &args, layer) {
+        if let Err(e) = set_value::exec(core, sub, &args, scope) {
             return super::error(1, &args[0], &e, core);
         }
     }
@@ -57,9 +57,9 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
 pub fn export(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
     let mut args = args.to_owned();
     for sub in subs.iter_mut() {
-        let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
+        let scope = core.db.get_scope_pos(&sub.left_hand.name).unwrap_or(0);
         args.push("-x".to_string());
-        if let Err(e) = set_value::exec(core, sub, &args, layer) {
+        if let Err(e) = set_value::exec(core, sub, &args, scope) {
             e.print(core);
             return 1;
         }
@@ -89,12 +89,12 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
             return super::error(1, &args[0], &e, core);
         }
 
-        let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
+        let scope = core.db.get_scope_pos(&sub.left_hand.name).unwrap_or(0);
 
-        if let Err(e) = set_value::exec(core, sub, &args, layer) {
+        if let Err(e) = set_value::exec(core, sub, &args, scope) {
             return super::error(1, &args[0], &e, core);
         }
-        core.db.set_flag(&sub.left_hand.name, 'r', layer);
+        core.db.set_flag(&sub.left_hand.name, 'r', scope);
     }
     0
 }

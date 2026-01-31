@@ -11,12 +11,12 @@ fn unset_all(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
         return Ok(0);
     }
 
-    let mut layer = core.db.get_layer_num()-1;
-    if layer <= 1 {
+    let mut scope = core.db.get_scope_num()-1;
+    if scope <= 1 {
         core.db.unset(name, None, true)?;
     }else{
-        layer -= 1;
-        core.db.unset(name, Some(layer), true)?;
+        scope -= 1;
+        core.db.unset(name, Some(scope), true)?;
     }
     Ok(0)
 }
@@ -27,12 +27,12 @@ fn unset_var(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
         return Ok(0);
     }
 
-    let mut layer = core.db.get_layer_num()-1;
-    if layer <= 1 {
+    let mut scope = core.db.get_scope_num()-1;
+    if scope <= 1 {
         core.db.unset_var(name, None, true)?;
     }else{
-        layer -= 1;
-        core.db.unset_var(name, Some(layer), true)?;
+        scope -= 1;
+        core.db.unset_var(name, Some(scope), true)?;
     }
 
     Ok(0)
@@ -44,12 +44,12 @@ fn unset_nameref(core: &mut ShellCore, name: &str) -> i32 {
         return 0;
     }
 
-    let mut layer = core.db.get_layer_num()-1;
-    if layer <= 1 {
+    let mut scope = core.db.get_scope_num()-1;
+    if scope <= 1 {
         let _ = core.db.unset_nameref(name, None);
     }else{
-        layer -= 1;
-        let _ = core.db.unset_nameref(name, Some(layer));
+        scope -= 1;
+        let _ = core.db.unset_nameref(name, Some(scope));
     }
 
     0

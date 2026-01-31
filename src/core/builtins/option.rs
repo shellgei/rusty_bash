@@ -7,11 +7,11 @@ use crate::{error, ShellCore};
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
     let com = match core.db.position_parameters.pop() {
-        Some(layer) => {
-            if layer.is_empty() {
+        Some(scope) => {
+            if scope.is_empty() {
                 "".to_string()
             } else {
-                layer[0].clone()
+                scope[0].clone()
             }
         }
         None => return Err(ExecError::Other("empty param stack".to_string())),

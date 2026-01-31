@@ -191,7 +191,7 @@ pub fn bind(_: &mut ShellCore, _: &[String]) -> i32 {
 }
 
 pub fn debug(_: &mut ShellCore, _: &[String]) -> i32 {
-//    let pos = core.db.get_layer_pos("words").unwrap();
+//    let pos = core.db.get_scope_pos("words").unwrap();
 //
 //    dbg!("{:?}", &core.db.params.len());
 //    dbg!("{:?}", &pos);

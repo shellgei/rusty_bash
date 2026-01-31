@@ -21,8 +21,8 @@ impl DataBase {
         }
     }
 
-    pub fn has_flag_layer(&mut self, name: &str, flag: char, layer: usize) -> bool {
-        if let Some(e) = self.params[layer].get_mut(name) {
+    pub fn has_flag_scope(&mut self, name: &str, flag: char, scope: usize) -> bool {
+        if let Some(e) = self.params[scope].get_mut(name) {
             return e.has_flag(flag);
         }
         false
@@ -41,13 +41,13 @@ impl DataBase {
         }
 
         if let Ok(n) = name.parse::<usize>() {
-            let layer = self.position_parameters.len() - 1;
-            return n < self.position_parameters[layer].len();
+            let scope = self.position_parameters.len() - 1;
+            return n < self.position_parameters[scope].len();
         }
 
         let num = self.params.len();
-        for layer in (0..num).rev() {
-            if self.params[layer].contains_key(name) {
+        for scope in (0..num).rev() {
+            if self.params[scope].contains_key(name) {
                 return true;
             }
         }
@@ -62,18 +62,18 @@ impl DataBase {
         false
     }
 
-    pub fn exist_l(&mut self, name: &str, layer: usize) -> bool {
-        if layer >= self.params.len() {
+    pub fn exist_l(&mut self, name: &str, scope: usize) -> bool {
+        if scope >= self.params.len() {
             return false;
         }
 
-        self.params[layer].contains_key(name)
+        self.params[scope].contains_key(name)
     }
 
     pub fn has_key(&mut self, name: &str, key: &str) -> Result<bool, ExecError> {
         let num = self.params.len();
-        for layer in (0..num).rev() {
-            if let Some(e) = self.params[layer].get_mut(name) {
+        for scope in (0..num).rev() {
+            if let Some(e) = self.params[scope].get_mut(name) {
                 return e.has_key(key);
             }
         }

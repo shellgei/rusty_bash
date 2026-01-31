@@ -7,34 +7,34 @@ use crate::error::exec::ExecError;
 use crate::utils::arg;
 
 fn set_options_pre(core: &mut ShellCore, name: &String,
-                       layer: usize, args: &[String]) {
+                       scope: usize, args: &[String]) {
     if arg::has_option("-x", args) {
-        core.db.set_flag(name, 'x', layer);
+        core.db.set_flag(name, 'x', scope);
     }
 
     if arg::has_option("-n", args) {
-        core.db.set_flag(name, 'n', layer);
+        core.db.set_flag(name, 'n', scope);
     }
 
     if arg::has_option("-i", args) {
-        core.db.set_flag(name, 'i', layer);
+        core.db.set_flag(name, 'i', scope);
     }
 
     if arg::has_option("-l", args) {
-        core.db.unset_flag(name, 'u', layer);
-        core.db.set_flag(name, 'l', layer);
+        core.db.unset_flag(name, 'u', scope);
+        core.db.set_flag(name, 'l', scope);
     }
 
     if arg::has_option("-u", args) {
-        core.db.unset_flag(name, 'l', layer);
-        core.db.set_flag(name, 'u', layer);
+        core.db.unset_flag(name, 'l', scope);
+        core.db.set_flag(name, 'u', scope);
     }
 }
 
 fn set_options_post(core: &mut ShellCore, name: &String,
-                       layer: usize, args: &[String]) {
+                       scope: usize, args: &[String]) {
     if arg::has_option("-r", args) {
-        core.db.set_flag(&name, 'r', layer);
+        core.db.set_flag(&name, 'r', scope);
     }
 }
 
@@ -57,25 +57,25 @@ fn array_to_element_check(sub: &mut Substitution) -> Result<(), ExecError> {
 }
 
 fn check_global_option(core: &mut ShellCore, args: &[String],
-                       name: &str, layer: usize) -> usize {
-    if arg::has_option("-g", args) && layer != 0 {
+                       name: &str, scope: usize) -> usize {
+    if arg::has_option("-g", args) && scope != 0 {
         let _ = core.db.unset(&name, None, false);
         return 0;
     }
-    layer
+    scope
 }
 
 fn eval(core: &mut ShellCore, args: &[String], sub: &mut Substitution,
-        name: &str, layer: usize) -> Result<(), ExecError> {
+        name: &str, scope: usize) -> Result<(), ExecError> {
     if sub.right_hand.is_some() {
-        return sub.eval(core, Some(layer), true);
+        return sub.eval(core, Some(scope), true);
     }
 
     let change_type = (!core.db.is_array(&name) && arg::has_option("-a", args))
                     || (!core.db.is_assoc(&name) && arg::has_option("-A", args));
 
-    if !core.db.exist_l(&name, layer) || change_type {
-        sub.left_hand.init_variable(core, Some(layer), &mut args.to_vec())?;
+    if !core.db.exist_l(&name, scope) || change_type {
+        sub.left_hand.init_variable(core, Some(scope), &mut args.to_vec())?;
     }
 
 
@@ -83,20 +83,20 @@ fn eval(core: &mut ShellCore, args: &[String], sub: &mut Substitution,
 }
 
 pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String],
-               layer: usize) -> Result<(), ExecError> {
+               scope: usize) -> Result<(), ExecError> {
     let name = sub.left_hand.name.clone();
     readonly_check(core, &name)?;
     array_to_element_check(sub)?;
-    let layer = check_global_option(core, args, &name, layer);
+    let scope = check_global_option(core, args, &name, scope);
 
-    if arg::has_option("+i", args) && core.db.has_flag_layer(&name, 'i', layer) {
-        core.db.int_to_str_type(&name, layer)?;
+    if arg::has_option("+i", args) && core.db.has_flag_scope(&name, 'i', scope) {
+        core.db.int_to_str_type(&name, scope)?;
     }
 
     let arg_indicate_array = arg::has_option("-A", args) || arg::has_option("-a", args);
 
     if arg_indicate_array && !core.db.exist(&name) && !core.db.exist_nameref(&name) {
-        sub.left_hand.init_variable(core, Some(layer), &mut args.to_vec())?;
+        sub.left_hand.init_variable(core, Some(scope), &mut args.to_vec())?;
     }
 
     if let Some(r) = sub.right_hand.as_mut() {
@@ -125,9 +125,9 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
         sub.reparse(core)?;
     }
 
-    set_options_pre(core, &name, layer, args);
-    let res = eval(core, args, sub, &name, layer);
-    set_options_post(core, &name, layer, args);
+    set_options_pre(core, &name, scope, args);
+    let res = eval(core, args, sub, &name, scope);
+    set_options_post(core, &name, scope, args);
 
     res
 }

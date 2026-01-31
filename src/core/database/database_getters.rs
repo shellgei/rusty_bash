@@ -9,8 +9,8 @@ use std::env;
 
 impl DataBase {
     pub fn get_ref(&mut self, name: &str) -> Option<&mut Box<dyn Data>> {
-        let layer = self.get_layer_pos(name)?;
-        self.params[layer].get_mut(name)
+        let scope = self.get_scope_pos(name)?;
+        self.params[scope].get_mut(name)
     }
 
     pub fn get_ifs_head(&mut self) -> String {
@@ -21,14 +21,14 @@ impl DataBase {
         }
     }
 
-    pub fn get_layer_num(&mut self) -> usize {
+    pub fn get_scope_num(&mut self) -> usize {
         self.params.len()
     }
 
     pub fn get_param_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();
-        for layer in &self.params {
-            layer.keys()
+        for scope in &self.params {
+            scope.keys()
                  .for_each(|k| { keys.insert(k); });
         }
         let mut ans = keys.iter()
@@ -47,11 +47,11 @@ impl DataBase {
         keys 
     }
 
-    pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
+    pub fn get_scope_pos(&mut self, name: &str) -> Option<usize> {
         let num = self.params.len();
         (0..num)
             .rev()
-            .find(|&layer| self.params[layer].contains_key(name))
+            .find(|&scope| self.params[scope].contains_key(name))
     }
 
     pub fn get_position_params(&self) -> Vec<String> {
@@ -62,9 +62,9 @@ impl DataBase {
     }
 
     pub fn get_indexes_all(&mut self, name: &str) -> Vec<String> {
-        let layer = self.position_parameters.len() - 1;
+        let scope = self.position_parameters.len() - 1;
         if name == "@" {
-            return self.position_parameters[layer].clone();
+            return self.position_parameters[scope].clone();
         }
 
         match self.get_ref(name) {
@@ -79,9 +79,9 @@ impl DataBase {
         pos: usize,
         flatten: bool,
     ) -> Result<Vec<String>, ExecError> {
-        let layer = self.position_parameters.len() - 1;
+        let scope = self.position_parameters.len() - 1;
         if name == "@" {
-            return Ok(self.position_parameters[layer].clone());
+            return Ok(self.position_parameters[scope].clone());
         }
 
         match self.get_ref(name) {
@@ -121,9 +121,9 @@ impl DataBase {
     pub fn get_elem(&mut self, name: &str, pos: &str) -> Result<String, ExecError> {
         Self::name_check(name)?;
 
-        let layer = self.get_layer_pos(name);
+        let scope = self.get_scope_pos(name);
 
-        if layer.is_none() {
+        if scope.is_none() {
             return match self.flags.contains('u') {
                 true => Err(ExecError::UnboundVariable(name.to_string())),
                 false => Ok("".to_string()),
@@ -131,7 +131,7 @@ impl DataBase {
         }
 
         let ifs = self.get_ifs_head();
-        self.params[layer.unwrap()]
+        self.params[scope.unwrap()]
             .get_mut(name)
             .unwrap()
             .get_as_array_or_assoc(pos, &ifs)
@@ -171,8 +171,8 @@ impl DataBase {
         Self::name_check(name)?;
 
         if name == "@" || name == "*" {
-            let layer = self.position_parameters.len();
-            return Ok(self.position_parameters[layer - 1].len() - 1);
+            let scope = self.position_parameters.len();
+            return Ok(self.position_parameters[scope - 1].len() - 1);
         }
 
         if let Ok(n) = name.parse::<usize>() {
@@ -294,9 +294,9 @@ fn connected_position_params(db: &mut DataBase, aster: bool) -> Result<String, E
 }
 
 fn position_param(db: &DataBase, pos: usize) -> Result<String, ExecError> {
-    let layer = db.position_parameters.len();
-    match db.position_parameters[layer - 1].len() > pos {
-        true => Ok(db.position_parameters[layer - 1][pos].to_string()),
+    let scope = db.position_parameters.len();
+    match db.position_parameters[scope - 1].len() > pos {
+        true => Ok(db.position_parameters[scope - 1][pos].to_string()),
         false => Ok(String::new()),
     }
 }

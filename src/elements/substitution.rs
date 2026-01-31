@@ -26,7 +26,7 @@ impl Substitution {
     pub fn eval(
         &mut self,
         core: &mut ShellCore,
-        layer: Option<usize>,
+        scope: Option<usize>,
         declare: bool,
     ) -> Result<(), ExecError> {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
@@ -48,7 +48,7 @@ impl Substitution {
         if declare && r.evaluated_array.is_some() {
             self.left_hand.index = None;
         }
-        self.set_to_shell(core, layer)
+        self.set_to_shell(core, scope)
     }
 
     pub fn reparse(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -77,18 +77,18 @@ impl Substitution {
     }
 
     fn restore_flag(core: &mut ShellCore, name: &str,
-                    old_flags: &str, layer: usize) {
+                    old_flags: &str, scope: usize) {
         for flag in old_flags.chars() {
             if flag == 'A' || flag == 'a' {
                 continue;
             }
             if old_flags.contains(flag) {
-                core.db.set_flag(&name, flag, layer);
+                core.db.set_flag(&name, flag, scope);
             }
         }
     }
 
-    fn set_whole_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+    fn set_whole_array(&mut self, core: &mut ShellCore, scope: usize) -> Result<(), ExecError> {
         let r = self.right_hand.as_mut().unwrap();
         if r.evaluated_array.is_none() {
             return Err(ExecError::Other("no array and no index".to_string()));
@@ -100,26 +100,26 @@ impl Substitution {
 
         if a.is_empty() && !self.append {
             if core.db.is_assoc(name) {
-                core.db.init_assoc(name, Some(layer), true, false)?;
+                core.db.init_assoc(name, Some(scope), true, false)?;
             } else {
                 core.db
-                    .init_array(name, Some(vec![]), Some(layer), false)?;
+                    .init_array(name, Some(vec![]), Some(scope), false)?;
             }
 
-            Self::restore_flag(core, name, &old_flags, layer);
+            Self::restore_flag(core, name, &old_flags, scope);
             return Ok(());
         } else if !self.append {
-            core.db.init(name, layer);
-            Self::restore_flag(core, name, &old_flags, layer);
+            core.db.init(name, scope);
+            Self::restore_flag(core, name, &old_flags, scope);
         }
 
         for e in a {
             match e.1 {
                 //true if append
                 false => core.db
-                    .set_param2(name, &e.0, &e.2, Some(layer))?,
+                    .set_param2(name, &e.0, &e.2, Some(scope))?,
                 true => core.db
-                    .append_param2(name, &e.0, &e.2, Some(layer))?,
+                    .append_param2(name, &e.0, &e.2, Some(scope))?,
             }
         }
         Ok(())
@@ -128,7 +128,7 @@ impl Substitution {
     fn set_array_elem(
         &mut self,
         core: &mut ShellCore,
-        layer: usize,
+        scope: usize,
         index: &str,
     ) -> Result<(), ExecError> {
         if index.is_empty() {
@@ -140,11 +140,11 @@ impl Substitution {
             if self.append {
                 return core
                     .db
-                    .append_param2(&self.left_hand.name, index, v, Some(layer));
+                    .append_param2(&self.left_hand.name, index, v, Some(scope));
             } else {
                 return core
                     .db
-                    .set_param2(&self.left_hand.name, index, v, Some(layer));
+                    .set_param2(&self.left_hand.name, index, v, Some(scope));
             }
         }
 
@@ -155,19 +155,19 @@ impl Substitution {
         Err(ExecError::Other(msg))
     }
 
-    fn init_array(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+    fn init_array(&mut self, core: &mut ShellCore, scope: usize) -> Result<(), ExecError> {
         let rhs_is_array = match self.right_hand.as_mut() {
             Some(r) => r.evaluated_array.is_some(),
             None => false,
         };
 
         match self.left_hand.get_index(core, rhs_is_array, self.append)? {
-            Some(index) => self.set_array_elem(core, layer, &index),
-            None => self.set_whole_array(core, layer),
+            Some(index) => self.set_array_elem(core, scope, &index),
+            None => self.set_whole_array(core, scope),
         }
     }
 
-    fn set_single(&mut self, core: &mut ShellCore, layer: usize) -> Result<(), ExecError> {
+    fn set_single(&mut self, core: &mut ShellCore, scope: usize) -> Result<(), ExecError> {
         let data = match self.right_hand.as_mut() {
             Some(r) => r.evaluated_string.clone().unwrap(),
             None => String::new(),
@@ -175,25 +175,25 @@ impl Substitution {
 
         if self.append {
             core.db
-                .append_param(&self.left_hand.name, &data, Some(layer))
+                .append_param(&self.left_hand.name, &data, Some(scope))
         } else {
-            core.db.set_param(&self.left_hand.name, &data, Some(layer))
+            core.db.set_param(&self.left_hand.name, &data, Some(scope))
         }
     }
 
     fn set_to_shell(
         &mut self,
         core: &mut ShellCore,
-        layer: Option<usize>,
+        scope: Option<usize>,
     ) -> Result<(), ExecError> {
-        let layer = core.db.get_target_layer(&self.left_hand.name, layer);
+        let scope = core.db.get_target_scope(&self.left_hand.name, scope);
         let r = self.right_hand.as_mut().unwrap();
 
         if r.evaluated_string.is_some()
         && self.left_hand.index.is_none() {
-            self.set_single(core, layer)
+            self.set_single(core, scope)
         } else {
-            self.init_array(core, layer)
+            self.init_array(core, scope)
         }
     }
 

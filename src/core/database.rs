@@ -47,15 +47,15 @@ impl DataBase {
         data
     }
 
-    pub fn get_target_layer(&mut self, name: &str, layer: Option<usize>) -> usize {
-        match layer {
+    pub fn get_target_scope(&mut self, name: &str, scope: Option<usize>) -> usize {
+        match scope {
             Some(n) => n,
-            None => self.solve_layer(name),
+            None => self.solve_scope(name),
         }
     }
 
-    fn solve_layer(&mut self, name: &str) -> usize {
-        self.get_layer_pos(name).unwrap_or(0)
+    fn solve_scope(&mut self, name: &str) -> usize {
+        self.get_scope_pos(name).unwrap_or(0)
     }
 
     pub fn push_local(&mut self) {
@@ -66,23 +66,23 @@ impl DataBase {
         self.params.pop();
     }
 
-    pub fn init(&mut self, name: &str, layer: usize) {
-        if let Some(d) = self.params[layer].get_mut(name) {
+    pub fn init(&mut self, name: &str, scope: usize) {
+        if let Some(d) = self.params[scope].get_mut(name) {
             d.clear();
         }
     }
 
-    pub fn int_to_str_type(&mut self, name: &str, layer: usize) -> Result<(), ExecError> {
-        let layer_len = self.params.len();
-        for ly in layer..layer_len {
+    pub fn int_to_str_type(&mut self, name: &str, scope: usize) -> Result<(), ExecError> {
+        let scope_len = self.params.len();
+        for ly in scope..scope_len {
             if let Some(v) = self.params[ly].get_mut(name) {
                 let _ = v.unset_flag('i');
             }
         }
 
-        if let Some(d) = self.params[layer].get_mut(name) {
+        if let Some(d) = self.params[scope].get_mut(name) {
             let new_d = d.get_str_type();
-            self.params[layer].insert(name.to_string(), new_d);
+            self.params[scope].insert(name.to_string(), new_d);
         }
 
         Ok(())
