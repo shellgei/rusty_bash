@@ -182,7 +182,8 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn unset_var(&mut self, name: &str) -> Result<bool, ExecError> {
+    pub fn unset_var(&mut self, name: &str)
+                     -> Result<bool, ExecError> {
         let num = self.params.len();
         for layer in (0..num).rev() {
             if self.unset_var_layer(layer, name)? {
