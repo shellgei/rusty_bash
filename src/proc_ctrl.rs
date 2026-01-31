@@ -108,15 +108,15 @@ pub fn exec_command(args: &[String]) -> ! {
 
     match result {
         Err(Errno::EACCES) => {
-            println!("sush: {}: Permission denied", &args[0]);
+            eprintln!("sush: {}: Permission denied", &args[0]);
             process::exit(126)
         },
         Err(Errno::ENOENT) => {
-            println!("{}: command not found", &args[0]);
+            eprintln!("{}: command not found", &args[0]);
             process::exit(127)
         },
         Err(err) => {
-            println!("Failed to execute. {err:?}");
+            eprintln!("Failed to execute. {err:?}");
             process::exit(127)
         }
         _ => panic!("SUSH INTERNAL ERROR (never come here)")

@@ -849,4 +849,14 @@ res=$($com <<< 'readonly x=1; x=2 ; echo $x')
 res=$($com <<< 'readonly x=1; x=2')
 [ $? -eq 1 ] || err $LINENO
 
+res=$($com <<< 'A () { echo aaa ; } ; unset A ; A')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=aaa ; unset A ; echo $A')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'f () { local a=bbb ; unset a ; } ; a=ccc ; f ; echo $a')
+[ "$res" = "ccc" ] || err $LINENO
+
+
 echo OK $0

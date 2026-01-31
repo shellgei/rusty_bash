@@ -183,12 +183,13 @@ impl DataBase {
     }
 
     pub fn unset_var(&mut self, name: &str) -> Result<bool, ExecError> {
-        let mut removed = false;
         let num = self.params.len();
-        for layer in 0..num {
-            removed |= self.remove_param(layer, name)?;
+        for layer in (0..num).rev() {
+            if self.remove_param(layer, name)? {
+                return Ok(true)
+            }
         }
-        Ok(removed)
+        Ok(false)
     }
 
     fn remove_param(&mut self, layer: usize, name: &str) -> Result<bool, ExecError> {
@@ -196,15 +197,15 @@ impl DataBase {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
 
+        if ! self.params[layer].contains_key(name) {
+            return Ok(false)
+        }
+
+        self.params[layer].remove(name);
+
         if layer == 0 {
             unsafe{env::remove_var(name)};
         }
-
-        let mut removed = false;
-        if self.params[layer].contains_key(name) {
-            self.params[layer].remove(name);
-            removed = true;
-        }
-        Ok(removed)
+        Ok(true)
     }
 }
