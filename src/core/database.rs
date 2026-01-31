@@ -185,14 +185,14 @@ impl DataBase {
     pub fn unset_var(&mut self, name: &str) -> Result<bool, ExecError> {
         let num = self.params.len();
         for layer in (0..num).rev() {
-            if self.remove_param(layer, name)? {
+            if self.unset_var_layer(layer, name)? {
                 return Ok(true)
             }
         }
         Ok(false)
     }
 
-    fn remove_param(&mut self, layer: usize, name: &str) -> Result<bool, ExecError> {
+    fn unset_var_layer(&mut self, layer: usize, name: &str) -> Result<bool, ExecError> {
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
