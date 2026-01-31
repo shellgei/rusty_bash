@@ -34,7 +34,7 @@ use crate::error::parse::ParseError;
 use crate::{exit, Feeder, Script, ShellCore};
 //#[cfg(not(target_os = "macos"))]
 
-pub fn error_exit_text(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
+pub fn error_(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
     if core.db.flags.contains('i') {
         eprintln!("{}: {}: {}", &shellname, name, msg);
@@ -45,16 +45,8 @@ pub fn error_exit_text(exit_status: i32, name: &str, msg: &str, core: &mut Shell
     exit_status
 }
 
-pub fn error_exit(exit_status: i32, name: &str, err: &ExecError, core: &mut ShellCore) -> i32 {
-    let shellname = core.db.get_param("0").unwrap();
-    let msg = String::from(err);
-    if core.db.flags.contains('i') {
-        eprintln!("{}: {}: {}", &shellname, name, msg);
-    } else {
-        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
-        eprintln!("{}: line {}: {}: {}", &shellname, &lineno, name, msg);
-    }
-    exit_status
+pub fn error(exit_status: i32, name: &str, err: &ExecError, core: &mut ShellCore) -> i32 {
+    error_(exit_status, name, &String::from(err), core)
 }
 
 impl ShellCore {
@@ -217,16 +209,16 @@ pub fn let_(core: &mut ShellCore, args: &[String]) -> i32 {
                 Ok(s) => last_result = if s == "0" { 1 } else { 0 },
                 Err(e) => {
                     core.valid_assoc_expand_once = false;
-                    return error_exit(1, &args[0], &e, core);
+                    return error(1, &args[0], &e, core);
                 }
             },
             Ok(None) => {
                 core.valid_assoc_expand_once = false;
-                return error_exit_text(1, &args[0], "expression expected", core);
+                return error_(1, &args[0], "expression expected", core);
             }
             Err(e) => {
                 core.valid_assoc_expand_once = false;
-                return error_exit(1, &args[0], &From::from(e), core);
+                return error(1, &args[0], &From::from(e), core);
             }
         }
     }

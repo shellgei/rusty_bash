@@ -92,7 +92,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
     if core.db.flags.contains('r') && arg::consume_arg("+r", &mut args) {
-        let _ = super::error_exit_text(1, &args[0], "+r: invalid option", core);
+        let _ = super::error_(1, &args[0], "+r: invalid option", core);
         eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
         return 1;
     }
@@ -114,7 +114,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
         match set_positions(core, &args) {
             Ok(()) => return 0,
             Err(e) => {
-                return super::error_exit_text(1, &args[0], &String::from(&e), core);
+                return super::error_(1, &args[0], &String::from(&e), core);
             }
         }
     }
@@ -137,7 +137,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
             return match core.options.set(&args[2], positive) {
                 Ok(()) => 0,
                 Err(e) => {
-                    return super::error_exit_text(2, &args[0], &String::from(&e), core);
+                    return super::error_(2, &args[0], &String::from(&e), core);
                 }
             };
         }

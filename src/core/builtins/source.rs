@@ -7,7 +7,7 @@ use crate::{file_check, Feeder, Script, ShellCore};
 fn check_error(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.db.flags.contains('r') && args[1].contains('/') {
         let msg = format!("{}: restricted", &args[1]);
-        return super::error_exit_text(1, &args[0], &msg, core);
+        return super::error_(1, &args[0], &msg, core);
     }
 
     if args.len() < 2 {

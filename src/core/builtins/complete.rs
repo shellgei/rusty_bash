@@ -82,7 +82,7 @@ fn complete_f(core: &mut ShellCore, args: &[String], o_options: &[String]) -> i3
     }
 
     if args.len() <= arg_index {
-        return builtins::error_exit_text(2, &args[0], "-F: option requires an argument", core);
+        return builtins::error_(2, &args[0], "-F: option requires an argument", core);
     }
 
     if d_option {
@@ -177,6 +177,6 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
         complete_f(core, &args, &o_options)
     } else {
         let msg = format!("{}: still unsupported", &args[1]);
-        builtins::error_exit_text(1, &args[0], &msg, core)
+        builtins::error_(1, &args[0], &msg, core)
     }
 }

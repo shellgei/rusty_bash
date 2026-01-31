@@ -72,7 +72,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             if args.len() > 2 {
                 let name = args.remove(2);
                 if let Err(e) = unset_var(core, &name) {
-                    return super::error_exit(1, &args[0], &e, core);
+                    return super::error(1, &args[0], &e, core);
                 }else{
                     return 0;
                 }
@@ -89,7 +89,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             args.remove(1);
             if !name.contains("[") {
                 if let Err(e) = unset_all(core, &name) {
-                    return super::error_exit(1, &args[0], &e, core);
+                    return super::error(1, &args[0], &e, core);
                 }else{
                     return 0;
                 }
@@ -101,7 +101,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             if !index.ends_with("]") {
                 let msg = format!("{}: invalid variable", &name);
-                return super::error_exit_text(1, &args[0], &msg, core);
+                return super::error_(1, &args[0], &msg, core);
             }
 
             index.remove(0);
@@ -115,7 +115,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                         Ok(Some(mut v)) => {
                             if !f.is_empty() {
                                 let e = ExecError::ArrayIndexInvalid(index.to_string());
-                                return super::error_exit(1, &args[0], &e, core);
+                                return super::error(1, &args[0], &e, core);
                             }
                             if let Ok(n) = v.eval(core) {
                                 index = n;
@@ -123,14 +123,14 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                         },
                         _ => {
                             let e = ExecError::ArrayIndexInvalid(index.to_string());
-                            return super::error_exit(1, &args[0], &e, core);
+                            return super::error(1, &args[0], &e, core);
                         },
                     }
                 }
             }
 
             if let Err(e) = core.db.unset_array_elem(&name, &index) {
-                return super::error_exit_text(1, &args[0], &String::from(&e), core);
+                return super::error_(1, &args[0], &String::from(&e), core);
             }
             return 0;
         }

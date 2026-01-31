@@ -15,7 +15,7 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
         core.db.get_layer_num() - 2 //The last element of data.parameters is for local itself.
     } else {
         let e = &ExecError::ValidOnlyInFunction;
-        return super::error_exit(1, &args[0], e, core);
+        return super::error(1, &args[0], e, core);
     };
 
     if core.shopts.query("localvar_inherit") {
@@ -48,7 +48,7 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
     let layer = core.db.get_layer_num() - 2;
     for sub in subs {
         if let Err(e) = set_value::exec(core, sub, &args, layer) {
-            return super::error_exit(1, &args[0], &e, core);
+            return super::error(1, &args[0], &e, core);
         }
     }
     0
@@ -86,13 +86,13 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
     for sub in subs {
         if sub.left_hand.index.is_some() {
             let e = ExecError::VariableInvalid(sub.left_hand.text.clone());
-            return super::error_exit(1, &args[0], &e, core);
+            return super::error(1, &args[0], &e, core);
         }
 
         let layer = core.db.get_layer_pos(&sub.left_hand.name).unwrap_or(0);
 
         if let Err(e) = set_value::exec(core, sub, &args, layer) {
-            return super::error_exit(1, &args[0], &e, core);
+            return super::error(1, &args[0], &e, core);
         }
         core.db.set_flag(&sub.left_hand.name, 'r', layer);
     }
