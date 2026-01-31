@@ -15,6 +15,10 @@ impl DataBase {
         val: &str,
         scope: Option<usize>,
     ) -> Result<(), ExecError> {
+        if let Ok(Some(nameref)) = self.get_nameref(name) {
+            return self.set_param(&nameref, val, scope);
+        }
+
         self.check_on_write(name, &Some(vec![val.to_string()]))?;
 
         if name == "BASH_ARGV0" {
