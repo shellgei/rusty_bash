@@ -102,17 +102,21 @@ pub fn set_pgid(core: &mut ShellCore, pid: Pid, pgid: Pid) {
     }
 }
 
-pub fn exec_command(args: &[String]) -> ! {
+pub fn exec_command(args: &[String], core: &mut ShellCore) -> ! {
     let cargs = c_string::to_cargs(args);
     let result = unistd::execvp(&cargs[0], &cargs);
 
     match result {
+        Err(Errno::E2BIG) => {
+            ExecError::ArgListTooLong(args[0].to_string()).print(core);
+            process::exit(126)
+        },
         Err(Errno::EACCES) => {
-            println!("sush: {}: Permission denied", &args[0]);
+            ExecError::PermissionDenied(args[0].to_string()).print(core);
             process::exit(126)
         },
         Err(Errno::ENOENT) => {
-            println!("{}: command not found", &args[0]);
+            ExecError::CommandNotFound(args[0].to_string()).print(core);
             process::exit(127)
         },
         Err(err) => {
