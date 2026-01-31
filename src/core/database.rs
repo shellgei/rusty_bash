@@ -34,9 +34,9 @@ impl DataBase {
 
     pub fn get_param(&mut self, name: &str) -> Result<String, ExecError> {
         if let Ok(n) = name.parse::<usize>() {
-            let layer = &self.position_parameters.last().unwrap();
-            if  n < layer.len() {
-                return Ok(layer[n].to_string());
+            let scope = &self.position_parameters.last().unwrap();
+            if  n < scope.len() {
+                return Ok(scope[n].to_string());
             }
             return Ok("".to_string());
         }
@@ -61,19 +61,19 @@ impl DataBase {
         Ok(ans)
     }
 
-    pub fn solve_set_layer(&mut self, name: &str,
-                           layer: Option<usize>) -> usize {
-        if let Some(ly) = layer {
+    pub fn solve_set_scope(&mut self, name: &str,
+                           scope: Option<usize>) -> usize {
+        if let Some(ly) = scope {
             return ly;
         }
 
-        self.get_layer_pos(name).unwrap_or(0)
+        self.get_scope_pos(name).unwrap_or(0)
     }
 
     pub fn get_param_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();
-        for layer in &self.params {
-            layer.keys()
+        for scope in &self.params {
+            scope.keys()
                  .for_each(|k| { keys.insert(k); });
         }
         let mut ans = keys.iter()
@@ -102,8 +102,8 @@ impl DataBase {
     }
 
     pub fn print_param(&mut self, name: &str) {
-        if let Some(layer) = self.get_layer_pos(name) {
-            if let Some(d) = self.params[layer].get_mut(name) {
+        if let Some(scope) = self.get_scope_pos(name) {
+            if let Some(d) = self.params[scope].get_mut(name) {
                 let body = d.get_fmt_string();
                 println!("{name}={body}");
             }
@@ -118,32 +118,32 @@ impl DataBase {
         false
     }
 
-    pub fn get_layer_pos(&mut self, name: &str) -> Option<usize> {
+    pub fn get_scope_pos(&mut self, name: &str) -> Option<usize> {
         let num = self.params.len();
         (0..num)
             .rev()
-            .find(|&layer| self.params[layer].contains_key(name))
+            .find(|&scope| self.params[scope].contains_key(name))
     }
 
     pub fn set_param(&mut self, name: &str, val: &str,
-                     layer: Option<usize>) -> Result<(), ExecError> {
-        let layer = self.solve_set_layer(name, layer);
+                     scope: Option<usize>) -> Result<(), ExecError> {
+        let scope = self.solve_set_scope(name, scope);
 
-        if let Some(d) = self.params[layer].get_mut(name) {
+        if let Some(d) = self.params[scope].get_mut(name) {
             d.set_as_single(name, val)?;
         }else{
-            self.params[layer].insert(name.to_string(),
+            self.params[scope].insert(name.to_string(),
                                       Box::new(SingleData::from(val)));
         }
 
-        if layer == 0 && env::var(name).is_ok() {
+        if scope == 0 && env::var(name).is_ok() {
             unsafe{env::set_var(name, val)};
         }
         Ok(())
     }
 
-    pub fn get_param_layer_ref(&mut self, layer: usize) -> &mut HashMap<String, Box::<dyn Data>> {
-        &mut self.params[layer]
+    pub fn get_param_scope_ref(&mut self, scope: usize) -> &mut HashMap<String, Box::<dyn Data>> {
+        &mut self.params[scope]
     }
 
     pub fn push_local(&mut self) {
@@ -154,18 +154,18 @@ impl DataBase {
         self.params.pop();
     }
 
-    pub fn get_layer_num(&mut self) -> usize {
+    pub fn get_scope_num(&mut self) -> usize {
         self.params.len()
     }
 
-    pub fn set_flag(&mut self, name: &str, flag: char, layer: usize) {
-        if let Some(d) = self.params[layer].get_mut(name) {
+    pub fn set_flag(&mut self, name: &str, flag: char, scope: usize) {
+        if let Some(d) = self.params[scope].get_mut(name) {
             d.set_flag(flag);
         }
     }
 
     pub fn get_flags(&mut self, name: &str) -> &str {
-        match self.get_layer_pos(name) {
+        match self.get_scope_pos(name) {
             Some(n) => self.params[n].get_mut(name).unwrap().get_flags(),
             None => "",
         }
