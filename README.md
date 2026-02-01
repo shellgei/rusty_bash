@@ -1,4 +1,6 @@
-# Sushi shell (sush): a Bash clone shell implemented in Rust
+# Sushi shell (a.k.a. 🍣 Sush): a Bash clone shell implemented in Rust
+
+former name: Rusty Bash
 
 [![ubuntu-latest](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/ubuntu.yml)
 [![macos-latest](https://github.com/shellgei/rusty_bash/actions/workflows/macos.yml/badge.svg)](https://github.com/shellgei/rusty_bash/actions/workflows/macos.yml)
