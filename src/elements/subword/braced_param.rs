@@ -49,6 +49,8 @@ impl Subword for BracedParam {
             if self.param.name == bkup {
                 self.param.name = utils::gen_not_exist_var(core);
             }
+
+            return self.substitute(core);
         }
         self.check()?;
 
