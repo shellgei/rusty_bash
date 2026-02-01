@@ -20,6 +20,7 @@ pub struct Substitution {
     append: bool,
     lineno: usize,
     pub quoted: bool,
+    pub reset_nameref: bool,
 }
 
 impl Substitution {
@@ -34,7 +35,7 @@ impl Substitution {
             return Ok(());
         }
 
-        if core.db.exist_nameref(&self.left_hand.name) {
+        if core.db.exist_nameref(&self.left_hand.name) && ! self.reset_nameref {
             self.left_hand.check_nameref(core)?;
         }
 
@@ -176,6 +177,8 @@ impl Substitution {
         if self.append {
             core.db
                 .append_param(&self.left_hand.name, &data, Some(scope))
+        } else if self.reset_nameref {
+            core.db.set_nameref(&self.left_hand.name, &data, Some(scope))
         } else {
             core.db.set_param(&self.left_hand.name, &data, Some(scope))
         }

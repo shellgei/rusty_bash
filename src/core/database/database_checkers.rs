@@ -70,6 +70,14 @@ impl DataBase {
         self.params[scope].contains_key(name)
     }
 
+    pub fn exist_nameref_l(&mut self, name: &str, scope: usize) -> bool {
+        if let Some(d) = self.params[scope].get_mut(name) {
+            return d.has_flag('n');
+        }
+
+        false
+    }
+
     pub fn has_key(&mut self, name: &str, key: &str) -> Result<bool, ExecError> {
         let num = self.params.len();
         for scope in (0..num).rev() {

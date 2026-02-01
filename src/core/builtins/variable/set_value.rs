@@ -15,9 +15,9 @@ fn set_options_pre(core: &mut ShellCore, name: &String,
     }
 
     if arg::has_option("-n", args) {
-        core.db.set_flag(name, 'n', scope);
+        core.db.set_flag_nameref(name, 'n', scope);
     }else if arg::has_option("+n", args) {
-        core.db.unset_flag(name, 'n', scope);
+        core.db.unset_flag_nameref(name, 'n', scope);
     }
 
     if arg::has_option("-i", args) {
@@ -77,6 +77,10 @@ fn check_global_option(core: &mut ShellCore, args: &[String],
 
 fn eval(core: &mut ShellCore, args: &[String], sub: &mut Substitution,
         name: &str, scope: usize) -> Result<(), ExecError> {
+    if arg::has_option("-n", args) {
+        sub.reset_nameref = true;
+    }
+
     if sub.right_hand.is_some() {
         return sub.eval(core, Some(scope), true);
     }
@@ -87,7 +91,6 @@ fn eval(core: &mut ShellCore, args: &[String], sub: &mut Substitution,
     if !core.db.exist_l(&name, scope) || change_type {
         sub.left_hand.init_variable(core, Some(scope), &mut args.to_vec())?;
     }
-
 
     Ok(())
 }

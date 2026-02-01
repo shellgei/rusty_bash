@@ -50,6 +50,34 @@ impl DataBase {
         Ok(())
     }
 
+    pub fn set_nameref(
+        &mut self,
+        name: &str,
+        val: &str,
+        scope: Option<usize>,
+    ) -> Result<(), ExecError> {
+        self.check_on_write(name, &Some(vec![val.to_string()]))?;
+
+        if name == "BASH_ARGV0" {
+            let n = scope.unwrap_or(self.get_scope_num() - 1);
+            self.position_parameters[n][0] = val.to_string();
+        }
+
+        let scope = self.get_target_scope(name, scope);
+
+        if self.params[scope].get(name).is_none() {
+            self.set_entry(scope, name, Box::new(SingleData::from("")))?;
+        }
+
+        let d = self.params[scope].get_mut(name).unwrap();
+        if let Some(init_d) = d.initialize() {
+            *d = init_d;
+        }
+
+        d.set_as_single(name, val)?;
+        Ok(())
+    }
+
     pub fn set_param2(
         &mut self,
         name: &str,
@@ -115,6 +143,19 @@ impl DataBase {
             return self.set_flag(&nameref, flag, scope);
         }
 
+        match self.params[scope].get_mut(name) {
+            Some(d) => { d.set_flag(flag); },
+            None => {
+                let obj = match flag {
+                    'i' => Box::new(IntData::new()) as Box::<dyn Data>,
+                    _ => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
+                };
+                let _ = self.set_entry(scope, name, obj);
+            }
+        }
+    }
+
+    pub fn set_flag_nameref(&mut self, name: &str, flag: char, scope: usize) {
         match self.params[scope].get_mut(name) {
             Some(d) => { d.set_flag(flag); },
             None => {

@@ -20,6 +20,13 @@ impl DataBase {
         }
     }
 
+    pub fn unset_flag_nameref(&mut self, name: &str, flag: char, scope: usize) {
+        let rf = &mut self.params[scope];
+        if let Some(d) = rf.get_mut(name) {
+            d.unset_flag(flag);
+        }
+    }
+
     pub fn unset_nameref(&mut self, name: &str,
                          called_scope: Option<usize>) -> Result<(), ExecError> {
         if let Some(scope) = called_scope {
