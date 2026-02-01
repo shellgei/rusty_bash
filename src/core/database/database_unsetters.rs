@@ -8,8 +8,10 @@ use std::env;
 
 impl DataBase {
     pub fn unset_flag(&mut self, name: &str, flag: char, scope: usize) {
-        if let Ok(Some(nameref)) = self.get_nameref(name) {
-            return self.unset_flag(&nameref, flag, scope);
+        if flag != 'n' {
+            if let Ok(Some(nameref)) = self.get_nameref(name) {
+                return self.unset_flag(&nameref, flag, scope);
+            }
         }
 
         let rf = &mut self.params[scope];

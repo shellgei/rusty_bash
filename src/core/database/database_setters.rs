@@ -57,6 +57,10 @@ impl DataBase {
         val: &str,
         scope: Option<usize>,
     ) -> Result<(), ExecError> {
+        if let Ok(Some(nameref)) = self.get_nameref(name) {
+            return self.set_param2(&nameref, index, val, scope);
+        }
+
         if index.is_empty() {
             return self.set_param(name, val, scope);
         }

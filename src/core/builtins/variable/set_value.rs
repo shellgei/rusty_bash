@@ -10,24 +10,34 @@ fn set_options_pre(core: &mut ShellCore, name: &String,
                        scope: usize, args: &[String]) {
     if arg::has_option("-x", args) {
         core.db.set_flag(name, 'x', scope);
+    }else if arg::has_option("+x", args) {
+        core.db.unset_flag(name, 'x', scope);
     }
 
     if arg::has_option("-n", args) {
         core.db.set_flag(name, 'n', scope);
+    }else if arg::has_option("+n", args) {
+        core.db.unset_flag(name, 'n', scope);
     }
 
     if arg::has_option("-i", args) {
         core.db.set_flag(name, 'i', scope);
+    }else if arg::has_option("+i", args) {
+        core.db.unset_flag(name, 'i', scope);
     }
 
     if arg::has_option("-l", args) {
         core.db.unset_flag(name, 'u', scope);
         core.db.set_flag(name, 'l', scope);
+    }else if arg::has_option("+l", args) {
+        core.db.unset_flag(name, 'l', scope);
     }
 
     if arg::has_option("-u", args) {
         core.db.unset_flag(name, 'l', scope);
         core.db.set_flag(name, 'u', scope);
+    }else if arg::has_option("+u", args) {
+        core.db.unset_flag(name, 'u', scope);
     }
 }
 
