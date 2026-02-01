@@ -36,6 +36,8 @@ impl Substitution {
         }
 
         if core.db.exist_nameref(&self.left_hand.name) && ! self.reset_nameref {
+            self.left_hand.check_nameref(core)?;
+            /*
             let mut circular_check_vec = vec![];
             let org_name = self.left_hand.name.clone();
             loop {
@@ -47,7 +49,7 @@ impl Substitution {
                     break;
                 }
                 circular_check_vec.push(self.left_hand.name.clone());
-            }
+            }*/
         }
 
         let r = self.right_hand.as_mut().unwrap();

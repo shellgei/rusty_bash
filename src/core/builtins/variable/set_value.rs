@@ -152,11 +152,12 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
     let res = eval(core, args, sub, &name, scope);
     set_options_post(core, &name, scope, args);
 
+    /*
     if arg::has_option("-n", args) {
         if res.is_err() {
             core.db.unset_nameref(&name, Some(scope))?;
         }
-    }
+    }*/
 
     res
 }
