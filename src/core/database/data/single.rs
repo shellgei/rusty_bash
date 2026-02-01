@@ -68,7 +68,7 @@ impl Data for SingleData {
                 if name == splits[0] {
                         return Err(ExecError::SelfRef(name.to_string()));
                 }
-
+            }else if value == "" {
             }else if ! utils::is_var(value) {
                 return Err(ExecError::InvalidNameRef(value.to_string()));
             }else if name == value {
