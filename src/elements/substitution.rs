@@ -36,7 +36,18 @@ impl Substitution {
         }
 
         if core.db.exist_nameref(&self.left_hand.name) && ! self.reset_nameref {
-            self.left_hand.check_nameref(core)?;
+            let mut circular_check_vec = vec![];
+            let org_name = self.left_hand.name.clone();
+            loop {
+                self.left_hand.check_nameref(core)?;
+                if circular_check_vec.contains(&self.left_hand.name) {
+                    return Err(ExecError::CircularNameRef(org_name));
+                }
+                if ! core.db.exist_nameref(&self.left_hand.name) {
+                    break;
+                }
+                circular_check_vec.push(self.left_hand.name.clone());
+            }
         }
 
         let r = self.right_hand.as_mut().unwrap();

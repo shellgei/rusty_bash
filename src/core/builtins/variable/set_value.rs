@@ -99,10 +99,20 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
                scope: usize) -> Result<(), ExecError> {
     let name = sub.left_hand.name.clone();
     readonly_check(core, &name)?;
+
+    if arg::has_option("-n", args) {
+        if sub.left_hand.index.is_some() 
+        || core.db.is_array(&sub.left_hand.name)
+        || core.db.is_assoc(&sub.left_hand.name) {
+            return Err(ExecError::RefCannotBeArray(sub.left_hand.text.clone()));
+        }
+    }
+
     array_to_element_check(sub)?;
     let scope = check_global_option(core, args, &name, scope);
 
-    if arg::has_option("+i", args) && core.db.has_flag_scope(&name, 'i', scope) {
+    if ( arg::has_option("+i", args) || arg::has_option("-n", args) )
+    && core.db.has_flag_scope(&name, 'i', scope) {
         core.db.int_to_str_type(&name, scope)?;
     }
 
@@ -141,6 +151,12 @@ pub(super) fn exec(core: &mut ShellCore, sub: &mut Substitution, args: &[String]
     set_options_pre(core, &name, scope, args);
     let res = eval(core, args, sub, &name, scope);
     set_options_post(core, &name, scope, args);
+
+    if arg::has_option("-n", args) {
+        if res.is_err() {
+            core.db.unset_nameref(&name, Some(scope))?;
+        }
+    }
 
     res
 }

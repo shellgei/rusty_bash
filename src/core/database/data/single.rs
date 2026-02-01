@@ -64,8 +64,15 @@ impl Data for SingleData {
                 if ! utils::is_var(&splits[0]) || ! splits[1].ends_with(']') {
                         return Err(ExecError::InvalidNameRef(value.to_string()));
                 }
+
+                if name == splits[0] {
+                        return Err(ExecError::SelfRef(name.to_string()));
+                }
+
             }else if ! utils::is_var(value) {
                 return Err(ExecError::InvalidNameRef(value.to_string()));
+            }else if name == value {
+                return Err(ExecError::SelfRef(name.to_string()));
             }
         }
 

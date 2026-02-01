@@ -19,6 +19,7 @@ pub enum ExecError {
     BadFd(RawFd),
     Bug(String),
     CannotOverwriteExistingFile(String),
+    CircularNameRef(String),
     CommandNotFound(String),
     InvalidIndirectExpansion(String),
     InvalidName(String),
@@ -30,8 +31,10 @@ pub enum ExecError {
     VariableInvalid(String),
     ParseIntError(String),
     PermissionDenied(String),
+    SelfRef(String),
     SyntaxError(String),
     Restricted(String),
+    RefCannotBeArray(String),
     SubstringMinus(i128),
     UnsupportedWaitStatus(WaitStatus),
     UnboundVariable(String),
@@ -88,6 +91,7 @@ impl From<&ExecError> for String {
             ExecError::CannotOverwriteExistingFile(file) => {
                 format!("{file}: cannot overwrite existing file")
             }
+            ExecError::CircularNameRef(name) => format!("{name}: circular name reference"),
             ExecError::CommandNotFound(name) => format!("{name}: command not found"),
             ExecError::InvalidIndirectExpansion(name) => format!("{name}: invalid indirect expansion"),
             ExecError::InvalidName(name) => format!("`{name}': not a valid identifier"),
@@ -99,10 +103,14 @@ impl From<&ExecError> for String {
             ExecError::VariableInvalid(name) => format!("`{name}': not a valid identifier"),
             ExecError::ParseIntError(e) => e.to_string(),
             ExecError::PermissionDenied(name) => format!("{name}: Permission denied"),
+            ExecError::SelfRef(name) => {
+                format!("{name}: nameref variable self references not allowed")
+            },
             ExecError::SyntaxError(near) => {
                 format!("syntax error near unexpected token `{}'", &near)
             }
             ExecError::Restricted(com) => format!("{com}: restricted"),
+            ExecError::RefCannotBeArray(name) => format!("{name}: reference variable cannot be an array"),
             ExecError::SubstringMinus(n) => format!("{n}: substring expression < 0"),
             ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {ws:?}"),
             ExecError::UnboundVariable(name) => format!("{name}: unbound variable"),
