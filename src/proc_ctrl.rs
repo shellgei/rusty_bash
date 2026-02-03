@@ -112,15 +112,15 @@ pub fn exec_command(args: &[String], core: &mut ShellCore) -> ! {
             process::exit(126)
         },
         Err(Errno::EACCES) => {
-            eprintln!("sush: {}: Permission denied", &args[0]);
+            ExecError::PermissionDenied(args[0].to_string()).print(core);
             process::exit(126)
         },
         Err(Errno::ENOENT) => {
-            eprintln!("{}: command not found", &args[0]);
+            ExecError::CommandNotFound(args[0].to_string()).print(core);
             process::exit(127)
         },
         Err(err) => {
-            eprintln!("Failed to execute. {err:?}");
+            println!("Failed to execute. {err:?}");
             process::exit(127)
         }
         _ => panic!("SUSH INTERNAL ERROR (never come here)")
