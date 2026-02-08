@@ -9,6 +9,7 @@ use crate::{file_check, Feeder, ShellCore};
 use faccess;
 use faccess::PathExt;
 use rev_lines::RevLines;
+use std::env;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -140,6 +141,7 @@ pub fn compgen(core: &mut ShellCore, args: &[String]) -> i32 {
         "-b" => compgen_b(core, &args),
         "-c" => compgen_c(core, &args),
         "-d" => compgen_d(core, &args),
+        "-e" => compgen_e(&args),
         "-f" => compgen_f(core, &args, false),
         "-h" => compgen_h(core, &args), //history (sush original)
         "-j" => compgen_j(core, &args),
@@ -260,6 +262,17 @@ pub fn compgen_c(core: &mut ShellCore, args: &[String]) -> Vec<String> {
 
 fn compgen_d(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     compgen_f(core, args, true)
+}
+
+pub fn compgen_e(args: &[String]) -> Vec<String> {
+    let mut envs = env::vars().map(|e| e.0).collect::<Vec<String>>();
+
+    let head = get_head(args, 2);
+    if !head.is_empty() {
+        envs.retain(|a| a.starts_with(&head));
+    }
+
+    envs
 }
 
 pub fn compgen_h(core: &mut ShellCore, _: &[String]) -> Vec<String> {
