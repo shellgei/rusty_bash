@@ -45,7 +45,7 @@ impl DataBase {
 
         d.set_as_single(name, val)?;
 
-        if env::var(name).is_ok() || self.allexport {
+        if env::var(name).is_ok() || self.flags.contains('a') {
             let v = d.get_as_single()?;
             unsafe{env::set_var(name, &v)};
         }
