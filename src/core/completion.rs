@@ -16,4 +16,5 @@ pub struct CompletionEntry {
     pub o_options: Vec<String>,
     pub action: String,
     pub options: HashMap<String, String>,
+    pub large_w_cands: String,
 }

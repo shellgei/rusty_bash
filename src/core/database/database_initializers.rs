@@ -2,7 +2,7 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::DataBase;
-use crate::core::database::{Data, IntData, Uninit, AssocData, IntAssocData, ArrayData, IntArrayData};
+use crate::core::database::{Data, IntData, Uninit, AssocData, IntAssocData, ArrayData, IntArrayData, Groups};
 use crate::error::exec::ExecError;
 use super::data::epochrealtime::EpochRealTime;
 use super::data::epochseconds::EpochSeconds;
@@ -34,6 +34,8 @@ impl DataBase {
         self.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
         self.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds::new()));
         self.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime::new()));
+
+        self.params[0].insert("GROUPS".to_string(), Box::new(Groups::new()));
     
         self.init_array("BASH_SOURCE", Some(vec![]), None, false)?;
         self.init_array("BASH_ARGC", Some(vec![]), None, false)?;
@@ -42,6 +44,7 @@ impl DataBase {
         self.init_array("DIRSTACK", Some(vec![]), None, false)?;
         self.init_assoc("BASH_ALIASES", None, true, false)?;
         self.init_assoc("BASH_CMDS", None, true, false)?;
+
         Ok(())
     }
 

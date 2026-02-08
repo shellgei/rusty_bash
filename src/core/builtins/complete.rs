@@ -12,10 +12,10 @@ fn action_to_reduce_symbol(arg: &str) -> String {
         "command" => "c",
         "alias" => "a",
         "builtin" => "b",
+        "export" => "e",
         "group" => "g",
         "keyword" => "k",
         "variable" => "v",
-        "export" => "e",
         "setopt" => "o",
         "job" => "j",
         "service" => "s",
@@ -31,6 +31,7 @@ fn opt_to_action(arg: &str) -> String {
         "-b" => "builtin",
         "-c" => "command",
         "-d" => "directory",
+        "-e" => "export",
         "-f" => "file",
         "-g" => "group",
         "-k" => "keyword",
@@ -49,7 +50,9 @@ fn print_complete(core: &mut ShellCore) -> i32 {
     }
 
     for (name, info) in &core.completion.entries {
-        if !info.function.is_empty() {
+        if !info.large_w_cands.is_empty() {
+            print!("complete -W {} ", &info.large_w_cands);
+        } else if !info.function.is_empty() {
             print!("complete -F {} ", &info.function);
         } else if !info.action.is_empty() {
             let symbol = action_to_reduce_symbol(&info.action);
@@ -106,6 +109,19 @@ fn complete_f(core: &mut ShellCore, args: &[String], o_options: &[String]) -> i3
     }
 }
 
+fn complete_large_w(core: &mut ShellCore, args: &[String]) -> i32 {
+    let mut args = args.to_vec();
+    let com = args.pop().unwrap();
+
+    core.completion
+        .entries
+        .insert(com.clone(), CompletionEntry::default());
+
+    let info = &mut core.completion.entries.get_mut(&com).unwrap();
+    info.large_w_cands = args[2].clone();
+    0
+}
+
 fn complete_r(core: &mut ShellCore, args: &[String]) -> i32 {
     for command in &args[1..] {
         core.completion.entries.remove(command);
@@ -122,6 +138,9 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut o_options = vec![];
     let mut args = arg::dissolve_options(&args);
+
+    if args[1] == "-W" { return complete_large_w(core, &args);
+    }
 
     if arg::consume_arg("-r", &mut args) {
         return complete_r(core, &args);

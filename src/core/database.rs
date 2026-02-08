@@ -16,6 +16,7 @@ use self::data::array_int::IntArrayData;
 use self::data::uninit::Uninit;
 use self::data::assoc::AssocData;
 use self::data::assoc_int::IntAssocData;
+use self::data::groups::Groups;
 use self::data::single::SingleData;
 use self::data::single_int::IntData;
 use self::data::Data;

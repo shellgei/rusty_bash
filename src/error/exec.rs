@@ -32,6 +32,7 @@ pub enum ExecError {
     ParseIntError(String),
     PermissionDenied(String),
     SelfRef(String),
+    Silent,
     SyntaxError(String),
     Restricted(String),
     RefCannotBeArray(String),
@@ -120,6 +121,7 @@ impl From<&ExecError> for String {
 
             ExecError::ArithError(s, a) => format!("{}: {}", s, String::from(a)),
             ExecError::ParseError(p) => From::from(p),
+            _ => {"".to_string()},
         }
     }
 }
@@ -128,6 +130,10 @@ impl ExecError {
     pub fn print(&self, core: &mut ShellCore) {
         let name = core.db.get_param("0").unwrap();
         let s: String = From::<&ExecError>::from(self);
+        if s == "" {
+            return;
+        }
+
         if core.db.flags.contains('i') {
             eprintln!("{}: {}", &name, &s);
         } else {
