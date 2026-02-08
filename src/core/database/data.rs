@@ -18,6 +18,7 @@ use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use std::fmt;
 use std::fmt::Debug;
+use crate::utils;
 
 fn to_int(s: &str) -> Result<isize, ExecError> {
     match s.parse::<isize>() {
@@ -203,4 +204,27 @@ pub trait Data {
     }
 
     fn get_flags(&mut self) -> String;
+
+    fn nameref_check(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        if ! self.has_flag('n') {
+            return Ok(());
+        }
+
+        if value.contains('[') {
+            let splits: Vec<&str> = value.split('[').collect();
+            if ! utils::is_var(&splits[0]) || ! splits[1].ends_with(']') {
+                    return Err(ExecError::InvalidNameRef(value.to_string()));
+            }
+
+            if name == splits[0] {
+                    return Err(ExecError::SelfRef(name.to_string()));
+            }
+        }else if value == "" {
+        }else if ! utils::is_var(value) {
+            return Err(ExecError::InvalidNameRef(value.to_string()));
+        }else if name == value {
+            return Err(ExecError::SelfRef(name.to_string()));
+        }
+        Ok(())
+    }
 }

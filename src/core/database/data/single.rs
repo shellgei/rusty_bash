@@ -35,15 +35,6 @@ impl Data for SingleData {
             s = "'".to_owned() + &s + "'";
         }
         let ansi = utils::to_ansi_c(&s);
-        /*
-        if ansi.starts_with("\"")
-        && ansi.ends_with("\"") && ansi.len() > 1 {
-            ansi.remove(0);
-            ansi.pop();
-            ansi.push('\'');
-            ansi.insert(0, '\'');
-        }*/
-
         if ansi == s {
             ansi.replace("$", "\\$")
         } else {
@@ -57,7 +48,9 @@ impl Data for SingleData {
 
     fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
+        self.nameref_check(name, value)?;
 
+        /*
         if self.has_flag('n') {
             if value.contains('[') {
                 let splits: Vec<&str> = value.split('[').collect();
@@ -74,7 +67,7 @@ impl Data for SingleData {
             }else if name == value {
                 return Err(ExecError::SelfRef(name.to_string()));
             }
-        }
+        }*/
 
         self.body = value.to_string();
         case_change(&self.flags, &mut self.body);

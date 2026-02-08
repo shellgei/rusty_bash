@@ -26,7 +26,9 @@ impl DataBase {
             self.position_parameters[n][0] = val.to_string();
         }
 
-        if !self.flags.contains('r') && (self.flags.contains('a') || self.has_flag(name, 'x')) {
+        if !self.flags.contains('r')
+        && (self.flags.contains('a')
+       || self.has_flag(name, 'x')) {
             unsafe{env::set_var(name, "")};
         }
 
@@ -43,7 +45,7 @@ impl DataBase {
 
         d.set_as_single(name, val)?;
 
-        if env::var(name).is_ok() {
+        if env::var(name).is_ok() || self.allexport {
             let v = d.get_as_single()?;
             unsafe{env::set_var(name, &v)};
         }

@@ -133,10 +133,19 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
                 } else if !positive {
                     core.db.flags.retain(|f| f != 'm');
                 }
+            }else if args[2] == "allexport" {
+                if positive && !core.db.flags.contains('a') {
+                    core.db.flags.push('a');
+                } else if !positive {
+                    core.db.flags.retain(|f| f != 'a');
+                }
             }
 
             return match core.options.set(&args[2], positive) {
-                Ok(()) => 0,
+                Ok(()) => {
+                    core.db.allexport = core.options.query("allexport");
+                    0
+                },
                 Err(e) => {
                     return super::error_(2, &args[0], &String::from(&e), core);
                 }

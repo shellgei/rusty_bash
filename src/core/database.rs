@@ -32,6 +32,7 @@ pub struct DataBase {
     pub exit_status: i32,
     pub last_arg: String,
     pub hash_counter: HashMap<String, usize>,
+    pub allexport: bool,
 }
 
 impl DataBase {
