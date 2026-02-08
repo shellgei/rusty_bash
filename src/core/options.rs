@@ -13,6 +13,7 @@ pub struct Options {
 impl Options {
     pub fn new_as_basic_opts() -> Options {
         let mut options = Options::default();
+        options.opts.insert("allexport".to_string(), false);
         options.opts.insert("pipefail".to_string(), false);
         options.opts.insert("monitor".to_string(), true);
         options.opts.insert("noclobber".to_string(), false);

@@ -55,6 +55,7 @@ pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), E
 
 pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
     for (short, long) in [
+        ('a', "allexport"),
         ('t', "onecmd"),
         ('m', "monitor"),
         ('C', "noclobber"),
@@ -93,7 +94,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if core.db.flags.contains('r') && arg::consume_arg("+r", &mut args) {
         let _ = super::error_(1, &args[0], "+r: invalid option", core);
-        eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
+        eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]");
         return 1;
     }
 
