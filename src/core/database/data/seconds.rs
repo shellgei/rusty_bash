@@ -26,6 +26,10 @@ impl Data for Seconds {
         Box::new(self.clone())
     }
 
+    fn get_fmt_string(&mut self) -> String {
+        self.get_as_single().unwrap()
+    }
+
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         let diff = monotonic_time() - self.origin;
         let ans = format!("{}", diff.as_secs() as isize + self.shift);
