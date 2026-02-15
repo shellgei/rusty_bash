@@ -3,6 +3,7 @@
 
 pub mod random;
 pub mod srandom;
+pub mod seconds;
 pub mod single;
 
 use crate::error::exec::ExecError;
