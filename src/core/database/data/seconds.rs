@@ -1,11 +1,10 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::error::exec::ExecError;
+use super::{Data, ExecError};
 use nix::time;
 use nix::time::ClockId;
 use std::time::Duration;
-use super::Data;
 
 fn monotonic_time() -> Duration {
     let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
