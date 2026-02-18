@@ -2,17 +2,17 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::{Data, ExecError};
-use nix::time;
-use nix::time::ClockId;
+use crate::utils::clock;
 use std::time::Duration;
 
+/*
 fn monotonic_time() -> Duration {
     let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
     Duration::new(
         now.tv_sec().try_into().unwrap(),
         now.tv_nsec().try_into().unwrap(),
     )
-}
+}*/
 
 #[derive(Debug, Clone)]
 pub struct Seconds {
@@ -31,7 +31,7 @@ impl Data for Seconds {
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
-        let diff = monotonic_time() - self.origin;
+        let diff = clock::monotonic_time() - self.origin;
         let ans = format!("{}", diff.as_secs() as isize + self.shift);
         Ok(ans)
     }
@@ -40,7 +40,7 @@ impl Data for Seconds {
         self.readonly_check(name)?;
 
         self.shift = value.parse::<isize>().unwrap_or(0);
-        self.origin = monotonic_time();
+        self.origin = clock::monotonic_time();
         Ok(())
     }
 
@@ -58,7 +58,7 @@ impl Data for Seconds {
 impl Seconds {
     pub fn new() -> Self {
         Self {
-            origin: monotonic_time(),
+            origin: clock::monotonic_time(),
             shift: 0,
             flags: "i".to_string(),
         }

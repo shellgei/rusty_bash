@@ -3,6 +3,7 @@
 
 pub mod arg;
 pub mod c_string;
+pub mod clock;
 pub mod directory;
 pub mod exit;
 pub mod file_check;
