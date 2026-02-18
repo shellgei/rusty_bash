@@ -1,18 +1,9 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::{Data, ExecError};
 use crate::utils::clock;
 use std::time::Duration;
-
-/*
-fn monotonic_time() -> Duration {
-    let now = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
-    Duration::new(
-        now.tv_sec().try_into().unwrap(),
-        now.tv_nsec().try_into().unwrap(),
-    )
-}*/
+use super::{Data, ExecError};
 
 #[derive(Debug, Clone)]
 pub struct Seconds {
