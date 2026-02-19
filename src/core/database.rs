@@ -4,6 +4,8 @@
 mod data;
 
 use self::data::Data;
+use self::data::epochrealtime::EpochRealtime;
+use self::data::epochseconds::EpochSeconds;
 use self::data::random::RandomVar;
 use self::data::seconds::Seconds;
 use self::data::srandom::SRandomVar;
@@ -31,6 +33,8 @@ impl DataBase {
         ans.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
         ans.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
         ans.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
+        ans.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealtime::default()));
+        ans.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds::default()));
         ans
     }
 

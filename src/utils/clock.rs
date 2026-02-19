@@ -12,3 +12,13 @@ pub fn monotonic_time() -> Duration {
         now.tv_nsec().try_into().unwrap(),
     )
 }
+
+pub fn get_epochseconds() -> String {
+    let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+    real.tv_sec().to_string()
+}
+
+pub fn get_epochrealtime() -> String {
+    let real = time::clock_gettime(ClockId::CLOCK_REALTIME).unwrap();
+    format!("{}.{:06}", real.tv_sec(), real.tv_nsec() / 1000).to_string()
+}
