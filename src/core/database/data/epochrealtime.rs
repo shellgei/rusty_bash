@@ -5,7 +5,7 @@ use super::Data;
 use crate::error::exec::ExecError;
 use crate::utils::clock;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct EpochRealTime {
     flags: String,
 }
@@ -52,11 +52,5 @@ impl Data for EpochRealTime {
 
     fn get_flags(&mut self) -> String {
         self.flags.clone()
-    }
-}
-
-impl EpochRealTime {
-    pub fn new() -> Self {
-        Self { flags: "i".to_string() }
     }
 }

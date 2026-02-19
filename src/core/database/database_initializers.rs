@@ -32,8 +32,8 @@ impl DataBase {
         self.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
         self.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
         self.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
-        self.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds::new()));
-        self.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime::new()));
+        self.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds::default()));
+        self.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime::default()));
 
         self.params[0].insert("GROUPS".to_string(), Box::new(Groups::new()));
     
