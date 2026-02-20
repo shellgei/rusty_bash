@@ -25,11 +25,6 @@ impl Data for SRandomVar {
         Ok(rand.to_string())
     }
 
-    fn set_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
-        self.readonly_check(name)?;
-        Ok(())
-    }
-
     fn set_flag(&mut self, flag: char) {
         if ! self.flags.contains(flag) {
             self.flags.push(flag);
