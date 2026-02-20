@@ -2,14 +2,14 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::{Data, ExecError};
-use crate::utils::clock;
 
-#[derive(Debug, Clone, Default)]
-pub struct EpochSeconds {
+#[derive(Debug, Clone)]
+pub struct EpochTime {
+    timefunc: fn() -> String,
     flags: String,
 }
 
-impl Data for EpochSeconds {
+impl Data for EpochTime {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
@@ -19,7 +19,7 @@ impl Data for EpochSeconds {
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
-        Ok(clock::get_epochseconds())
+        Ok((self.timefunc)())
     }
 
     fn set_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
@@ -34,5 +34,14 @@ impl Data for EpochSeconds {
 
     fn get_flags(&self) -> &str {
         &self.flags
+    }
+}
+
+impl EpochTime {
+    pub fn new(timefn: fn() -> String) -> Self {
+        Self {
+            timefunc: timefn,
+            flags: "".to_string(),
+        }
     }
 }
