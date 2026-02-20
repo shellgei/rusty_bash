@@ -45,6 +45,12 @@ impl Data for Groups {
             return Ok(self.values().join(ifs));
         }
 
+        let index = self.index_of(key)?;
+        let vs = self.values();
+        if index < vs.len() {
+            return Ok(vs[index].clone());
+        }
+
         Ok("".to_string())
     }
 
@@ -82,33 +88,27 @@ impl Data for Groups {
         if key == "@" || key == "*" {
             return Ok(true);
         }
-        /*
+
         let n = self.index_of(key)?;
-        Ok(self.body.contains_key(&n))
-        */
-        Ok(false)
+        Ok(n < self.values().len())
     }
 
     fn index_based_len(&mut self) -> usize {
-        /*
-        match self.body.iter().map(|e| e.0).max() {
-            Some(n) => *n + 1,
-            None => 0,
-        }*/
-        0
+        self.len()
     }
 
-    fn elem_len(&mut self, _: &str) -> Result<usize, ExecError> {
-        /*
+    fn elem_len(&mut self, key: &str) -> Result<usize, ExecError> {
         if key == "@" || key == "*" {
             return Ok(self.len());
         }
 
         let n = self.index_of(key)?;
-        let s = self.body.get(&n).unwrap_or(&"".to_string()).clone();
+        let vs = self.values();
 
-        Ok(s.chars().count())
-        */
+        if n < vs.len() {
+            return Ok(vs[n].to_string().len());
+        }
+
         Ok(0)
     }
 
@@ -137,10 +137,7 @@ impl Data for Groups {
 
 impl Groups {
     pub fn new() -> Self {
-        Self {
-            //body: HashMap::new(),
-            flags: "a".to_string(),
-        }
+        Self { flags: "a".to_string(), }
     }
 
     pub fn values(&self) -> Vec<String> {
@@ -153,20 +150,16 @@ impl Groups {
 
     /*
     pub fn keys(&self) -> Vec<usize> {
-        let mut keys: Vec<usize> = vec![];
-        keys.sort();
-        keys
-    }
+        let vs = self.values();
+        (0..vs.len()).collect()
+    }*/
 
     fn index_of(&mut self, key: &str) -> Result<usize, ExecError> {
-        let mut index = match key.parse::<isize>() {
+        let index = match key.parse::<isize>() {
             Ok(i) => i,
             _ => return Err(ExecError::ArrayIndexInvalid(key.to_string())),
         };
 
-        let vs = self.values();
-        if 
-
         Ok(index as usize)
-    }*/
+    }
 }
