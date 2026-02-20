@@ -85,9 +85,11 @@ impl Data for SingleData {
     fn get_as_single(&mut self) -> Result<String, ExecError> {
         Ok(self.body.to_string())
     }
+
     fn len(&mut self) -> usize {
         self.body.chars().count()
     }
+
     fn is_single(&self) -> bool {
         true
     }
@@ -109,12 +111,8 @@ impl Data for SingleData {
         self.flags.retain(|e| e != flag);
     }
 
-    fn has_flag(&mut self, flag: char) -> bool {
-        self.flags.contains(flag)
-    }
-
-    fn get_flags(&mut self) -> String {
-        self.flags.clone()
+    fn get_flags(&mut self) -> &str {
+        &self.flags
     }
 }
 

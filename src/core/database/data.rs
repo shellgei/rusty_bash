@@ -5,13 +5,12 @@ pub mod array;
 pub mod array_int;
 pub mod assoc;
 pub mod assoc_int;
-pub mod epochrealtime;
-pub mod epochseconds;
-pub mod ondemand_array;
+pub mod array_ondemand;
 pub mod random;
 pub mod seconds;
 pub mod single;
 pub mod single_int;
+pub mod single_ondemand;
 pub mod srandom;
 pub mod uninit;
 
@@ -50,7 +49,10 @@ impl Clone for Box<dyn Data> {
 
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
-    fn _get_fmt_string(&self) -> String;
+
+    fn _get_fmt_string(&self) -> String {
+        "********".to_string()
+    }
 
     fn get_fmt_string(&mut self) -> String {
         self._get_fmt_string()
@@ -200,11 +202,11 @@ pub trait Data {
 
     fn unset_flag(&mut self, _: char) {}
 
-    fn has_flag(&mut self, _: char) -> bool {
-        false
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.get_flags().contains(flag)
     }
 
-    fn get_flags(&mut self) -> String;
+    fn get_flags(&mut self) -> &str;
 
     fn nameref_check(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
         if ! self.has_flag('n') {

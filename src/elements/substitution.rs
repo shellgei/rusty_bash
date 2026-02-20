@@ -113,7 +113,7 @@ impl Substitution {
 
         let a = r.evaluated_array.as_ref().unwrap();
         let name = &self.left_hand.name;
-        let old_flags = core.db.get_flags(&name);
+        let old_flags = core.db.get_flags(&name).to_string();
 
         if a.is_empty() && !self.append {
             if core.db.is_assoc(name) {

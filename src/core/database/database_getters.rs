@@ -257,11 +257,11 @@ impl DataBase {
         }
     }
 
-    pub fn get_flags(&mut self, name: &str) -> String {
+    pub fn get_flags(&mut self, name: &str) -> &str {
         if let Some(v) = self.get_ref(name) {
             v.get_flags()
         }else{
-            "".to_string()
+            ""
         }
     }
 }

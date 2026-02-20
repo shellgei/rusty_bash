@@ -5,8 +5,8 @@ use crate::core::DataBase;
 use crate::core::database::{Data, IntData, Uninit, AssocData, IntAssocData, ArrayData, IntArrayData, OnDemandArray};
 use crate::error::exec::ExecError;
 use crate::utils;
-use super::data::epochrealtime::EpochRealTime;
-use super::data::epochseconds::EpochSeconds;
+use crate::utils::clock;
+use super::data::single_ondemand::OnDemandSingle;
 use super::data::random::RandomVar;
 use super::data::seconds::Seconds;
 use super::data::srandom::SRandomVar;
@@ -33,8 +33,8 @@ impl DataBase {
         self.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
         self.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
         self.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
-        self.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds::default()));
-        self.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime::default()));
+        self.params[0].insert("EPOCHSECONDS".to_string(), Box::new(OnDemandSingle::new(clock::get_epochseconds)));
+        self.params[0].insert("EPOCHREALTIME".to_string(), Box::new(OnDemandSingle::new(clock::get_epochrealtime)));
         self.params[0].insert("GROUPS".to_string(), Box::new(OnDemandArray::new(utils::groups)));
 
         self.init_array("BASH_SOURCE", Some(vec![]), None, false)?;
