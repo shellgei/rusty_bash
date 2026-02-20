@@ -3,12 +3,11 @@
 
 use super::Data;
 use crate::error::exec::ExecError;
-//use nix::unistd;
+use nix::unistd;
 use crate::utils;
 
 #[derive(Debug, Clone)]
 pub struct Groups {
-//    pub body: HashMap<usize, String>,
     pub flags: String,
 }
 
@@ -23,10 +22,9 @@ impl Data for Groups {
 
     fn get_fmt_string(&mut self) -> String {
         let mut formatted = "(".to_string();
-        let vs = self.values();
-        for i in self.keys() {
-            let ansi = utils::to_ansi_c(&vs[i]);
-            if ansi == vs[i] {
+        for (i, v) in self.values().into_iter().enumerate() {
+            let ansi = utils::to_ansi_c(&v);
+            if ansi == v {
                 formatted += &format!("[{}]=\"{}\" ", i, &ansi.replace("$", "\\$"));
             } else {
                 formatted += &format!("[{}]={} ", i, &ansi);
@@ -39,29 +37,6 @@ impl Data for Groups {
         formatted
     }
 
-    /*
-    fn clear(&mut self) {
-        self.body.clear();
-    }*/
-
-    fn set_as_single(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
-        Ok(())
-    }
-
-    fn append_as_single(&mut self, _: &str, _: &str) -> Result<(), ExecError> {
-        Ok(())
-    }
-
-    fn set_as_array(&mut self, _: &str, _: &str, _: &str)
-                    -> Result<(), ExecError> {
-        Err(ExecError::Silent)
-    }
-
-    fn append_to_array_elem(&mut self, _: &str, _: &str,
-                            _: &str) -> Result<(), ExecError> {
-        Err(ExecError::Silent)
-    }
-
     fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
         if key == "@" {
             return Ok(self.values().join(" "));
@@ -70,44 +45,24 @@ impl Data for Groups {
             return Ok(self.values().join(ifs));
         }
 
-        /*
-        let n = self.index_of(key)?;
-        Ok(self.body.get(&n).unwrap_or(&"".to_string()).clone())
-        */
         Ok("".to_string())
     }
 
-    fn get_vec_from(&mut self, _: usize, _: bool) -> Result<Vec<String>, ExecError> {
-        /*
-        let keys = self.keys();
-        let max = *keys.iter().max().unwrap();
-        let mut ans = vec![];
-        for i in pos..(max + 1) {
-            match self.body.get(&i) {
-                Some(s) => ans.push(s.clone()),
-                None => {
-                    if !skip_non {
-                        ans.push("".to_string());
-                    }
-                }
-            }
+    fn get_vec_from(&mut self, pos: usize, _: bool) -> Result<Vec<String>, ExecError> {
+        let vs = self.values();
+        if pos < vs.len() {
+            return Ok(vs[pos..].to_vec());
         }
-        Ok(ans)
-        */
+
         Ok(vec![])
     }
 
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
-        Ok(self.keys().iter().map(|k| k.to_string()).collect())
+        let num = self.values().len();
+        Ok((0..num).map(|k| k.to_string()).collect())
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
-        /*
-        self.body
-            .get(&0)
-            .map(|v| Ok(v.clone()))
-            .ok_or(ExecError::Other("No entry".to_string()))?
-        */
         let vs = self.values();
         if vs.is_empty() {
             Ok("".to_string())
@@ -120,8 +75,7 @@ impl Data for Groups {
         true
     }
     fn len(&mut self) -> usize {
-        //self.body.len()
-        0
+        self.values().len()
     }
 
     fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
@@ -190,40 +144,29 @@ impl Groups {
     }
 
     pub fn values(&self) -> Vec<String> {
-//        unistd::getgroups();
-
-        vec![]
+        unistd::getgroups()
+            .unwrap()
+            .into_iter()
+            .map(|e| e.to_string())
+            .collect()
     }
 
+    /*
     pub fn keys(&self) -> Vec<usize> {
         let mut keys: Vec<usize> = vec![];
         keys.sort();
         keys
     }
 
-    /*
     fn index_of(&mut self, key: &str) -> Result<usize, ExecError> {
         let mut index = match key.parse::<isize>() {
             Ok(i) => i,
             _ => return Err(ExecError::ArrayIndexInvalid(key.to_string())),
         };
 
-        if index >= 0 {
-            return Ok(index as usize);
-        }
-
-        let keys = self.keys();
-        let max = match keys.iter().max() {
-            Some(n) => *n as isize,
-            None => -1,
-        };
-        index += max + 1;
-
-        if index < 0 {
-            return Err(ExecError::ArrayIndexInvalid(key.to_string()));
-        }
+        let vs = self.values();
+        if 
 
         Ok(index as usize)
-    }
-    */
+    }*/
 }

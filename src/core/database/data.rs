@@ -77,9 +77,9 @@ pub trait Data {
     fn set_as_single(&mut self, name: &str,  _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)
     }
+
     fn append_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
-        self.readonly_check(name)?;
-        Err(ExecError::Other("Undefined call set_as_single".to_string()))
+        self.readonly_check(name)
     }
     fn get_as_single_num(&mut self) -> Result<isize, ExecError> {
         Err(ExecError::Other("not a single variable".to_string()))
