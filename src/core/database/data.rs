@@ -7,7 +7,7 @@ pub mod assoc;
 pub mod assoc_int;
 pub mod epochrealtime;
 pub mod epochseconds;
-pub mod groups;
+pub mod ondemand_array;
 pub mod random;
 pub mod seconds;
 pub mod single;

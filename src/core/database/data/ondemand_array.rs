@@ -1,17 +1,16 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::Data;
-use crate::error::exec::ExecError;
-use nix::unistd;
 use crate::utils;
+use super::{Data, ExecError};
 
 #[derive(Debug, Clone)]
-pub struct Groups {
+pub struct OnDemandArray {
+    pub values: fn() -> Vec<String>,
     pub flags: String,
 }
 
-impl Data for Groups {
+impl Data for OnDemandArray {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
@@ -22,7 +21,7 @@ impl Data for Groups {
 
     fn get_fmt_string(&mut self) -> String {
         let mut formatted = "(".to_string();
-        for (i, v) in self.values().into_iter().enumerate() {
+        for (i, v) in (self.values)().into_iter().enumerate() {
             let ansi = utils::to_ansi_c(&v);
             if ansi == v {
                 formatted += &format!("[{}]=\"{}\" ", i, &ansi.replace("$", "\\$"));
@@ -39,14 +38,14 @@ impl Data for Groups {
 
     fn get_as_array(&mut self, key: &str, ifs: &str) -> Result<String, ExecError> {
         if key == "@" {
-            return Ok(self.values().join(" "));
+            return Ok((self.values)().join(" "));
         }
         if key == "*" {
-            return Ok(self.values().join(ifs));
+            return Ok((self.values)().join(ifs));
         }
 
         let index = self.index_of(key)?;
-        let vs = self.values();
+        let vs = (self.values)();
         if index < vs.len() {
             return Ok(vs[index].clone());
         }
@@ -55,7 +54,7 @@ impl Data for Groups {
     }
 
     fn get_vec_from(&mut self, pos: usize, _: bool) -> Result<Vec<String>, ExecError> {
-        let vs = self.values();
+        let vs = (self.values)();
         if pos < vs.len() {
             return Ok(vs[pos..].to_vec());
         }
@@ -64,12 +63,12 @@ impl Data for Groups {
     }
 
     fn get_all_indexes_as_array(&mut self) -> Result<Vec<String>, ExecError> {
-        let num = self.values().len();
+        let num = (self.values)().len();
         Ok((0..num).map(|k| k.to_string()).collect())
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
-        let vs = self.values();
+        let vs = (self.values)();
         if vs.is_empty() {
             Ok("".to_string())
         }else{
@@ -81,7 +80,7 @@ impl Data for Groups {
         true
     }
     fn len(&mut self) -> usize {
-        self.values().len()
+        (self.values)().len()
     }
 
     fn has_key(&mut self, key: &str) -> Result<bool, ExecError> {
@@ -90,7 +89,7 @@ impl Data for Groups {
         }
 
         let n = self.index_of(key)?;
-        Ok(n < self.values().len())
+        Ok(n < (self.values)().len())
     }
 
     fn index_based_len(&mut self) -> usize {
@@ -103,7 +102,7 @@ impl Data for Groups {
         }
 
         let n = self.index_of(key)?;
-        let vs = self.values();
+        let vs = (self.values)();
 
         if n < vs.len() {
             return Ok(vs[n].to_string().len());
@@ -135,24 +134,13 @@ impl Data for Groups {
     }
 }
 
-impl Groups {
-    pub fn new() -> Self {
-        Self { flags: "a".to_string(), }
+impl OnDemandArray {
+    pub fn new(values: fn() -> Vec<String>) -> Self {
+        Self {
+            values: values,
+            flags: "a".to_string(),
+        }
     }
-
-    pub fn values(&self) -> Vec<String> {
-        unistd::getgroups()
-            .unwrap()
-            .into_iter()
-            .map(|e| e.to_string())
-            .collect()
-    }
-
-    /*
-    pub fn keys(&self) -> Vec<usize> {
-        let vs = self.values();
-        (0..vs.len()).collect()
-    }*/
 
     fn index_of(&mut self, key: &str) -> Result<usize, ExecError> {
         let index = match key.parse::<isize>() {

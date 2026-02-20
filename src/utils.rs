@@ -12,10 +12,11 @@ pub mod glob;
 pub mod restricted_shell;
 pub mod splitter;
 
+use crate::{Feeder, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::input::InputError;
-use crate::{Feeder, ShellCore};
+use nix::unistd;
 use faccess::PathExt;
 use io_streams::StreamReader;
 use std::io::Read;
@@ -270,4 +271,12 @@ pub fn gen_not_exist_var(core: &mut ShellCore) -> String {
         nm.push('a');
     }
     nm
+}
+
+pub fn groups() -> Vec<String> {
+    unistd::getgroups()
+        .unwrap()
+        .into_iter()
+        .map(|e| e.to_string())
+        .collect()
 }

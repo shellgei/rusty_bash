@@ -2,8 +2,9 @@
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use crate::core::DataBase;
-use crate::core::database::{Data, IntData, Uninit, AssocData, IntAssocData, ArrayData, IntArrayData, Groups};
+use crate::core::database::{Data, IntData, Uninit, AssocData, IntAssocData, ArrayData, IntArrayData, OnDemandArray};
 use crate::error::exec::ExecError;
+use crate::utils;
 use super::data::epochrealtime::EpochRealTime;
 use super::data::epochseconds::EpochSeconds;
 use super::data::random::RandomVar;
@@ -34,7 +35,7 @@ impl DataBase {
         self.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
         self.params[0].insert("EPOCHSECONDS".to_string(), Box::new(EpochSeconds::default()));
         self.params[0].insert("EPOCHREALTIME".to_string(), Box::new(EpochRealTime::default()));
-        self.params[0].insert("GROUPS".to_string(), Box::new(Groups::new()));
+        self.params[0].insert("GROUPS".to_string(), Box::new(OnDemandArray::new(utils::groups)));
 
         self.init_array("BASH_SOURCE", Some(vec![]), None, false)?;
         self.init_array("BASH_ARGC", Some(vec![]), None, false)?;
