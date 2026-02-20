@@ -18,7 +18,9 @@ impl DataBase {
         self.exit_status = 0;
     
         self.set_param("$", &process::id().to_string(), None)?;
-        self.set_param("BASHPID", &process::id().to_string(), None)?;
+        //self.set_param("BASHPID", &process::id().to_string(), None)?;
+        let bashpid = || process::id().to_string();
+        self.params[0].insert("BASHPID".to_string(), Box::new(OnDemandSingle::new(bashpid)));
         self.set_flag("BASHPID", 'i', 0);
         self.set_param("BASH_SUBSHELL", "0", None)?;
         self.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
