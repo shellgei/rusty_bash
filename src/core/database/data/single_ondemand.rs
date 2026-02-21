@@ -38,9 +38,9 @@ impl Data for OnDemandSingle {
 }
 
 impl OnDemandSingle {
-    pub fn new(timefn: fn() -> String) -> Self {
+    pub fn new(func: fn() -> String) -> Self {
         Self {
-            value: timefn,
+            value: func,
             flags: "".to_string(),
         }
     }
