@@ -4,12 +4,12 @@
 use super::{Data, ExecError};
 
 #[derive(Debug, Clone)]
-pub struct EpochTime {
-    timefunc: fn() -> String,
+pub struct OnDemandSingle {
+    value: fn() -> String,
     flags: String,
 }
 
-impl Data for EpochTime {
+impl Data for OnDemandSingle {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
@@ -19,7 +19,7 @@ impl Data for EpochTime {
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
-        Ok((self.timefunc)())
+        Ok((self.value)())
     }
 
     fn set_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
@@ -37,10 +37,10 @@ impl Data for EpochTime {
     }
 }
 
-impl EpochTime {
+impl OnDemandSingle {
     pub fn new(timefn: fn() -> String) -> Self {
         Self {
-            timefunc: timefn,
+            value: timefn,
             flags: "".to_string(),
         }
     }

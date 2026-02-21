@@ -1,11 +1,11 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-pub mod epochtime;
 pub mod random;
 pub mod srandom;
 pub mod seconds;
 pub mod single;
+pub mod single_ondemand;
 
 use crate::error::exec::ExecError;
 use std::fmt;

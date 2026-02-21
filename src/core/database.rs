@@ -4,7 +4,7 @@
 mod data;
 
 use self::data::Data;
-use self::data::epochtime::EpochTime;
+use self::data::single_ondemand::OnDemandSingle;
 use self::data::random::RandomVar;
 use self::data::seconds::Seconds;
 use self::data::srandom::SRandomVar;
@@ -34,9 +34,9 @@ impl DataBase {
         ans.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
         ans.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
         ans.params[0].insert("EPOCHSECONDS".to_string(),
-                             Box::new(EpochTime::new(clock::get_epochseconds)));
+                             Box::new(OnDemandSingle::new(clock::get_epochseconds)));
         ans.params[0].insert("EPOCHREALTIME".to_string(),
-                             Box::new(EpochTime::new(clock::get_epochrealtime)));
+                             Box::new(OnDemandSingle::new(clock::get_epochrealtime)));
         ans
     }
 
