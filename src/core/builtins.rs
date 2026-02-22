@@ -32,6 +32,7 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{exit, Feeder, Script, ShellCore};
+use std::process::Command;
 //#[cfg(not(target_os = "macos"))]
 
 pub fn error_(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
@@ -112,6 +113,8 @@ impl ShellCore {
         self.builtins.insert("source".to_string(), source::source);
         self.builtins.insert(".".to_string(), source::source);
         self.builtins.insert("true".to_string(), true_);
+        self.builtins.insert("test".to_string(), test);
+        self.builtins.insert("[".to_string(), test);
         self.builtins.insert("wait".to_string(), job_commands::wait);
 
         self.subst_builtins
@@ -225,4 +228,37 @@ pub fn let_(core: &mut ShellCore, args: &[String]) -> i32 {
 
     core.valid_assoc_expand_once = false;
     last_result
+}
+
+pub fn test(core: &mut ShellCore, args: &[String]) -> i32 {
+    /* difference between the builtin test and the external command */
+    if (args.len() == 5 && args[0] == "[" && args[4] == "]")
+    || (args.len() == 4 && args[0] == "test") {
+        if args[2] == "=" {
+            if args[1] == args[3] {
+                return 0;
+            }else if args[1] != args[3] {
+                return 1;
+            }
+        }
+    }
+
+    /* call the external test command */
+    match Command::new(&args[0]).args(args[1..].to_vec()).output() {
+        Ok(com) => {
+            let exit_status = com.status.code().unwrap_or(127);
+            if exit_status > 1 {
+                let msg = String::from_utf8(com.stderr).unwrap_or("".to_string());
+                let shellname = core.db.get_param("0").unwrap();
+                if core.db.flags.contains('i') {
+                    eprintln!("{}: {}", &shellname, msg);
+                } else {
+                    let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+                    eprintln!("{}: line {}: {}", &shellname, &lineno, msg);
+                }
+            }
+            exit_status
+        },
+        _ => 127
+    }
 }
