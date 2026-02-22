@@ -32,8 +32,8 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{exit, Feeder, Script, ShellCore};
+use std::io::Write;
 use std::process::Command;
-//#[cfg(not(target_os = "macos"))]
 
 pub fn error_(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
@@ -48,6 +48,30 @@ pub fn error_(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> 
 
 pub fn error(exit_status: i32, name: &str, err: &ExecError, core: &mut ShellCore) -> i32 {
     error_(exit_status, name, &String::from(err), core)
+}
+
+pub fn run_external(core: &mut ShellCore, args: &[String], err_msg_cond: fn(i32) -> bool) -> i32 {
+    match Command::new(&args[0]).args(args[1..].to_vec()).output() {
+        Ok(com) => {
+            let exit_status = com.status.code().unwrap_or(127);
+            if ! com.stdout.is_empty() {
+                let _ = std::io::stdout().write_all(&com.stdout);
+            }
+            if ! err_msg_cond(exit_status) {
+                return exit_status;
+            }
+
+            let shellname = core.db.get_param("0").unwrap();
+            eprint!("{}: ", &shellname);
+            if ! core.db.flags.contains('i') {
+                let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+                eprint!("line {}: ", &lineno);
+            }
+            let _ = std::io::stderr().write_all(&com.stderr);
+            exit_status
+        },
+        _ => 127
+    }
 }
 
 impl ShellCore {
@@ -243,6 +267,8 @@ pub fn test(core: &mut ShellCore, args: &[String]) -> i32 {
         }
     }
 
+    run_external(core, args, |es| es > 1)
+    /*
     /* call the external test command */
     match Command::new(&args[0]).args(args[1..].to_vec()).output() {
         Ok(com) => {
@@ -260,5 +286,5 @@ pub fn test(core: &mut ShellCore, args: &[String]) -> i32 {
             exit_status
         },
         _ => 127
-    }
+    }*/
 }

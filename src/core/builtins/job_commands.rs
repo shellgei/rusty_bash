@@ -586,8 +586,11 @@ pub fn kill(core: &mut ShellCore, args: &[String]) -> i32 {
         }
     }
 
+    /*
     args.insert(0, "eval".to_string());
     super::eval(core, &args)
+    */
+    super::run_external(core, &args, |es| es > 0)
 }
 
 pub fn disown(core: &mut ShellCore, args: &[String]) -> i32 {
