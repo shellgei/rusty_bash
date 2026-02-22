@@ -8,7 +8,7 @@ use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub struct Seconds {
-    origin: String,
+    origin: Duration,
     shift: isize,
     flags: String,
 }
@@ -23,12 +23,7 @@ impl Data for Seconds {
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
-        let part: Vec<&str> = self.origin.split('.').collect();
-        let sec = part[0].parse::<u64>().unwrap();
-        let nano = part[1].parse::<u32>().unwrap();
-        let offset = Duration::new(sec, nano);
-        let elapsed = clock::monotonic_time() - offset;
-
+        let elapsed = clock::monotonic_time() - self.origin;
         let ans = format!("{}", elapsed.as_secs() as isize + self.shift);
 
         Ok(ans)
@@ -41,10 +36,9 @@ impl Data for Seconds {
     fn set_as_single(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
 
-        self.shift = value.parse::<isize>()?;
-        let time = clock::monotonic_time();
-        self.origin = format!("{}.{}", time.as_secs(), time.subsec_nanos());
-        Ok(()) // TODO
+        self.shift = value.parse::<isize>().unwrap_or(0);
+        self.origin = clock::monotonic_time();
+        Ok(())
     }
 
     fn is_special(&self) -> bool {
@@ -75,9 +69,8 @@ impl Data for Seconds {
 
 impl Seconds {
     pub fn new() -> Self {
-        let time = clock::monotonic_time();
         Self {
-            origin: format!("{}.{}", time.as_secs(), time.subsec_nanos()),
+            origin: clock::monotonic_time(),
             shift: 0,
             flags: "i".to_string(),
         }

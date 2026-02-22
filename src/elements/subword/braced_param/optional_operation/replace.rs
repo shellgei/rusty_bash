@@ -218,6 +218,7 @@ impl Replace {
             feeder,
             core,
             Some(WordMode::ParamOption(vec!["}".to_string()])),
+            //Some(WordMode::AlterWord),
         )? {
             ans.text += &w.text.clone();
             ans.replace_to = Some(w);
