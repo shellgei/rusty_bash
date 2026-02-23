@@ -4,14 +4,14 @@
 mod data;
 
 use self::data::Data;
-use self::data::single_ondemand::OnDemandSingle;
 use self::data::random::RandomVar;
 use self::data::seconds::Seconds;
 use self::data::srandom::SRandomVar;
 use self::data::single::SingleData;
+use self::data::single_ondemand::OnDemandSingle;
+use crate::utils::clock;
 use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
-use crate::utils::clock;
 use std::collections::{HashMap, HashSet};
 use std::env;
 
