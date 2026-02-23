@@ -37,8 +37,6 @@ impl DataBase {
                              Box::new(OnDemandSingle::new(clock::get_epochseconds)));
         ans.params[0].insert("EPOCHREALTIME".to_string(),
                              Box::new(OnDemandSingle::new(clock::get_epochrealtime)));
-        ans.params[0].insert("BASH_MONOSECONDS".to_string(),
-                             Box::new(OnDemandSingle::new(clock::get_monoseconds)));
         ans
     }
 
