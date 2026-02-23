@@ -5,7 +5,7 @@ use super::{Data, ExecError};
 
 #[derive(Debug, Clone)]
 pub struct OnDemandSingle {
-    value: fn() -> String,
+    generator: fn() -> String,
     flags: String,
 }
 
@@ -19,11 +19,7 @@ impl Data for OnDemandSingle {
     }
 
     fn get_as_single(&mut self) -> Result<String, ExecError> {
-        Ok((self.value)())
-    }
-
-    fn set_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
-        self.readonly_check(name)
+        Ok((self.generator)())
     }
 
     fn set_flag(&mut self, flag: char) {
@@ -40,7 +36,7 @@ impl Data for OnDemandSingle {
 impl OnDemandSingle {
     pub fn new(func: fn() -> String) -> Self {
         Self {
-            value: func,
+            generator: func,
             flags: "".to_string(),
         }
     }
