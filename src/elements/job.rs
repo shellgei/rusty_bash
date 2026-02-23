@@ -10,8 +10,12 @@ use crate::utils::exit;
 use crate::{proc_ctrl, Feeder, ShellCore};
 use nix::sys::wait::WaitStatus;
 use nix::unistd;
+use nix::sys::wait;
+use nix::sys::wait::WaitPidFlag;
 use nix::unistd::{ForkResult, Pid};
 use std::sync::atomic::Ordering::Relaxed;
+use std::thread;
+use std::sync::Arc;
 
 #[derive(Debug, Clone, Default)]
 pub struct Job {
@@ -117,7 +121,7 @@ impl Job {
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);
         let mut entry = JobEntry::new(
-            pids,
+            pids.clone(),
             &vec![WaitStatus::StillAlive; len],
             &self.get_one_line_text(),
             "Running",
@@ -131,6 +135,23 @@ impl Job {
         core.job_table.push(entry);
 
         core.tty_fd = backup;
+
+    //pub bg_pids: Vec<(Arc<AtomicUsize>, Arc<AtomicUsize>)>,
+        for pid in pids {
+            core.job_table.last().unwrap().bg_pids.push((Arc::new(0.into()), Arc::new(0.into())));
+            let pid_es = core.job_table.last().unwrap().bg_pids.last().unwrap().clone();
+            thread::spawn(move || {
+                let exit_status = match wait::waitpid(pid, Some(WaitPidFlag::WUNTRACED)) {
+                    Ok(WaitStatus::Exited(_, es)) => es,
+                    Ok(WaitStatus::Stopped(_, _)) => 148,
+                    Ok(WaitStatus::Signaled(_, sig, _)) => (sig as usize + 128).try_into().unwrap(),
+                    _ => 1,
+                };
+
+                pid_es.0.store(pid.unwrap().into(), Relaxed);
+                pid_es.1.store(exit_status, Relaxed);
+            }); 
+        }
     }
 
     fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<Option<Pid>, ExecError> {

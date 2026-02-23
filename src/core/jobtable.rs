@@ -8,6 +8,8 @@ use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd;
 use nix::unistd::Pid;
+use std::sync::atomic::AtomicI32;
+use std::sync::Arc;
 
 #[derive(Debug, Default)]
 pub struct JobEntry {
@@ -20,9 +22,11 @@ pub struct JobEntry {
     pub no_control: bool,
     pub coproc_name: Option<String>,
     pub coproc_fds: Vec<i32>,
+    pub bg_pids: Vec<(Arc<AtomicI32>, Arc<AtomicI32>)>,
 }
 
-fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool) -> Result<(), ExecError> {
+//fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool) -> Result<(), ExecError> {
+    /*
     let waitflags = WaitPidFlag::WNOHANG | WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
 
     match wait::waitpid(*pid, Some(waitflags)) {
@@ -32,17 +36,15 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool) -> Result<(),
             }
         },
         Err(e) => {
-            if ! coproc {
-                return Err(ExecError::Errno(e));
-            }
             *status = WaitStatus::Exited(*pid, 0);
         },
     }
+    */
 
-    Ok(())
-}
+//    Ok(())
+//}
 
-fn wait_block(pid: &Pid, status: &mut WaitStatus) -> Result<i32, ExecError> {
+pub fn wait_block(pid: &Pid, status: &mut WaitStatus) -> Result<i32, ExecError> {
     *status = wait::waitpid(*pid, Some(WaitPidFlag::WUNTRACED))?;
     let exit_status = match status {
         WaitStatus::Exited(_, es) => *es,
@@ -87,7 +89,7 @@ impl JobEntry {
                 match wait {
                     true => exit_status = wait_block(pid, status)?,
                     false => {
-                        wait_nonblock(pid, status, self.coproc_name.is_some())?;
+                  //      wait_nonblock(pid, status, self.coproc_name.is_some())?;
                     }
                 }
             }
