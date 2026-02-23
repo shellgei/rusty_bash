@@ -1,4 +1,4 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
 mod data;
@@ -37,6 +37,8 @@ impl DataBase {
                              Box::new(OnDemandSingle::new(clock::get_epochseconds)));
         ans.params[0].insert("EPOCHREALTIME".to_string(),
                              Box::new(OnDemandSingle::new(clock::get_epochrealtime)));
+        ans.params[0].insert("BASH_MONOSECONDS".to_string(),
+                             Box::new(OnDemandSingle::new(clock::get_monoseconds)));
         ans
     }
 
