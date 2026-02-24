@@ -13,6 +13,26 @@ fn print_enabled(core: &mut ShellCore) -> i32 {
     0
 }
 
+fn print_all(core: &mut ShellCore) -> i32 {
+    let mut list = core.builtins.keys().map(|e| e.to_string()).collect::<Vec<String>>();
+    list.append(&mut core.subst_builtins.keys().map(|e| e.to_string()).collect::<Vec<String>>());
+    list.append(&mut core.disabled_builtins.keys().map(|e| e.to_owned() + "*").collect::<Vec<String>>());
+    list.append(&mut core.disabled_subst_builtins.keys().map(|e| e.to_owned() + "*").collect::<Vec<String>>());
+    list.sort();
+
+    for e in &mut list {
+        if e.ends_with('*') {
+            e.pop();
+            e.insert(0, ' ');
+            e.insert(0, 'n');
+            e.insert(0, '-');
+        }
+    }
+
+    list.iter().for_each(|e| println!("enable {e}"));
+    0
+}
+
 fn disable(core: &mut ShellCore, commands: &[String]) -> i32 {
     for com in commands {
         if let Some(func) = core.builtins.remove(com) {
@@ -32,6 +52,8 @@ pub fn enable(core: &mut ShellCore, args: &[String]) -> i32 {
         return print_enabled(core);
     }else if args[1] == "-n" {
         disable(core, &args[2..]);
+    }else if args[1] == "-a" {
+        print_all(core);
     }
 
     0
