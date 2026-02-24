@@ -27,19 +27,7 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if args[1] == "-p" {
-        for arg in &args[2..] {
-            if let Ok(num) = arg_to_num(arg, &[]) {
-                for e in &core.traplist {
-                    if num == e.0 {
-                        if num == 0 {
-                            println!("trap -- '{}' EXIT", &e.1);
-                        } else if let Ok(s) = Signal::try_from(num) {
-                            println!("trap -- '{}' {}", &e.1, &s);
-                        }
-                    }
-                }
-            }
-        }
+        args[2..].iter().for_each(|a| print(core, a));
     }
 
     if args.len() < 3 {
@@ -88,6 +76,22 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     0
+}
+
+pub fn print(core: &mut ShellCore, arg: &String) {
+    if let Ok(num) = arg_to_num(arg, &[]) {
+        for e in &core.traplist {
+            if num != e.0 {
+                continue;
+            }
+
+            if num == 0 {
+                println!("trap -- '{}' EXIT", &e.1);
+            } else if let Ok(s) = Signal::try_from(num) {
+                println!("trap -- '{}' {}", &e.1, &s);
+            }
+        }
+    }
 }
 
 fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
