@@ -33,12 +33,23 @@ fn print_all(core: &mut ShellCore) -> i32 {
     0
 }
 
-fn disable(core: &mut ShellCore, commands: &[String]) -> i32 {
+fn disable_builtins(core: &mut ShellCore, commands: &[String]) -> i32 {
     for com in commands {
         if let Some(func) = core.builtins.remove(com) {
             core.disabled_builtins.insert(com.to_string(), func);
         }else if let Some(func) = core.subst_builtins.remove(com) {
             core.disabled_subst_builtins.insert(com.to_string(), func);
+        }
+    }
+    0
+}
+
+fn enable_builtins(core: &mut ShellCore, commands: &[String]) -> i32 {
+    for com in commands {
+        if let Some(func) = core.disabled_builtins.remove(com) {
+            core.builtins.insert(com.to_string(), func);
+        }else if let Some(func) = core.disabled_subst_builtins.remove(com) {
+            core.subst_builtins.insert(com.to_string(), func);
         }
     }
     0
@@ -51,9 +62,11 @@ pub fn enable(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() < 2 {
         return print_enabled(core);
     }else if args[1] == "-n" {
-        disable(core, &args[2..]);
+        disable_builtins(core, &args[2..]);
     }else if args[1] == "-a" {
         print_all(core);
+    }else if ! args[1].starts_with("-") {
+        enable_builtins(core, &args[1..]);
     }
 
     0
