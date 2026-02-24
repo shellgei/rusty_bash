@@ -26,6 +26,22 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
+    if args[1] == "-p" {
+        for arg in &args[2..] {
+            if let Ok(num) = arg_to_num(arg, &[]) {
+                for e in &core.traplist {
+                    if num == e.0 {
+                        if num == 0 {
+                            println!("trap -- '{}' EXIT", &e.1);
+                        } else if let Ok(s) = Signal::try_from(num) {
+                            println!("trap -- '{}' {}", &e.1, &s);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     if args.len() < 3 {
         // TODO: print the list of trap entries if args.len() == 1
         eprintln!("trap: usage: trap arg signal_spec ...");
