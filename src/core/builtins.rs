@@ -9,6 +9,7 @@ mod command;
 pub mod compgen;
 pub mod complete;
 mod compopt;
+mod enable;
 mod echo;
 mod exec;
 mod getopts;
@@ -100,6 +101,7 @@ impl ShellCore {
         self.builtins
             .insert("disown".to_string(), job_commands::disown);
         self.builtins.insert("echo".to_string(), echo::echo);
+        self.builtins.insert("enable".to_string(), enable::enable);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);

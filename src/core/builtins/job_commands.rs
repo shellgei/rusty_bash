@@ -122,7 +122,6 @@ pub fn fg(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut exit_status = 1;
     if let Some(fd) = core.tty_fd.as_ref() {
-        //if unistd::tcsetpgrp(fd, pgid).is_ok() {
         if core.fds.tcsetpgrp(*fd, pgid).is_ok() {
             println!("{}", &core.job_table[pos].text);
             core.job_table[pos].send_cont();
