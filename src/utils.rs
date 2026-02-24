@@ -281,15 +281,17 @@ pub fn groups() -> Vec<String> {
 }
 
 pub fn run_error_script(core: &mut ShellCore) {
+    /*
     if core.error_script_run {
         return;
     }
 
-    core.error_script_run = true;
+    */
     if core.error_script.is_empty() {
         return;
     }
 
+    core.error_script_run = true;
     let mut feeder = Feeder::new(&core.error_script);
     match Script::parse(&mut feeder, core, true) {
         Ok(Some(mut s)) => {
@@ -302,4 +304,7 @@ pub fn run_error_script(core: &mut ShellCore) {
         }
         Ok(None) => {}
     };
+
+    core.db.exit_status = 0;
+    core.error_script_run = false;
 }

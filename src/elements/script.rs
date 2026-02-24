@@ -24,9 +24,12 @@ impl Script {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
             job.exec(core, end == "&")?;
 
-            if core.db.exit_status != 0 {
+            let es = core.db.exit_status;
+            if es != 0 && ! core.error_script_run {
                 utils::run_error_script(core);
             }
+            core.db.exit_status = es;
+            //core.error_script_run = false;
         }
 
         Ok(())
