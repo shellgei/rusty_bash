@@ -26,8 +26,7 @@ impl Data for SRandomVar {
     }
 
     fn set_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
-        self.readonly_check(name)?;
-        Ok(())
+        self.readonly_check(name)
     }
 
     fn set_flag(&mut self, flag: char) {
