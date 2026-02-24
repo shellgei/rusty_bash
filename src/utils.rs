@@ -13,7 +13,7 @@ pub mod restricted_shell;
 pub mod splitter;
 
 use libc;
-use crate::{Feeder, ShellCore};
+use crate::{Feeder, ShellCore, Script};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::input::InputError;
@@ -278,4 +278,28 @@ pub fn groups() -> Vec<String> {
     let mut groups = vec![0; num as usize];
     unsafe{libc::getgroups(num, groups.as_mut_ptr())};
     groups.iter().map(|e| e.to_string()).collect()
+}
+
+pub fn run_error_script(core: &mut ShellCore) {
+    if core.error_script_run {
+        return;
+    }
+
+    core.error_script_run = true;
+    if core.error_script.is_empty() {
+        return;
+    }
+
+    let mut feeder = Feeder::new(&core.error_script);
+    match Script::parse(&mut feeder, core, true) {
+        Ok(Some(mut s)) => {
+            if let Err(e) = s.exec(core) {
+                e.print(core);
+            }
+        }
+        Err(e) => {
+            e.print(core);
+        }
+        Ok(None) => {}
+    };
 }

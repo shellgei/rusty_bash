@@ -4,7 +4,7 @@
 use super::job::Job;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{Feeder, ShellCore};
+use crate::{Feeder, ShellCore, utils};
 
 enum Status {
     UnexpectedSymbol(String),
@@ -23,6 +23,10 @@ impl Script {
     pub fn exec(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for (job, end) in self.jobs.iter_mut().zip(self.job_ends.iter()) {
             job.exec(core, end == "&")?;
+
+            if core.db.exit_status != 0 {
+                utils::run_error_script(core);
+            }
         }
 
         Ok(())
@@ -135,18 +139,6 @@ impl Script {
         self.jobs.iter().map(|j| j.pipelines.len()).sum()
     }
 
-    /*
-    fn read_heredoc(
-        &mut self,
-        feeder: &mut Feeder,
-        core: &mut ShellCore,
-    ) -> Result<(), ParseError> {
-        for job in self.jobs.iter_mut() {
-            job.read_heredoc(feeder, core)?;
-        }
-        Ok(())
-    }*/
-
     pub fn parse(
         feeder: &mut Feeder,
         core: &mut ShellCore,
@@ -159,15 +151,12 @@ impl Script {
             match ans.check_nest(feeder, permit_empty) {
                 Status::NormalEnd => {
                     ans.unalias(core);
-                    //ans.read_heredoc(feeder, core)?;
                     return Ok(Some(ans));
                 }
                 Status::NeedMoreLine => {
-                    //ans.read_heredoc(feeder, core)?;
                     feeder.feed_additional_line(core)?
                 }
                 Status::UnexpectedSymbol(s) => {
-                    //unexpected symbol
                     let _ = core
                         .db
                         .set_param("LINENO", &feeder.lineno.to_string(), None);

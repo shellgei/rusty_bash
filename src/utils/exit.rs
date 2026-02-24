@@ -37,13 +37,6 @@ fn run_script(core: &mut ShellCore) {
 }
 
 /* error at exec */
-/*
-fn command_error_exit(name: &str, core: &mut ShellCore, msg: &str, exit_status: i32) -> ! {
-    let msg = format!("{name}: {msg}");
-    error::print(&msg, core);
-    process::exit(exit_status)
-}*/
-
 pub fn arg_list_too_long(command_name: &str, core: &mut ShellCore) -> ! {
     ExecError::ArgListTooLong(command_name.to_string()).print(core);
     process::exit(126)

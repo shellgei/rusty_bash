@@ -45,11 +45,11 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
         }
     };
 
-    let mut exit = false;
+    let mut not_signal = vec![];
     let mut valid_signals = vec![];
     for n in &signals {
-        if *n == 0 {
-            exit = true;
+        if *n == 0 || *n == 1000 {
+            not_signal.push(*n);
             continue;
         }
 
@@ -70,9 +70,13 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
         run_thread(valid_signals, &args[1], core);
     }
 
-    if exit {
-        core.traplist.push((0, args[1].to_string()));
-        core.exit_script = args[1].clone();
+    for n in not_signal {
+        core.traplist.push((n, args[1].to_string()));
+        if n == 0 {
+            core.exit_script = args[1].clone();
+        }else if n == 1000 {
+            core.error_script = args[1].clone();
+        }
     }
 
     0
@@ -118,6 +122,10 @@ fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
 fn arg_to_num(arg: &str, forbiddens: &[i32]) -> Result<i32, ExecError> {
     if arg == "EXIT" || arg == "0" {
         return Ok(0);
+    }
+
+    if arg == "ERR" || arg == "1000" {
+        return Ok(1000);
     }
 
     if let Ok(n) = Signal::from_str(arg) {
