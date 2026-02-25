@@ -15,6 +15,7 @@ pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub pipes: Vec<Pipe>,
     pub text: String,
+    time: bool,
 }
 
 impl Pipeline {
@@ -46,6 +47,18 @@ impl Pipeline {
         }
 
         (pids, None)
+    }
+
+    fn eat_time(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+        match feeder.starts_with("time ") || feeder.starts_with("time\t") {
+            true => self.text += &feeder.consume(4),
+            false => return false,
+        }
+
+        self.time = true;
+        let blank_len = feeder.scanner_blank(core);
+        self.text += &feeder.consume(blank_len);
+        true
     }
 
     fn eat_command(feeder: &mut Feeder, ans: &mut Pipeline, core: &mut ShellCore)
@@ -88,6 +101,8 @@ impl Pipeline {
         -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 
+        while ans.eat_time(feeder, core){}
+
         if ! Self::eat_command(feeder, &mut ans, core)? {      //最初のコマンド
             return Ok(None);
         }
@@ -104,7 +119,7 @@ impl Pipeline {
                 feeder.feed_additional_line(core)?;
             }
         }   
-
+        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
