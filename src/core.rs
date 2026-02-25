@@ -30,7 +30,7 @@ use crate::error::exec::ExecError;
 use crate::file_check;
 
 pub struct MeasuredTime {
-    pub real: TimeSpec,
+    pub real: Option<TimeSpec>,
     pub user: TimeVal,
     pub sys: TimeVal,
 }
@@ -38,7 +38,7 @@ pub struct MeasuredTime {
 impl Default for MeasuredTime {
     fn default() -> Self {
         Self {
-            real: TimeSpec::new(0, 0),
+            real: None,
             user: TimeVal::new(0, 0),
             sys: TimeVal::new(0, 0),
         }

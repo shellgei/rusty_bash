@@ -33,7 +33,7 @@ impl Subword for CommandSubstitution {
         pipe.set(-1, unistd::getpgrp(), core);
         let pid = self.command.exec(core, &mut pipe)?;
         let result = self.read(pipe.recv, core);
-        proc_ctrl::wait_pipeline(core, vec![pid], false, false);
+        proc_ctrl::wait_pipeline(core, vec![pid], false);
         result?;
         self.text = self.text.trim_end_matches("\n").to_string();
         Ok(())

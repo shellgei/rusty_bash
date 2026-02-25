@@ -121,7 +121,7 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut pipe = Pipe::new("".to_string());
     command.args = words;
     if let Ok(pid) = command.exec_command(core, &mut pipe) {
-        proc_ctrl::wait_pipeline(core, vec![pid], false, false);
+        proc_ctrl::wait_pipeline(core, vec![pid], false);
     }
 
     core.db.exit_status

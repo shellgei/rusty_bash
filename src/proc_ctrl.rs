@@ -20,12 +20,9 @@ pub fn wait_pipeline(
     core: &mut ShellCore,
     pids: Vec<Option<Pid>>,
     exclamation: bool,
-    time: bool,
 ) -> Vec<WaitStatus> {
     if pids.len() == 1 && pids[0].is_none() {
-        if time {
-            show_time(core);
-        }
+        show_time(core);
         if exclamation {
             core.flip_exit_status();
         }
@@ -49,9 +46,7 @@ pub fn wait_pipeline(
         }
     }
 
-    if time {
-        show_time(core);
-    }
+    show_time(core);
     let _ = set_foreground(core);
     let _ = core.db.init_array(
         "PIPESTATUS",
@@ -141,12 +136,16 @@ pub fn set_pgid(core: &mut ShellCore, pid: Pid, pgid: Pid) {
 }
 
 fn show_time(core: &ShellCore) {
+    if core.measured_time.real.is_none() {
+        return;
+    }
+
     let real_end_time = clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
 
     let core_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
     let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
 
-    let real_diff = real_end_time - core.measured_time.real;
+    let real_diff = real_end_time - core.measured_time.real.unwrap();
     eprintln!(
         "\nreal\t{}m{}.{:06}s",
         real_diff.tv_sec() / 60,

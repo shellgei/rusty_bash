@@ -7,8 +7,8 @@ use super::Pipe;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
-use nix::sys::resource;
 use nix::time;
+use nix::sys::resource;
 use nix::time::ClockId;
 use nix::unistd::Pid;
 
@@ -26,11 +26,11 @@ impl Pipeline {
         &mut self,
         core: &mut ShellCore,
         pgid: Pid,
-    ) -> (Vec<Option<Pid>>, bool, bool, Option<ExecError>) {
+    ) -> (Vec<Option<Pid>>, bool, Option<ExecError>) {
         if self.commands.is_empty() {
             // the case of only '!'
             self.set_time(core);
-            return (vec![], self.exclamation, self.time, None);
+            return (vec![], self.exclamation, None);
         }
 
         let mut prev = -1;
@@ -44,7 +44,7 @@ impl Pipeline {
 
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
-                Err(e) => return (pids, self.exclamation, self.time, Some(e)),
+                Err(e) => return (pids, self.exclamation, Some(e)),
             }
 
             if i == 0 && pgid.as_raw() == 0 {
@@ -66,37 +66,15 @@ impl Pipeline {
 
         match result {
             Ok(pid) => pids.push(pid),
-            Err(e) => return (pids, self.exclamation, self.time, Some(e)),
+            Err(e) => return (pids, self.exclamation, Some(e)),
         }
 
-        (pids, self.exclamation, self.time, err)
+        (pids, self.exclamation, err)
     }
-
-    /*
-    pub fn exec_coproc(
-        &mut self,
-        core: &mut ShellCore,
-        pgid: Pid,
-    ) -> (Vec<Option<Pid>>, bool, bool, Option<ExecError>) {
-        //let mut pids = vec![];
-
-        let mut prevp = Pipe::new("|".to_string());
-        prevp.set(-1, pgid, core);
-        let mut lastp = Pipe::new("|".to_string());
-        lastp.set(prevp.recv, pgid, core);
-        let result = com.exec(core, &mut lastp);
-
-        match result {
-            Ok(pid) => pids.push(pid),
-            Err(e) => return (pids, self.exclamation, self.time, Some(e)),
-        }
-
-        (pids, self.exclamation, self.time, None)
-    }*/
-
 
     fn set_time(&mut self, core: &mut ShellCore) {
         if !self.time {
+            core.measured_time.real = None;
             return;
         }
 
@@ -105,7 +83,7 @@ impl Pipeline {
 
         core.measured_time.user = self_usage.user_time() + children_usage.user_time();
         core.measured_time.sys = self_usage.system_time() + children_usage.system_time();
-        core.measured_time.real = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
+        core.measured_time.real = Some(time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap());
     }
 
     pub fn read_heredoc(
