@@ -13,7 +13,7 @@ use crate::utils::clock;
 use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::{HashMap, HashSet};
-use std::env;
+use std::{env, process};
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -29,6 +29,10 @@ impl DataBase {
             params: vec![HashMap::new()],
             ..Default::default()
         };
+
+        let pid = || process::id().to_string();
+        ans.params[0].insert("BASHPID".to_string(), Box::new(OnDemandSingle::new(pid)));
+        ans.set_flag("BASHPID", 'i', 0);
 
         ans.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
         ans.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
