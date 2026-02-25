@@ -18,7 +18,7 @@ pub struct Pipeline {
     pub pipes: Vec<Pipe>,
     pub text: String,
     exclamation: bool,
-    pub time: bool,
+    time: bool,
 }
 
 impl Pipeline {
