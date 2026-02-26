@@ -13,7 +13,7 @@ pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if args.len() <= 1 {
-        match super::wait_all(core) {
+        match wait_all(core) {
             Ok(n) => return n,
             Err(e) => {
                 e.print(core);
@@ -87,4 +87,22 @@ fn wait_n(
         }
     }
     Ok(ans)
+}
+
+fn wait_all(core: &mut ShellCore) -> Result<i32, ExecError> {
+    let mut exit_status = 0;
+    let mut remove_list = vec![];
+    for pos in 0..core.job_table.len() {
+        let result = core.job_table[pos].nonblock_wait(&core.sigint)?;
+        exit_status = result.0;
+        if result.1 { 
+            remove_list.push(pos);
+        }
+    }
+
+    for pos in remove_list.into_iter().rev() {
+        super::remove(core, pos);
+    }
+
+    Ok(exit_status)
 }
