@@ -30,23 +30,6 @@ use std::{env, io, path};
 use crate::error::exec::ExecError;
 use crate::file_check;
 
-/*
-pub struct MeasuredTime {
-    pub real: Option<TimeSpec>,
-    pub user: TimeVal,
-    pub sys: TimeVal,
-}
-
-impl Default for MeasuredTime {
-    fn default() -> Self {
-        Self {
-            real: None,
-            user: TimeVal::new(0, 0),
-            sys: TimeVal::new(0, 0),
-        }
-    }
-}*/
-
 type BuiltinFn = fn(&mut ShellCore, &[String]) -> i32;
 type SubstBuiltinFn = fn(&mut ShellCore, &[String], &mut [Substitution]) -> i32;
 
@@ -74,12 +57,11 @@ pub struct ShellCore {
     pub compat_bash: bool,
     pub fds: FileDescriptors,
     pub tty_fd: Option<RawFd>,
-    //pub tty_fd: Option<OwnedFd>,
     pub job_table: Vec<JobEntry>,
     pub job_table_priority: Vec<usize>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion: Completion,
-    pub measured_time: TimeKeeper,
+    pub time_keeper: TimeKeeper,
     pub options: Options,
     pub shopts: Options,
     pub suspend_e_option: bool,
@@ -89,7 +71,6 @@ pub struct ShellCore {
     pub error_script: String,
     pub error_script_run: bool,
     pub valid_assoc_expand_once: bool,
-    //pub process_sub: Vec<(Pid, RawFd)>,
     pub proc_sub_pid: Vec<Pid>,
     pub proc_sub_fd: Vec<RawFd>,
 }
