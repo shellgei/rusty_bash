@@ -121,7 +121,7 @@ fn wait_arg_job(
     }
 
     if let Ok(pid) = arg.parse::<i32>() {
-        return super::wait_pid(core, pid, var_name, f_opt);
+        return wait_pid(core, pid, var_name, f_opt);
     }
 
     Ok((127, false))
@@ -135,7 +135,7 @@ fn wait_jobspec(
     f_opt: bool,
 ) -> Result<(i32, bool), ExecError> {
     match super::jobspec_to_array_pos(core, com, jobspec) {
-        Some(pos) => super::wait_a_job(core, pos, var_name, f_opt),
+        Some(pos) => wait_a_job(core, pos, var_name, f_opt),
         None => Ok((127, false)),
     }
 }
@@ -200,3 +200,41 @@ fn wait_next(
     }
     Ok((exit_status, true))
 }
+
+
+fn wait_pid(core: &mut ShellCore, pid: i32, var_name: &Option<String>, f_opt: bool) -> Result<(i32, bool), ExecError> {
+    match super::pid_to_array_pos(pid, &core.job_table) {
+        Some(i) => wait_a_job(core, i, var_name, f_opt),
+        None => Ok((127, false)),
+    }
+}
+
+fn wait_a_job(
+    core: &mut ShellCore,
+    pos: usize,
+    var_name: &Option<String>,
+    f_opt: bool,
+) -> Result<(i32, bool), ExecError> {
+    if core.job_table.len() < pos {
+        return Ok((
+            builtins::error_(127, "wait", "invalpos jobpos", core),
+            false,
+        ));
+    }
+
+
+    let ans = core.job_table[pos].nonblock_wait(&mut core.sigint)?;
+    if let Some(var) = var_name {
+          let _ = core.db.unset(var, None, false);
+          let pid = core.job_table[pos].pids[0].to_string();
+           core.db.set_param(var, &pid, None)?;
+    }
+
+    if f_opt && core.job_table[pos].display_status == "Stopped" {
+        wait_a_job(core, pos, var_name, f_opt)
+    } else {
+        super::remove(core, pos);
+        Ok(ans)
+    }
+}
+

@@ -9,7 +9,6 @@ pub mod kill;
 pub mod wait; 
 
 use libc;
-use crate::error::exec::ExecError;
 use crate::core::JobEntry;
 use crate::ShellCore;
 
@@ -120,41 +119,5 @@ fn remove(core: &mut ShellCore, pos: usize) {
     remove_coproc(core, pos);
     core.job_table.remove(pos);
     core.job_table_priority.retain(|id| *id != job_id);
-}
-
-fn wait_pid(core: &mut ShellCore, pid: i32, var_name: &Option<String>, f_opt: bool) -> Result<(i32, bool), ExecError> {
-    match pid_to_array_pos(pid, &core.job_table) {
-        Some(i) => wait_a_job(core, i, var_name, f_opt),
-        None => Ok((127, false)),
-    }
-}
-
-fn wait_a_job(
-    core: &mut ShellCore,
-    pos: usize,
-    var_name: &Option<String>,
-    f_opt: bool,
-) -> Result<(i32, bool), ExecError> {
-    if core.job_table.len() < pos {
-        return Ok((
-            super::error_(127, "wait", "invalpos jobpos", core),
-            false,
-        ));
-    }
-
-
-    let ans = core.job_table[pos].nonblock_wait(&mut core.sigint)?;
-    if let Some(var) = var_name {
-          let _ = core.db.unset(var, None, false);
-          let pid = core.job_table[pos].pids[0].to_string();
-           core.db.set_param(var, &pid, None)?;
-    }
-
-    if f_opt && core.job_table[pos].display_status == "Stopped" {
-        wait_a_job(core, pos, var_name, f_opt)
-    } else {
-        remove(core, pos);
-        Ok(ans)
-    }
 }
 
