@@ -12,8 +12,6 @@ use libc;
 use crate::error::exec::ExecError;
 use crate::core::JobEntry;
 use crate::ShellCore;
-use std::{thread, time};
-use std::sync::atomic::Ordering::Relaxed;
 
 fn pid_to_array_pos(pid: i32, jobs: &[JobEntry]) -> Option<usize> {
     (0..jobs.len()).find(|&i| jobs[i].pids[0].as_raw() == pid)
@@ -122,67 +120,6 @@ fn remove(core: &mut ShellCore, pos: usize) {
     remove_coproc(core, pos);
     core.job_table.remove(pos);
     core.job_table_priority.retain(|id| *id != job_id);
-}
-
-fn wait_next(
-    core: &mut ShellCore,
-    ids: &[usize],
-    var_name: &Option<String>,
-    f_opt: bool,
-) -> Result<(i32, bool), ExecError> {
-    if core.job_table_priority.is_empty() {
-        return Ok((127, false));
-    }
-
-    let mut exit_status = 0;
-    let mut drop = 0;
-    let mut end = false;
-    let mut pid = String::new();
-    let mut remove_job = false;
-
-    loop {
-        if core.sigint.load(Relaxed) {
-            return Ok((130, false));
-        }
-
-        thread::sleep(time::Duration::from_millis(10)); //0.01秒周期に変更
-        for (i, job) in core.job_table.iter_mut().enumerate() {
-            if !ids.contains(&i) && !ids.is_empty() {
-                continue;
-            }
-
-            let es = job.update_status(false, true)?;
-            //if let Ok(es) = job.update_status(false, true) {
-                if job.display_status == "Done"
-                    || job.display_status == "Killed"
-                    || (job.display_status == "Stopped" && !f_opt)
-                {
-                    exit_status = es;
-                    drop = i;
-                    end = true;
-                    remove_job = job.display_status == "Done" || job.display_status == "Killed";
-                    pid = job.pids[0].to_string();
-                    break;
-                }
-            //}
-        }
-
-        if end {
-            break;
-        }
-    }
-
-    if let Some(var) = var_name {
-        let _ = core.db.unset(var, None, false);
-        if let Err(e) = core.db.set_param(var, &pid, None) {
-            e.print(core);
-        }
-    }
-
-    if remove_job {
-        remove(core, drop);
-    }
-    Ok((exit_status, true))
 }
 
 fn wait_pid(core: &mut ShellCore, pid: i32, var_name: &Option<String>, f_opt: bool) -> Result<(i32, bool), ExecError> {

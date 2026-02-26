@@ -5,6 +5,8 @@ use crate::ShellCore;
 use crate::core::builtins;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
+use std::{thread, time};
+use std::sync::atomic::Ordering::Relaxed;
 
 pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
@@ -57,7 +59,7 @@ fn wait_n(
     let mut jobs = arg::consume_with_subsequents("-n", args);
     jobs.remove(0);
     if jobs.is_empty() {
-        return Ok(super::wait_next(core, &[], var_name, f_opt)?.0);
+        return Ok(wait_next(core, &[], var_name, f_opt)?.0);
     }
 
     let mut ids = vec![];
@@ -78,8 +80,8 @@ fn wait_n(
 
     for _ in 0..ids.len() {
         let tmp = match ans {
-            -1 => super::wait_next(core, &ids, var_name, f_opt)?,
-            _ => super::wait_next(core, &ids, &None, f_opt)?,
+            -1 => wait_next(core, &ids, var_name, f_opt)?,
+            _ => wait_next(core, &ids, &None, f_opt)?,
         };
 
         if tmp.1 && ans == -1 {
@@ -136,4 +138,65 @@ fn wait_jobspec(
         Some(pos) => super::wait_a_job(core, pos, var_name, f_opt),
         None => Ok((127, false)),
     }
+}
+
+fn wait_next(
+    core: &mut ShellCore,
+    ids: &[usize],
+    var_name: &Option<String>,
+    f_opt: bool,
+) -> Result<(i32, bool), ExecError> {
+    if core.job_table_priority.is_empty() {
+        return Ok((127, false));
+    }
+
+    let mut exit_status = 0;
+    let mut drop = 0;
+    let mut end = false;
+    let mut pid = String::new();
+    let mut remove_job = false;
+
+    loop {
+        if core.sigint.load(Relaxed) {
+            return Ok((130, false));
+        }
+
+        thread::sleep(time::Duration::from_millis(10)); //0.01秒周期に変更
+        for (i, job) in core.job_table.iter_mut().enumerate() {
+            if !ids.contains(&i) && !ids.is_empty() {
+                continue;
+            }
+
+            let es = job.update_status(false, true)?;
+            //if let Ok(es) = job.update_status(false, true) {
+                if job.display_status == "Done"
+                    || job.display_status == "Killed"
+                    || (job.display_status == "Stopped" && !f_opt)
+                {
+                    exit_status = es;
+                    drop = i;
+                    end = true;
+                    remove_job = job.display_status == "Done" || job.display_status == "Killed";
+                    pid = job.pids[0].to_string();
+                    break;
+                }
+            //}
+        }
+
+        if end {
+            break;
+        }
+    }
+
+    if let Some(var) = var_name {
+        let _ = core.db.unset(var, None, false);
+        if let Err(e) = core.db.set_param(var, &pid, None) {
+            e.print(core);
+        }
+    }
+
+    if remove_job {
+        super::remove(core, drop);
+    }
+    Ok((exit_status, true))
 }
