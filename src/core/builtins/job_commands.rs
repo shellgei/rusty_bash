@@ -460,22 +460,27 @@ fn wait_arg_job(
     (127, false)
 }
 
-fn wait_one_job(core: &mut ShellCore, pos: usize, remove_list: &mut Vec<usize>)
-                -> Result<i32, ExecError> {
-    let n = core.job_table[pos].update_status(true, false)?;
+/*
+fn wait_one_job(entry: &mut JobEntry) -> Result<(i32, bool), ExecError> {
+    let n = entry.update_status(true, false)?;
 
-    if core.job_table[pos].display_status == "Done"
-        || core.job_table[pos].display_status == "Killed" {
-        remove_list.push(pos);
+    if entry.display_status == "Done"
+        || entry.display_status == "Killed" {
+            return Ok((n, true));
     }
-    Ok(n)
-}
+    Ok((n, false))
+}*/
 
 fn wait_all(core: &mut ShellCore) -> Result<i32, ExecError> {
     let mut exit_status = 0;
     let mut remove_list = vec![];
     for pos in 0..core.job_table.len() {
-        exit_status = wait_one_job(core, pos, &mut remove_list)?;
+        //let result = wait_one_job(&mut core.job_table[pos])?;
+        let result = core.job_table[pos].block_wait()?;
+        exit_status = result.0;
+        if result.1 { 
+            remove_list.push(pos);
+        }
     }
 
     for pos in remove_list.into_iter().rev() {

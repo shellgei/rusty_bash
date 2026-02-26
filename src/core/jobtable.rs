@@ -237,6 +237,18 @@ impl JobEntry {
         }
         Pid::from_raw(0)
     }
+
+    pub fn block_wait(&mut self) -> Result<(i32, bool), ExecError> {
+        let n = self.update_status(true, false)?;
+        let mut finished = false;
+    
+        if self.display_status == "Done"
+            || self.display_status == "Killed" {
+                finished = true;
+        }   
+        Ok((n, finished))
+    }
+
 }
 
 impl ShellCore {
