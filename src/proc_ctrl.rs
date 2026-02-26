@@ -136,7 +136,7 @@ pub fn set_pgid(core: &mut ShellCore, pid: Pid, pgid: Pid) {
 }
 
 fn show_time(core: &ShellCore) {
-    if core.measured_time.real.is_none() {
+    if core.time_keeper.real.is_none() {
         return;
     }
 
@@ -145,21 +145,21 @@ fn show_time(core: &ShellCore) {
     let core_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
     let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
 
-    let real_diff = real_end_time - core.measured_time.real.unwrap();
+    let real_diff = real_end_time - core.time_keeper.real.unwrap();
     eprintln!(
         "\nreal\t{}m{}.{:06}s",
         real_diff.tv_sec() / 60,
         real_diff.tv_sec() % 60,
         real_diff.tv_nsec() / 1000
     );
-    let user_diff = core_usage.user_time() + children_usage.user_time() - core.measured_time.user;
+    let user_diff = core_usage.user_time() + children_usage.user_time() - core.time_keeper.user;
     eprintln!(
         "user\t{}m{}.{:06}s",
         user_diff.tv_sec() / 60,
         user_diff.tv_sec() % 60,
         user_diff.tv_usec()
     );
-    let sys_diff = core_usage.system_time() + children_usage.system_time() - core.measured_time.sys;
+    let sys_diff = core_usage.system_time() + children_usage.system_time() - core.time_keeper.sys;
     eprintln!(
         "sys \t{}m{}.{:06}s",
         sys_diff.tv_sec() / 60,

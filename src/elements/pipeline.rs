@@ -18,7 +18,7 @@ pub struct Pipeline {
     pub pipes: Vec<Pipe>,
     pub text: String,
     exclamation: bool,
-    pub time: bool,
+    time: bool,
 }
 
 impl Pipeline {
@@ -74,16 +74,16 @@ impl Pipeline {
 
     fn set_time(&mut self, core: &mut ShellCore) {
         if !self.time {
-            core.measured_time.real = None;
+            core.time_keeper.real = None;
             return;
         }
 
         let self_usage = resource::getrusage(resource::UsageWho::RUSAGE_SELF).unwrap();
         let children_usage = resource::getrusage(resource::UsageWho::RUSAGE_CHILDREN).unwrap();
 
-        core.measured_time.user = self_usage.user_time() + children_usage.user_time();
-        core.measured_time.sys = self_usage.system_time() + children_usage.system_time();
-        core.measured_time.real = Some(time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap());
+        core.time_keeper.user = self_usage.user_time() + children_usage.user_time();
+        core.time_keeper.sys = self_usage.system_time() + children_usage.system_time();
+        core.time_keeper.real = Some(time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap());
     }
 
     pub fn read_heredoc(
