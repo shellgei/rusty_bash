@@ -79,7 +79,7 @@ impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias::alias);
-        self.builtins.insert("bg".to_string(), job_commands::bg);
+        self.builtins.insert("bg".to_string(), job_commands::bg::bg);
         self.builtins.insert("bind".to_string(), bind);
         self.builtins
             .insert("break".to_string(), loop_control::break_);
@@ -99,14 +99,14 @@ impl ShellCore {
             .insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("debug".to_string(), debug);
         self.builtins
-            .insert("disown".to_string(), job_commands::disown);
+            .insert("disown".to_string(), job_commands::disown::disown);
         self.builtins.insert("echo".to_string(), echo::echo);
         self.builtins.insert("enable".to_string(), enable::enable);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
-        self.builtins.insert("fg".to_string(), job_commands::fg);
+        self.builtins.insert("fg".to_string(), job_commands::fg::fg);
         self.builtins
             .insert("getopts".to_string(), getopts::getopts);
         self.builtins.insert("hash".to_string(), hash::hash);

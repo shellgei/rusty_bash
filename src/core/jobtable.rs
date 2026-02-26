@@ -8,6 +8,10 @@ use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd;
 use nix::unistd::Pid;
+use std::{thread, time};
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Default)]
 pub struct JobEntry {
@@ -247,6 +251,22 @@ impl JobEntry {
                 finished = true;
         }   
         Ok((n, finished))
+    }
+
+    pub fn nonblock_wait(&mut self, sigint: &Arc<AtomicBool>) -> Result<(i32, bool), ExecError> {
+        loop {
+            let n = self.update_status(false, false)?;
+            if self.display_status == "Done"
+                || self.display_status == "Killed" {
+                    return Ok((n, true));
+            }   
+
+            if sigint.load(Relaxed) {
+                return Ok((130, false));
+            }
+
+            thread::sleep(time::Duration::from_millis(10));
+        }
     }
 
 }
