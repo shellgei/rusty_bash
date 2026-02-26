@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use libc;
+use crate::error::exec::ExecError;
 use crate::core::JobEntry;
 use crate::utils::arg;
 use crate::ShellCore;
@@ -459,32 +460,29 @@ fn wait_arg_job(
     (127, false)
 }
 
-fn wait_all(core: &mut ShellCore) -> i32 {
+fn wait_one_job(core: &mut ShellCore, pos: usize, remove_list: &mut Vec<usize>)
+                -> Result<i32, ExecError> {
+    let n = core.job_table[pos].update_status(true, false)?;
+
+    if core.job_table[pos].display_status == "Done"
+        || core.job_table[pos].display_status == "Killed" {
+        remove_list.push(pos);
+    }
+    Ok(n)
+}
+
+fn wait_all(core: &mut ShellCore) -> Result<i32, ExecError> {
     let mut exit_status = 0;
     let mut remove_list = vec![];
     for pos in 0..core.job_table.len() {
-        match core.job_table[pos].update_status(true, false) {
-            Ok(n) => {
-                if core.job_table[pos].display_status == "Done"
-                    || core.job_table[pos].display_status == "Killed"
-                {
-                    remove_list.push(pos);
-                }
-                exit_status = n;
-            }
-            Err(e) => {
-                e.print(core);
-                exit_status = 1;
-                break;
-            }
-        }
+        exit_status = wait_one_job(core, pos, &mut remove_list)?;
     }
 
     for pos in remove_list.into_iter().rev() {
         remove(core, pos);
     }
 
-    exit_status
+    Ok(exit_status)
 }
 
 fn wait_n(
@@ -535,7 +533,13 @@ pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if args.len() <= 1 {
-        return wait_all(core);
+        match wait_all(core) {
+            Ok(n) => return n,
+            Err(e) => {
+                e.print(core);
+                return 1;
+            },
+        }
     }
 
     let mut args = arg::dissolve_options(&args);
@@ -585,10 +589,6 @@ pub fn kill(core: &mut ShellCore, args: &[String]) -> i32 {
         }
     }
 
-    /*
-    args.insert(0, "eval".to_string());
-    super::eval(core, &args)
-    */
     super::run_external(core, &args, |es| es > 0)
 }
 
