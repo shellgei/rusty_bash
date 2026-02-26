@@ -6,7 +6,7 @@ pub mod database;
 pub mod history;
 pub mod jobtable;
 mod file_descs;
-pub mod time;
+pub mod time_keeper;
 
 use crate::file_check;
 use crate::core::jobtable::JobEntry;
@@ -15,7 +15,7 @@ use crate::{proc_ctrl, signal};
 use nix::sys::signal::Signal;
 use nix::unistd::Pid;
 use self::database::DataBase;
-use self::time::MeasuredTime;
+use self::time_keeper::TimeKeeper;
 use std::{io, env, path, process};
 use std::collections::HashMap;
 use std::os::fd::RawFd;
@@ -42,7 +42,7 @@ pub struct ShellCore {
     pub tty_fd: Option<RawFd>,
     pub job_table: Vec<JobEntry>,
     tcwd: Option<path::PathBuf>, // the_current_working_directory
-    pub measured_time: MeasuredTime,
+    pub time_keeper: TimeKeeper,
 }
 
 /*

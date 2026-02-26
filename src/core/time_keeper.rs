@@ -3,13 +3,13 @@
 
 use nix::sys::time::{TimeSpec, TimeVal};
 
-pub struct MeasuredTime {
+pub struct TimeKeeper {
     pub real: Option<TimeSpec>,
     pub user: TimeVal,
     pub sys: TimeVal,
 }
 
-impl Default for MeasuredTime {
+impl Default for TimeKeeper {
     fn default() -> Self {
         Self {
             real: None,
