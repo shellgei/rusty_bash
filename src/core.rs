@@ -9,12 +9,12 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 mod file_descs;
-pub mod time;
+pub mod time_keeper;
 
 use self::completion::{Completion, CompletionEntry};
 use self::database::DataBase;
 use self::options::Options;
-use self::time::MeasuredTime;
+use self::time_keeper::TimeKeeper;
 use self::file_descs::FileDescriptors;
 use crate::core::jobtable::JobEntry;
 use crate::elements::substitution::Substitution;
@@ -79,7 +79,7 @@ pub struct ShellCore {
     pub job_table_priority: Vec<usize>,
     current_dir: Option<path::PathBuf>, // the_current_working_directory
     pub completion: Completion,
-    pub measured_time: MeasuredTime,
+    pub measured_time: TimeKeeper,
     pub options: Options,
     pub shopts: Options,
     pub suspend_e_option: bool,
