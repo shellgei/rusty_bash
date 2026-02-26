@@ -9,16 +9,17 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 mod file_descs;
+pub mod time;
 
 use self::completion::{Completion, CompletionEntry};
 use self::database::DataBase;
 use self::options::Options;
+use self::time::MeasuredTime;
 use self::file_descs::FileDescriptors;
 use crate::core::jobtable::JobEntry;
 use crate::elements::substitution::Substitution;
 use crate::{error, proc_ctrl, signal};
 use nix::sys::signal::Signal;
-use nix::sys::time::{TimeSpec, TimeVal};
 use nix::unistd::Pid;
 use std::collections::HashMap;
 use std::os::fd::RawFd;
@@ -29,6 +30,7 @@ use std::{env, io, path};
 use crate::error::exec::ExecError;
 use crate::file_check;
 
+/*
 pub struct MeasuredTime {
     pub real: Option<TimeSpec>,
     pub user: TimeVal,
@@ -43,7 +45,7 @@ impl Default for MeasuredTime {
             sys: TimeVal::new(0, 0),
         }
     }
-}
+}*/
 
 type BuiltinFn = fn(&mut ShellCore, &[String]) -> i32;
 type SubstBuiltinFn = fn(&mut ShellCore, &[String], &mut [Substitution]) -> i32;
