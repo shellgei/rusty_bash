@@ -12,6 +12,15 @@ use libc;
 use crate::core::JobEntry;
 use crate::ShellCore;
 
+pub fn set(core: &mut ShellCore) {
+    core.builtins.insert("jobs".to_string(), jobs::jobs);
+    core.builtins.insert("kill".to_string(), kill::kill);
+    core.builtins.insert("wait".to_string(), wait::wait);
+    core.builtins.insert("disown".to_string(), disown::disown);
+    core.builtins.insert("bg".to_string(), bg::bg);
+    core.builtins.insert("fg".to_string(), fg::fg);
+}
+
 fn pid_to_array_pos(pid: i32, jobs: &[JobEntry]) -> Option<usize> {
     (0..jobs.len()).find(|&i| jobs[i].pids[0].as_raw() == pid)
 }

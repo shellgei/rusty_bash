@@ -79,7 +79,6 @@ impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias::alias);
-        self.builtins.insert("bg".to_string(), job_commands::bg::bg);
         self.builtins.insert("bind".to_string(), bind);
         self.builtins
             .insert("break".to_string(), loop_control::break_);
@@ -98,22 +97,17 @@ impl ShellCore {
         self.builtins
             .insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("debug".to_string(), debug);
-        self.builtins
-            .insert("disown".to_string(), job_commands::disown::disown);
         self.builtins.insert("echo".to_string(), echo::echo);
         self.builtins.insert("enable".to_string(), enable::enable);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
-        self.builtins.insert("fg".to_string(), job_commands::fg::fg);
         self.builtins
             .insert("getopts".to_string(), getopts::getopts);
         self.builtins.insert("hash".to_string(), hash::hash);
         self.builtins
             .insert("history".to_string(), history::history);
-        self.builtins.insert("jobs".to_string(), job_commands::jobs::jobs);
-        self.builtins.insert("kill".to_string(), job_commands::kill::kill);
         self.builtins.insert("let".to_string(), let_);
         self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
@@ -126,13 +120,10 @@ impl ShellCore {
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
 
-        //if file::search_command("ulimit").is_none() {
+        job_commands::set(self);
+
         #[cfg(not(target_os = "macos"))]
         self.builtins.insert("ulimit".to_string(), ulimit::ulimit);
-        /*
-        #[cfg(target_os = "macos")]
-                    self.builtins.insert("ulimit".to_string(), ulimit_mac::ulimit);
-                }*/
 
         self.builtins.insert("unalias".to_string(), alias::unalias);
         self.builtins.insert("unset".to_string(), unset::unset);
@@ -141,7 +132,6 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("test".to_string(), test);
         self.builtins.insert("[".to_string(), test);
-        self.builtins.insert("wait".to_string(), job_commands::wait::wait);
 
         self.subst_builtins
             .insert("export".to_string(), variable::export);
