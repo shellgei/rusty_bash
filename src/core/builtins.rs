@@ -113,7 +113,7 @@ impl ShellCore {
         self.builtins
             .insert("history".to_string(), history::history);
         self.builtins.insert("jobs".to_string(), job_commands::jobs);
-        self.builtins.insert("kill".to_string(), job_commands::kill);
+        self.builtins.insert("kill".to_string(), job_commands::kill::kill);
         self.builtins.insert("let".to_string(), let_);
         self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
@@ -141,7 +141,7 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("test".to_string(), test);
         self.builtins.insert("[".to_string(), test);
-        self.builtins.insert("wait".to_string(), job_commands::wait);
+        self.builtins.insert("wait".to_string(), job_commands::wait::wait);
 
         self.subst_builtins
             .insert("export".to_string(), variable::export);

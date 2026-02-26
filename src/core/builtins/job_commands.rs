@@ -4,12 +4,14 @@
 pub mod bg;
 pub mod disown;
 pub mod fg; 
+pub mod kill; 
+pub mod wait; 
 
 use libc;
 use crate::error::exec::ExecError;
 use crate::core::JobEntry;
 use crate::utils::arg;
-use crate::{ShellCore, utils};
+use crate::ShellCore;
 use std::{thread, time};
 use std::sync::atomic::Ordering::Relaxed;
 
@@ -389,82 +391,4 @@ fn wait_n(
         }
     }
     Ok(ans)
-}
-
-pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
-    let args = args.to_owned();
-    if core.is_subshell {
-        super::error_(127, &args[0], "called from subshell", core);
-    }
-
-    if args.len() <= 1 {
-        match wait_all(core) {
-            Ok(n) => return n,
-            Err(e) => {
-                e.print(core);
-                return 1;
-            },
-        }
-    }
-
-    let mut args = arg::dissolve_options(&args);
-    let var_name = arg::consume_with_next_arg("-p", &mut args);
-    let f_opt = arg::consume_arg("-f", &mut args);
-
-    if args.len() > 1 && args[1] == "-n" {
-        match wait_n(core, &mut args, &var_name, f_opt) {
-            Ok(n) => return n,
-            Err(e) => {
-                e.print(core);
-                return 1;
-            },
-        }
-    }
-
-    if args.len() > 1 {
-        match wait_arg_job(core, &args[0], &args[1], &var_name, f_opt) {
-            Ok(n) => return n.0,
-            Err(e) => {
-                e.print(core);
-                return 1;
-            },
-        }
-    }
-    1
-}
-
-/* TODO: implement original kill */
-pub fn kill(core: &mut ShellCore, args: &[String]) -> i32 {
-    let mut args = args.to_owned();
-    //let mut args = arg::dissolve_options(args);
-    let path = utils::get_command_path(&args[0], core);
-
-    match path.is_empty() {
-        true => return 1,
-        false => args[0] = path,
-    }
-
-    if args.len() >= 3 && args[2].starts_with("%") {
-        match jobspec_to_array_pos(core, &args[0], &args[2]) {
-            Some(id) => args[2] = core.job_table[id].pids[0].to_string(),
-            None => return 1,
-        }
-    }
-
-    let com = args[0].to_string();
-    for arg in args.iter_mut() {
-        if arg == "-n" {
-            *arg = "-s".to_string();
-        }
-        if arg.starts_with("%") {
-            if let Some(pos) = jobspec_to_array_pos(core, &com, arg) {
-                *arg = core.job_table[pos].pids[0].to_string();
-            } else {
-                let msg = format!("{}: no such job", &arg);
-                return super::error_(127, "jobs", &msg, core);
-            }
-        }
-    }
-
-    super::run_external(core, &args, |es| es > 0)
 }
