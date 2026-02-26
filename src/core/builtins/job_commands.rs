@@ -98,17 +98,6 @@ fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
     ans
 }
 
-fn get_priority(core: &mut ShellCore, pos: usize) -> usize {
-    let id = core.job_table[pos].id;
-    for i in 0..core.job_table_priority.len() {
-        if core.job_table_priority[i] == id {
-            return i;
-        }
-    }
-
-    core.job_table.len()
-}
-
 fn print(core: &mut ShellCore, args: &[String]) {
     let l_opt = arg::has_option("-l", args);
     let r_opt = arg::has_option("-r", args);

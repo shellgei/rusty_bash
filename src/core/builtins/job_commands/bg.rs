@@ -43,7 +43,7 @@ pub fn bg(core: &mut ShellCore, args: &[String]) -> i32 {
                 return builtins::error_(0, &args[0], &msg, core);
             }
 
-            let priority = super::get_priority(core, p);
+            let priority = get_priority(core, p);
             let symbol = match priority {
                 0 => "+",
                 1 => "-",
@@ -55,4 +55,15 @@ pub fn bg(core: &mut ShellCore, args: &[String]) -> i32 {
         None => return 1,
     }
     0
+}
+
+fn get_priority(core: &mut ShellCore, pos: usize) -> usize {
+    let id = core.job_table[pos].id;
+    for i in 0..core.job_table_priority.len() {
+        if core.job_table_priority[i] == id {
+            return i;
+        }
+    }
+
+    core.job_table.len()
 }
