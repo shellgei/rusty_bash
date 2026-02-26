@@ -11,7 +11,6 @@ pub mod wait;
 use libc;
 use crate::error::exec::ExecError;
 use crate::core::JobEntry;
-use crate::utils::arg;
 use crate::ShellCore;
 use std::{thread, time};
 use std::sync::atomic::Ordering::Relaxed;
@@ -96,23 +95,6 @@ fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
     }
 
     ans
-}
-
-fn print(core: &mut ShellCore, args: &[String]) {
-    let l_opt = arg::has_option("-l", args);
-    let r_opt = arg::has_option("-r", args);
-    let s_opt = arg::has_option("-s", args);
-
-    let mut rem = vec![];
-    for id in 0..core.job_table.len() {
-        if core.job_table[id].print(&core.job_table_priority, l_opt, r_opt, s_opt, true) {
-            rem.push(id);
-        }
-    }
-
-    for pos in rem.into_iter().rev() {
-        remove(core, pos);
-    }
 }
 
 fn remove_coproc(core: &mut ShellCore, pos: usize) {

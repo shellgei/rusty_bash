@@ -55,6 +55,23 @@ pub fn jobs(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
-    super::print(core, &args);
+    print(core, &args);
     0
+}
+
+fn print(core: &mut ShellCore, args: &[String]) {
+    let l_opt = arg::has_option("-l", args);
+    let r_opt = arg::has_option("-r", args);
+    let s_opt = arg::has_option("-s", args);
+
+    let mut rem = vec![];
+    for id in 0..core.job_table.len() {
+        if core.job_table[id].print(&core.job_table_priority, l_opt, r_opt, s_opt, true) {
+            rem.push(id);
+        }
+    }
+
+    for pos in rem.into_iter().rev() {
+        super::remove(core, pos);
+    }
 }
