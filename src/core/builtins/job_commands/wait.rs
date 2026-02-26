@@ -37,7 +37,7 @@ pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if args.len() > 1 {
-        match super::wait_arg_job(core, &args[0], &args[1], &var_name, f_opt) {
+        match wait_arg_job(core, &args[0], &args[1], &var_name, f_opt) {
             Ok(n) => return n.0,
             Err(e) => {
                 e.print(core);
@@ -105,4 +105,35 @@ fn wait_all(core: &mut ShellCore) -> Result<i32, ExecError> {
     }
 
     Ok(exit_status)
+}
+
+fn wait_arg_job(
+    core: &mut ShellCore,
+    com: &str,
+    arg: &str,
+    var_name: &Option<String>,
+    f_opt: bool,
+) -> Result<(i32, bool), ExecError> {
+    if arg.starts_with("%") {
+        return wait_jobspec(core, com, arg, var_name, f_opt);
+    }
+
+    if let Ok(pid) = arg.parse::<i32>() {
+        return super::wait_pid(core, pid, var_name, f_opt);
+    }
+
+    Ok((127, false))
+}
+
+fn wait_jobspec(
+    core: &mut ShellCore,
+    com: &str,
+    jobspec: &str,
+    var_name: &Option<String>,
+    f_opt: bool,
+) -> Result<(i32, bool), ExecError> {
+    match super::jobspec_to_array_pos(core, com, jobspec) {
+        Some(pos) => super::wait_a_job(core, pos, var_name, f_opt),
+        None => Ok((127, false)),
+    }
 }

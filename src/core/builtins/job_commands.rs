@@ -4,6 +4,7 @@
 pub mod bg;
 pub mod disown;
 pub mod fg; 
+pub mod jobs; 
 pub mod kill; 
 pub mod wait; 
 
@@ -97,60 +98,6 @@ fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
     ans
 }
 
-pub fn jobs(core: &mut ShellCore, args: &[String]) -> i32 {
-    let mut args = arg::dissolve_options(args);
-    if arg::consume_arg("-n", &mut args) {
-        core.jobtable_print_status_change();
-        return 0;
-    }
-
-    let jobspecs = arg::consume_starts_with("%", &mut args);
-    let jobspec = match jobspecs.last() {
-        Some(s) => s.clone(),
-        None => String::new(),
-    };
-
-    if core.job_table.is_empty() && jobspec.is_empty() {
-        return 0;
-    }
-
-    let poss = jobspec_to_array_poss(core, &jobspec);
-
-    if poss.is_empty() {
-        let msg = format!("{}: no such job", &jobspec);
-        return super::error_(127, "jobs", &msg, core);
-    }
-    if poss.len() > 1 && !jobspec.is_empty() {
-        let msg = format!(
-            "{}: ambiguous job spec",
-            jobspec.strip_prefix('%').unwrap_or(&jobspec)
-        );
-        super::error_(127, "jobs", &msg, core);
-        let msg = format!("{}: no such job", &jobspec);
-        return super::error_(127, "jobs", &msg, core);
-    }
-
-    if arg::consume_arg("-p", &mut args) {
-        for id in poss {
-            core.job_table[id].print_p();
-        }
-        return 0;
-    }
-
-    if !jobspec.is_empty() {
-        let l_opt = arg::consume_arg("-l", &mut args);
-        let r_opt = arg::consume_arg("-r", &mut args);
-        let s_opt = arg::consume_arg("-s", &mut args);
-        if core.job_table[poss[0]].print(&core.job_table_priority, l_opt, r_opt, s_opt, true) {
-            remove(core, poss[0]);
-        }
-        return 0;
-    }
-
-    print(core, &args);
-    0
-}
-
 fn get_priority(core: &mut ShellCore, pos: usize) -> usize {
     let id = core.job_table[pos].id;
     for i in 0..core.job_table_priority.len() {
@@ -204,19 +151,6 @@ fn remove(core: &mut ShellCore, pos: usize) {
     remove_coproc(core, pos);
     core.job_table.remove(pos);
     core.job_table_priority.retain(|id| *id != job_id);
-}
-
-fn wait_jobspec(
-    core: &mut ShellCore,
-    com: &str,
-    jobspec: &str,
-    var_name: &Option<String>,
-    f_opt: bool,
-) -> Result<(i32, bool), ExecError> {
-    match jobspec_to_array_pos(core, com, jobspec) {
-        Some(pos) => wait_a_job(core, pos, var_name, f_opt),
-        None => Ok((127, false)),
-    }
 }
 
 fn wait_next(
@@ -316,20 +250,3 @@ fn wait_a_job(
     }
 }
 
-fn wait_arg_job(
-    core: &mut ShellCore,
-    com: &str,
-    arg: &str,
-    var_name: &Option<String>,
-    f_opt: bool,
-) -> Result<(i32, bool), ExecError> {
-    if arg.starts_with("%") {
-        return wait_jobspec(core, com, arg, var_name, f_opt);
-    }
-
-    if let Ok(pid) = arg.parse::<i32>() {
-        return wait_pid(core, pid, var_name, f_opt);
-    }
-
-    Ok((127, false))
-}
