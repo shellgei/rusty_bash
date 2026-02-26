@@ -352,6 +352,7 @@ fn wait_all(core: &mut ShellCore) -> Result<i32, ExecError> {
     Ok(exit_status)
 }
 
+/*
 fn wait_n(
     core: &mut ShellCore,
     args: &mut Vec<String>,
@@ -392,3 +393,4 @@ fn wait_n(
     }
     Ok(ans)
 }
+*/
