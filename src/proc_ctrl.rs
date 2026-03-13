@@ -5,12 +5,9 @@ use crate::error::exec::ExecError;
 use crate::utils::c_string;
 use crate::{error, exit, signal, Feeder, Script, ShellCore};
 use nix::errno::Errno;
-use nix::sys::resource::UsageWho;
 use nix::sys::signal::Signal;
-use nix::sys::time::{TimeSpec, TimeVal};
+use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
-use nix::sys::{resource, wait};
-use nix::time::{clock_gettime, ClockId};
 use nix::unistd;
 use nix::unistd::Pid;
 use std::ffi::CString;
@@ -23,7 +20,8 @@ pub fn wait_pipeline(
     exclamation: bool,
 ) -> Vec<WaitStatus> {
     if pids.len() == 1 && pids[0].is_none() {
-        show_time(core);
+        core.time_keeper.print_diff();
+        //show_time(core);
         if exclamation {
             core.flip_exit_status();
         }
@@ -47,7 +45,8 @@ pub fn wait_pipeline(
         }
     }
 
-    show_time(core);
+    core.time_keeper.print_diff();
+    //show_time(core);
     let _ = set_foreground(core);
     let _ = core.db.init_array(
         "PIPESTATUS",
@@ -134,25 +133,6 @@ pub fn set_pgid(core: &mut ShellCore, pid: Pid, pgid: Pid) {
         //以下3行追加
         let _ = set_foreground(core);
     }
-}
-
-fn show_time(core: &ShellCore) {
-    if core.time_keeper.real.is_none() {
-        return;
-    }
-
-    let print_time_spec = |item, t: TimeSpec| 
-        eprintln!("\n{}\t{}m{}.{:09}s", item, t.tv_sec()/60, t.tv_sec()%60, t.tv_nsec());
-    let print_time_val = |item, t: TimeVal|
-        eprintln!("{}\t{}m{}.{:06}s", item, t.tv_sec()/60, t.tv_sec()%60, t.tv_usec());
-
-    let real_end_time = clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
-    let sush_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
-    let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
-
-    print_time_spec("real", real_end_time - core.time_keeper.real.unwrap());
-    print_time_val("usr", sush_usage.user_time() + children_usage.user_time() - core.time_keeper.user);
-    print_time_val("sys", sush_usage.system_time() + children_usage.system_time() - core.time_keeper.sys);
 }
 
 pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! {
