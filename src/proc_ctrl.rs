@@ -7,6 +7,7 @@ use crate::{error, exit, signal, Feeder, Script, ShellCore};
 use nix::errno::Errno;
 use nix::sys::resource::UsageWho;
 use nix::sys::signal::Signal;
+use nix::sys::time::{TimeSpec, TimeVal};
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::sys::{resource, wait};
 use nix::time::{clock_gettime, ClockId};
@@ -140,32 +141,18 @@ fn show_time(core: &ShellCore) {
         return;
     }
 
-    let real_end_time = clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
+    let print_time_spec = |item, t: TimeSpec| 
+        eprintln!("\n{}\t{}m{}.{:09}s", item, t.tv_sec()/60, t.tv_sec()%60, t.tv_nsec());
+    let print_time_val = |item, t: TimeVal|
+        eprintln!("{}\t{}m{}.{:06}s", item, t.tv_sec()/60, t.tv_sec()%60, t.tv_usec());
 
-    let core_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
+    let real_end_time = clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
+    let sush_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
     let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
 
-    let real_diff = real_end_time - core.time_keeper.real.unwrap();
-    eprintln!(
-        "\nreal\t{}m{}.{:06}s",
-        real_diff.tv_sec() / 60,
-        real_diff.tv_sec() % 60,
-        real_diff.tv_nsec() / 1000
-    );
-    let user_diff = core_usage.user_time() + children_usage.user_time() - core.time_keeper.user;
-    eprintln!(
-        "user\t{}m{}.{:06}s",
-        user_diff.tv_sec() / 60,
-        user_diff.tv_sec() % 60,
-        user_diff.tv_usec()
-    );
-    let sys_diff = core_usage.system_time() + children_usage.system_time() - core.time_keeper.sys;
-    eprintln!(
-        "sys \t{}m{}.{:06}s",
-        sys_diff.tv_sec() / 60,
-        sys_diff.tv_sec() % 60,
-        sys_diff.tv_usec()
-    );
+    print_time_spec("real", real_end_time - core.time_keeper.real.unwrap());
+    print_time_val("usr", sush_usage.user_time() + children_usage.user_time() - core.time_keeper.user);
+    print_time_val("sys", sush_usage.system_time() + children_usage.system_time() - core.time_keeper.sys);
 }
 
 pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! {
