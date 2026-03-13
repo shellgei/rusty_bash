@@ -7,10 +7,7 @@ use crate::error::parse::ParseError;
 use super::command;
 use super::command::Command;
 use super::Pipe;
-use nix::time;
-use nix::time::ClockId;
 use nix::unistd::Pid;
-use nix::sys::resource;
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Default, Clone)]
@@ -32,7 +29,7 @@ impl Pipeline {
         let mut pids = vec![];
         let mut pgid = pgid;
 
-        self.set_time(core);
+        core.time_keeper.set(self.time);
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
@@ -54,20 +51,6 @@ impl Pipeline {
 
         (pids, None)
     }
-
-    fn set_time(&mut self, core: &mut ShellCore) {
-        if !self.time {
-            core.time_keeper.real = None;
-            return;
-        }
-
-        let self_usage = resource::getrusage(resource::UsageWho::RUSAGE_SELF).unwrap();
-        let children_usage = resource::getrusage(resource::UsageWho::RUSAGE_CHILDREN).unwrap();
-
-        core.time_keeper.user = self_usage.user_time() + children_usage.user_time();
-        core.time_keeper.sys = self_usage.system_time() + children_usage.system_time();
-        core.time_keeper.real = Some(time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap());
-    } 
 
     fn eat_time(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
         match feeder.starts_with("time ") || feeder.starts_with("time\t") {
@@ -139,7 +122,7 @@ impl Pipeline {
                 feeder.feed_additional_line(core)?;
             }
         }
-        dbg!("{:?}", &ans);
+//        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
