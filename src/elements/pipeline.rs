@@ -31,6 +31,9 @@ impl Pipeline {
         let mut prev = -1;
         let mut pids = vec![];
         let mut pgid = pgid;
+
+        self.set_time(core);
+
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid);
             match self.commands[i].exec(core, p) {
