@@ -30,11 +30,11 @@ impl TimeKeeper {
             return;
         }
 
-        let self_usage = resource::getrusage(resource::UsageWho::RUSAGE_SELF).unwrap();
-        let children_usage = resource::getrusage(resource::UsageWho::RUSAGE_CHILDREN).unwrap();
+        let sush_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
+        let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
 
-        self.user = self_usage.user_time() + children_usage.user_time();
-        self.sys = self_usage.system_time() + children_usage.system_time();
+        self.user = sush_usage.user_time() + children_usage.user_time();
+        self.sys = sush_usage.system_time() + children_usage.system_time();
         self.real = Some(time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap());
     } 
 
