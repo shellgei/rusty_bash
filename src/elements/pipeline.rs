@@ -7,9 +7,6 @@ use super::Pipe;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
-use nix::time;
-use nix::sys::resource;
-use nix::time::ClockId;
 use nix::unistd::Pid;
 
 #[derive(Debug, Clone, Default)]
@@ -28,8 +25,7 @@ impl Pipeline {
         pgid: Pid,
     ) -> (Vec<Option<Pid>>, bool, Option<ExecError>) {
         if self.commands.is_empty() {
-            // the case of only '!'
-            self.set_time(core);
+            core.time_keeper.set(self.time);
             return (vec![], self.exclamation, None);
         }
 
@@ -37,7 +33,7 @@ impl Pipeline {
         let mut pids = vec![];
         let mut pgid = pgid;
 
-        self.set_time(core);
+        core.time_keeper.set(self.time);
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
             p.set(prev, pgid, core);
@@ -72,6 +68,7 @@ impl Pipeline {
         (pids, self.exclamation, err)
     }
 
+    /*
     fn set_time(&mut self, core: &mut ShellCore) {
         if !self.time {
             core.time_keeper.real = None;
@@ -84,7 +81,7 @@ impl Pipeline {
         core.time_keeper.user = self_usage.user_time() + children_usage.user_time();
         core.time_keeper.sys = self_usage.system_time() + children_usage.system_time();
         core.time_keeper.real = Some(time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap());
-    }
+    }*/
 
     pub fn read_heredoc(
         &mut self,
