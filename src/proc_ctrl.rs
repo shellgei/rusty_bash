@@ -18,6 +18,7 @@ pub fn wait_pipeline(
     pids: Vec<Option<Pid>>,
 ) -> Vec<WaitStatus> {
     if pids.len() == 1 && pids[0].is_none() {
+        core.time_keeper.print_diff();
         return vec![];
     }
 
@@ -33,6 +34,7 @@ pub fn wait_pipeline(
         }
     }
 
+    core.time_keeper.print_diff();
     let _ = set_foreground(core);
 
     ans
