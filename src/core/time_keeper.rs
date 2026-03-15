@@ -45,7 +45,7 @@ impl TimeKeeper {
         print_duration("real", clock::monotonic_time() - self.real.unwrap());
 
         let (user, sys) = clock::get_user_and_sys();
-        print_time_val("usr", user - self.user);
+        print_time_val("user", user - self.user);
         print_time_val("sys", sys - self.sys);
     }
 }
