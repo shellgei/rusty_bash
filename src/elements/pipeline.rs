@@ -15,6 +15,7 @@ pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub pipes: Vec<Pipe>,
     pub text: String,
+    exclamation: bool,
     time: bool,
 }
 
@@ -50,6 +51,18 @@ impl Pipeline {
         }
 
         (pids, None)
+    }
+
+    fn eat_exclamation(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with("!") {
+            return false;
+        }
+
+        self.text += &feeder.consume(1);
+        self.exclamation = !self.exclamation;
+        let blank_len = feeder.scanner_blank(core);
+        self.text += &feeder.consume(blank_len);
+        true
     }
 
     fn eat_time(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
@@ -104,10 +117,13 @@ impl Pipeline {
         -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
 
-        while ans.eat_time(feeder, core){}
+        while ans.eat_exclamation(feeder, core) || ans.eat_time(feeder, core) {}
 
         if ! Self::eat_command(feeder, &mut ans, core)? {      //最初のコマンド
-            return Ok(None);
+            match ans.exclamation || ans.time {
+                true => return Ok(Some(ans)),
+                false => return Ok(None),
+            } 
         }
 
         while Self::eat_pipe(feeder, &mut ans, core){
@@ -122,7 +138,7 @@ impl Pipeline {
                 feeder.feed_additional_line(core)?;
             }
         }
-//        dbg!("{:?}", &ans);
+        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
