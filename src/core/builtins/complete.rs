@@ -53,9 +53,9 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
 
     if !info.large_w_cands.is_empty() {
         if info.large_w_cands.starts_with('"') {
-            print!("complete -W '{}' ", &info.large_w_cands);
+            print!("complete {}-W '{}' ", &o_options, &info.large_w_cands);
         }else{
-            print!("complete -W {} ", &info.large_w_cands);
+            print!("complete {}-W {} ", &o_options, &info.large_w_cands);
         }
     } else if !info.function.is_empty() {
         print!("complete {}-F {} ", &o_options, &info.function);
@@ -63,7 +63,7 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
         let symbol = action_to_reduce_symbol(&info.action);
 
         if symbol.is_empty() {
-            print!("complete -A {} ", &info.action);
+            print!("complete {}-A {} ", &o_options, &info.action);
         } else {
             print!("complete {}-{} ", &o_options, &symbol);
         }
@@ -74,7 +74,7 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
             }
         }
     } else {
-        print!("complete ");
+        print!("complete {}", &o_options);
     }
     println!("{}", &name);
     0
