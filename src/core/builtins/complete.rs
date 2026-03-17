@@ -45,6 +45,12 @@ fn opt_to_action(arg: &str) -> String {
 }
 
 fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
+    let mut o_options = String::new();
+
+    for oopt in &info.o_options {
+        o_options.push_str(&format!("-o {} ", &oopt));
+    }
+
     if !info.large_w_cands.is_empty() {
         if info.large_w_cands.starts_with('"') {
             print!("complete -W '{}' ", &info.large_w_cands);
@@ -52,20 +58,15 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
             print!("complete -W {} ", &info.large_w_cands);
         }
     } else if !info.function.is_empty() {
-        print!("complete -F {} ", &info.function);
+        print!("complete {}-F {} ", &o_options, &info.function);
     } else if !info.action.is_empty() {
         let symbol = action_to_reduce_symbol(&info.action);
 
         if symbol.is_empty() {
             print!("complete -A {} ", &info.action);
         } else {
-            print!("complete -{} ", &symbol);
+            print!("complete {}-{} ", &o_options, &symbol);
         }
-
-        for oopt in &info.o_options {
-            print!("-o {} ", &oopt);
-        }
-
 
         for opt in ["-X", "-G", "-W", "-P", "-S"] {
             if info.options.contains_key(opt) {
@@ -85,8 +86,8 @@ fn print_complete_all(core: &mut ShellCore) -> i32 {
     }
 
 
-    for (name, info) in &core.completion.entries {
-        print_each_complete(&name, &info);
+    for (name, info) in &mut core.completion.entries {
+        print_each_complete(&name, info);
     }
     0
 }
@@ -95,7 +96,7 @@ fn print_complete(coms: &[String], core: &mut ShellCore) -> i32 {
     let mut err = false;
     for name in coms {
         if let Some(info) = core.completion.entries.get_mut(name) {
-            print_each_complete(&name, &info);
+            print_each_complete(&name, info);
         }else{
             let err_str = format!("{}: no completion specification", &name);
             err = 0 != builtins::error_(1, "complete", &err_str, core);
@@ -184,6 +185,7 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     while let Some(v) = arg::consume_with_next_arg("-o", &mut args) {
         o_options.push(v);
     }
+    o_options.sort();
 
     let mut options = HashMap::new();
     for opt in ["-X", "-G", "-W", "-P", "-S"] {
@@ -195,7 +197,6 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let action = opt_to_action(&args[1]);
     if !action.is_empty() {
-        //let x_mask = arg::consume_with_next_arg("-X", &mut args);
         for command in &args[2..] {
             if !core.completion.entries.contains_key(command) {
                 core.completion
@@ -206,6 +207,7 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
             let info = &mut core.completion.entries.get_mut(command).unwrap();
             info.action = action.clone();
             info.options = options.clone();
+            info.o_options = o_options.clone();
         }
         return 0;
     }
