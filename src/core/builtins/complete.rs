@@ -44,12 +44,15 @@ fn opt_to_action(arg: &str) -> String {
     .to_string()
 }
 
-fn print_complete(core: &mut ShellCore) -> i32 {
-    if !core.completion.default_function.is_empty() {
-        println!("complete -F {} -D", &core.completion.default_function);
-    }
+fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
+    /*
+    let Some(info) = core.completion.entries.get_mut(name) else{
+        let err_str = format!("{}: no completion specification", &name);
+        return builtins::error_(1, "complete", &err_str, core);
+    };
+    */
 
-    for (name, info) in &core.completion.entries {
+    //for (name, info) in &core.completion.entries {
         if !info.large_w_cands.is_empty() {
             print!("complete -W {} ", &info.large_w_cands);
         } else if !info.function.is_empty() {
@@ -73,6 +76,34 @@ fn print_complete(core: &mut ShellCore) -> i32 {
             print!("complete ");
         }
         println!("{}", &name);
+    //}
+    0
+}
+
+fn print_complete(coms: &[String], core: &mut ShellCore) -> i32 {
+    if ! coms.is_empty() {
+        let mut err = false;
+        for name in coms {
+            if let Some(info) = core.completion.entries.get_mut(name) {
+                print_each_complete(&name, &info);
+            }else{
+                let err_str = format!("{}: no completion specification", &name);
+                err = 0 != builtins::error_(1, "complete", &err_str, core);
+            };
+        }
+        if err {
+            return 1;
+        }
+        return 0;
+    }
+
+    if !core.completion.default_function.is_empty() {
+        println!("complete -F {} -D", &core.completion.default_function);
+    }
+
+
+    for (name, info) in &core.completion.entries {
+        print_each_complete(&name, &info);
     }
     0
 }
@@ -133,7 +164,7 @@ fn complete_r(core: &mut ShellCore, args: &[String]) -> i32 {
 pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
     if args.len() <= 1 || args[1] == "-p" {
-        return print_complete(core);
+        return print_complete(&args[2..], core);
     }
 
     let mut o_options = vec![];
