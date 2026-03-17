@@ -58,7 +58,7 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
             print!("complete -{} ", &symbol);
         }
 
-        for opt in ["-P", "-S", "-X", "-G", "-W"] {
+        for opt in ["-X", "-G", "-W", "-P", "-S"] {
             if info.options.contains_key(opt) {
                 print!("{} '{}' ", opt, &info.options[opt]);
             }
@@ -186,7 +186,7 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut options = HashMap::new();
-    for opt in ["-P", "-S", "-X", "-G", "-W"] {
+    for opt in ["-X", "-G", "-W", "-P", "-S"] {
         let prefix = arg::consume_with_next_arg(opt, &mut args);
         if let Some(prefix) = prefix {
             options.insert(opt.to_string(), prefix.clone());
