@@ -163,7 +163,9 @@ fn complete_r(core: &mut ShellCore, args: &[String]) -> i32 {
 
 pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
-    if args.len() <= 1 || args[1] == "-p" {
+    if args.len() <= 1 {
+        return print_complete(&[], core);
+    }else if args[1] == "-p" {
         return print_complete(&args[2..], core);
     }
 
