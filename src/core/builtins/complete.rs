@@ -46,7 +46,11 @@ fn opt_to_action(arg: &str) -> String {
 
 fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
     if !info.large_w_cands.is_empty() {
-        print!("complete -W {} ", &info.large_w_cands);
+        if info.large_w_cands.starts_with('"') {
+            print!("complete -W '{}' ", &info.large_w_cands);
+        }else{
+            print!("complete -W {} ", &info.large_w_cands);
+        }
     } else if !info.function.is_empty() {
         print!("complete -F {} ", &info.function);
     } else if !info.action.is_empty() {
@@ -58,21 +62,16 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
             print!("complete -{} ", &symbol);
         }
 
+        for oopt in &info.o_options {
+            print!("-o {} ", &oopt);
+        }
+
+
         for opt in ["-X", "-G", "-W", "-P", "-S"] {
             if info.options.contains_key(opt) {
                 print!("{} '{}' ", opt, &info.options[opt]);
             }
         }
-        /*
-        if info.options.contains_key("-P") {
-            print!("-P '{}' ", &info.options["-P"]);
-        }
-        if info.options.contains_key("-S") {
-            print!("-S '{}' ", &info.options["-S"]);
-        }
-        if info.options.contains_key("-X") {
-            print!("-X '{}' ", &info.options["-X"]);
-        }*/
     } else {
         print!("complete ");
     }
@@ -174,7 +173,8 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut o_options = vec![];
     let mut args = arg::dissolve_options(&args);
 
-    if args[1] == "-W" { return complete_large_w(core, &args);
+    if args[1] == "-W" {
+        return complete_large_w(core, &args);
     }
 
     if arg::consume_arg("-r", &mut args) {
@@ -192,20 +192,6 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
             options.insert(opt.to_string(), prefix.clone());
         }
     }
-
-    /*
-    let prefix = arg::consume_with_next_arg("-P", &mut args);
-    if let Some(prefix) = prefix {
-        options.insert("-P".to_string(), prefix.clone());
-    }
-    let suffix = arg::consume_with_next_arg("-S", &mut args);
-    if let Some(suffix) = suffix {
-        options.insert("-S".to_string(), suffix.clone());
-    }
-    let suffix = arg::consume_with_next_arg("-X", &mut args);
-    if let Some(suffix) = suffix {
-        options.insert("-X".to_string(), suffix.clone());
-    }*/
 
     let action = opt_to_action(&args[1]);
     if !action.is_empty() {

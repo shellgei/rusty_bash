@@ -82,6 +82,7 @@ pub fn compopt(core: &mut ShellCore, args: &[String]) -> i32 {
 
         if args[1] == "-o" {
             let opt = arg::consume_with_next_arg("-o", &mut args);
+            dbg!("{:?}", &opt);
             if opt.is_none() {
                 return 1;
             }
