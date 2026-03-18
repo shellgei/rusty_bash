@@ -163,7 +163,10 @@ fn complete_large_w(core: &mut ShellCore, args: &[String]) -> i32 {
 
 fn complete_r(core: &mut ShellCore, args: &[String]) -> i32 {
     for command in &args[1..] {
-        core.completion.entries.remove(command);
+        if core.completion.entries.remove(command).is_none() {
+            let err_str = format!("{}: no completion specification", &command);
+            return builtins::error_(1, "complete", &err_str, core);
+        }
     }
 
     0
