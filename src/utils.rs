@@ -19,8 +19,7 @@ use crate::error::exec::ExecError;
 use crate::error::input::InputError;
 use faccess::PathExt;
 use io_streams::StreamReader;
-use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::Read;
 use std::path::Path;
 
 pub fn reserved(w: &str) -> bool {
@@ -159,6 +158,7 @@ pub fn is_var(s: &str) -> bool {
     !s.chars().any(|c| !name_c(c))
 }
 
+/*
 pub fn read_line_unbuffered(file: &mut File, delim: &str) -> Result<String, InputError> {
     let mut line = vec![];
     let mut ch: [u8; 1] = Default::default();
@@ -192,6 +192,7 @@ pub fn read_line_unbuffered(file: &mut File, delim: &str) -> Result<String, Inpu
         Err(_) => Err(InputError::NotUtf8),
     }
 }
+*/
 
 pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     let mut line = vec![];

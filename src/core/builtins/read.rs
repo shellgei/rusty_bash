@@ -4,7 +4,6 @@
 use super::error_;
 use crate::elements::substitution::variable::Variable;
 use crate::{arg, error, utils, ShellCore};
-use std::fs::File;
 
 fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
     let mut pos = 0;
@@ -26,12 +25,8 @@ pub fn read_(
     ignore_escape: bool,
     limit: &mut usize,
     delim: &String,
-    file: &mut Option<File>,
 ) -> i32 {
-    let mut remaining = match file {
-        None => utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string()),
-        Some(f) =>  utils::read_line_unbuffered(f, delim).unwrap_or("".to_string()),
-    };
+    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
     if remaining.is_empty() {
         return 1;
     }
@@ -138,16 +133,16 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut args = arg::dissolve_options(args);
     let r_opt = arg::consume_arg("-r", &mut args);
-    let mut fd_file = None;
+    let mut backup = None;
     if let Some(mut fd) = arg::consume_with_next_arg("-u", &mut args) {
         if fd.starts_with("-") {
             fd.remove(0);
         }
 
         if let Ok(n) = fd.parse::<i32>() {
-            if n >= 0 && n < 256 {
-                let f: File = core.fds.get_file(n);
-                fd_file = Some(f);
+            if n >= 3 && n < 256 {
+                backup = Some(core.fds.backup(0));
+                let _ = core.fds.replace(n, 0);
             }
         }
     }
@@ -173,7 +168,13 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
         return read_a(core, &a, r_opt, &mut limit, &delim);
     }
 
-    read_(core, &mut args, r_opt, &mut limit, &delim, &mut fd_file)
+    let ans = read_(core, &mut args, r_opt, &mut limit, &delim);
+
+    if let Some(fd) = backup {
+        let _ = core.fds.replace(0, fd);
+    }
+
+    ans
 }
 
 pub fn eat_word(

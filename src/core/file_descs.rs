@@ -73,7 +73,6 @@ impl FileDescriptors {
     }
 
     pub fn backup(&mut self, from: RawFd) -> RawFd {
-        //if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
         if unsafe{fcntl(from, F_GETFD)} == -1 {
             return from;
         }
