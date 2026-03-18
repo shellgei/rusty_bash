@@ -19,7 +19,8 @@ use crate::error::exec::ExecError;
 use crate::error::input::InputError;
 use faccess::PathExt;
 use io_streams::StreamReader;
-use std::io::Read;
+use std::fs::File;
+use std::io::{BufReader, Read};
 use std::path::Path;
 
 pub fn reserved(w: &str) -> bool {
@@ -156,6 +157,40 @@ pub fn is_var(s: &str) -> bool {
         c.is_ascii_lowercase() || c.is_ascii_uppercase() || c.is_ascii_digit() || '_' == c
     };
     !s.chars().any(|c| !name_c(c))
+}
+
+pub fn read_line_unbuffered(file: &mut File, delim: &str) -> Result<String, InputError> {
+    let mut line = vec![];
+    let mut ch: [u8; 1] = Default::default();
+    let mut stdin = BufReader::new(file);
+
+    let mut d = 10; //\n
+    if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+        d = c;
+    }
+
+    loop {
+        match stdin.read(&mut ch) {
+            Ok(0) => {
+                if line.is_empty() {
+                    return Err(InputError::Eof);
+                }
+                break;
+            }
+            Ok(_) => {
+                line.push(ch[0]);
+                if d == ch[0] {
+                    break;
+                }
+            }
+            Err(_) => return Err(InputError::Eof),
+        }
+    }
+
+    match String::from_utf8(line) {
+        Ok(s) => Ok(s),
+        Err(_) => Err(InputError::NotUtf8),
+    }
 }
 
 pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
