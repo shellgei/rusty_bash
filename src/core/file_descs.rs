@@ -34,6 +34,9 @@ impl FileDescriptors {
     pub fn dupfd_cloexec(&mut self, from: RawFd,
                                 hereafter: RawFd) -> Result<RawFd, ExecError> {
         let fd = unsafe{fcntl(from, F_DUPFD_CLOEXEC, hereafter)};
+        if fd < 0 {
+            return Err(ExecError::Other("bad fd".to_string()));
+        }
         self.fds[fd as usize] = Some(unsafe { OwnedFd::from_raw_fd(fd) });
 
         Ok(fd)

@@ -172,6 +172,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if let Some(fd) = backup {
         let _ = core.fds.replace(0, fd);
+        core.fds.close(fd);
     }
 
     ans
