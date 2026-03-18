@@ -162,6 +162,13 @@ fn complete_large_w(core: &mut ShellCore, args: &[String]) -> i32 {
 }
 
 fn complete_r(core: &mut ShellCore, args: &[String]) -> i32 {
+    if args.len() == 1 {
+        core.completion.entries.clear();
+        core.completion.default_function.clear();
+        //dbg!("{:?}", &core.completion);
+        return 0;
+    }
+
     for command in &args[1..] {
         if core.completion.entries.remove(command).is_none() {
             let err_str = format!("{}: no completion specification", &command);
