@@ -60,12 +60,20 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
     } else if !info.function.is_empty() {
         print!("complete {}-F {} ", &o_options, &info.function);
     } else if !info.actions.is_empty() {
-        let symbol = action_to_reduce_symbol(&info.actions[0]);
+        //let symbol = action_to_reduce_symbol(&info.actions[0]);
+        let mut symbols = vec![];
+        for a in &info.actions {
+            let sym = action_to_reduce_symbol(a);
+            if sym.is_empty() {
+                continue;
+            }
+            symbols.push("-".to_owned() + &sym);
+        }
 
-        if symbol.is_empty() {
+        if symbols.is_empty() {
             print!("complete {}-A {} ", &o_options, &info.actions[0]);
         } else {
-            print!("complete {}-{} ", &o_options, &symbol);
+            print!("complete {}{} ", &o_options, &symbols.join(" "));
         }
 
         for opt in ["-X", "-G", "-W", "-P", "-S"] {
@@ -173,6 +181,7 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut o_options = vec![];
     let mut args = arg::dissolve_options(&args);
+    arg::consume_arg("--", &mut args);
 
     if args[1] == "-W" {
         return complete_large_w(core, &args);
