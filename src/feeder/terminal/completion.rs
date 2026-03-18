@@ -135,8 +135,8 @@ impl Terminal {
 
         let command = format!(
             "COMPREPLY=($(compgen -A \"{}\" \"{}\"))",
-            &info.action, &target_word
-        );
+            &info.actions[0], &target_word
+        ); //TODO: use actions other than the first one
         let mut feeder = Feeder::new(&command);
 
         if let Ok(Some(mut a)) = SimpleCommand::parse(&mut feeder, core) {
@@ -168,7 +168,7 @@ impl Terminal {
         core.completion.current = info.clone();
         if !info.function.is_empty() {
             Self::exec_complete_function(&org_word, prev_pos, cur_pos, core)?;
-        } else if !info.action.is_empty() {
+        } else if !info.actions.is_empty() {
             Self::exec_action(cur_pos, core)?;
         }
 
@@ -221,11 +221,11 @@ impl Terminal {
         pos: &str,
     ) -> Vec<String> {
         if core.completion.entries.contains_key(com) {
-            let action = core.completion.entries[com].action.clone();
+            let action = core.completion.entries[com].actions.clone();
             let options = core.completion.entries[com].options.clone();
 
             if !action.is_empty() {
-                let mut cands = match action.as_ref() {
+                let mut cands = match action[0].as_ref() {
                     "alias" => compgen::compgen_a(core, args),
                     "command" => compgen::compgen_c(core, args),
                     "job" => compgen::compgen_j(core, args),

@@ -59,11 +59,11 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
         }
     } else if !info.function.is_empty() {
         print!("complete {}-F {} ", &o_options, &info.function);
-    } else if !info.action.is_empty() {
-        let symbol = action_to_reduce_symbol(&info.action);
+    } else if !info.actions.is_empty() {
+        let symbol = action_to_reduce_symbol(&info.actions[0]);
 
         if symbol.is_empty() {
-            print!("complete {}-A {} ", &o_options, &info.action);
+            print!("complete {}-A {} ", &o_options, &info.actions[0]);
         } else {
             print!("complete {}-{} ", &o_options, &symbol);
         }
@@ -195,9 +195,19 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
         }
     }
 
-    let action = opt_to_action(&args[1]);
-    if !action.is_empty() {
-        for command in &args[2..] {
+    let mut actions = vec![];
+    for i in 1..args.len() {
+        let action = opt_to_action(&args[i]);
+        if action.is_empty() {
+            break;
+        }
+        actions.push(action);
+    }
+
+    //let action = opt_to_action(&args[1]);
+    if !actions.is_empty() {
+        let start = actions.len() + 1;
+        for command in &args[start..] {
             if !core.completion.entries.contains_key(command) {
                 core.completion
                     .entries
@@ -205,7 +215,7 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
             }
 
             let info = &mut core.completion.entries.get_mut(command).unwrap();
-            info.action = action.clone();
+            info.actions = actions.clone();
             info.options = options.clone();
             info.o_options = o_options.clone();
         }
@@ -221,7 +231,7 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
             }
 
             let info = &mut core.completion.entries.get_mut(command).unwrap();
-            info.action = args[2].clone();
+            info.actions.push(args[2].clone());
             info.options = options.clone();
         }
 
