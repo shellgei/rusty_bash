@@ -121,11 +121,11 @@ fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
     ]
 }
 
-fn print_items(args: &[String], soft: bool) -> i32 {
+fn print_one_item(args: &[String], soft: bool) -> i32 {
     for a in args {
         for (item, unit, opt, key) in items() {
             if a == opt {
-                print_item(item, unit, opt, *key, soft);
+                print_item(item, unit, opt, *key, soft, true);
             }
         }
     }
@@ -133,7 +133,7 @@ fn print_items(args: &[String], soft: bool) -> i32 {
     0
 }
 
-fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i32 {
+fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool, only_num: bool) -> i32 {
     let (soft_limit, hard_limit) = resource::getrlimit(key).unwrap();
     let mut v = if soft { soft_limit } else { hard_limit };
     let mut infty = nix::sys::resource::RLIM_INFINITY;
@@ -153,7 +153,9 @@ fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i
         &v.to_string()
     };
 
-    if unit == "" {
+    if only_num {
+        println!("{}", &s);
+    } else if unit == "" {
         println!("{}({}) {}", &item, &opt, &s);
     } else {
         println!("{}({}, {}) {}", &item, &unit, &opt, &s);
@@ -163,7 +165,7 @@ fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i
 
 fn print_all(soft: bool) -> i32 {
     for (item, unit, opt, key) in items() {
-        print_item(item, unit, opt, *key, soft);
+        print_item(item, unit, opt, *key, soft, false);
     }
     0
 }
@@ -225,5 +227,5 @@ pub fn ulimit(_: &mut ShellCore, args: &[String]) -> i32 {
         return set_limit(&args[1], &args[2], soft, hard);
     }
 
-    print_items(&args, !hard)
+    print_one_item(&args, !hard)
 }
