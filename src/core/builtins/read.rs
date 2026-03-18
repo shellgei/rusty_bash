@@ -133,19 +133,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut args = arg::dissolve_options(args);
     let r_opt = arg::consume_arg("-r", &mut args);
-    let mut backup = None;
-    if let Some(mut fd) = arg::consume_with_next_arg("-u", &mut args) {
-        if fd.starts_with("-") {
-            fd.remove(0);
-        }
 
-        if let Ok(n) = fd.parse::<i32>() {
-            if n >= 3 && n < 256 {
-                backup = Some(core.fds.backup(0));
-                let _ = core.fds.replace(n, 0);
-            }
-        }
-    }
 
     let mut limit = usize::MAX;
     let limit_str = arg::consume_with_next_arg("-n", &mut args);
@@ -164,15 +152,39 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
         };
     }
 
-    if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
-        return read_a(core, &a, r_opt, &mut limit, &delim);
+    let mut backup = None;
+    let mut fdn = 0;
+    if let Some(mut fd) = arg::consume_with_next_arg("-u", &mut args) {
+        if fd.starts_with("-") {
+            fd.remove(0);
+        }
+
+        if let Ok(n) = fd.parse::<i32>() {
+            if n >= 3 && n < 256 {
+                backup = Some(core.fds.backup(0));
+                fdn = n;
+                let _ = core.fds.replace(n, 0);
+            }
+        }
     }
 
-    let ans = read_(core, &mut args, r_opt, &mut limit, &delim);
+    let ans = if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
+        read_a(core, &a, r_opt, &mut limit, &delim)
+    }else{
+        read_(core, &mut args, r_opt, &mut limit, &delim)
+    };
 
+    //dbg!("{:?}", &core.fds);
     if let Some(fd) = backup {
-        let _ = core.fds.replace(0, fd);
-        core.fds.close(fd);
+        let _ = core.fds.replace(0, fdn);
+        let _ = core.fds.replace(fd, 0);
+        //dbg!("{:?}", &fd);
+     //   dbg!("{:?}", &core.fds);
+        //let _ = core.fds.replace(0, fd);
+        if fd >= 10 {
+            core.fds.close(fd-1); //TODO: Why -1 ?????
+            //core.fds.close(fd);
+        }
     }
 
     ans
