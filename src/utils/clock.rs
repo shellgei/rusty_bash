@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2025 @caro@mi.shellgei.org
+//SPDX-FileCopyrightText: 2025 @caro@mi.shellgei.org, @ru@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
 use nix::time;
