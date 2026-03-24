@@ -22,7 +22,7 @@ pub struct Pipeline {
 impl Pipeline {
     pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid)
     -> (Vec<Option<Pid>>, bool, Option<ExecError>) {
-        if core.sigint.load(Relaxed) { //以下4行追加
+        if core.sigint.load(Relaxed) {
             core.db.set_param("?", "130", None).unwrap();
             return (vec![], self.exclamation, Some(ExecError::Interrupted));
         }
