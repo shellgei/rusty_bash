@@ -14,7 +14,7 @@ pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub pipes: Vec<Pipe>,
     pub text: String,
-    exclamation: bool,
+    exclamation: usize,
     time: bool,
 }
 
@@ -26,7 +26,7 @@ impl Pipeline {
     ) -> (Vec<Option<Pid>>, bool, Option<ExecError>) {
         if self.commands.is_empty() {
             core.time_keeper.set(self.time);
-            return (vec![], self.exclamation, None);
+            return (vec![], self.exclamation%2 == 1, None);
         }
 
         let mut prev = -1;
@@ -40,7 +40,7 @@ impl Pipeline {
 
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
-                Err(e) => return (pids, self.exclamation, Some(e)),
+                Err(e) => return (pids, self.exclamation%2 == 1, Some(e)),
             }
 
             if i == 0 && pgid.as_raw() == 0 {
@@ -62,10 +62,10 @@ impl Pipeline {
 
         match result {
             Ok(pid) => pids.push(pid),
-            Err(e) => return (pids, self.exclamation, Some(e)),
+            Err(e) => return (pids, self.exclamation%2 == 1, Some(e)),
         }
 
-        (pids, self.exclamation, err)
+        (pids, self.exclamation%2 == 1, err)
     }
 
     /*
@@ -97,7 +97,7 @@ impl Pipeline {
     pub fn get_one_line_text(&self) -> String {
         let mut ans = String::new();
 
-        if self.exclamation {
+        if self.exclamation%2 == 1 {
             ans += "! ";
         }
 
@@ -116,7 +116,7 @@ impl Pipeline {
             false => return false,
         }
 
-        ans.exclamation = !ans.exclamation;
+        ans.exclamation += 1;
         let blank_len = feeder.scanner_blank(core);
         ans.text += &feeder.consume(blank_len);
         true
@@ -188,7 +188,7 @@ impl Pipeline {
         {}
 
         if !Self::eat_command(feeder, &mut ans, core)? {
-            match ans.exclamation || ans.time {
+            match ans.exclamation > 0 || ans.time {
                 true => return Ok(Some(ans)),
                 false => return Ok(None),
             }
