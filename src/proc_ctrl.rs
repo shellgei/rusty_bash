@@ -20,9 +20,7 @@ pub fn wait_pipeline(
 ) -> Vec<WaitStatus> {
     if pids.len() == 1 && pids[0].is_none() {
         core.time_keeper.print_diff();
-        if exclamation {
-            core.flip_exit_status();
-        }
+        core.flip_exit_status(exclamation);
         return vec![];
     }
 
@@ -40,10 +38,7 @@ pub fn wait_pipeline(
 
     core.time_keeper.print_diff();
     let _ = set_foreground(core);
-
-    if exclamation {
-        core.flip_exit_status();
-    }
+    core.flip_exit_status(exclamation);
 
     ans
 }

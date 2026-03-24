@@ -114,7 +114,11 @@ impl ShellCore {
         }
     } 
 
-    pub fn flip_exit_status(&mut self) {
+    pub fn flip_exit_status(&mut self, do_flip: bool) {
+        if ! do_flip {
+            return;
+        }
+
         let _ = match self.db.get_param("?").as_deref() {
             Ok("0") => self.db.set_param("?", "1", Some(0)),
             _       => self.db.set_param("?", "0", Some(0)),
