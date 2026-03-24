@@ -27,6 +27,11 @@ impl Pipeline {
             return (vec![], self.exclamation, Some(ExecError::Interrupted));
         }
 
+        if self.commands.is_empty() {
+            core.time_keeper.set(self.time);
+            return (vec![], self.exclamation, None);
+        }
+
         let mut prev = -1;
         let mut pids = vec![];
         let mut pgid = pgid;
@@ -67,7 +72,11 @@ impl Pipeline {
     }
 
     fn eat_time(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        match feeder.starts_with("time ") || feeder.starts_with("time\t") {
+        if ! feeder.starts_with("time") {
+            return false;
+        }
+
+        match feeder.scanner_name(core) == 4 { 
             true => self.text += &feeder.consume(4),
             false => return false,
         }
