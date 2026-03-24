@@ -112,6 +112,13 @@ impl ShellCore {
             Some(f) => {f.clone().run_as_command(args, self); true},
             None => false,
         }
+    } 
+
+    pub fn flip_exit_status(&mut self) {
+        let _ = match self.db.get_param("?").as_deref() {
+            Ok("0") => self.db.set_param("?", "1", Some(0)),
+            _       => self.db.set_param("?", "0", Some(0)),
+        };
     }
 
     fn set_subshell_parameters(&mut self) {

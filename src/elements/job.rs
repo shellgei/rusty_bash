@@ -40,9 +40,9 @@ impl Job {
 
             if do_next {
                 core.jobtable_check_status();
-                let (pids, err) = pipeline.exec(core, pgid);
+                let (pids, exclamation, err) = pipeline.exec(core, pgid);
                 //core.wait_pipeline(pids);
-                proc_ctrl::wait_pipeline(core, pids);
+                proc_ctrl::wait_pipeline(core, pids, exclamation);
 
                 if let Some(e) = err {
                     return Err(e);

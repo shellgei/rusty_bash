@@ -16,9 +16,13 @@ use std::sync::atomic::Ordering::Relaxed;
 pub fn wait_pipeline(
     core: &mut ShellCore,
     pids: Vec<Option<Pid>>,
+    exclamation: bool,
 ) -> Vec<WaitStatus> {
     if pids.len() == 1 && pids[0].is_none() {
         core.time_keeper.print_diff();
+        if exclamation {
+            core.flip_exit_status();
+        }
         return vec![];
     }
 
@@ -36,6 +40,10 @@ pub fn wait_pipeline(
 
     core.time_keeper.print_diff();
     let _ = set_foreground(core);
+
+    if exclamation {
+        core.flip_exit_status();
+    }
 
     ans
 }

@@ -20,10 +20,11 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid) -> (Vec<Option<Pid>>, Option<ExecError>) {
+    pub fn exec(&mut self, core: &mut ShellCore, pgid: Pid)
+    -> (Vec<Option<Pid>>, bool, Option<ExecError>) {
         if core.sigint.load(Relaxed) { //以下4行追加
             core.db.set_param("?", "130", None).unwrap();
-            return (vec![], Some(ExecError::Interrupted));
+            return (vec![], self.exclamation, Some(ExecError::Interrupted));
         }
 
         let mut prev = -1;
@@ -36,7 +37,7 @@ impl Pipeline {
             p.set(prev, pgid);
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
-                Err(e)  => return (pids, Some(e)),
+                Err(e)  => return (pids, self.exclamation, Some(e)),
             } 
 
             if i == 0 && pgid.as_raw() == 0 { // 最初のexecが終わったら、pgidにコマンドのPIDを記録
@@ -47,10 +48,10 @@ impl Pipeline {
 
         match self.commands[self.pipes.len()].exec(core, &mut Pipe::end(prev, pgid)) {
             Ok(pid) => pids.push(pid),
-            Err(e) => return (pids, Some(e)),
+            Err(e) => return (pids, self.exclamation, Some(e)),
         }
 
-        (pids, None)
+        (pids, self.exclamation, None)
     }
 
     fn eat_exclamation(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
