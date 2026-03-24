@@ -15,7 +15,7 @@ pub struct Pipeline {
     pub commands: Vec<Box<dyn Command>>,
     pub pipes: Vec<Pipe>,
     pub text: String,
-    exclamation: bool,
+    exclamation: usize,
     time: bool,
 }
 
@@ -65,7 +65,7 @@ impl Pipeline {
         }
 
         self.text += &feeder.consume(1);
-        self.exclamation = !self.exclamation;
+        self.exclamation += 1;
         let blank_len = feeder.scanner_blank(core);
         self.text += &feeder.consume(blank_len);
         true
@@ -130,7 +130,7 @@ impl Pipeline {
         while ans.eat_exclamation(feeder, core) || ans.eat_time(feeder, core) {}
 
         if ! Self::eat_command(feeder, &mut ans, core)? {      //最初のコマンド
-            match ans.exclamation || ans.time {
+            match ans.exclamation > 0 || ans.time {
                 true => return Ok(Some(ans)),
                 false => return Ok(None),
             } 
