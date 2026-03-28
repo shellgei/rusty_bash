@@ -110,15 +110,16 @@ impl Pipeline {
         ans
     }
 
-    fn eat_exclamation(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        match feeder.starts_with("!") {
-            true => ans.text += &feeder.consume(1),
-            false => return false,
+    fn eat_exclamation(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+        if ! feeder.starts_with("!") 
+        || feeder.starts_with("!!") || feeder.starts_with("!$") {
+            return false;
         }
 
-        ans.exclamation += 1;
+        self.text += &feeder.consume(1);
+        self.exclamation += 1;
         let blank_len = feeder.scanner_blank(core);
-        ans.text += &feeder.consume(blank_len);
+        self.text += &feeder.consume(blank_len);
         true
     }
 
@@ -183,7 +184,7 @@ impl Pipeline {
     ) -> Result<Option<Pipeline>, ParseError> {
         let mut ans = Pipeline::default();
 
-        while Self::eat_exclamation(feeder, &mut ans, core)
+        while ans.eat_exclamation(feeder, core)
             || Self::eat_time(feeder, &mut ans, core)
         {}
 
