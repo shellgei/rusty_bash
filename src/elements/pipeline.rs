@@ -66,12 +66,12 @@ impl Pipeline {
     }
 
     fn eat_time(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        match feeder.starts_with("time ") || feeder.starts_with("time\t") {
-            true => self.text += &feeder.consume(4),
-            false => return false,
-        }
+        if ! feeder.starts_with("time") || feeder.scanner_name(core) != 4 {
+            return false;
+        }   
 
         self.time = true;
+        self.text += &feeder.consume(4);
         let blank_len = feeder.scanner_blank(core);
         self.text += &feeder.consume(blank_len);
         true

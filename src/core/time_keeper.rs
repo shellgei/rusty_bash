@@ -37,12 +37,12 @@ impl TimeKeeper {
             return;
         }
 
-        let print_duration = |item, t: Duration|
-            eprintln!("\n{}\t{}m{}.{:09}s", item, t.as_secs()/60, t.as_secs()%60, t.subsec_nanos());
+        let print_duration = |t: Duration|
+            eprintln!("\nreal\t{}m{}.{:09}s", t.as_secs()/60, t.as_secs()%60, t.subsec_nanos());
         let print_time_val = |item, t: TimeVal|
             eprintln!("{}\t{}m{}.{:06}s", item, t.tv_sec()/60, t.tv_sec()%60, t.tv_usec());
 
-        print_duration("real", clock::monotonic_time() - self.real.unwrap());
+        print_duration(clock::monotonic_time() - self.real.unwrap());
 
         let (user, sys) = clock::get_user_and_sys();
         print_time_val("user", user - self.user);
