@@ -60,7 +60,10 @@ impl Pipeline {
     }
 
     fn eat_exclamation(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with("!") {
+        if ! feeder.starts_with("! ") 
+        && ! feeder.starts_with("!\t") 
+        && ! feeder.starts_with("!\n") 
+        && ! (feeder.starts_with("!") && feeder.len() == 1) {
             return false;
         }
 
@@ -72,16 +75,12 @@ impl Pipeline {
     }
 
     fn eat_time(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with("time") {
+        if ! feeder.starts_with("time") || feeder.scanner_name(core) != 4 {
             return false;
         }
 
-        match feeder.scanner_name(core) == 4 { 
-            true => self.text += &feeder.consume(4),
-            false => return false,
-        }
-
         self.time = true;
+        self.text += &feeder.consume(4);
         let blank_len = feeder.scanner_blank(core);
         self.text += &feeder.consume(blank_len);
         true

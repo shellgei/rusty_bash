@@ -13,7 +13,7 @@ use crate::utils::clock;
 use crate::error::exec::ExecError;
 use crate::elements::command::function_def::FunctionDefinition;
 use std::collections::{HashMap, HashSet};
-use std::env;
+use std::{env, process};
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -30,6 +30,10 @@ impl DataBase {
             ..Default::default()
         };
 
+        let pid = || process::id().to_string();
+        ans.params[0].insert("BASHPID".to_string(), Box::new(OnDemandSingle::new(pid)));
+        ans.set_flag("BASHPID", 'i', 0);
+
         ans.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
         ans.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
         ans.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
@@ -37,6 +41,8 @@ impl DataBase {
                              Box::new(OnDemandSingle::new(clock::get_epochseconds)));
         ans.params[0].insert("EPOCHREALTIME".to_string(),
                              Box::new(OnDemandSingle::new(clock::get_epochrealtime)));
+        ans.params[0].insert("BASH_MONOSECONDS".to_string(),
+                             Box::new(OnDemandSingle::new(clock::get_monoseconds)));
         ans
     }
 

@@ -35,3 +35,8 @@ pub fn get_user_and_sys() -> (TimeVal, TimeVal) {
 
     (user, sys)
 }
+
+pub fn get_monoseconds() -> String {
+    let real = time::clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
+    format!("{}", real.tv_sec()).to_string()
+}
