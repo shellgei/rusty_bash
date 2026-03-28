@@ -60,10 +60,7 @@ impl Pipeline {
     }
 
     fn eat_exclamation(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with("! ") 
-        && ! feeder.starts_with("!\t") 
-        && ! feeder.starts_with("!\n") 
-        && ! (feeder.starts_with("!") && feeder.len() == 1) {
+        if ! feeder.starts_with("!") {
             return false;
         }
 
