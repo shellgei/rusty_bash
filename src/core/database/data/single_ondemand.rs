@@ -1,4 +1,4 @@
-//SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDXFileCopyrightText: 2026 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
 use super::{Data, ExecError};
