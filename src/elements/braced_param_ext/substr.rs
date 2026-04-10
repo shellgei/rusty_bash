@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::OptionalOperation;
+use super::BracedParamExtension;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::substitution::variable::Variable;
 use crate::error::arith::ArithError;
@@ -15,7 +15,7 @@ pub struct Substr {
     pub length: Option<ArithmeticExpr>,
 }
 
-impl OptionalOperation for Substr {
+impl BracedParamExtension for Substr {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -28,7 +28,7 @@ impl OptionalOperation for Substr {
         self.get(text, core)
     }
 
-    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
         Box::new(self.clone())
     }
     fn has_array_replace(&self) -> bool {

@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::OptionalOperation;
+use super::BracedParamExtension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subword::single_quoted::SingleQuoted;
@@ -26,7 +26,7 @@ pub struct ValueCheck {
     in_double_quoted: bool,
 }
 
-impl OptionalOperation for ValueCheck {
+impl BracedParamExtension for ValueCheck {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -59,7 +59,7 @@ impl OptionalOperation for ValueCheck {
         }
     }
 
-    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
         Box::new(self.clone())
     }
     fn is_value_check(&self) -> bool {

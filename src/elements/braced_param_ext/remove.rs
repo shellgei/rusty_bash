@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::OptionalOperation;
+use super::BracedParamExtension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::word::{Word, WordMode};
 use crate::error::exec::ExecError;
@@ -9,7 +9,7 @@ use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::{Feeder, ShellCore};
 
-impl OptionalOperation for Remove {
+impl BracedParamExtension for Remove {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -22,7 +22,7 @@ impl OptionalOperation for Remove {
         self.set(text, core)
     }
 
-    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
         Box::new(self.clone())
     }
 

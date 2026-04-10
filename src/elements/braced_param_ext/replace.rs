@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::OptionalOperation;
+use super::BracedParamExtension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::word::{Word, WordMode};
 use crate::error::exec::ExecError;
@@ -21,7 +21,7 @@ pub struct Replace {
     pub has_replace_to: bool,
 }
 
-impl OptionalOperation for Replace {
+impl BracedParamExtension for Replace {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -37,7 +37,7 @@ impl OptionalOperation for Replace {
         }
     }
 
-    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
         Box::new(self.clone())
     }
 

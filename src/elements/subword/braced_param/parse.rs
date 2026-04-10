@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::{BracedParam, Variable};
-use crate::elements::optional_operation;
+use crate::elements::braced_param_ext;
 use crate::elements::substitution::subscript::Subscript;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
@@ -90,9 +90,9 @@ impl BracedParam {
         if Self::eat_param(feeder, &mut ans, core) {
             Self::eat_subscript(feeder, &mut ans, core)?;
 
-            if let Some(op) = optional_operation::parse(feeder, core)? {
+            if let Some(op) = braced_param_ext::parse(feeder, core)? {
                 ans.text += &op.get_text();
-                ans.optional_operation = Some(op);
+                ans.extension = Some(op);
             }
         }
         while !feeder.starts_with("}") {

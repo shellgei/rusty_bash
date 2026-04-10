@@ -3,7 +3,7 @@
 
 mod parse;
 
-use crate::elements::optional_operation::OptionalOperation;
+use crate::elements::braced_param_ext::BracedParamExtension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
@@ -16,7 +16,7 @@ pub struct BracedParam {
     text: String,
     array: Option<Vec<String>>,
     param: Variable,
-    optional_operation: Option<Box<dyn OptionalOperation>>,
+    extension: Option<Box<dyn BracedParamExtension>>,
     unknown: String,
     treat_as_array: bool,
     num: bool,
@@ -74,7 +74,7 @@ impl Subword for BracedParam {
         }
 
         if self.param.is_array() {
-            if let Some(op) = self.optional_operation.as_mut() {
+            if let Some(op) = self.extension.as_mut() {
                 if op.has_array_replace() {
                     return self.array_replace(core);
                 }
@@ -96,7 +96,7 @@ impl Subword for BracedParam {
     }
 
     fn get_elem(&mut self) -> Vec<String> {
-        if let Some(op) = self.optional_operation.as_mut() {
+        if let Some(op) = self.extension.as_mut() {
             if op.array_to_single() {
                 return vec![self.text.clone()];
             }
@@ -106,7 +106,7 @@ impl Subword for BracedParam {
     }
 
     fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        match self.optional_operation.as_mut() {
+        match self.extension.as_mut() {
             Some(op) => Ok(op.get_alternative()),
             None => Ok(vec![]),
         }
@@ -138,7 +138,7 @@ impl Subword for BracedParam {
     }
 
     fn set_heredoc_flag(&mut self) {
-        self.optional_operation
+        self.extension
             .iter_mut()
             .for_each(|e| e.set_heredoc_flag());
     }
@@ -172,7 +172,7 @@ impl BracedParam {
     }
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.optional_operation.is_some() {
+        if self.extension.is_some() {
             let msg = core.db.get_vec(&self.param.name, true)?.join(" ");
             return Err(ExecError::InvalidName(msg));
         }
@@ -196,7 +196,7 @@ impl BracedParam {
 
     fn array_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut arr = vec![];
-        let op = self.optional_operation.as_mut().unwrap();
+        let op = self.extension.as_mut().unwrap();
         op.init_array(&self.param, &mut arr, &mut self.text, core)?;
         self.array = Some(arr.clone());
         if let Some(index) = &self.param.index {
@@ -277,7 +277,7 @@ impl BracedParam {
             false => value.to_string(),
         };
 
-        self.text = self.optional_operation(self.text.clone(), core)?;
+        self.text = self.extension(self.text.clone(), core)?;
         Ok(())
     }
 
@@ -301,7 +301,7 @@ impl BracedParam {
                 "@" | "*" | "0" => param, //.unwrap_or("".to_string()),
                 _ => "".to_string(),
             };
-            self.text = self.optional_operation(tmp, core)?;
+            self.text = self.extension(tmp, core)?;
             return Ok(());
         }
 
@@ -313,7 +313,7 @@ impl BracedParam {
             self.atmark_operation(core, &ifs)
         } else {
             let tmp = core.db.get_elem(&self.param.name, &index)?;
-            self.text = self.optional_operation(tmp, core)?;
+            self.text = self.extension(tmp, core)?;
             Ok(())
         }
     }
@@ -332,10 +332,10 @@ impl BracedParam {
         };
 
         if arr.len() <= 1 || self.has_value_check() {
-            self.text = self.optional_operation(self.text.clone(), core)?;
+            self.text = self.extension(self.text.clone(), core)?;
         } else {
             for item in arr.iter_mut() {
-                *item = self.optional_operation(item.clone(), core)?;
+                *item = self.extension(item.clone(), core)?;
             }
             self.text = arr.join(ifs);
             self.array = Some(arr);
@@ -344,18 +344,18 @@ impl BracedParam {
     }
 
     fn has_value_check(&mut self) -> bool {
-        match self.optional_operation.as_mut() {
+        match self.extension.as_mut() {
             Some(op) => op.is_value_check(),
             _ => false,
         }
     }
 
-    fn optional_operation(
+    fn extension(
         &mut self,
         text: String,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
-        match self.optional_operation.as_mut() {
+        match self.extension.as_mut() {
             Some(op) => op.exec(&self.param, &text, core),
             None => Ok(text.clone()),
         }
