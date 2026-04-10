@@ -1,10 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod optional_operation;
 mod parse;
 
-use self::optional_operation::OptionalOperation;
+use crate::elements::optional_operation::OptionalOperation;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;

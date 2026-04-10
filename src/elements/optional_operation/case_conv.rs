@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::super::Variable;
 use super::OptionalOperation;
 use crate::elements::word::{Word, WordMode};
 use crate::error::exec::ExecError;
@@ -9,6 +8,7 @@ use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::{Feeder, ShellCore};
+use crate::elements::substitution::variable::Variable;
 
 impl OptionalOperation for CaseConv {
     fn get_text(&self) -> String {

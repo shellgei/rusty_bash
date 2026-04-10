@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::optional_operation;
 use super::{BracedParam, Variable};
+use crate::elements::optional_operation;
 use crate::elements::substitution::subscript::Subscript;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};

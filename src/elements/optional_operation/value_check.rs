@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::super::Variable;
 use super::OptionalOperation;
-use crate::elements::subword::SimpleSubword;
-use crate::elements::subword::SingleQuoted;
+use crate::elements::substitution::variable::Variable;
+use crate::elements::subword::simple::SimpleSubword;
+use crate::elements::subword::single_quoted::SingleQuoted;
 use crate::elements::subword::Subword;
 use crate::elements::word::{Word, WordMode};
 use crate::error::arith::ArithError;
