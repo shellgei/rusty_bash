@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod value;
-mod variable;
+pub mod variable;
 
 use crate::{Feeder, ShellCore};
 use crate::error::parse::ParseError;
