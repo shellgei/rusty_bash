@@ -111,13 +111,13 @@ pub fn parse(
     core: &mut ShellCore,
     mode: &Option<WordMode>
 ) -> Result<Option<Box<dyn Subword>>, ParseError> {
-    if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
+    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = SimpleSubword::parse(feeder){ Ok(Some(Box::new(a))) }
-    else if let Some(a) = DoubleQuoted::parse(feeder, core)? { Ok(Some(Box::new(a))) }
     else{ last_resort(feeder, core, mode) }
 }
