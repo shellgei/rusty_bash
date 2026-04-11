@@ -45,8 +45,11 @@ impl BracedParam {
 
         if Self::eat_param(feeder, &mut ans, core) {
             ans.text += &feeder.consume(1);
+        }else{
+            return Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())));
         }
 
+        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }

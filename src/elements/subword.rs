@@ -14,6 +14,7 @@ use crate::{Feeder, ShellCore};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use std::fmt;
+use self::braced_param::BracedParam;
 use self::double_quoted::DoubleQuoted;
 use self::command_sub::CommandSubstitution;
 use crate::elements::word::WordMode;
@@ -112,6 +113,7 @@ pub fn parse(
 ) -> Result<Option<Box<dyn Subword>>, ParseError> {
     if let Some(a) = SingleQuoted::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = CommandSubstitution::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
+    else if let Some(a) = BracedParam::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
     else if let Some(a) = EscapedChar::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = Parameter::parse(feeder, core){ Ok(Some(Box::new(a))) }
     else if let Some(a) = VarName::parse(feeder, core){ Ok(Some(Box::new(a))) }
