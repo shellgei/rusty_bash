@@ -23,13 +23,12 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn eat_param(feeder: &mut Feeder, ans: &mut Self,
-                 core: &mut ShellCore) {
+    fn eat_param(&mut self, feeder: &mut Feeder, core: &mut ShellCore) {
         let len = feeder.scanner_name(core);
         if len != 0 {
-            ans.param = Variable::default();
-            ans.param.text = feeder.consume(len);
-            ans.text += &ans.param.text;
+            self.param = Variable::default();
+            self.param.text = feeder.consume(len);
+            self.text += &self.param.text;
         }
     }
 
@@ -41,7 +40,7 @@ impl BracedParam {
         let mut ans = Self::default();
         ans.text += &feeder.consume(2);
 
-        Self::eat_param(feeder, &mut ans, core);
+        ans.eat_param(feeder, core);
 
         if feeder.starts_with("}") {
             ans.text += &feeder.consume(1);
