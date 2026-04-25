@@ -33,13 +33,14 @@ impl BracedParam {
         }
     }
 
-    fn eat_unknown(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    fn eat_end(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<bool, ParseError> {
         if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
         }   
 
         if feeder.starts_with("}") {
+            self.text += &feeder.consume(1);
             return Ok(true);
         }   
 
@@ -64,8 +65,7 @@ impl BracedParam {
         ans.text += &feeder.consume(2);
 
         ans.eat_param(feeder, core);
-        while ! ans.eat_unknown(feeder, core)?{}
-        ans.text += &feeder.consume(1);
+        while !ans.eat_end(feeder, core)?{}
 
         dbg!("{:?}", &ans);
         Ok(Some(ans))
