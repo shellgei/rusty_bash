@@ -60,7 +60,8 @@ impl BracedParam {
             return Ok(true);
         }
 
-        let len = match feeder.starts_with("\\}") {
+        let len = match feeder.starts_with("\\}")
+                  || feeder.starts_with("\\\\") {
             true => 2,
             false => feeder.scanner_char(),
         };
