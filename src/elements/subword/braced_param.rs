@@ -43,14 +43,13 @@ impl BracedParam {
             return Ok(true);
         }   
 
-        let unknown = match feeder.starts_with("\\}") {
-            true => feeder.consume(2),
-            false => {
-                let len = feeder.scanner_char();
-                feeder.consume(len)
-            }   
+        let len = match feeder.starts_with("\\}")
+                  || feeder.starts_with("\\\\") {
+            true => 2,
+            false => feeder.scanner_char(),
         };  
 
+        let unknown = feeder.consume(len);
         self.unknown += &unknown.clone();
         self.text += &unknown;
         Ok(false)
