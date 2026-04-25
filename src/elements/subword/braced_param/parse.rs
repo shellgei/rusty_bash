@@ -50,13 +50,14 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat_unknown(
-        feeder: &mut Feeder,
-        ans: &mut Self,
-        core: &mut ShellCore,
-    ) -> Result<(), ParseError> {
+    fn eat_unknown(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
         if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
+        }
+
+        if feeder.starts_with("}") {
+            return Ok(true);
         }
 
         let unknown = match feeder.starts_with("\\}") {
@@ -67,9 +68,9 @@ impl BracedParam {
             }
         };
 
-        ans.unknown += &unknown.clone();
-        ans.text += &unknown;
-        Ok(())
+        self.unknown += &unknown.clone();
+        self.text += &unknown;
+        Ok(false)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
@@ -95,9 +96,7 @@ impl BracedParam {
                 ans.extension = Some(op);
             }
         }
-        while !feeder.starts_with("}") {
-            Self::eat_unknown(feeder, &mut ans, core)?;
-        }
+        while ! ans.eat_unknown(feeder, core)?{}
 
         ans.text += &feeder.consume(1);
         Ok(Some(ans))
