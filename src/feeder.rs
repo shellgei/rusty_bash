@@ -146,4 +146,8 @@ impl Feeder {
     pub fn len(&self) -> usize {
         self.remaining.len()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.remaining.is_empty()
+    }
 }
