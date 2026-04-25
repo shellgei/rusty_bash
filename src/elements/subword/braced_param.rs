@@ -10,7 +10,6 @@ use super::Subword;
 pub struct BracedParam {
     text: String,
     param: Variable,
-    unknown: String,
 }
 
 impl Subword for BracedParam {
@@ -33,27 +32,10 @@ impl BracedParam {
         }
     }
 
-    fn eat_end(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<bool, ParseError> {
-        if feeder.is_empty() {
-            feeder.feed_additional_line(core)?;
-        }   
-
+    fn eat_end(&mut self, feeder: &mut Feeder) {
         if feeder.starts_with("}") {
             self.text += &feeder.consume(1);
-            return Ok(true);
         }   
-
-        let len = match feeder.starts_with("\\}")
-                  || feeder.starts_with("\\\\") {
-            true => 2,
-            false => feeder.scanner_char(),
-        };  
-
-        let unknown = feeder.consume(len);
-        self.unknown += &unknown.clone();
-        self.text += &unknown;
-        Ok(false)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
@@ -65,7 +47,7 @@ impl BracedParam {
         ans.text += &feeder.consume(2);
 
         ans.eat_param(feeder, core);
-        while !ans.eat_end(feeder, core)?{}
+        ans.eat_end(feeder);
 
         dbg!("{:?}", &ans);
         Ok(Some(ans))
