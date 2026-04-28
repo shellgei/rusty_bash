@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{arg, ShellCore};
+use crate::{ShellCore, arg};
 use nix::libc;
 use nix::sys::resource;
 use nix::sys::resource::{Resource, rlim_t};

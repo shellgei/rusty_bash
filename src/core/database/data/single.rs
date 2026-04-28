@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::{case_change, Data};
+use super::{Data, case_change};
 use crate::error::exec::ExecError;
 use crate::utils;
 
@@ -102,7 +102,7 @@ impl Data for SingleData {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }

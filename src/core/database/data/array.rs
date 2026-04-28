@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::{case_change, Data};
+use super::{Data, case_change};
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
@@ -75,8 +75,7 @@ impl Data for ArrayData {
         Ok(())
     }
 
-    fn set_as_array(&mut self, name: &str, key: &str,
-                    value: &str) -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, key: &str, value: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
 
         let n = self.index_of(key)?;
@@ -88,8 +87,12 @@ impl Data for ArrayData {
         Ok(())
     }
 
-    fn append_to_array_elem(&mut self, name: &str, key: &str,
-                            value: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(
+        &mut self,
+        name: &str,
+        key: &str,
+        value: &str,
+    ) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         let n = self.index_of(key)?;
         let mut value = if let Some(v) = self.body.get(&n) {
@@ -192,7 +195,7 @@ impl Data for ArrayData {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }

@@ -1,42 +1,56 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use super::data::random::RandomVar;
+use super::data::seconds::Seconds;
+use super::data::single_ondemand::OnDemandSingle;
+use super::data::srandom::SRandomVar;
 use crate::core::DataBase;
-use crate::core::database::{Data, IntData, Uninit, AssocData, IntAssocData, ArrayData, IntArrayData, OnDemandArray};
+use crate::core::database::{
+    ArrayData, AssocData, Data, IntArrayData, IntAssocData, IntData, OnDemandArray, Uninit,
+};
 use crate::error::exec::ExecError;
 use crate::utils;
 use crate::utils::clock;
-use super::data::single_ondemand::OnDemandSingle;
-use super::data::random::RandomVar;
-use super::data::seconds::Seconds;
-use super::data::srandom::SRandomVar;
-use std::{env, process};
 use nix::unistd;
+use std::{env, process};
 
 impl DataBase {
     pub(super) fn initialize(&mut self) -> Result<(), String> {
         self.exit_status = 0;
-    
+
         self.set_param("$", &process::id().to_string(), None)?;
         //self.set_param("BASHPID", &process::id().to_string(), None)?;
         let bashpid = || process::id().to_string();
-        self.params[0].insert("BASHPID".to_string(), Box::new(OnDemandSingle::new(bashpid)));
+        self.params[0].insert(
+            "BASHPID".to_string(),
+            Box::new(OnDemandSingle::new(bashpid)),
+        );
         self.set_flag("BASHPID", 'i', 0);
         self.set_param("BASH_SUBSHELL", "0", None)?;
         self.set_param("HOME", &env::var("HOME").unwrap_or("/".to_string()), None)?;
         self.set_param("OPTIND", "1", None)?;
         self.set_param("IFS", " \t\n", None)?;
-    
+
         self.init_as_num("UID", &unistd::getuid().to_string(), None)?;
         self.set_flag("UID", 'i', 0);
         self.set_flag("UID", 'r', 0);
-    
+
         self.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
         self.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));
         self.params[0].insert("SECONDS".to_string(), Box::new(Seconds::new()));
-        self.params[0].insert("EPOCHSECONDS".to_string(), Box::new(OnDemandSingle::new(clock::get_epochseconds)));
-        self.params[0].insert("EPOCHREALTIME".to_string(), Box::new(OnDemandSingle::new(clock::get_epochrealtime)));
-        self.params[0].insert("GROUPS".to_string(), Box::new(OnDemandArray::new(utils::groups)));
+        self.params[0].insert(
+            "EPOCHSECONDS".to_string(),
+            Box::new(OnDemandSingle::new(clock::get_epochseconds)),
+        );
+        self.params[0].insert(
+            "EPOCHREALTIME".to_string(),
+            Box::new(OnDemandSingle::new(clock::get_epochrealtime)),
+        );
+        self.params[0].insert(
+            "GROUPS".to_string(),
+            Box::new(OnDemandArray::new(utils::groups)),
+        );
 
         self.init_array("BASH_SOURCE", Some(vec![]), None, false)?;
         self.init_array("BASH_ARGC", Some(vec![]), None, false)?;
@@ -50,7 +64,11 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn init_as_num(&mut self, name: &str, value: &str, scope: Option<usize>,
+    pub fn init_as_num(
+        &mut self,
+        name: &str,
+        value: &str,
+        scope: Option<usize>,
     ) -> Result<(), ExecError> {
         self.check_on_write(name, &Some(vec![]))?;
 
@@ -108,11 +126,11 @@ impl DataBase {
         self.check_on_write(name, &None)?;
 
         let obj = if i_flag {
-            Box::new(IntAssocData::new()) as Box::<dyn Data>
+            Box::new(IntAssocData::new()) as Box<dyn Data>
         } else if set_array {
-            Box::new(AssocData::new()) as Box::<dyn Data>
+            Box::new(AssocData::new()) as Box<dyn Data>
         } else {
-            Box::new(Uninit::new("A")) as Box::<dyn Data>
+            Box::new(Uninit::new("A")) as Box<dyn Data>
         };
 
         let scope = self.get_target_scope(name, scope);

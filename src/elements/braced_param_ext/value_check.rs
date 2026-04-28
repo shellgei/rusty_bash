@@ -3,9 +3,9 @@
 
 use super::BracedParamExtension;
 use crate::elements::substitution::variable::Variable;
+use crate::elements::subword::Subword;
 use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subword::single_quoted::SingleQuoted;
-use crate::elements::subword::Subword;
 use crate::elements::word::{Word, WordMode};
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
@@ -93,17 +93,17 @@ impl ValueCheck {
 
         if self.in_double_quoted {
             for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
-//                if e.is_escaped_char() {
-                    match e.get_text() {
-                        "\\$" | "\\\\" | "\\\"" | "\\`" => {}
-                        txt => {
-                            let sw = SimpleSubword {
-                                text: txt.to_string(),
-                            };
-                            *e = Box::new(sw);
-                        }
+                //                if e.is_escaped_char() {
+                match e.get_text() {
+                    "\\$" | "\\\\" | "\\\"" | "\\`" => {}
+                    txt => {
+                        let sw = SimpleSubword {
+                            text: txt.to_string(),
+                        };
+                        *e = Box::new(sw);
                     }
- //               }
+                }
+                //               }
             }
 
             self.alternative_value = Some(v.dollar_expansion(core)?);

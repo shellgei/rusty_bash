@@ -11,12 +11,12 @@ use super::subword::Subword;
 use crate::elements::subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{utils, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, utils};
 
 #[derive(Debug, Clone)]
 pub enum WordMode {
     Alias,
-//    AlterWord,
+    //    AlterWord,
     Arithmetic,
     AssocIndex,
     EvalLet,
@@ -269,8 +269,8 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::Arithmetic) 
-            //| Some(WordMode::AlterWord) 
+            Some(WordMode::Arithmetic)
+            //| Some(WordMode::AlterWord)
             | Some(WordMode::CompgenF) => {
                 if feeder.starts_with("}") {
                     return false;
@@ -296,7 +296,7 @@ impl Word {
                 if feeder.starts_withs(&["]", "}"]) || feeder.scanner_math_symbol(core) != 0 {
                     return false;
                 }
-            },
+            }
             /*
             Some(WordMode::AlterWord) => {
                 if feeder.starts_with("}") {

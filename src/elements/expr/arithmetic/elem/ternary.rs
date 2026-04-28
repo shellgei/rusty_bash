@@ -3,9 +3,9 @@
 
 use super::super::calculator;
 use super::super::{ArithElem, ArithmeticExpr};
+use crate::ShellCore;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::ShellCore;
 
 pub fn operation(
     left: &Option<ArithmeticExpr>,
@@ -38,7 +38,7 @@ pub fn operation(
         ArithElem::Float(_) => {
             return Err(ExecError::Other(
                 "float condition is not permitted".to_string(),
-            ))
+            ));
         }
         _ => left.eval_in_cond(core)?,
     };

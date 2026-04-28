@@ -7,7 +7,7 @@ use crate::elements::job::Job;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{utils, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, utils};
 
 #[derive(Debug, Clone, Default)]
 pub struct RepeatCommand {

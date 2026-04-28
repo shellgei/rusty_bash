@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::ShellCore;
 use crate::core::CompletionEntry;
 use crate::utils::arg;
-use crate::ShellCore;
 
 fn compopt_set(info: &mut CompletionEntry, plus: &[String], minus: &[String]) -> i32 {
     for opt in minus {

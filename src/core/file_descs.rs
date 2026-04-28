@@ -4,16 +4,16 @@
 extern crate libc;
 use libc::dup2;
 use libc::fcntl;
-use libc::{F_GETFD, F_DUPFD_CLOEXEC};
+use libc::{F_DUPFD_CLOEXEC, F_GETFD};
 
 use crate::error::exec::ExecError;
-use nix::unistd::Pid;
-use std::os::fd::{OwnedFd, FromRawFd, RawFd};
 use nix::unistd;
-use std::os::fd::AsRawFd;
+use nix::unistd::Pid;
 use std::fs::File;
+use std::os::fd::AsRawFd;
+use std::os::fd::{FromRawFd, OwnedFd, RawFd};
 
-/* We want to control all opening FDs with this. 
+/* We want to control all opening FDs with this.
  * However, I have no idea how to handle
  * files and std{in, out, err}. */
 #[derive(Default, Debug)]
@@ -31,9 +31,8 @@ impl FileDescriptors {
         data
     }
 
-    pub fn dupfd_cloexec(&mut self, from: RawFd,
-                                hereafter: RawFd) -> Result<RawFd, ExecError> {
-        let fd = unsafe{fcntl(from, F_DUPFD_CLOEXEC, hereafter)};
+    pub fn dupfd_cloexec(&mut self, from: RawFd, hereafter: RawFd) -> Result<RawFd, ExecError> {
+        let fd = unsafe { fcntl(from, F_DUPFD_CLOEXEC, hereafter) };
         if fd < 0 {
             return Err(ExecError::Other("bad fd".to_string()));
         }
@@ -57,7 +56,7 @@ impl FileDescriptors {
     }
 
     pub fn close(&mut self, fd: RawFd) {
-        if fd < 0 || fd >= 256 {
+        if !(0..256).contains(&fd) {
             return;
         }
         self.fds[fd as usize] = None;
@@ -76,7 +75,7 @@ impl FileDescriptors {
     }
 
     pub fn backup(&mut self, from: RawFd) -> RawFd {
-        if unsafe{fcntl(from, F_GETFD)} == -1 {
+        if unsafe { fcntl(from, F_GETFD) } == -1 {
             return from;
         }
         self.dupfd_cloexec(from, 10).unwrap()
@@ -87,7 +86,7 @@ impl FileDescriptors {
             return Ok(());
         }
 
-        if unsafe{dup2(from, to)} < 0 {
+        if unsafe { dup2(from, to) } < 0 {
             return Err(ExecError::Other("dup2 error".to_string()));
         }
 
@@ -101,9 +100,9 @@ impl FileDescriptors {
             return Err(ExecError::Other("minus fd number".to_string()));
         }
 
-        if unsafe{dup2(from, to)} < 0 {
+        if unsafe { dup2(from, to) } < 0 {
             //return Err(ExecError::Other("dup2 error".to_string()));
-            return Err(ExecError:: BadFd(from));
+            return Err(ExecError::BadFd(from));
         }
 
         Ok(())

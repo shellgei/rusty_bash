@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use super::GlobElem;
 use super::comparator;
 use super::parser;
-use super::GlobElem;
 use crate::exit;
 
 pub fn shave(cands: &mut Vec<String>, prefix: char, patterns: &[String]) {
@@ -142,7 +142,7 @@ pub fn scan(remaining: &str) -> (usize, Option<GlobElem>) {
                     return {
                         patterns.push(chars.iter().collect());
                         (len, Some(GlobElem::ExtGlob(prefix, patterns)))
-                    }
+                    };
                 }
                 _ => nest -= 1,
             }

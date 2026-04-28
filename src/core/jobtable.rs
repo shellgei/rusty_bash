@@ -1,17 +1,17 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::error::exec::ExecError;
 use crate::ShellCore;
+use crate::error::exec::ExecError;
 use nix::sys::signal;
 use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd;
 use nix::unistd::Pid;
-use std::{thread, time};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
+use std::{thread, time};
 
 #[derive(Debug, Default)]
 pub struct JobEntry {
@@ -34,13 +34,13 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool) -> Result<(),
             if s != WaitStatus::StillAlive || !still(status) {
                 *status = s;
             }
-        },
+        }
         Err(e) => {
-            if ! coproc {
+            if !coproc {
                 return Err(ExecError::Errno(e));
             }
             *status = WaitStatus::Exited(*pid, 0);
-        },
+        }
     }
 
     Ok(())
@@ -245,21 +245,19 @@ impl JobEntry {
     pub fn block_wait(&mut self) -> Result<(i32, bool), ExecError> {
         let n = self.update_status(true, false)?;
         let mut finished = false;
-    
-        if self.display_status == "Done"
-            || self.display_status == "Killed" {
-                finished = true;
-        }   
+
+        if self.display_status == "Done" || self.display_status == "Killed" {
+            finished = true;
+        }
         Ok((n, finished))
     }
 
     pub fn nonblock_wait(&mut self, sigint: &Arc<AtomicBool>) -> Result<(i32, bool), ExecError> {
         loop {
             let n = self.update_status(false, false)?;
-            if self.display_status == "Done"
-                || self.display_status == "Killed" {
-                    return Ok((n, true));
-            }   
+            if self.display_status == "Done" || self.display_status == "Killed" {
+                return Ok((n, true));
+            }
 
             if sigint.load(Relaxed) {
                 return Ok((130, false));
@@ -268,7 +266,6 @@ impl JobEntry {
             thread::sleep(time::Duration::from_millis(10));
         }
     }
-
 }
 
 impl ShellCore {
@@ -277,15 +274,15 @@ impl ShellCore {
         let _ = self.db.unset(&name, None, false);
         let _ = self.db.unset(&(name.clone() + "_PID"), None, false);
 
-        if let Ok(fd0) = self.db.get_elem(&name, "0") {
-            if let Ok(n) = fd0.parse::<i32>() {
-                let _ = unsafe{libc::close(n)};
-            }
+        if let Ok(fd0) = self.db.get_elem(&name, "0")
+            && let Ok(n) = fd0.parse::<i32>()
+        {
+            let _ = unsafe { libc::close(n) };
         }
-        if let Ok(fd1) = self.db.get_elem(&name, "1") {
-            if let Ok(n) = fd1.parse::<i32>() {
-                let _ = unsafe{libc::close(n)};
-            }
+        if let Ok(fd1) = self.db.get_elem(&name, "1")
+            && let Ok(n) = fd1.parse::<i32>()
+        {
+            let _ = unsafe { libc::close(n) };
         }
 
         let _ = self.db.unset(&(name), None, false);
@@ -304,9 +301,9 @@ impl ShellCore {
                 stopped.push(i);
             }
 
-            if  table.coproc_name.is_some() 
-            && (table.display_status == "Done" 
-                || table.display_status == "Killed") {
+            if table.coproc_name.is_some()
+                && (table.display_status == "Done" || table.display_status == "Killed")
+            {
                 self.close_coproc(i);
             }
         }
@@ -347,8 +344,10 @@ impl ShellCore {
     }
 
     pub fn get_jobentry_pid_by_coproc_name(&mut self, name: &str) -> Option<Pid> {
-        let ans = self.job_table.iter_mut().find(|e| e.coproc_name.is_some() 
-                                                 && e.coproc_name.as_ref().unwrap() == name)?;
+        let ans = self
+            .job_table
+            .iter_mut()
+            .find(|e| e.coproc_name.is_some() && e.coproc_name.as_ref().unwrap() == name)?;
 
         Some(ans.pids[0])
     }

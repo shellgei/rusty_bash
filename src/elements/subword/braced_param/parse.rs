@@ -50,8 +50,11 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat_unknown(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<bool, ParseError> {
+    fn eat_unknown(
+        &mut self,
+        feeder: &mut Feeder,
+        core: &mut ShellCore,
+    ) -> Result<bool, ParseError> {
         if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
         }
@@ -60,8 +63,7 @@ impl BracedParam {
             return Ok(true);
         }
 
-        let len = match feeder.starts_with("\\}")
-                  || feeder.starts_with("\\\\") {
+        let len = match feeder.starts_with("\\}") || feeder.starts_with("\\\\") {
             true => 2,
             false => feeder.scanner_char(),
         };
@@ -95,7 +97,7 @@ impl BracedParam {
                 ans.extension = Some(op);
             }
         }
-        while ! ans.eat_unknown(feeder, core)?{}
+        while !ans.eat_unknown(feeder, core)? {}
 
         ans.text += &feeder.consume(1);
         Ok(Some(ans))

@@ -25,7 +25,7 @@ impl Script {
             job.exec(core, end == "&")?;
 
             let es = core.db.exit_status;
-            if es != 0 && ! core.error_script_run {
+            if es != 0 && !core.error_script_run {
                 utils::run_error_script(core);
             }
             core.db.exit_status = es;
@@ -156,9 +156,7 @@ impl Script {
                     ans.unalias(core);
                     return Ok(Some(ans));
                 }
-                Status::NeedMoreLine => {
-                    feeder.feed_additional_line(core)?
-                }
+                Status::NeedMoreLine => feeder.feed_additional_line(core)?,
                 Status::UnexpectedSymbol(s) => {
                     let _ = core
                         .db

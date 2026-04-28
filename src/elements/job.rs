@@ -7,7 +7,7 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::signal;
 use crate::utils::exit;
-use crate::{proc_ctrl, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, proc_ctrl};
 use nix::sys::wait::WaitStatus;
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
@@ -91,7 +91,7 @@ impl Job {
     }
 
     fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
-        let backup = core.tty_fd.clone();//core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
+        let backup = core.tty_fd; //core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
         core.tty_fd = None;
 
         let pids = if self.pipelines.len() == 1 {
@@ -272,7 +272,7 @@ impl Job {
             true => {
                 ans.read_heredoc(feeder, core)?;
                 Ok(Some(ans))
-            },
+            }
             false => Ok(None),
         }
     }

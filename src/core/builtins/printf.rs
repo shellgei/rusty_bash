@@ -4,8 +4,8 @@
 use crate::elements::substitution::Substitution;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::{error, Feeder, ShellCore};
-use std::io::{stdout, Write};
+use crate::{Feeder, ShellCore, error};
+use std::io::{Write, stdout};
 
 #[derive(Debug, Clone)]
 enum PrintfToken {
@@ -174,7 +174,7 @@ impl PrintfToken {
                     .replace("!", "\\!")
                     .replace("&", "\\&");
 
-                if q == "" {
+                if q.is_empty() {
                     q = "''".to_string();
                 }
 
@@ -362,10 +362,11 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
         ans += &tok.render_value(args)?;
     }
 
-    if !args.is_empty() && !fin {
-        if let Ok(s) = format(pattern, args) {
-            ans += &s;
-        }
+    if !args.is_empty()
+        && !fin
+        && let Ok(s) = format(pattern, args)
+    {
+        ans += &s;
     }
     Ok(ans)
 }

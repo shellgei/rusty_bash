@@ -151,11 +151,7 @@ impl ArithmeticExpr {
             |n| n + b'0'
         } else if base <= 36 {
             |n| {
-                if n < 10 {
-                    n + b'0'
-                } else {
-                    n - 10 + b'A'
-                }
+                if n < 10 { n + b'0' } else { n - 10 + b'A' }
             }
         } else {
             |n| {

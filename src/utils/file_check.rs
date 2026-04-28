@@ -8,8 +8,8 @@ use faccess;
 use faccess::PathExt;
 use nix::unistd;
 use std::fs;
-use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 use std::os::fd::RawFd;
+use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 
 #[cfg(target_os = "android")]
 use std::os::android::fs::MetadataExt;
@@ -110,7 +110,7 @@ pub fn is_writable(name: &str) -> bool {
 }
 
 pub fn is_tty(fd: RawFd) -> bool {
-    unsafe{isatty(fd) == 1}
+    unsafe { isatty(fd) == 1 }
 }
 
 pub fn is_tty_str(name: &str) -> bool {
@@ -119,5 +119,5 @@ pub fn is_tty_str(name: &str) -> bool {
         _ => return false,
     };
     is_tty(fd)
-  //  unistd::isatty(fd) == Ok(true)
+    //  unistd::isatty(fd) == Ok(true)
 }

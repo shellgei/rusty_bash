@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::core::builtins;
-use crate::utils::arg;
 use crate::ShellCore;
+use crate::core::builtins;
 use crate::signal;
+use crate::utils::arg;
 use nix::sys::signal::Signal;
 use nix::unistd;
 use nix::unistd::Pid;

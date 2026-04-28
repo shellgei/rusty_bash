@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::error::parse::ParseError;
-use crate::{file_check, Feeder, Script, ShellCore};
+use crate::{Feeder, Script, ShellCore, file_check};
 
 fn check_error(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.db.flags.contains('r') && args[1].contains('/') {
@@ -48,7 +48,9 @@ pub fn source(core: &mut ShellCore, args: &[String]) -> i32 {
     core.source_files.push(args[1].to_string());
     core.db.position_parameters.push(args[1..].to_vec());
     source.insert(0, args[1].clone());
-    let _ = core.db.init_array("BASH_SOURCE", Some(source.clone()), None, false);
+    let _ = core
+        .db
+        .init_array("BASH_SOURCE", Some(source.clone()), None, false);
 
     feeder.main_feeder = true;
     while let Ok(()) = feeder.feed_line(core) {

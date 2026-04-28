@@ -6,7 +6,7 @@ pub mod hash;
 pub mod parser;
 pub mod run_internal;
 
-use crate::{proc_ctrl, ShellCore};
+use crate::{ShellCore, proc_ctrl};
 
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -136,21 +136,20 @@ impl SimpleCommand {
             return Err(ExecError::Other(msg));
         }
 
-        if self.args[0] == "command" && self.args.len() > 1 {
-            if core.subst_builtins.contains_key(&self.args[1])
-            || core.db.functions.contains_key(&self.args[1]) {
-                self.args.remove(0);
-            }
+        if self.args[0] == "command"
+            && self.args.len() > 1
+            && (core.subst_builtins.contains_key(&self.args[1])
+                || core.db.functions.contains_key(&self.args[1]))
+        {
+            self.args.remove(0);
         }
 
         let internal = core.builtins.contains_key(&self.args[0])
-                       || core.subst_builtins.contains_key(&self.args[0])
-                       || core.db.functions.contains_key(&self.args[0]);
+            || core.subst_builtins.contains_key(&self.args[0])
+            || core.db.functions.contains_key(&self.args[0]);
 
-        if self.force_fork
-            || (!pipe.lastpipe && pipe.is_connected())
-            || !internal {
-            if ! internal {
+        if self.force_fork || (!pipe.lastpipe && pipe.is_connected()) || !internal {
+            if !internal {
                 self.command_path = hash::get_and_regist(self, core)?;
             }
             self.fork_exec(core, pipe)
@@ -191,12 +190,12 @@ impl SimpleCommand {
         for s in self.substitutions.iter_mut() {
             if let Err(e) = s.eval(core, None, false) {
                 core.db.exit_status = 1;
-                if !core.db.flags.contains('i') {
-                    if let ExecError::SyntaxError(_) = e {
-                        e.print(core);
-                        let msg = "`".to_owned() + &s.text.clone() + "'";
-                        return Err(ExecError::Other(msg));
-                    }
+                if !core.db.flags.contains('i')
+                    && let ExecError::SyntaxError(_) = e
+                {
+                    e.print(core);
+                    let msg = "`".to_owned() + &s.text.clone() + "'";
+                    return Err(ExecError::Other(msg));
                 }
                 return Err(e);
             }

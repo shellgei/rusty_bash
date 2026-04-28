@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::ShellCore;
 use crate::elements::subword::Subword;
 use crate::elements::word::Word;
-use crate::ShellCore;
 type SplitResult = (usize, Vec<(Box<dyn Subword>, bool)>);
 
 pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {

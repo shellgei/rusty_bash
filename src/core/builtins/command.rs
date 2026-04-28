@@ -4,7 +4,7 @@
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
-use crate::{error, file_check, proc_ctrl, utils, ShellCore};
+use crate::{ShellCore, error, file_check, proc_ctrl, utils};
 
 pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
@@ -78,11 +78,9 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
 }
 
 pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
-    if args.len() > 1 {
-        if core.subst_builtins.contains_key(&args[1]) {
-            //TODO
-            return super::error_(1, &args[0], "substitution command are not supported", core);
-        }
+    if args.len() > 1 && core.subst_builtins.contains_key(&args[1]) {
+        //TODO
+        return super::error_(1, &args[0], "substitution command are not supported", core);
     }
 
     let mut args = arg::dissolve_options(args);

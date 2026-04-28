@@ -1,12 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::variable;
 use super::ArithElem;
+use super::variable;
+use crate::ShellCore;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
-use crate::ShellCore;
 
 pub fn unary_calc(op: &str, num: i128, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
@@ -26,11 +26,7 @@ pub fn bin_calc(
     stack: &mut Vec<ArithElem>,
 ) -> Result<(), ArithError> {
     let bool_to_01 = |b| {
-        if b {
-            1
-        } else {
-            0
-        }
+        if b { 1 } else { 0 }
     };
 
     let ans = match op {

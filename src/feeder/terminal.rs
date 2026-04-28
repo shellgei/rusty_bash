@@ -6,7 +6,7 @@ mod key;
 
 use crate::error::input::InputError;
 use crate::utils::{arg, file};
-use crate::{file_check, ShellCore};
+use crate::{ShellCore, file_check};
 use nix::unistd;
 use nix::unistd::User;
 use std::fs::File;
