@@ -4,6 +4,7 @@
 use super::{BracedParam, Variable};
 use crate::elements::braced_param_ext;
 use crate::elements::substitution::subscript::Subscript;
+use crate::elements::subword;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 
@@ -50,15 +51,34 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat_unknown(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    fn eat_end(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<bool, ParseError> {
         if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
         }
 
         if feeder.starts_with("}") {
+            self.text += &feeder.consume(1);
             return Ok(true);
         }
+        if let Some(a) = subword::parse(feeder, core, &None)? {
+            self.unknown += &a.get_text();
+            self.text += &a.get_text();
+            return Ok(false);
+        }
+
+        /*
+        if let Some(a) = SingleQuoted::parse(feeder, core, &None) {
+            self.unknown += &a.text.clone();
+            self.text += &a.text;
+            return Ok(false);
+        }
+
+        if let Some(a) = DoubleQuoted::parse(feeder, core, &None)? {
+            self.unknown += &a.get_text();
+            self.text += &a.get_text();
+            return Ok(false);
+        }*/
 
         let len = match feeder.starts_with("\\}")
                   || feeder.starts_with("\\\\") {
@@ -95,9 +115,8 @@ impl BracedParam {
                 ans.extension = Some(op);
             }
         }
-        while ! ans.eat_unknown(feeder, core)?{}
+        while ! ans.eat_end(feeder, core)?{}
 
-        ans.text += &feeder.consume(1);
         Ok(Some(ans))
     }
 }
