@@ -2,6 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::substitution::variable::Variable;
+use crate::elements::subword;
+use crate::elements::subword::WordMode;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 use super::Subword;
@@ -37,18 +39,19 @@ impl BracedParam {
     -> Result<bool, ParseError> {
         if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
-        }   
+        }
 
         if feeder.starts_with("}") {
             self.text += &feeder.consume(1);
             return Ok(true);
-        }   
-
-        let len = feeder.scanner_char();
-        let unknown = feeder.consume(len);
-        self.unknown += &unknown.clone();
-        self.text += &unknown;
-        Ok(false)
+        }
+        if let Some(a) = subword::parse(feeder, core,
+                             &Some(WordMode::PermitAnyChar))? {
+            self.unknown += &a.get_text();
+            self.text += &a.get_text();
+            return Ok(false);
+        }
+        Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
