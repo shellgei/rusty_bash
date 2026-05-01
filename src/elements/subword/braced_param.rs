@@ -26,8 +26,7 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let value = core.db.get_param(&self.param.text)?;
-        self.text = value.to_string();
+        self.text = core.db.get_param(&self.param.text)?;
         Ok(())
     }
 }
