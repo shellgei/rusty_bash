@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::substitution::variable::Variable;
+use crate::elements::subword::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 use super::Subword;
@@ -19,6 +20,11 @@ impl Subword for BracedParam {
 
     fn boxed_clone(&self) -> Box<dyn Subword> {
         Box::new(self.clone())
+    }
+
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        self.text = core.db.get_param(&self.param.text)?;
+        Ok(())
     }
 }
 
