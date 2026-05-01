@@ -5,6 +5,7 @@ use super::{BracedParam, Variable};
 use crate::elements::braced_param_ext;
 use crate::elements::substitution::subscript::Subscript;
 use crate::elements::subword;
+use crate::elements::word::WordMode;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 
@@ -61,35 +62,13 @@ impl BracedParam {
             self.text += &feeder.consume(1);
             return Ok(true);
         }
-        if let Some(a) = subword::parse(feeder, core, &None)? {
+        if let Some(a) = subword::parse(feeder, core,
+                             &Some(WordMode::PermitAnyChar))? {
             self.unknown += &a.get_text();
             self.text += &a.get_text();
             return Ok(false);
         }
-
-        /*
-        if let Some(a) = SingleQuoted::parse(feeder, core, &None) {
-            self.unknown += &a.text.clone();
-            self.text += &a.text;
-            return Ok(false);
-        }
-
-        if let Some(a) = DoubleQuoted::parse(feeder, core, &None)? {
-            self.unknown += &a.get_text();
-            self.text += &a.get_text();
-            return Ok(false);
-        }*/
-
-        let len = match feeder.starts_with("\\}")
-                  || feeder.starts_with("\\\\") {
-            true => 2,
-            false => feeder.scanner_char(),
-        };
-
-        let unknown = feeder.consume(len);
-        self.unknown += &unknown.clone();
-        self.text += &unknown;
-        Ok(false)
+        Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
