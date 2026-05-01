@@ -45,6 +45,7 @@ impl BracedParam {
             self.text += &feeder.consume(1);
             return Ok(true);
         }
+
         if let Some(a) = subword::parse(feeder, core,
                              &Some(WordMode::PermitAnyChar))? {
             self.unknown += &a.get_text();
