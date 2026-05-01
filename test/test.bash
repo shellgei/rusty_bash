@@ -858,5 +858,10 @@ res=$($com <<< 'A=aaa ; unset A ; echo $A')
 res=$($com <<< 'f () { local a=bbb ; unset a ; } ; a=ccc ; f ; echo $a')
 [ "$res" = "ccc" ] || err $LINENO
 
+#res=$($com <<< 'A=${ }; echo NG')
+#[ "$ref" != "NG" ] || err $LINENO
+#
+#res=$($com <<< 'A=${ }')
+#[ "$?" == 1 ] || err $LINENO
 
 echo OK $0
