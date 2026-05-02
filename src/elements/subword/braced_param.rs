@@ -31,11 +31,11 @@ impl Subword for BracedParam {
 impl BracedParam {
     fn eat_param(&mut self, feeder: &mut Feeder, core: &mut ShellCore) {
         let len = feeder.scanner_name(core);
-        if len != 0 {
-            self.param = Variable::default();
-            self.param.text = feeder.consume(len);
-            self.text += &self.param.text;
+        if len == 0 {
+            return;
         }
+        self.param.text = feeder.consume(len);
+        self.text += &self.param.text;
     }
 
     fn eat_end(&mut self, feeder: &mut Feeder) {
