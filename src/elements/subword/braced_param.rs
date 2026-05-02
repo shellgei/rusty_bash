@@ -11,6 +11,7 @@ use super::Subword;
 pub struct BracedParam {
     text: String,
     param: Variable,
+    unknown: String,
 }
 
 impl Subword for BracedParam {
@@ -23,6 +24,10 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if self.param.text.is_empty() || !self.unknown.is_empty() {
+            return Err(ExecError::BadSubstitution(self.text.clone()));
+        }
+
         self.text = core.db.get_param(&self.param.text)?;
         Ok(())
     }
