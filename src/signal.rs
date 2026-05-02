@@ -2,17 +2,17 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 extern crate libc;
-use libc::{dup2, close};
+use libc::{close, dup2};
 
+use crate::Script;
 use crate::core::ShellCore;
 use crate::feeder::Feeder;
-use crate::Script;
 use nix::sys::signal;
 use nix::sys::signal::{SigHandler, Signal};
 use signal_hook::consts;
 use signal_hook::iterator::Signals;
-use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
+use std::sync::atomic::Ordering::Relaxed;
 use std::{thread, time};
 
 pub fn ignore(sig: Signal) {
@@ -26,7 +26,7 @@ pub fn restore(sig: Signal) {
 pub fn run_signal_check(core: &mut ShellCore) {
     for fd in 3..10 {
         //use FD 3~9 to prevent signal-hool from using these FDs
-            let _ = unsafe{dup2(2, fd)};
+        let _ = unsafe { dup2(2, fd) };
     }
 
     core.sigint.store(true, Relaxed);
@@ -39,7 +39,7 @@ pub fn run_signal_check(core: &mut ShellCore) {
         for fd in 3..10 {
             // release FD 3~9
             //nix::unistd::close(fd).expect("sush(fatal): init error");
-            let _ = unsafe{close(fd)};
+            let _ = unsafe { close(fd) };
         }
         sigint.store(false, Relaxed);
 

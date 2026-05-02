@@ -3,7 +3,7 @@
 
 use super::error_;
 use crate::elements::substitution::variable::Variable;
-use crate::{arg, error, utils, ShellCore};
+use crate::{ShellCore, arg, error, utils};
 
 fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
     let mut pos = 0;
@@ -134,7 +134,6 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     let r_opt = arg::consume_arg("-r", &mut args);
 
-
     let mut limit = usize::MAX;
     let limit_str = arg::consume_with_next_arg("-n", &mut args);
     let delim = match arg::consume_with_next_arg("-d", &mut args) {
@@ -159,25 +158,25 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
             fd.remove(0);
         }
 
-        if let Ok(n) = fd.parse::<i32>() {
-            if n >= 3 && n < 256 {
-                backup = Some(core.fds.backup(0));
-                fdn = n;
-                let _ = core.fds.replace(n, 0); //TODO: use unistd::read
-            }
+        if let Ok(n) = fd.parse::<i32>()
+            && (3..256).contains(&n)
+        {
+            backup = Some(core.fds.backup(0));
+            fdn = n;
+            let _ = core.fds.replace(n, 0); //TODO: use unistd::read
         }
     }
 
     let ans = if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
         read_a(core, &a, r_opt, &mut limit, &delim)
-    }else{
+    } else {
         read_(core, &mut args, r_opt, &mut limit, &delim)
     };
 
     if let Some(fd) = backup {
         let _ = core.fds.replace(0, fdn);
         let _ = core.fds.replace(fd, 0);
-        core.fds.close(fd-1); //TODO: Why -1 ????? (use unistd::read)
+        core.fds.close(fd - 1); //TODO: Why -1 ????? (use unistd::read)
     }
 
     ans
@@ -210,16 +209,17 @@ pub fn eat_word(
         pos += c.len_utf8();
     }
 
-    if let Some(p) = escape_pos.last() {
-        if p + 2 == remaining.len() && remaining.ends_with('\n') {
-            remaining.pop();
-            remaining.pop();
+    if let Some(p) = escape_pos.last()
+        && p + 2 == remaining.len()
+        && remaining.ends_with('\n')
+    {
+        remaining.pop();
+        remaining.pop();
 
-            let line = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
-            if !line.is_empty() {
-                *remaining += &line;
-                return eat_word(_core, remaining, ifs, ignore_escape, delim);
-            }
+        let line = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+        if !line.is_empty() {
+            *remaining += &line;
+            return eat_word(_core, remaining, ifs, ignore_escape, delim);
         }
     }
 
@@ -236,11 +236,11 @@ pub fn eat_word(
 
 pub fn consume_tail_ifs(remaining: &mut String, ifs: &str) {
     loop {
-        if let Some(c) = remaining.chars().last() {
-            if ifs.contains(c) {
-                remaining.pop();
-                continue;
-            }
+        if let Some(c) = remaining.chars().last()
+            && ifs.contains(c)
+        {
+            remaining.pop();
+            continue;
         }
         break;
     }

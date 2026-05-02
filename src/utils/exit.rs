@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, Script, ShellCore};
 use crate::utils::ExecError;
+use crate::{Feeder, Script, ShellCore};
 use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {

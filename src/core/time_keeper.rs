@@ -23,25 +23,39 @@ impl Default for TimeKeeper {
 
 impl TimeKeeper {
     pub fn set(&mut self, on: bool) {
-        if ! on {
+        if !on {
             self.real = None;
             return;
         }
 
         (self.user, self.sys) = clock::get_user_and_sys();
         self.real = Some(clock::monotonic_time());
-    } 
+    }
 
     pub fn print_diff(&self) {
         if self.real.is_none() {
             return;
         }
-    
-        let print_duration = |item, t: Duration| 
-            eprintln!("\n{}\t{}m{}.{:09}s", item, t.as_secs()/60, t.as_secs()%60, t.subsec_nanos());
-        let print_time_val = |item, t: TimeVal|
-            eprintln!("{}\t{}m{}.{:06}s", item, t.tv_sec()/60, t.tv_sec()%60, t.tv_usec());
-    
+
+        let print_duration = |item, t: Duration| {
+            eprintln!(
+                "\n{}\t{}m{}.{:09}s",
+                item,
+                t.as_secs() / 60,
+                t.as_secs() % 60,
+                t.subsec_nanos()
+            )
+        };
+        let print_time_val = |item, t: TimeVal| {
+            eprintln!(
+                "{}\t{}m{}.{:06}s",
+                item,
+                t.tv_sec() / 60,
+                t.tv_sec() % 60,
+                t.tv_usec()
+            )
+        };
+
         print_duration("real", clock::monotonic_time() - self.real.unwrap());
 
         let (user, sys) = clock::get_user_and_sys();

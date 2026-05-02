@@ -56,7 +56,7 @@ pub fn run_substitution_builtin(
                 for arg in w.eval(core)? {
                     if arg.starts_with("-") || arg.starts_with("+") {
                         args.push(arg);
-                    }else{
+                    } else {
                         other_to_subst(&arg, core, &mut subs)?;
                     }
                 }
@@ -69,14 +69,14 @@ pub fn run_substitution_builtin(
     Ok(true)
 }
 
-fn other_to_subst(arg: &str,
+fn other_to_subst(
+    arg: &str,
     core: &mut ShellCore,
-    subs: &mut Vec<Substitution>
+    subs: &mut Vec<Substitution>,
 ) -> Result<(), ExecError> {
     let mut f = Feeder::new(&arg.replace("$", "\\$"));
 
-    if let Some(mut s) = Substitution::parse(&mut f,
-                             core, true, false)? {
+    if let Some(mut s) = Substitution::parse(&mut f, core, true, false)? {
         s.quoted = true;
         subs.push(s);
         return Ok(());

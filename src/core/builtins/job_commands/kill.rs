@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{ShellCore, utils};
 use crate::builtins::job_commands;
 use crate::core::builtins;
+use crate::{ShellCore, utils};
 
 /* TODO: implement original kill */
 pub fn kill(core: &mut ShellCore, args: &[String]) -> i32 {

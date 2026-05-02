@@ -12,11 +12,10 @@ pub mod glob;
 pub mod restricted_shell;
 pub mod splitter;
 
-use libc;
-use crate::{Feeder, ShellCore, Script};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::input::InputError;
+use crate::{Feeder, Script, ShellCore};
 use faccess::PathExt;
 use io_streams::StreamReader;
 use std::io::Read;
@@ -292,10 +291,10 @@ pub fn get_command_path(s: &str, core: &mut ShellCore) -> String {
 
 pub fn string_to_calculated_string(from: &str, core: &mut ShellCore) -> Result<String, ExecError> {
     let mut f = Feeder::new(from);
-    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
-        if f.is_empty() {
-            return a.eval(core);
-        }
+    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")?
+        && f.is_empty()
+    {
+        return a.eval(core);
     }
 
     Err(ExecError::SyntaxError(f.consume(f.len())))
@@ -310,9 +309,9 @@ pub fn gen_not_exist_var(core: &mut ShellCore) -> String {
 }
 
 pub fn groups() -> Vec<String> {
-    let num = unsafe{libc::getgroups(0, ::std::ptr::null_mut())};
+    let num = unsafe { libc::getgroups(0, ::std::ptr::null_mut()) };
     let mut groups = vec![0; num as usize];
-    unsafe{libc::getgroups(num, groups.as_mut_ptr())};
+    unsafe { libc::getgroups(num, groups.as_mut_ptr()) };
     groups.iter().map(|e| e.to_string()).collect()
 }
 

@@ -49,7 +49,7 @@ impl Data for Seconds {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }

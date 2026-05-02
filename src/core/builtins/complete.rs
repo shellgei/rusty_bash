@@ -3,7 +3,7 @@
 
 use crate::core::{CompletionEntry, HashMap};
 use crate::utils::arg;
-use crate::{builtins, ShellCore};
+use crate::{ShellCore, builtins};
 
 fn action_to_reduce_symbol(arg: &str) -> String {
     match arg {
@@ -54,7 +54,7 @@ fn print_each_complete(name: &str, info: &CompletionEntry) -> i32 {
     if !info.large_w_cands.is_empty() {
         if info.large_w_cands.starts_with('"') {
             print!("complete {}-W '{}' ", &o_options, &info.large_w_cands);
-        }else{
+        } else {
             print!("complete {}-W {} ", &o_options, &info.large_w_cands);
         }
     } else if !info.function.is_empty() {
@@ -93,9 +93,8 @@ fn print_complete_all(core: &mut ShellCore) -> i32 {
         println!("complete -F {} -D", &core.completion.default_function);
     }
 
-
     for (name, info) in &mut core.completion.entries {
-        print_each_complete(&name, info);
+        print_each_complete(name, info);
     }
     0
 }
@@ -104,8 +103,8 @@ fn print_complete(coms: &[String], core: &mut ShellCore) -> i32 {
     let mut err = false;
     for name in coms {
         if let Some(info) = core.completion.entries.get_mut(name) {
-            print_each_complete(&name, info);
-        }else{
+            print_each_complete(name, info);
+        } else {
             let err_str = format!("{}: no completion specification", &name);
             err = 0 != builtins::error_(1, "complete", &err_str, core);
         };
@@ -181,11 +180,9 @@ fn complete_r(core: &mut ShellCore, args: &[String]) -> i32 {
 
 pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
-    if args.len() <= 1 {
+    if args.len() <= 1 || args[1] == "-p" && args.len() == 2 {
         return print_complete_all(core);
-    }else if args[1] == "-p" && args.len() == 2 {
-        return print_complete_all(core);
-    }else if args[1] == "-p" {
+    } else if args[1] == "-p" {
         return print_complete(&args[2..], core);
     }
 
@@ -215,8 +212,8 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut actions = vec![];
-    for i in 1..args.len() {
-        let action = opt_to_action(&args[i]);
+    for arg in args.iter().skip(1) {
+        let action = opt_to_action(arg);
         if action.is_empty() {
             break;
         }

@@ -1,8 +1,8 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::array::ArrayData;
 use super::Data;
+use super::array::ArrayData;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
 
@@ -69,8 +69,7 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn set_as_array(&mut self, name: &str, key: &str, value: &str)
-    -> Result<(), ExecError> {
+    fn set_as_array(&mut self, name: &str, key: &str, value: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
 
         let key = self.index_of(key)?;
@@ -79,8 +78,12 @@ impl Data for IntArrayData {
         Ok(())
     }
 
-    fn append_to_array_elem(&mut self, name: &str, key: &str,
-                            value: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(
+        &mut self,
+        name: &str,
+        key: &str,
+        value: &str,
+    ) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         let key = self.index_of(key)?;
         let n = super::to_int(value)?;
@@ -211,7 +214,7 @@ impl Data for IntArrayData {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }

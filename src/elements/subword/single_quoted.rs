@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::Subword;
-use crate::{Feeder, ShellCore};
 use crate::elements::word::WordMode;
+use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone)]
 pub struct SingleQuoted {
@@ -37,14 +37,17 @@ impl Subword for SingleQuoted {
 }
 
 impl SingleQuoted {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
-                 mode: &Option<WordMode>) -> Option<Self> {
-        if let Some(WordMode::ParamOption(_)) = mode {
-            if core.options.query("posix") {
-                return None;
-            }
+    pub fn parse(
+        feeder: &mut Feeder,
+        core: &mut ShellCore,
+        mode: &Option<WordMode>,
+    ) -> Option<Self> {
+        if let Some(WordMode::ParamOption(_)) = mode
+            && core.options.query("posix")
+        {
+            return None;
         }
-        
+
         match feeder.scanner_single_quoted_subword(core) {
             0 => None,
             n => {

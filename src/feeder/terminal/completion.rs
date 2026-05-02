@@ -8,7 +8,7 @@ use crate::elements::io::pipe::Pipe;
 use crate::error::exec::ExecError;
 use crate::feeder::terminal::Terminal;
 use crate::utils::arg;
-use crate::{file_check, utils, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, file_check, utils};
 use unicode_width::UnicodeWidthStr;
 
 struct Entry<'a> {
@@ -426,7 +426,9 @@ impl Terminal {
 
         words_all = words_all[from..].to_vec();
         words_left = words_left[from..].to_vec();
-        let _ = core.db.init_array("COMP_WORDS", Some(words_all), None, false);
+        let _ = core
+            .db
+            .init_array("COMP_WORDS", Some(words_all), None, false);
 
         let mut num = words_left.len();
         match left_string.chars().last() {

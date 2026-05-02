@@ -2,13 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::BracedParamExtension;
+use crate::elements::substitution::variable::Variable;
 use crate::elements::word::{Word, WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::{Feeder, ShellCore};
-use crate::elements::substitution::variable::Variable;
 
 impl BracedParamExtension for CaseConv {
     fn get_text(&self) -> String {

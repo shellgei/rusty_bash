@@ -6,14 +6,14 @@ mod parser;
 
 use self::elem::CondElem;
 use super::arithmetic::elem::ArithElem;
-use crate::elements::expr::arithmetic::elem::{float, int};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::elements::expr::arithmetic::elem::{float, int};
 use crate::elements::substitution::variable::Variable;
 use crate::elements::word::Word;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::{file_check, glob};
-use crate::{utils, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, utils};
 use regex::Regex;
 use std::env;
 
@@ -86,7 +86,7 @@ impl ConditionalExpr {
                         _ => {
                             return Err(ExecError::Other(
                                 "Internal error conditional.rs:55".to_string(),
-                            ))
+                            ));
                         }
                     };
                 }
@@ -250,7 +250,8 @@ impl ConditionalExpr {
             Err(e) => return Err(ExecError::Other(e.to_string())),
         };
 
-        core.db.init_array("BASH_REMATCH", Some(vec![]), None, false)?;
+        core.db
+            .init_array("BASH_REMATCH", Some(vec![]), None, false)?;
         if let Some(res) = re.captures(&left) {
             for i in 0.. {
                 if let Some(e) = res.get(i) {
@@ -334,7 +335,7 @@ impl ConditionalExpr {
                 _ => {
                     return Err(ExecError::Other(
                         "non integer number is not supported".to_string(),
-                    ))
+                    ));
                 }
             };
             let rnum = match Self::resolve_arithmetic_op(&right, core)? {
@@ -342,7 +343,7 @@ impl ConditionalExpr {
                 _ => {
                     return Err(ExecError::Other(
                         "non integer number is not supported".to_string(),
-                    ))
+                    ));
                 }
             };
 

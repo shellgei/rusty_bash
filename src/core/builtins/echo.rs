@@ -7,7 +7,7 @@ use crate::utils::c_string;
 use crate::{Feeder, ShellCore};
 use std::ffi::CString;
 use std::io;
-use std::io::{stdout, Write};
+use std::io::{Write, stdout};
 
 fn arg_to_c_str(arg: &str, core: &mut ShellCore) -> Result<CString, ExecError> {
     let mut f = Feeder::new(arg);

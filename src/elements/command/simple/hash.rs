@@ -3,7 +3,7 @@
 
 use super::SimpleCommand;
 use crate::elements::command::ExecError;
-use crate::{utils, ShellCore};
+use crate::{ShellCore, utils};
 
 pub fn get_and_regist(com: &mut SimpleCommand, core: &mut ShellCore) -> Result<String, ExecError> {
     if ["/", "./", "../"]

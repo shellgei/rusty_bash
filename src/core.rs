@@ -5,17 +5,17 @@
 pub mod builtins;
 pub mod completion;
 pub mod database;
+mod file_descs;
 pub mod history;
 pub mod jobtable;
 pub mod options;
-mod file_descs;
 pub mod time_keeper;
 
 use self::completion::{Completion, CompletionEntry};
 use self::database::DataBase;
+use self::file_descs::FileDescriptors;
 use self::options::Options;
 use self::time_keeper::TimeKeeper;
-use self::file_descs::FileDescriptors;
 use crate::core::jobtable::JobEntry;
 use crate::elements::substitution::Substitution;
 use crate::{error, proc_ctrl, signal};
@@ -24,11 +24,11 @@ use nix::unistd::Pid;
 use std::collections::HashMap;
 use std::os::fd::RawFd;
 //use std::os::fd::{FromRawFd, OwnedFd};
-use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
-use std::{env, io, path};
 use crate::error::exec::ExecError;
 use crate::file_check;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::{env, io, path};
 
 type BuiltinFn = fn(&mut ShellCore, &[String]) -> i32;
 type SubstBuiltinFn = fn(&mut ShellCore, &[String], &mut [Substitution]) -> i32;
@@ -169,7 +169,6 @@ impl ShellCore {
             .map(|e| e.to_string())
             .collect();
 
-
         let _ = self.db.set_param(
             "BASH_VERSION",
             &format!("{t_bash_ver}({t_bash_symbol})-{profile}"),
@@ -181,7 +180,7 @@ impl ShellCore {
         let _ = self.db.set_param("OSTYPE", t_os, None);
 
         if let Ok("1") = env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-        }else{
+        } else {
             let _ = self
                 .db
                 .init_array("SUSH_VERSINFO", Some(sush_versinfo), None, false);

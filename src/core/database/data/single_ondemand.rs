@@ -13,7 +13,7 @@ impl Data for OnDemandSingle {
     fn boxed_clone(&self) -> Box<dyn Data> {
         Box::new(self.clone())
     }
-    
+
     fn get_fmt_string(&mut self) -> String {
         self.get_as_single().unwrap()
     }
@@ -31,7 +31,7 @@ impl Data for OnDemandSingle {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }

@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::variable;
 use super::ArithElem;
+use super::variable;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::{error, ShellCore};
+use crate::{ShellCore, error};
 
 pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), ExecError> {
     match op {
@@ -14,7 +14,7 @@ pub fn unary_calc(op: &str, num: f64, stack: &mut Vec<ArithElem>) -> Result<(), 
         _ => {
             return Err(ExecError::Other(
                 "not supported operator for float number".to_string(),
-            ))
+            ));
         }
     }
     Ok(())
@@ -60,7 +60,7 @@ pub fn bin_calc(
         _ => {
             return Err(ExecError::Other(
                 "not supported operator for float numbers".to_string(),
-            ))
+            ));
         }
     }
 

@@ -3,7 +3,7 @@
 
 use crate::error::exec::ExecError;
 use crate::utils::arg;
-use crate::{error, ShellCore};
+use crate::{ShellCore, error};
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
     let com = match core.db.position_parameters.pop() {
@@ -99,7 +99,7 @@ fn set_bash_flags(core: &mut ShellCore, args: &[String]) {
         } else if !positive {
             core.db.flags.retain(|f| f != 'm');
         }
-    }else if args[2] == "allexport" {
+    } else if args[2] == "allexport" {
         if positive && !core.db.flags.contains('a') {
             core.db.flags.push('a');
         } else if !positive {
@@ -268,7 +268,7 @@ pub fn shopt(core: &mut ShellCore, args: &[String]) -> i32 {
     /* q option */
     if q_opt {
         for a in &args[1..] {
-            if ! core.shopts.query(a) {
+            if !core.shopts.query(a) {
                 return 1;
             }
         }

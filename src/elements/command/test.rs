@@ -3,8 +3,8 @@
 
 use super::{Command, Redirect};
 use crate::elements::command;
-use crate::elements::expr::conditional::elem::CondElem;
 use crate::elements::expr::conditional::ConditionalExpr;
+use crate::elements::expr::conditional::elem::CondElem;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};

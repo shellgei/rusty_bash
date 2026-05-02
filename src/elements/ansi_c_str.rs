@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::elements::subword::Subword;
 use crate::elements::subword::escaped_char::EscapedChar;
 use crate::elements::subword::simple::SimpleSubword;
-use crate::elements::subword::Subword;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 

@@ -1,8 +1,8 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::single::SingleData;
 use super::Data;
+use super::single::SingleData;
 use crate::error::exec::ExecError;
 use crate::utils;
 
@@ -61,7 +61,7 @@ impl Data for IntData {
     fn get_str_type(&self) -> Box<dyn Data> {
         let mut d = SingleData::from(self.body.to_string().as_ref());
         d.flags = self.flags.clone();
-        let _ = d.unset_flag('i');
+        d.unset_flag('i');
         Box::new(d)
     }
 
@@ -83,7 +83,7 @@ impl Data for IntData {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }

@@ -49,14 +49,14 @@ pub fn expand(pattern: &str, shopts: &Options) -> Vec<String> {
         e.pop();
     });
 
-    if shopts.query("globstar") {
-        if let Some(ptn) = pattern.strip_suffix("/**") {
-            paths.iter_mut().for_each(|p| {
-                if p == ptn {
-                    *p += "/";
-                }
-            });
-        }
+    if shopts.query("globstar")
+        && let Some(ptn) = pattern.strip_suffix("/**")
+    {
+        paths.iter_mut().for_each(|p| {
+            if p == ptn {
+                *p += "/";
+            }
+        });
     }
 
     paths.sort();

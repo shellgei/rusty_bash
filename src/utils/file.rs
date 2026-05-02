@@ -2,8 +2,8 @@
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::utils::file_check;
 use crate::ShellCore;
+use crate::utils::file_check;
 use std::env;
 use std::ffi::OsString;
 use std::path::{Component, Path, PathBuf};

@@ -1,16 +1,16 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::elements::word::{Word, WordMode};
+use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::utils;
 use crate::utils::{arg, directory, glob};
-use crate::{file_check, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, file_check};
 use faccess;
 use faccess::PathExt;
 use rev_lines::RevLines;
-use std::env;
 use std::collections::HashSet;
+use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -340,10 +340,10 @@ fn compgen_large_w(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
     let mut words = args[2].to_string();
 
-    if words.starts_with("$") {
-        if let Ok(value) = core.db.get_param(&args[2][1..]) {
-            words = value;
-        }
+    if words.starts_with("$")
+        && let Ok(value) = core.db.get_param(&args[2][1..])
+    {
+        words = value;
     }
 
     let mut feeder = Feeder::new(&words);
