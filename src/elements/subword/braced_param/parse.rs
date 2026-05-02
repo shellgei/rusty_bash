@@ -4,6 +4,8 @@
 use super::{BracedParam, Variable};
 use crate::elements::braced_param_ext;
 use crate::elements::substitution::subscript::Subscript;
+use crate::elements::subword;
+use crate::elements::word::WordMode;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 
@@ -50,28 +52,23 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat_unknown(
-        &mut self,
-        feeder: &mut Feeder,
-        core: &mut ShellCore,
-    ) -> Result<bool, ParseError> {
+    fn eat_end(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
         if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
         }
 
         if feeder.starts_with("}") {
+            self.text += &feeder.consume(1);
             return Ok(true);
         }
-
-        let len = match feeder.starts_with("\\}") || feeder.starts_with("\\\\") {
-            true => 2,
-            false => feeder.scanner_char(),
-        };
-
-        let unknown = feeder.consume(len);
-        self.unknown += &unknown.clone();
-        self.text += &unknown;
-        Ok(false)
+        if let Some(a) = subword::parse(feeder, core,
+                             &Some(WordMode::PermitAnyChar))? {
+            self.unknown += &a.get_text();
+            self.text += &a.get_text();
+            return Ok(false);
+        }
+        Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
@@ -97,9 +94,8 @@ impl BracedParam {
                 ans.extension = Some(op);
             }
         }
-        while !ans.eat_unknown(feeder, core)? {}
+        while ! ans.eat_end(feeder, core)?{}
 
-        ans.text += &feeder.consume(1);
         Ok(Some(ans))
     }
 }
