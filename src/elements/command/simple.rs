@@ -6,6 +6,7 @@ mod run_internal;
 
 use crate::{ShellCore, proc_ctrl};
 use crate::error::exec::ExecError;
+use std::sync::atomic::Ordering::Relaxed;
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
 use crate::elements::word::Word;
@@ -36,8 +37,7 @@ impl Command for SimpleCommand {
         self.args.clear();
         let mut words = self.words.to_vec();
         for w in words.iter_mut() {
-            let mut args = w.eval(core)?;
-            self.args.append(&mut args);
+            self.set_arg(w, core)?;
         }
 
         if self.args.is_empty() {
@@ -105,4 +105,19 @@ impl SimpleCommand {
         }
         Ok(())
     } 
+
+    fn set_arg(&mut self, word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
+        match word.eval(core) {
+            Ok(ws) => {
+                self.args.extend(ws);
+                Ok(())
+            },
+            Err(e) => {
+                if !core.sigint.load(Relaxed) {
+                    let _ = core.db.set_param("?", "1", Some(0));
+                }
+                Err(e)
+            },
+        }
+    }
 }

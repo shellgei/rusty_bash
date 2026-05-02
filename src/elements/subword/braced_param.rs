@@ -3,8 +3,7 @@
 
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword;
-use crate::elements::subword::WordMode;
-use crate::error::exec::ExecError;
+use crate::elements::subword::{ExecError, WordMode};
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 use super::Subword;
@@ -26,6 +25,10 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if self.param.text.is_empty() || !self.unknown.is_empty() {
+            return Err(ExecError::BadSubstitution(self.text.clone()));
+        }
+
         self.text = core.db.get_param(&self.param.text)?;
         Ok(())
     }
@@ -72,7 +75,6 @@ impl BracedParam {
         ans.eat_param(feeder, core);
         while !ans.eat_end(feeder, core)?{}
 
-//        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
