@@ -55,7 +55,6 @@ impl BracedParam {
         ans.eat_param(feeder, core);
         ans.eat_end(feeder);
 
-        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
