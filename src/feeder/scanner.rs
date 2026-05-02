@@ -88,9 +88,9 @@ impl Feeder {
         }
     }
 
-    pub fn scanner_special_and_positional_param(&mut self) -> usize {
+    pub fn scanner_special_param(&mut self) -> usize {
         match self.remaining.chars().nth(0) {
-            Some(c) => "$?*@#-!_0123456789".find(c).is_some() as usize,
+            Some(c) => "$?*@#-!_".find(c).is_some() as usize,
             None    => 0,
         }   
     }
