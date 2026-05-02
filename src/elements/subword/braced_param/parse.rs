@@ -38,7 +38,7 @@ impl BracedParam {
 
         let mut len = feeder.scanner_uint(core);
         if len == 0 {
-            len = feeder.scanner_special_and_positional_param();
+            len = feeder.scanner_special_param();
         }
 
         if len != 0 {
