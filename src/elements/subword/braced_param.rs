@@ -46,7 +46,6 @@ impl BracedParam {
         if len == 0 {
             return;
         }
-
         self.param.text = feeder.consume(len);
         self.text += &self.param.text;
     }
