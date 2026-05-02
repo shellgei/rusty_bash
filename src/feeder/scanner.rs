@@ -88,6 +88,19 @@ impl Feeder {
         }
     }
 
+    pub fn scanner_special_and_positional_param(&mut self) -> usize {
+        match self.remaining.chars().nth(0) {
+            Some(c) => {
+                if "$?*@#-!_0123456789".find(c).is_some() {
+                    1
+                } else {
+                    0
+                }   
+            }   
+            None => 0,
+        }   
+    }
+
     pub fn scanner_subword(&mut self) -> usize {
         let mut ans = 0;
         for ch in self.remaining.chars() {
@@ -123,6 +136,11 @@ impl Feeder {
 
     pub fn scanner_multiline_blank(&mut self, core: &mut ShellCore) -> usize {
         let judge = |ch| " \t\n".contains(ch);
+        self.scanner_chars(judge, core)
+    }
+
+    pub fn scanner_uint(&mut self, core: &mut ShellCore) -> usize {
+        let judge = |ch: char| ch.is_ascii_digit();
         self.scanner_chars(judge, core)
     }
 
