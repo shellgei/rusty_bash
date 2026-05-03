@@ -1,4 +1,5 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2026 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
 extern crate libc;
@@ -43,13 +44,9 @@ pub fn run_signal_check(core: &mut ShellCore) {
         }
         sigint.store(false, Relaxed);
 
-        loop {
-            thread::sleep(time::Duration::from_millis(100)); //0.1秒周期に変更
-            for signal in signals.pending() {
-                if signal == consts::SIGINT {
-                    sigint.store(true, Relaxed);
-                    eprintln!("^C");
-                }
+        for signal in signals.forever() {
+            if signal == consts::SIGINT {
+                sigint.store(true, Relaxed);
             }
         }
     });

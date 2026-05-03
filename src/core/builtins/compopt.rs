@@ -1,4 +1,5 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2026 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
@@ -82,7 +83,6 @@ pub fn compopt(core: &mut ShellCore, args: &[String]) -> i32 {
 
         if args[1] == "-o" {
             let opt = arg::consume_with_next_arg("-o", &mut args);
-            dbg!("{:?}", &opt);
             if opt.is_none() {
                 return 1;
             }

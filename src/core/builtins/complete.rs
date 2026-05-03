@@ -1,4 +1,5 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2026 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::core::{CompletionEntry, HashMap};
@@ -183,7 +184,9 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 || args[1] == "-p" && args.len() == 2 {
         return print_complete_all(core);
     } else if args[1] == "-p" {
-        return print_complete(&args[2..], core);
+        let mut names = args[2..].to_vec();
+        arg::consume_arg("--", &mut names);
+        return print_complete(&names, core);
     }
 
     let mut o_options = vec![];
@@ -259,5 +262,28 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     } else {
         let msg = format!("{}: still unsupported", &args[1]);
         builtins::error_(1, &args[0], &msg, core)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn complete_print_accepts_double_dash_before_names() {
+        let mut core = ShellCore::new();
+        core.completion.entries.insert(
+            "make".to_string(),
+            CompletionEntry {
+                function: "_make".to_string(),
+                ..Default::default()
+            },
+        );
+
+        let args = ["complete", "-p", "--", "make"]
+            .into_iter()
+            .map(str::to_string)
+            .collect::<Vec<_>>();
+        assert_eq!(complete(&mut core, &args), 0);
     }
 }
