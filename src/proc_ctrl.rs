@@ -3,7 +3,7 @@
 
 use crate::error::exec::ExecError;
 use crate::utils::c_string;
-use crate::{error, exit, signal, Feeder, Script, ShellCore};
+use crate::{Feeder, Script, ShellCore, error, exit, signal};
 use nix::errno::Errno;
 use nix::sys::signal::Signal;
 use nix::sys::wait;
@@ -113,10 +113,10 @@ fn set_foreground(core: &mut ShellCore) -> Result<(), ExecError> {
     let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
         .unwrap_or_else(|_| panic!("{}", error::internal("cannot get pgid")));
 
-    if let Ok(n) = core.fds.tcgetpgrp(*fd) {
-        if n == pgid {
-            return Ok(());
-        }
+    if let Ok(n) = core.fds.tcgetpgrp(*fd)
+        && n == pgid
+    {
+        return Ok(());
     }
 
     signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視

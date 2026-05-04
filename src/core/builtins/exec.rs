@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{proc_ctrl, ShellCore};
+use crate::{ShellCore, proc_ctrl};
 use nix::errno::Errno;
 use nix::unistd;
 use std::ffi::CString;

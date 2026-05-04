@@ -1,10 +1,10 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use std::env;
 use super::SingleData;
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
+use std::env;
 
 impl DataBase {
     pub fn append_param(
@@ -29,12 +29,12 @@ impl DataBase {
             && (self.flags.contains('a') || self.has_flag(name, 'x'))
             && env::var(name).is_err()
         {
-            unsafe{env::set_var(name, "")};
+            unsafe { env::set_var(name, "") };
         }
 
         let scope = self.get_target_scope(name, scope);
 
-        if self.params[scope].get(name).is_none() {
+        if !self.params[scope].contains_key(name) {
             self.set_entry(scope, name, Box::new(SingleData::from("")))?;
         }
 
@@ -47,7 +47,7 @@ impl DataBase {
 
         if env::var(name).is_ok() {
             let v = d.get_as_single()?;
-            unsafe{env::set_var(name, v)};
+            unsafe { env::set_var(name, v) };
         }
 
         Ok(())
@@ -79,8 +79,12 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn append_to_assoc_elem(&mut self, name: &str, key: &str,
-        val: &str, scope: Option<usize>,
+    pub fn append_to_assoc_elem(
+        &mut self,
+        name: &str,
+        key: &str,
+        val: &str,
+        scope: Option<usize>,
     ) -> Result<(), ExecError> {
         self.check_on_write(name, &Some(vec![val.to_string()]))?;
 

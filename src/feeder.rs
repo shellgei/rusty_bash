@@ -6,7 +6,7 @@ mod terminal;
 
 use crate::error::input::InputError;
 use crate::error::parse::ParseError;
-use crate::{utils, ShellCore};
+use crate::{ShellCore, utils};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use std::sync::atomic::Ordering::Relaxed;

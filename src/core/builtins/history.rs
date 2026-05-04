@@ -1,10 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2026 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::utils::arg;
 use crate::ShellCore;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use crate::utils::arg;
 
 pub fn history_c(core: &mut ShellCore) -> i32 {
     core.rewritten_history.clear();
@@ -31,19 +30,15 @@ pub fn history(core: &mut ShellCore, args: &[String]) -> i32 {
         return 0;
     }
 
-    let file = match File::open(&filename) {
-        Ok(f) => f,
-        _ => return 0,
-    };
-
-    let f = BufReader::new(file);
-    for line in f.lines() {
-        println!("{:5} {}", number, &line.unwrap());
-        number += 1;
+    if let Ok(history) = sushline::readline::History::read_file(&filename) {
+        for entry in history.entries() {
+            println!("{:5} {}", number, entry.line());
+            number += 1;
+        }
     }
 
     for h in core.history.iter().rev() {
-        println!("{:5} {}", number, &h);
+        println!("{:5} {}", number, h);
         number += 1;
     }
 

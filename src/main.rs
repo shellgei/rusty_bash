@@ -1,4 +1,5 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2026 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod core;
@@ -17,7 +18,7 @@ use std::{env, process};
 
 // Internals crates
 use crate::core::builtins::source;
-use crate::core::{builtins, ShellCore};
+use crate::core::{ShellCore, builtins};
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use crate::i18n::FLUENT_BUNDLE;
@@ -44,11 +45,11 @@ fn main() {
     let script_parts = consume_file_and_subsequents(&mut args);
 
     let mut c_opt = false;
-    if let Some(opt) = args.last() {
-        if opt == "-c" {
-            c_opt = true;
-            args.pop();
-        }
+    if let Some(opt) = args.last()
+        && opt == "-c"
+    {
+        c_opt = true;
+        args.pop();
     }
 
     let mut core = ShellCore::new();
@@ -277,7 +278,7 @@ fn set_history(core: &mut ShellCore, s: &str) {
         return;
     }
 
-    core.history[0] = s.trim_end().replace("\n", "↵ \0").to_string();
+    core.history[0] = s.trim_end().to_string();
     if core.history[0].is_empty() || (core.history.len() > 1 && core.history[0] == core.history[1])
     {
         core.history.remove(0);

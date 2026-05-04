@@ -3,8 +3,8 @@
 
 use super::Data;
 use crate::error::exec::ExecError;
-use rand_chacha::rand_core::{RngCore, SeedableRng};
 use rand_chacha::ChaCha20Rng;
+use rand_chacha::rand_core::{RngCore, SeedableRng};
 
 #[derive(Debug, Clone)]
 pub struct SRandomVar {

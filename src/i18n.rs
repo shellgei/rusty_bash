@@ -211,10 +211,10 @@ pub fn get_system_language() -> String {
     }
 
     for var in &["LC_ALL", "LC_MESSAGES", "LANG"] {
-        if let Ok(val) = std::env::var(var) {
-            if let Some(lang) = extract_lang(&val) {
-                return lang;
-            }
+        if let Ok(val) = std::env::var(var)
+            && let Some(lang) = extract_lang(&val)
+        {
+            return lang;
         }
     }
 

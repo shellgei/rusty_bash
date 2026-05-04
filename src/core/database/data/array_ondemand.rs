@@ -1,8 +1,8 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use crate::utils;
 use super::{Data, ExecError};
+use crate::utils;
 
 #[derive(Debug, Clone)]
 pub struct OnDemandArray {
@@ -16,7 +16,7 @@ impl Data for OnDemandArray {
     }
 
     fn _get_fmt_string(&self) -> String {
-        return "*********".to_string()
+        "*********".to_string()
     }
 
     fn get_fmt_string(&mut self) -> String {
@@ -71,7 +71,7 @@ impl Data for OnDemandArray {
         let vs = (self.values)();
         if vs.is_empty() {
             Ok("".to_string())
-        }else{
+        } else {
             Ok(vs[0].clone())
         }
     }
@@ -116,7 +116,7 @@ impl Data for OnDemandArray {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }
@@ -137,7 +137,7 @@ impl Data for OnDemandArray {
 impl OnDemandArray {
     pub fn new(values: fn() -> Vec<String>) -> Self {
         Self {
-            values: values,
+            values,
             flags: "a".to_string(),
         }
     }

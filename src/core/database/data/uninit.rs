@@ -1,11 +1,9 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
+use super::super::{ArrayData, AssocData, IntArrayData, IntAssocData, IntData, SingleData};
 use super::Data;
 use crate::error::exec::ExecError;
-use super::super::{
-    ArrayData, AssocData, IntArrayData, IntAssocData, IntData, SingleData
-};
 
 #[derive(Debug, Clone)]
 pub struct Uninit {
@@ -29,12 +27,12 @@ impl Data for Uninit {
                     let mut d = IntArrayData::new();
                     d.flags = self.flags.clone();
                     return Some(Box::new(d));
-                },
+                }
                 false => {
                     let mut d = ArrayData::new();
                     d.flags = self.flags.clone();
                     return Some(Box::new(d));
-                },
+                }
             }
         }
 
@@ -44,12 +42,12 @@ impl Data for Uninit {
                     let mut d = IntAssocData::new();
                     d.flags = self.flags.clone();
                     return Some(Box::new(d));
-                },
+                }
                 false => {
                     let mut d = AssocData::new();
                     d.flags = self.flags.clone();
                     return Some(Box::new(d));
-                },
+                }
             }
         }
 
@@ -58,11 +56,11 @@ impl Data for Uninit {
                 let mut d = IntData::new();
                 d.flags = self.flags.clone();
                 Some(Box::new(d))
-            },
+            }
             false => {
                 let d = SingleData::new(&self.flags);
                 Some(Box::new(d))
-            },
+            }
         }
     }
 
@@ -93,7 +91,7 @@ impl Data for Uninit {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }
@@ -117,6 +115,8 @@ impl Data for Uninit {
 
 impl Uninit {
     pub fn new(flags: &str) -> Self {
-        Self { flags: flags.to_string() }
+        Self {
+            flags: flags.to_string(),
+        }
     }
 }

@@ -25,8 +25,10 @@ pub struct BracedParam {
 
 impl From<&str> for BracedParam {
     fn from(s: &str) -> Self {
-        let mut ans: Self = Default::default();
-        ans.text = "$".to_owned() + s;
+        let mut ans = Self {
+            text: "$".to_owned() + s,
+            ..Default::default()
+        };
         ans.param.text = s.to_string();
         ans.param.name = s.to_string();
         ans
@@ -42,7 +44,7 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if core.db.exist_nameref(&self.param.name) && ! self.indirect {
+        if core.db.exist_nameref(&self.param.name) && !self.indirect {
             let mut circular_check_vec = vec![];
             let org_name = self.param.name.clone();
             loop {
@@ -57,7 +59,7 @@ impl Subword for BracedParam {
                     self.param.name = utils::gen_not_exist_var(core);
                     break;
                 }
-                if ! core.db.exist_nameref(&self.param.name) {
+                if !core.db.exist_nameref(&self.param.name) {
                     break;
                 }
                 circular_check_vec.push(self.param.name.clone());
@@ -67,18 +69,15 @@ impl Subword for BracedParam {
         }
         self.check()?;
 
-        if self.indirect {
-            if ! self.indirect_preparation(core)? {
-                return Ok(());
-            }
+        if self.indirect && !self.indirect_preparation(core)? {
+            return Ok(());
         }
 
-        if self.param.is_array() {
-            if let Some(op) = self.extension.as_mut() {
-                if op.has_array_replace() {
-                    return self.array_replace(core);
-                }
-            }
+        if self.param.is_array()
+            && let Some(op) = self.extension.as_mut()
+            && op.has_array_replace()
+        {
+            return self.array_replace(core);
         }
 
         match self.param.index.is_some() {
@@ -96,10 +95,10 @@ impl Subword for BracedParam {
     }
 
     fn get_elem(&mut self) -> Vec<String> {
-        if let Some(op) = self.extension.as_mut() {
-            if op.array_to_single() {
-                return vec![self.text.clone()];
-            }
+        if let Some(op) = self.extension.as_mut()
+            && op.array_to_single()
+        {
+            return vec![self.text.clone()];
         }
 
         self.array.clone().unwrap_or_default()
@@ -138,9 +137,7 @@ impl Subword for BracedParam {
     }
 
     fn set_heredoc_flag(&mut self) {
-        self.extension
-            .iter_mut()
-            .for_each(|e| e.set_heredoc_flag());
+        self.extension.iter_mut().for_each(|e| e.set_heredoc_flag());
     }
 }
 
@@ -202,7 +199,7 @@ impl BracedParam {
         if let Some(index) = &self.param.index {
             if index.text == "[*]" {
                 self.text = arr.join(&core.db.get_ifs_head());
-            }else if index.text == "[@]" {
+            } else if index.text == "[@]" {
                 self.text = arr.join(" ");
             }
         }
@@ -211,9 +208,10 @@ impl BracedParam {
     }
 
     fn indirect_preparation(&mut self, core: &mut ShellCore) -> Result<bool, ExecError> {
-        if ! core.db.exist(&self.param.name)
-        && ! core.db.exist_nameref(&self.param.name) {
-            return Err(ExecError::InvalidIndirectExpansion(self.param.name.to_string()));
+        if !core.db.exist(&self.param.name) && !core.db.exist_nameref(&self.param.name) {
+            return Err(ExecError::InvalidIndirectExpansion(
+                self.param.name.to_string(),
+            ));
         }
 
         if core.db.has_flag(&self.param.name, 'n') {
@@ -221,13 +219,14 @@ impl BracedParam {
                 self.text = String::new();
             } else if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
                 self.text = nameref;
-            }else{
+            } else {
                 self.text = String::new();
             }
             return Ok(false);
         }
 
-        if self.param.is_var_array() { // ${!name[@]}, ${!name[*]}
+        if self.param.is_var_array() {
+            // ${!name[@]}, ${!name[*]}
             self.index_replace(core)?;
             return Ok(false);
         }
@@ -273,7 +272,10 @@ impl BracedParam {
 
         let value = core.db.get_param(&self.param.name).unwrap_or_default();
         self.text = match self.num {
-            true => core.db.get_braced_param_hash_length(&self.param.name)?.to_string(),
+            true => core
+                .db
+                .get_braced_param_hash_length(&self.param.name)?
+                .to_string(),
             false => value.to_string(),
         };
 
@@ -350,11 +352,7 @@ impl BracedParam {
         }
     }
 
-    fn extension(
-        &mut self,
-        text: String,
-        core: &mut ShellCore,
-    ) -> Result<String, ExecError> {
+    fn extension(&mut self, text: String, core: &mut ShellCore) -> Result<String, ExecError> {
         match self.extension.as_mut() {
             Some(op) => op.exec(&self.param, &text, core),
             None => Ok(text.clone()),

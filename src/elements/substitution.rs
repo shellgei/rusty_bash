@@ -30,12 +30,13 @@ impl Substitution {
         scope: Option<usize>,
         declare: bool,
     ) -> Result<(), ExecError> {
-        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
+        core.db
+            .set_param("LINENO", &self.lineno.to_string(), None)?;
         if self.right_hand.is_none() {
             return Ok(());
         }
 
-        if core.db.exist_nameref(&self.left_hand.name) && ! self.reset_nameref {
+        if core.db.exist_nameref(&self.left_hand.name) && !self.reset_nameref {
             let mut circular_check_vec = vec![];
             let org_name = self.left_hand.name.clone();
             loop {
@@ -48,7 +49,7 @@ impl Substitution {
                 if circular_check_vec.contains(&self.left_hand.name) {
                     return Err(ExecError::CircularNameRef(org_name));
                 }
-                if ! core.db.exist_nameref(&self.left_hand.name) {
+                if !core.db.exist_nameref(&self.left_hand.name) {
                     break;
                 }
                 circular_check_vec.push(self.left_hand.name.clone());
@@ -69,12 +70,8 @@ impl Substitution {
     }
 
     pub fn reparse(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.left_hand.index.is_some() {
-            self.left_hand
-                .index
-                .as_mut()
-                .unwrap()
-                .reparse(core, &self.left_hand.name)?;
+        if let Some(index) = self.left_hand.index.as_mut() {
+            index.reparse(core, &self.left_hand.name)?;
         }
 
         if let Some(r) = self.right_hand.as_mut() {
@@ -93,14 +90,13 @@ impl Substitution {
         }
     }
 
-    fn restore_flag(core: &mut ShellCore, name: &str,
-                    old_flags: &str, scope: usize) {
+    fn restore_flag(core: &mut ShellCore, name: &str, old_flags: &str, scope: usize) {
         for flag in old_flags.chars() {
             if flag == 'A' || flag == 'a' {
                 continue;
             }
             if old_flags.contains(flag) {
-                core.db.set_flag(&name, flag, scope);
+                core.db.set_flag(name, flag, scope);
             }
         }
     }
@@ -113,14 +109,13 @@ impl Substitution {
 
         let a = r.evaluated_array.as_ref().unwrap();
         let name = &self.left_hand.name;
-        let old_flags = core.db.get_flags(&name).to_string();
+        let old_flags = core.db.get_flags(name).to_string();
 
         if a.is_empty() && !self.append {
             if core.db.is_assoc(name) {
                 core.db.init_assoc(name, Some(scope), true, false)?;
             } else {
-                core.db
-                    .init_array(name, Some(vec![]), Some(scope), false)?;
+                core.db.init_array(name, Some(vec![]), Some(scope), false)?;
             }
 
             Self::restore_flag(core, name, &old_flags, scope);
@@ -133,10 +128,8 @@ impl Substitution {
         for e in a {
             match e.1 {
                 //true if append
-                false => core.db
-                    .set_param2(name, &e.0, &e.2, Some(scope))?,
-                true => core.db
-                    .append_param2(name, &e.0, &e.2, Some(scope))?,
+                false => core.db.set_param2(name, &e.0, &e.2, Some(scope))?,
+                true => core.db.append_param2(name, &e.0, &e.2, Some(scope))?,
             }
         }
         Ok(())
@@ -194,7 +187,8 @@ impl Substitution {
             core.db
                 .append_param(&self.left_hand.name, &data, Some(scope))
         } else if self.reset_nameref {
-            core.db.set_nameref(&self.left_hand.name, &data, Some(scope))
+            core.db
+                .set_nameref(&self.left_hand.name, &data, Some(scope))
         } else {
             core.db.set_param(&self.left_hand.name, &data, Some(scope))
         }
@@ -208,8 +202,7 @@ impl Substitution {
         let scope = core.db.get_target_scope(&self.left_hand.name, scope);
         let r = self.right_hand.as_mut().unwrap();
 
-        if r.evaluated_string.is_some()
-        && self.left_hand.index.is_none() {
+        if r.evaluated_string.is_some() && self.left_hand.index.is_none() {
             self.set_single(core, scope)
         } else {
             self.init_array(core, scope)

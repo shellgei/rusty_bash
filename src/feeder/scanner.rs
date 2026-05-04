@@ -191,27 +191,15 @@ impl Feeder {
         self.backslash_check_and_feed(vec!["$"], core);
 
         match self.remaining.chars().nth(1) {
-            Some(c) => {
-                if "$?*@#-!0123456789".find(c).is_some() {
-                    2
-                } else {
-                    0
-                }
-            }
-            None => 0,
+            Some(c) => ("$?*@#-!0123456789".find(c).is_some() as usize)*2,
+            None    => 0,
         }
     }
 
-    pub fn scanner_special_and_positional_param(&mut self) -> usize {
+    pub fn scanner_special_param(&mut self) -> usize {
         match self.remaining.chars().nth(0) {
-            Some(c) => {
-                if "$?*@#-!_0123456789".find(c).is_some() {
-                    1
-                } else {
-                    0
-                }
-            }
-            None => 0,
+            Some(c) => "$?*@#-!_".find(c).is_some() as usize,
+            None    => 0,
         }
     }
 

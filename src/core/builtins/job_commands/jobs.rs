@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::ShellCore;
 use crate::core::builtins;
 use crate::utils::arg;
-use crate::ShellCore;
 
 pub fn jobs(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);

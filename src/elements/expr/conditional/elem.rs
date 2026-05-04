@@ -2,9 +2,9 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::ConditionalExpr;
+use crate::ShellCore;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
-use crate::ShellCore;
 use std::fmt;
 
 #[derive(Debug, Clone)]

@@ -8,7 +8,7 @@ use crate::elements::word::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::{exit, file_check};
-use crate::{error, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, error};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::fs::{File, OpenOptions};
@@ -67,10 +67,10 @@ impl Redirect {
         }
 
         match self.symbol.as_str() {
-            "<" => self.redirect_simple_input(restore, core),  // <
+            "<" => self.redirect_simple_input(restore, core), // <
             ">" => self.redirect_simple_output(restore, core), // >
-            ">&" => self.redirect_output_fd(restore, core),    // >&2
-            "<&" => self.redirect_input_fd(restore, core),     // <&2
+            ">&" => self.redirect_output_fd(restore, core),   // >&2
+            "<&" => self.redirect_input_fd(restore, core),    // <&2
             ">>" => self.redirect_append(restore, core),
             "&>" => self.redirect_both_output(restore, core),
             _ => exit::internal(" (Unknown redirect symbol)"),
@@ -115,13 +115,20 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_input(&mut self, restore: bool,
-                             core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_simple_input(
+        &mut self,
+        restore: bool,
+        core: &mut ShellCore,
+    ) -> Result<(), ExecError> {
         self.set_left_fd(0);
         self.connect_to_file(File::open(&self.right.text), restore, core)
     }
 
-    fn redirect_simple_output(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_simple_output(
+        &mut self,
+        restore: bool,
+        core: &mut ShellCore,
+    ) -> Result<(), ExecError> {
         self.set_left_fd(1);
         self.connect_to_file(File::create(&self.right.text), restore, core)
     }
@@ -146,8 +153,7 @@ impl Redirect {
         core.fds.share(right_fd, self.left_fd)
     }
 
-    fn redirect_input_fd(&mut self, restore: bool,
-                         core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_input_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.right.text == "-" {
             self.set_left_fd(0);
             core.fds.close(self.left_fd);
@@ -179,7 +185,11 @@ impl Redirect {
         )
     }
 
-    fn redirect_both_output(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_both_output(
+        &mut self,
+        restore: bool,
+        core: &mut ShellCore,
+    ) -> Result<(), ExecError> {
         self.left_fd = 1;
         self.connect_to_file(File::create(&self.right.text), restore, core)?;
 
@@ -281,8 +291,14 @@ impl Redirect {
     }
 
     fn show_heredoc_warning(&self, lineno: usize, feeder_lineno: usize, core: &mut ShellCore) {
-        let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text.replace("\\", ""));
-        let _ = core.db.set_param("LINENO", &feeder_lineno.to_string(), None);
+        let msg = format!(
+            "warning: here-document at line {} delimited by end-of-file (wanted `{}')",
+            lineno,
+            &self.right.text.replace("\\", "")
+        );
+        let _ = core
+            .db
+            .set_param("LINENO", &feeder_lineno.to_string(), None);
         error::print(&msg, core);
     }
 
@@ -306,7 +322,7 @@ impl Redirect {
             "`" => {
                 back_quote = true;
                 end_nest += ")";
-            },
+            }
             _ => end_nest += "\n",
         }
 
@@ -315,8 +331,8 @@ impl Redirect {
         }
 
         loop {
-            if feeder.is_empty() &&feeder.feed_additional_line(core).is_err() {
-                self.show_heredoc_warning(lineno, feeder.lineno-1, core);
+            if feeder.is_empty() && feeder.feed_additional_line(core).is_err() {
+                self.show_heredoc_warning(lineno, feeder.lineno - 1, core);
                 break;
             }
 
@@ -331,7 +347,7 @@ impl Redirect {
                     self.show_heredoc_warning(lineno, feeder.lineno, core);
                 }
                 break;
-            }else if feeder.starts_with(&(end.clone())) {
+            } else if feeder.starts_with(&(end.clone())) {
                 feeder.consume(end.len());
                 self.show_heredoc_warning(lineno, feeder.lineno, core);
                 break;

@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2024 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-use nix::time;
 use nix::sys::resource;
 use nix::sys::resource::UsageWho;
 use nix::sys::time::TimeVal;
+use nix::time;
 use nix::time::ClockId;
 use std::time::Duration;
 

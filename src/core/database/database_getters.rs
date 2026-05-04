@@ -1,8 +1,8 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::data::Data;
 use super::DataBase;
+use super::data::Data;
 use crate::error::exec::ExecError;
 use std::collections::HashSet;
 use std::env;
@@ -28,23 +28,23 @@ impl DataBase {
     pub fn get_param_keys(&mut self) -> Vec<String> {
         let mut keys = HashSet::new();
         for scope in &self.params {
-            scope.keys()
-                 .for_each(|k| { keys.insert(k); });
+            scope.keys().for_each(|k| {
+                keys.insert(k);
+            });
         }
-        let mut ans = keys.iter()
-                          .map(|c| c.to_string())
-                          .collect::<Vec<String>>();
+        let mut ans = keys.iter().map(|c| c.to_string()).collect::<Vec<String>>();
         ans.sort();
         ans
     }
 
     pub fn get_func_keys(&mut self) -> Vec<String> {
-        let mut keys = self.functions
-                           .keys()
-                           .map(|c| c.to_string())
-                           .collect::<Vec<String>>();
+        let mut keys = self
+            .functions
+            .keys()
+            .map(|c| c.to_string())
+            .collect::<Vec<String>>();
         keys.sort();
-        keys 
+        keys
     }
 
     pub fn get_scope_pos(&mut self, name: &str) -> Option<usize> {
@@ -149,10 +149,10 @@ impl DataBase {
 
         if let Some(v) = self.get_ref(name) {
             if key == "@" || key == "*" {
-                if ! v.is_initialized() {
+                if !v.is_initialized() {
                     return Ok(0);
                 }
-                if ! v.is_array() && ! v.is_assoc() {
+                if !v.is_array() && !v.is_assoc() {
                     return Ok(1);
                 }
             }
@@ -243,24 +243,24 @@ impl DataBase {
             None => return Ok(None),
         };
 
-        if ! d.has_flag('n') {
+        if !d.has_flag('n') {
             return Ok(None);
         }
 
-        if ! d.is_initialized() {
+        if !d.is_initialized() {
             return Ok(None);
         }
 
         match d.get_as_single() {
             Ok(nameref) => Ok(Some(nameref)),
-            Err(e) => Err(e), 
+            Err(e) => Err(e),
         }
     }
 
     pub fn get_flags(&mut self, name: &str) -> &str {
         if let Some(v) = self.get_ref(name) {
             v.get_flags()
-        }else{
+        } else {
             ""
         }
     }

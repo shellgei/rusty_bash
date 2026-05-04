@@ -2,15 +2,15 @@
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::signal;
-use crate::ShellCore;
 use nix::sys::signal::Signal;
 use signal_hook::iterator::Signals;
 use std::str::FromStr;
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
-use std::sync::Arc;
 use std::{thread, time};
 
 pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -74,7 +74,7 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
         core.traplist.push((n, args[1].to_string()));
         if n == 0 {
             core.exit_script = args[1].clone();
-        }else if n == 1000 {
+        } else if n == 1000 {
             core.error_script = args[1].clone();
         }
     }
@@ -82,7 +82,7 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     0
 }
 
-pub fn print(core: &mut ShellCore, arg: &String) {
+pub fn print(core: &mut ShellCore, arg: &str) {
     if let Ok(num) = arg_to_num(arg, &[]) {
         for e in &core.traplist {
             if num != e.0 {

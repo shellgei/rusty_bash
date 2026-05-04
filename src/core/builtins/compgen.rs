@@ -1,19 +1,24 @@
 //SPDX-FileCopyrightText: 2023 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2026 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::elements::word::{Word, WordMode};
+use crate::elements::word::{path_expansion, tilde_expansion};
 use crate::utils;
 use crate::utils::{arg, directory, glob};
-use crate::{file_check, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, file_check};
 use faccess;
 use faccess::PathExt;
-use rev_lines::RevLines;
-use std::env;
 use std::collections::HashSet;
+use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+
+const KEYWORDS: &[&str] = &[
+    "!", "[[", "]]", "case", "coproc", "do", "done", "elif", "else", "esac", "fi", "for",
+    "function", "if", "in", "select", "then", "time", "until", "while", "{", "}",
+];
 
 pub fn compgen_f(core: &mut ShellCore, args: &[String], dir_only: bool) -> Vec<String> {
     let mut arg_index = 2;
@@ -87,6 +92,7 @@ fn normalize_compgen_args(args: &[String]) -> Vec<String> {
         "setopt" => "-o",
         "function" => "-A function",
         "hostname" => "-A hostname",
+        "keyword" => "-k",
         "shopt" => "-A shopt",
         "stopped" => "-A stopped",
         "job" => "-j",
@@ -145,6 +151,7 @@ pub fn compgen(core: &mut ShellCore, args: &[String]) -> i32 {
         "-f" => compgen_f(core, &args, false),
         "-h" => compgen_h(core, &args), //history (sush original)
         "-j" => compgen_j(core, &args),
+        "-k" => compgen_k(&args),
         "-o" => compgen_o(core, &args),
         "-u" => compgen_u(core, &args),
         "-v" => compgen_v(core, &args),
@@ -250,6 +257,7 @@ pub fn compgen_c(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     commands.append(&mut builtins);
     let mut functions: Vec<String> = core.db.functions.keys().cloned().collect();
     commands.append(&mut functions);
+    commands.extend(compgen_k(args));
 
     let head = get_head(args, 2);
     if !head.is_empty() {
@@ -258,6 +266,15 @@ pub fn compgen_c(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut command_in_paths = command_list(&head, core);
     commands.append(&mut command_in_paths);
     commands
+}
+
+pub fn compgen_k(args: &[String]) -> Vec<String> {
+    let mut keywords = KEYWORDS
+        .iter()
+        .map(|keyword| keyword.to_string())
+        .collect::<Vec<_>>();
+    drop_unmatch(args, 2, &mut keywords);
+    keywords
 }
 
 fn compgen_d(core: &mut ShellCore, args: &[String]) -> Vec<String> {
@@ -276,27 +293,24 @@ pub fn compgen_e(args: &[String]) -> Vec<String> {
 }
 
 pub fn compgen_h(core: &mut ShellCore, _: &[String]) -> Vec<String> {
-    let len = core.history.len();
-    if len >= 10 {
-        return core.history[0..10].to_vec();
-    }
+    let mut ans = core
+        .history
+        .iter()
+        .filter(|entry| !entry.is_empty())
+        .cloned()
+        .collect::<Vec<_>>();
 
-    let mut ans = core.history.to_vec();
-
-    if let Ok(hist_file) = File::open(core.db.get_param("HISTFILE").unwrap_or_default()) {
-        for h in RevLines::new(BufReader::new(hist_file)) {
-            if let Ok(s) = h {
-                ans.push(s)
-            }
-
+    if ans.len() < 10
+        && let Ok(history) = sushline::readline::History::read_file(
+            core.db.get_param("HISTFILE").unwrap_or_default(),
+        )
+    {
+        for entry in history.entries().iter().rev() {
+            ans.push(entry.line().into_owned());
             if ans.len() >= 10 {
-                return ans;
+                break;
             }
         }
-    }
-
-    while ans.len() < 10 {
-        ans.push("echo Hello World".to_string());
     }
     ans
 }
@@ -340,10 +354,10 @@ fn compgen_large_w(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
     let mut words = args[2].to_string();
 
-    if words.starts_with("$") {
-        if let Ok(value) = core.db.get_param(&args[2][1..]) {
-            words = value;
-        }
+    if words.starts_with("$")
+        && let Ok(value) = core.db.get_param(&args[2][1..])
+    {
+        words = value;
     }
 
     let mut feeder = Feeder::new(&words);

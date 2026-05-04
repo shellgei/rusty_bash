@@ -4,10 +4,10 @@
 use super::elem::ArithElem;
 use super::elem::{float, int, ternary, variable};
 use super::rev_polish;
+use crate::ShellCore;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::utils::exit;
-use crate::ShellCore;
 
 pub fn pop_operand(
     stack: &mut Vec<ArithElem>,

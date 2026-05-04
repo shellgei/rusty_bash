@@ -6,20 +6,20 @@ pub mod data;
 mod database_appenders;
 mod database_checkers;
 mod database_getters;
+mod database_initializers;
 mod database_print;
 mod database_setters;
 mod database_unsetters;
-mod database_initializers;
 
+use self::data::Data;
 use self::data::array::ArrayData;
 use self::data::array_int::IntArrayData;
-use self::data::uninit::Uninit;
+use self::data::array_ondemand::OnDemandArray;
 use self::data::assoc::AssocData;
 use self::data::assoc_int::IntAssocData;
-use self::data::array_ondemand::OnDemandArray;
 use self::data::single::SingleData;
 use self::data::single_int::IntData;
-use self::data::Data;
+use self::data::uninit::Uninit;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::error::exec::ExecError;
 use std::collections::HashMap;
@@ -77,7 +77,7 @@ impl DataBase {
         let scope_len = self.params.len();
         for ly in scope..scope_len {
             if let Some(v) = self.params[ly].get_mut(name) {
-                let _ = v.unset_flag('i');
+                v.unset_flag('i');
             }
         }
 

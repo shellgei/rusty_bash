@@ -1,7 +1,7 @@
 //SPDXFileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::{case_change, Data};
+use super::{Data, case_change};
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
@@ -63,8 +63,7 @@ impl Data for AssocData {
         Ok(())
     }
 
-    fn set_as_assoc(&mut self, name: &str, key: &str,
-                    value: &str) -> Result<(), ExecError> {
+    fn set_as_assoc(&mut self, name: &str, key: &str, value: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         let mut value = value.to_string();
         case_change(&self.flags, &mut value);
@@ -74,8 +73,12 @@ impl Data for AssocData {
         Ok(())
     }
 
-    fn append_to_assoc_elem(&mut self, name: &str, key: &str,
-                            value: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(
+        &mut self,
+        name: &str,
+        key: &str,
+        value: &str,
+    ) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         let mut value = if let Some(v) = self.body.get(key) {
             v.to_owned() + value
@@ -174,7 +177,7 @@ impl Data for AssocData {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }

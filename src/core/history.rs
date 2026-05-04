@@ -1,11 +1,10 @@
-//SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
-//SPDXLicense-Identifier: BSD-3-Clause
+//SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2026 @caro@mi.shellgei.org
+//SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
-use rev_lines::RevLines;
-use std::fs::File;
 use std::fs::OpenOptions;
-use std::io::{BufReader, BufWriter, Write};
+use std::io::{BufWriter, Write};
 
 impl ShellCore {
     pub fn fetch_history(&mut self, pos: usize, prev: usize, prev_str: String) -> String {
@@ -41,14 +40,17 @@ impl ShellCore {
             file_line %= n;
         }
 
-        if let Ok(hist_file) = File::open(self.db.get_param("HISTFILE").unwrap_or_default()) {
-            let mut rev_lines = RevLines::new(BufReader::new(hist_file));
-            if let Some(Ok(s)) = rev_lines.nth(file_line) {
-                return s;
-            }
-        }
-
-        String::new()
+        sushline::readline::History::read_file(self.db.get_param("HISTFILE").unwrap_or_default())
+            .ok()
+            .and_then(|history| {
+                history
+                    .entries()
+                    .iter()
+                    .rev()
+                    .nth(file_line)
+                    .map(|entry| entry.line().into_owned())
+            })
+            .unwrap_or_default()
     }
 
     pub fn write_history_to_file(&mut self) {
@@ -74,8 +76,7 @@ impl ShellCore {
             if h.is_empty() {
                 continue;
             }
-            let _ = f.write(h.as_bytes());
-            let _ = f.write(&[0x0A]);
+            let _ = writeln!(f, "{h}");
         }
         let _ = f.flush();
     }
