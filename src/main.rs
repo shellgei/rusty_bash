@@ -145,6 +145,10 @@ fn set_short_options(args: &mut Vec<String>, core: &mut ShellCore) {
         core.db.flags += "b";
     }
 
+    if arg::consume_arg("-n", args) {
+        core.db.flags += "n";
+    }
+
     if let Err(e) = option::set_options(core, &mut args[1..].to_vec()) {
         e.print(core);
         core.db.exit_status = 2;
@@ -245,6 +249,9 @@ fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
     core.sigint.store(false, Relaxed);
     match Script::parse(feeder, core, false) {
         Ok(Some(mut s)) => {
+            if core.db.flags.contains('n') {
+                return;
+            }
             if let Err(e) = s.exec(core) {
                 e.print(core);
             }

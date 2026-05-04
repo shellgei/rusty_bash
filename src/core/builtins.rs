@@ -32,9 +32,10 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{exit, Feeder, Script, ShellCore};
-//#[cfg(not(target_os = "macos"))]
+use std::io::Write;
+use std::process::Command;
 
-pub fn error_exit_text(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
+pub fn error_(exit_status: i32, name: &str, msg: &str, core: &mut ShellCore) -> i32 {
     let shellname = core.db.get_param("0").unwrap();
     if core.db.flags.contains('i') {
         eprintln!("{}: {}: {}", &shellname, name, msg);
@@ -45,16 +46,32 @@ pub fn error_exit_text(exit_status: i32, name: &str, msg: &str, core: &mut Shell
     exit_status
 }
 
-pub fn error_exit(exit_status: i32, name: &str, err: &ExecError, core: &mut ShellCore) -> i32 {
-    let shellname = core.db.get_param("0").unwrap();
-    let msg = String::from(err);
-    if core.db.flags.contains('i') {
-        eprintln!("{}: {}: {}", &shellname, name, msg);
-    } else {
-        let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
-        eprintln!("{}: line {}: {}: {}", &shellname, &lineno, name, msg);
+pub fn error(exit_status: i32, name: &str, err: &ExecError, core: &mut ShellCore) -> i32 {
+    error_(exit_status, name, &String::from(err), core)
+}
+
+pub fn run_external(core: &mut ShellCore, args: &[String], err_msg_cond: fn(i32) -> bool) -> i32 {
+    match Command::new(&args[0]).args(args[1..].to_vec()).output() {
+        Ok(com) => {
+            let exit_status = com.status.code().unwrap_or(127);
+            if ! com.stdout.is_empty() {
+                let _ = std::io::stdout().write_all(&com.stdout);
+            }
+            if ! err_msg_cond(exit_status) {
+                return exit_status;
+            }
+
+            let shellname = core.db.get_param("0").unwrap();
+            eprint!("{}: ", &shellname);
+            if ! core.db.flags.contains('i') {
+                let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+                eprint!("line {}: ", &lineno);
+            }
+            let _ = std::io::stderr().write_all(&com.stderr);
+            exit_status
+        },
+        _ => 127
     }
-    exit_status
 }
 
 impl ShellCore {
@@ -120,6 +137,8 @@ impl ShellCore {
         self.builtins.insert("source".to_string(), source::source);
         self.builtins.insert(".".to_string(), source::source);
         self.builtins.insert("true".to_string(), true_);
+        self.builtins.insert("test".to_string(), test);
+        self.builtins.insert("[".to_string(), test);
         self.builtins.insert("wait".to_string(), job_commands::wait);
 
         self.subst_builtins
@@ -199,7 +218,7 @@ pub fn bind(_: &mut ShellCore, _: &[String]) -> i32 {
 }
 
 pub fn debug(_: &mut ShellCore, _: &[String]) -> i32 {
-//    let pos = core.db.get_layer_pos("words").unwrap();
+//    let pos = core.db.get_scope_pos("words").unwrap();
 //
 //    dbg!("{:?}", &core.db.params.len());
 //    dbg!("{:?}", &pos);
@@ -217,20 +236,55 @@ pub fn let_(core: &mut ShellCore, args: &[String]) -> i32 {
                 Ok(s) => last_result = if s == "0" { 1 } else { 0 },
                 Err(e) => {
                     core.valid_assoc_expand_once = false;
-                    return error_exit(1, &args[0], &e, core);
+                    return error(1, &args[0], &e, core);
                 }
             },
             Ok(None) => {
                 core.valid_assoc_expand_once = false;
-                return error_exit_text(1, &args[0], "expression expected", core);
+                return error_(1, &args[0], "expression expected", core);
             }
             Err(e) => {
                 core.valid_assoc_expand_once = false;
-                return error_exit(1, &args[0], &From::from(e), core);
+                return error(1, &args[0], &From::from(e), core);
             }
         }
     }
 
     core.valid_assoc_expand_once = false;
     last_result
+}
+
+pub fn test(core: &mut ShellCore, args: &[String]) -> i32 {
+    /* difference between the builtin test and the external command */
+    if (args.len() == 5 && args[0] == "[" && args[4] == "]")
+    || (args.len() == 4 && args[0] == "test") {
+        if args[2] == "=" {
+            if args[1] == args[3] {
+                return 0;
+            }else if args[1] != args[3] {
+                return 1;
+            }
+        }
+    }
+
+    run_external(core, args, |es| es > 1)
+    /*
+    /* call the external test command */
+    match Command::new(&args[0]).args(args[1..].to_vec()).output() {
+        Ok(com) => {
+            let exit_status = com.status.code().unwrap_or(127);
+            if exit_status > 1 {
+                let msg = String::from_utf8(com.stderr).unwrap_or("".to_string());
+                let shellname = core.db.get_param("0").unwrap();
+                if core.db.flags.contains('i') {
+                    eprintln!("{}: {}", &shellname, msg);
+                } else {
+                    let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
+                    eprintln!("{}: line {}: {}", &shellname, &lineno, msg);
+                }
+            }
+            exit_status
+        },
+        _ => 127
+    }*/
 }

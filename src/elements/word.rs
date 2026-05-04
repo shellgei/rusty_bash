@@ -174,7 +174,7 @@ impl Word {
             splitted[len - 1].do_not_erase = false;
         }
 
-        if core.options.query("noglob") {
+        if core.options.query("noglob") || core.db.flags.contains('f') {
             return splitted;
         }
 
@@ -185,7 +185,7 @@ impl Word {
     }
 
     fn path_expansion(&self, core: &mut ShellCore) -> Vec<Word> {
-        if core.options.query("noglob") {
+        if core.options.query("noglob") || core.db.flags.contains('f') {
             return vec![self.clone()];
         }
 

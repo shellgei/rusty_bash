@@ -17,7 +17,7 @@ struct NoArgOpt<'a>{
     subarg: bool,
     exp_args_len: usize,
     silence: bool,
-    layer: Option<usize>,
+    scope: Option<usize>,
 }
 
 impl Opt {
@@ -90,17 +90,17 @@ pub fn get_index(core: &mut ShellCore) -> (usize, usize) {
 }
 
 fn set_no_arg_option(no_arg_opt: &NoArgOpt, core: &mut ShellCore,) -> i32 {
-    let result = core.db.set_param(no_arg_opt.name, &no_arg_opt.arg[1..], no_arg_opt.layer);
-    core.db.set_param("OPTARG", "", no_arg_opt.layer).ok();
+    let result = core.db.set_param(no_arg_opt.name, &no_arg_opt.arg[1..], no_arg_opt.scope);
+    core.db.set_param("OPTARG", "", no_arg_opt.scope).ok();
 
     if !no_arg_opt.subarg || no_arg_opt.subindex + 1 == no_arg_opt.exp_args_len {
-        let _ = core.db.set_param("OPTIND", &(no_arg_opt.index + 1).to_string(), no_arg_opt.layer);
-        let _ = core.db.set_param("OPTIND_SUB", "0", no_arg_opt.layer);
-        let _ = core.db.set_param("OPTIND_PREV", &(no_arg_opt.index + 1).to_string(), no_arg_opt.layer);
+        let _ = core.db.set_param("OPTIND", &(no_arg_opt.index + 1).to_string(), no_arg_opt.scope);
+        let _ = core.db.set_param("OPTIND_SUB", "0", no_arg_opt.scope);
+        let _ = core.db.set_param("OPTIND_PREV", &(no_arg_opt.index + 1).to_string(), no_arg_opt.scope);
     } else {
-        let _ = core.db.set_param("OPTIND", &no_arg_opt.index.to_string(), no_arg_opt.layer);
-        let _ = core.db.set_param("OPTIND_SUB", &(no_arg_opt.subindex + 1).to_string(), no_arg_opt.layer);
-        let _ = core.db.set_param("OPTIND_PREV", &no_arg_opt.index.to_string(), no_arg_opt.layer);
+        let _ = core.db.set_param("OPTIND", &no_arg_opt.index.to_string(), no_arg_opt.scope);
+        let _ = core.db.set_param("OPTIND_SUB", &(no_arg_opt.subindex + 1).to_string(), no_arg_opt.scope);
+        let _ = core.db.set_param("OPTIND_PREV", &no_arg_opt.index.to_string(), no_arg_opt.scope);
     }
 
     if let Err(e) = result {
@@ -120,21 +120,21 @@ fn set_option_with_arg(
     optarg: &str,
     silence: bool,
     core: &mut ShellCore,
-    layer: Option<usize>,
+    scope: Option<usize>,
 ) -> i32 {
-    let result = core.db.set_param(name, &arg[1..], layer);
+    let result = core.db.set_param(name, &arg[1..], scope);
 
-    let _ = core.db.set_param("OPTARG", optarg, layer);
-    let _ = core.db.set_param("OPTIND", &(index + 2).to_string(), layer);
+    let _ = core.db.set_param("OPTARG", optarg, scope);
+    let _ = core.db.set_param("OPTIND", &(index + 2).to_string(), scope);
     let _ = core
         .db
-        .set_param("OPTIND_PREV", &(index + 2).to_string(), layer);
-    let _ = core.db.set_param("OPTIND_SUB", "0", layer);
+        .set_param("OPTIND_PREV", &(index + 2).to_string(), scope);
+    let _ = core.db.set_param("OPTIND_SUB", "0", scope);
 
     if let Err(e) = result {
         let _ = core
             .db
-            .set_param("OPTIND_PREV", &(index + 10).to_string(), layer);
+            .set_param("OPTIND_PREV", &(index + 10).to_string(), scope);
         if !silence {
             let msg = format!("getopts: {:?}", &e);
             error::print(&msg, core);
@@ -147,18 +147,18 @@ fn set_option_with_arg(
 
 pub fn getopts(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
-    let layer = core.db.get_layer_pos("OPTIND").unwrap_or(0);
-    let layer_sub = core.db.get_layer_pos("OPTIND_SUB").unwrap_or(0);
-    let layer_prev = core.db.get_layer_pos("OPTIND_PREV").unwrap_or(0);
+    let scope = core.db.get_scope_pos("OPTIND").unwrap_or(0);
+    let scope_sub = core.db.get_scope_pos("OPTIND_SUB").unwrap_or(0);
+    let scope_prev = core.db.get_scope_pos("OPTIND_PREV").unwrap_or(0);
 
-    if layer_sub != layer {
-        let _ = core.db.set_param("OPTIND_SUB", "0", Some(layer));
+    if scope_sub != scope {
+        let _ = core.db.set_param("OPTIND_SUB", "0", Some(scope));
     }
-    if layer_prev != layer {
-        let _ = core.db.set_param("OPTIND_PREV", "0", Some(layer));
+    if scope_prev != scope {
+        let _ = core.db.set_param("OPTIND_PREV", "0", Some(scope));
     }
 
-    let _ = core.db.set_param("OPTARG", "", Some(layer));
+    let _ = core.db.set_param("OPTARG", "", Some(scope));
 
     if args.len() < 3 {
         error::print("getopts: usage: getopts optstring name [arg ...]", core);
@@ -172,7 +172,7 @@ pub fn getopts(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let (index, subindex) = get_index(core);
     let name = args[2].clone();
-    let _ = core.db.set_param(&name, "?", Some(layer));
+    let _ = core.db.set_param(&name, "?", Some(scope));
 
     let args = match args.len() > 3 {
         true => &args[2..],
@@ -200,10 +200,10 @@ pub fn getopts(core: &mut ShellCore, args: &[String]) -> i32 {
     if arg.starts_with("--") {
         let _ = core
             .db
-            .set_param("OPTIND", &(index + 1).to_string(), Some(layer));
+            .set_param("OPTIND", &(index + 1).to_string(), Some(scope));
         let _ = core
             .db
-            .set_param("OPTIND_PREV", &(index + 1).to_string(), Some(layer));
+            .set_param("OPTIND_PREV", &(index + 1).to_string(), Some(scope));
         return 1;
     }
 
@@ -217,7 +217,7 @@ pub fn getopts(core: &mut ShellCore, args: &[String]) -> i32 {
             subarg,
             exp_args_len: exp_args.len(),
             silence,
-            layer: Some(layer),
+            scope: Some(scope),
         };
         return set_no_arg_option(&no_arg_opt, core);
     }
@@ -228,7 +228,7 @@ pub fn getopts(core: &mut ShellCore, args: &[String]) -> i32 {
             false => return 1,
         };
 
-        return set_option_with_arg(&name, &arg, index, &optarg, silence, core, Some(layer));
+        return set_option_with_arg(&name, &arg, index, &optarg, silence, core, Some(scope));
     }
 
     1

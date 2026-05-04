@@ -57,12 +57,8 @@ impl Data for RandomVar {
         self.flags.retain(|e| e != flag);
     }
 
-    fn has_flag(&mut self, flag: char) -> bool {
-        self.flags.contains(flag)
-    }
-
-    fn get_flags(&mut self) -> String {
-        self.flags.clone()
+    fn get_flags(&mut self) -> &str {
+        &self.flags
     }
 }
 

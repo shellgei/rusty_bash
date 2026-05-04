@@ -98,11 +98,16 @@ impl ForCommand {
                 return false;
             }
 
-            if let Err(e) = core.db.set_param(&self.name, &p, None) {
-                core.db.exit_status = 1;
-                e.print(core);
-                //                let msg = format!("{:?}", &e);
-                //               error::print(&msg, core);
+            if core.db.has_flag(&self.name, 'n') {
+                if let Err(e) = core.db.set_nameref(&self.name, &p, None) {
+                    core.db.exit_status = 1;
+                    e.print(core);
+                }
+            }else{
+                if let Err(e) = core.db.set_param(&self.name, &p, None) {
+                    core.db.exit_status = 1;
+                    e.print(core);
+                }
             }
 
             if core.continue_counter > 0 {

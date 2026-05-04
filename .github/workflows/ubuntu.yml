@@ -20,6 +20,6 @@ jobs:
     - name: Bash tests
       run: |
         dir=$PWD
-        git clone https://github.com/shellgei/rusty_bash_test -b v1.2.6 --depth 1
+        git clone https://github.com/shellgei/rusty_bash_test -b v1.2.7 --depth 1
         cd rusty_bash_test
         ./test.bash $dir

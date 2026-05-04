@@ -7,11 +7,11 @@ use crate::{error, ShellCore};
 
 pub fn set_positions(core: &mut ShellCore, args: &[String]) -> Result<(), ExecError> {
     let com = match core.db.position_parameters.pop() {
-        Some(layer) => {
-            if layer.is_empty() {
+        Some(scope) => {
+            if scope.is_empty() {
                 "".to_string()
             } else {
-                layer[0].clone()
+                scope[0].clone()
             }
         }
         None => return Err(ExecError::Other("empty param stack".to_string())),
@@ -55,11 +55,13 @@ pub fn set_options(core: &mut ShellCore, args: &mut Vec<String>) -> Result<(), E
 
 pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
     for (short, long) in [
+        ('a', "allexport"),
         ('t', "onecmd"),
         ('m', "monitor"),
         ('C', "noclobber"),
         ('a', "allexport"),
         ('B', "braceexpand"),
+        ('f', ""),
         ('u', ""),
         ('e', ""),
         ('r', ""),
@@ -88,12 +90,30 @@ pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
     }
 }
 
+fn set_bash_flags(core: &mut ShellCore, args: &[String]) {
+    let positive = args[1] == "-o";
+
+    if args[2] == "monitor" {
+        if positive && !core.db.flags.contains('m') {
+            core.db.flags.push('m');
+        } else if !positive {
+            core.db.flags.retain(|f| f != 'm');
+        }
+    }else if args[2] == "allexport" {
+        if positive && !core.db.flags.contains('a') {
+            core.db.flags.push('a');
+        } else if !positive {
+            core.db.flags.retain(|f| f != 'a');
+        }
+    }
+}
+
 pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
 
     if core.db.flags.contains('r') && arg::consume_arg("+r", &mut args) {
-        let _ = super::error_exit_text(1, &args[0], "+r: invalid option", core);
-        eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]"); // TODO: this line is a dummy for test. We must implement all behaviors of these options.
+        let _ = super::error_(1, &args[0], "+r: invalid option", core);
+        eprintln!("set: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]");
         return 1;
     }
 
@@ -114,7 +134,7 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
         match set_positions(core, &args) {
             Ok(()) => return 0,
             Err(e) => {
-                return super::error_exit_text(1, &args[0], &String::from(&e), core);
+                return super::error_(1, &args[0], &String::from(&e), core);
             }
         }
     }
@@ -126,18 +146,26 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
             core.options.print_all(positive);
             return 0;
         } else {
+            set_bash_flags(core, &args);
+            /*
             if args[2] == "monitor" {
                 if positive && !core.db.flags.contains('m') {
                     core.db.flags.push('m');
                 } else if !positive {
                     core.db.flags.retain(|f| f != 'm');
                 }
-            }
+            }else if args[2] == "allexport" {
+                if positive && !core.db.flags.contains('a') {
+                    core.db.flags.push('a');
+                } else if !positive {
+                    core.db.flags.retain(|f| f != 'a');
+                }
+            }*/
 
             return match core.options.set(&args[2], positive) {
                 Ok(()) => 0,
                 Err(e) => {
-                    return super::error_exit_text(2, &args[0], &String::from(&e), core);
+                    return super::error_(2, &args[0], &String::from(&e), core);
                 }
             };
         }

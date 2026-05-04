@@ -117,17 +117,17 @@ impl Variable {
     pub fn init_variable(
         &self,
         core: &mut ShellCore,
-        layer: Option<usize>,
+        scope: Option<usize>,
         args: &mut Vec<String>,
     ) -> Result<(), ExecError> {
         let mut prev = vec![];
 
-        let exists_in_layer = if let Some(l) = layer {
+        let exists_in_scope = if let Some(l) = scope {
             core.db.exist_l(&self.name, l)
         } else {
             false
         };
-        if (layer.is_none() && core.db.exist(&self.name)) || exists_in_layer {
+        if (scope.is_none() && core.db.exist(&self.name)) || exists_in_scope {
             prev = vec![core.db.get_param(&self.name)?];
         }
 
@@ -140,13 +140,13 @@ impl Variable {
                 true  => None,
                 false => Some(prev),
             };
-            return core.db.init_array(&self.name, data, layer, i_opt);
+            return core.db.init_array(&self.name, data, scope, i_opt);
             //TODO: ^ Maybe, there is a case where an assoc must be
             //prepared.
         } else if la_opt {
-            core.db.init_assoc(&self.name, layer, false, i_opt)?;
+            core.db.init_assoc(&self.name, scope, false, i_opt)?;
             if !prev.is_empty() {
-                core.db.set_assoc_elem(&self.name, "0", &prev[0], layer)?;
+                core.db.set_assoc_elem(&self.name, "0", &prev[0], scope)?;
             }
             return Ok(());
         }
@@ -154,7 +154,7 @@ impl Variable {
         match prev.len() {
             0 => {
                 match i_opt {
-                    true =>  core.db.init_as_num(&self.name, "", layer),
+                    true =>  core.db.init_as_num(&self.name, "", scope),
                     false => {
                         let mut opts = String::new();
                         if a_opt {
@@ -164,14 +164,14 @@ impl Variable {
                             opts.push('A');
                         }
                         let d = Box::new(Uninit::new(&opts));
-                        core.db.set_entry(layer.unwrap_or(0), &self.name, d)
+                        core.db.set_entry(scope.unwrap_or(0), &self.name, d)
                     },
                 }
             },
             _ => {
                 match i_opt {
-                    true => core.db.init_as_num(&self.name, &prev[0], layer),
-                    false => core.db.set_param(&self.name, &prev[0], layer),
+                    true => core.db.init_as_num(&self.name, &prev[0], scope),
+                    false => core.db.set_param(&self.name, &prev[0], scope),
                 }
             },
         }

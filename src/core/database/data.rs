@@ -5,12 +5,12 @@ pub mod array;
 pub mod array_int;
 pub mod assoc;
 pub mod assoc_int;
-pub mod epochrealtime;
-pub mod epochseconds;
+pub mod array_ondemand;
 pub mod random;
 pub mod seconds;
 pub mod single;
 pub mod single_int;
+pub mod single_ondemand;
 pub mod srandom;
 pub mod uninit;
 
@@ -18,6 +18,7 @@ use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use std::fmt;
 use std::fmt::Debug;
+use crate::utils;
 
 fn to_int(s: &str) -> Result<isize, ExecError> {
     match s.parse::<isize>() {
@@ -48,7 +49,10 @@ impl Clone for Box<dyn Data> {
 
 pub trait Data {
     fn boxed_clone(&self) -> Box<dyn Data>;
-    fn _get_fmt_string(&self) -> String;
+
+    fn _get_fmt_string(&self) -> String {
+        "********".to_string()
+    }
 
     fn get_fmt_string(&mut self) -> String {
         self._get_fmt_string()
@@ -75,9 +79,9 @@ pub trait Data {
     fn set_as_single(&mut self, name: &str,  _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)
     }
+
     fn append_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
-        self.readonly_check(name)?;
-        Err(ExecError::Other("Undefined call set_as_single".to_string()))
+        self.readonly_check(name)
     }
     fn get_as_single_num(&mut self) -> Result<isize, ExecError> {
         Err(ExecError::Other("not a single variable".to_string()))
@@ -198,9 +202,32 @@ pub trait Data {
 
     fn unset_flag(&mut self, _: char) {}
 
-    fn has_flag(&mut self, _: char) -> bool {
-        false
+    fn has_flag(&mut self, flag: char) -> bool {
+        self.get_flags().contains(flag)
     }
 
-    fn get_flags(&mut self) -> String;
+    fn get_flags(&mut self) -> &str;
+
+    fn nameref_check(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
+        if ! self.has_flag('n') {
+            return Ok(());
+        }
+
+        if value.contains('[') {
+            let splits: Vec<&str> = value.split('[').collect();
+            if ! utils::is_var(&splits[0]) || ! splits[1].ends_with(']') {
+                    return Err(ExecError::InvalidNameRef(value.to_string()));
+            }
+
+            if name == splits[0] {
+                    return Err(ExecError::SelfRef(name.to_string()));
+            }
+        }else if value == "" {
+        }else if ! utils::is_var(value) {
+            return Err(ExecError::InvalidNameRef(value.to_string()));
+        }else if name == value {
+            return Err(ExecError::SelfRef(name.to_string()));
+        }
+        Ok(())
+    }
 }

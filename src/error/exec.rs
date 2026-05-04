@@ -12,12 +12,15 @@ use std::os::fd::RawFd;
 #[derive(Debug, Clone)]
 pub enum ExecError {
     Internal,
+    ArgListTooLong(String),
     AmbiguousRedirect(String),
     ArrayIndexInvalid(String),
     BadSubstitution(String),
     BadFd(RawFd),
     Bug(String),
     CannotOverwriteExistingFile(String),
+    CircularNameRef(String),
+    CommandNotFound(String),
     InvalidIndirectExpansion(String),
     InvalidName(String),
     InvalidNameRef(String),
@@ -27,8 +30,12 @@ pub enum ExecError {
     VariableReadOnly(String),
     VariableInvalid(String),
     ParseIntError(String),
+    PermissionDenied(String),
+    SelfRef(String),
+    Silent,
     SyntaxError(String),
     Restricted(String),
+    RefCannotBeArray(String),
     SubstringMinus(i128),
     UnsupportedWaitStatus(WaitStatus),
     UnboundVariable(String),
@@ -69,17 +76,24 @@ impl From<ExecError> for String {
     }
 }
 
+
+//    command_error_exit(command_name, core, "Arg list too long", 126)
+//    command_error_exit(command_name, core, "Permission denied", 126)
+
 impl From<&ExecError> for String {
     fn from(e: &ExecError) -> String {
         match e {
             ExecError::Internal => "INTERNAL ERROR".to_string(),
             ExecError::AmbiguousRedirect(name) => format!("{name}: ambiguous redirect"),
             ExecError::ArrayIndexInvalid(name) => format!("[{name}]: bad array subscript"),
+            ExecError::ArgListTooLong(name) => format!("{name}: Arg list too long"),
             ExecError::BadSubstitution(s) => format!("`{s}': bad substitution"),
             ExecError::BadFd(fd) => format!("{fd}: bad file descriptor"),
             ExecError::CannotOverwriteExistingFile(file) => {
                 format!("{file}: cannot overwrite existing file")
             }
+            ExecError::CircularNameRef(name) => format!("{name}: circular name reference"),
+            ExecError::CommandNotFound(name) => format!("{name}: command not found"),
             ExecError::InvalidIndirectExpansion(name) => format!("{name}: invalid indirect expansion"),
             ExecError::InvalidName(name) => format!("`{name}': not a valid identifier"),
             ExecError::InvalidNameRef(name) => format!("`{name}': invalid variable name for name reference"),
@@ -89,10 +103,15 @@ impl From<&ExecError> for String {
             ExecError::VariableReadOnly(name) => format!("{name}: readonly variable"),
             ExecError::VariableInvalid(name) => format!("`{name}': not a valid identifier"),
             ExecError::ParseIntError(e) => e.to_string(),
+            ExecError::PermissionDenied(name) => format!("{name}: Permission denied"),
+            ExecError::SelfRef(name) => {
+                format!("{name}: nameref variable self references not allowed")
+            },
             ExecError::SyntaxError(near) => {
                 format!("syntax error near unexpected token `{}'", &near)
             }
             ExecError::Restricted(com) => format!("{com}: restricted"),
+            ExecError::RefCannotBeArray(name) => format!("{name}: reference variable cannot be an array"),
             ExecError::SubstringMinus(n) => format!("{n}: substring expression < 0"),
             ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {ws:?}"),
             ExecError::UnboundVariable(name) => format!("{name}: unbound variable"),
@@ -102,6 +121,7 @@ impl From<&ExecError> for String {
 
             ExecError::ArithError(s, a) => format!("{}: {}", s, String::from(a)),
             ExecError::ParseError(p) => From::from(p),
+            _ => {"".to_string()},
         }
     }
 }
@@ -110,6 +130,10 @@ impl ExecError {
     pub fn print(&self, core: &mut ShellCore) {
         let name = core.db.get_param("0").unwrap();
         let s: String = From::<&ExecError>::from(self);
+        if s == "" {
+            return;
+        }
+
         if core.db.flags.contains('i') {
             eprintln!("{}: {}", &name, &s);
         } else {

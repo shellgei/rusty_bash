@@ -65,7 +65,7 @@ pub(super) fn names_match(core: &mut ShellCore, names: &mut Vec<String>,
 
     for n in names {
         if ! core.db.exist(n) && ! core.db.exist_nameref(n) {
-            return builtins::error_exit_text(1, n, "not found", core);
+            return builtins::error_(1, n, "not found", core);
         }
 
         output(core, n, args);

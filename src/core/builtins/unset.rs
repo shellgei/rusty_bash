@@ -11,12 +11,12 @@ fn unset_all(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
         return Ok(0);
     }
 
-    let mut layer = core.db.get_layer_num()-1;
-    if layer <= 1 {
+    let mut scope = core.db.get_scope_num()-1;
+    if scope <= 1 {
         core.db.unset(name, None, true)?;
     }else{
-        layer -= 1;
-        core.db.unset(name, Some(layer), true)?;
+        scope -= 1;
+        core.db.unset(name, Some(scope), true)?;
     }
     Ok(0)
 }
@@ -27,12 +27,12 @@ fn unset_var(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
         return Ok(0);
     }
 
-    let mut layer = core.db.get_layer_num()-1;
-    if layer <= 1 {
+    let mut scope = core.db.get_scope_num()-1;
+    if scope <= 1 {
         core.db.unset_var(name, None, true)?;
     }else{
-        layer -= 1;
-        core.db.unset_var(name, Some(layer), true)?;
+        scope -= 1;
+        core.db.unset_var(name, Some(scope), true)?;
     }
 
     Ok(0)
@@ -44,12 +44,12 @@ fn unset_nameref(core: &mut ShellCore, name: &str) -> i32 {
         return 0;
     }
 
-    let mut layer = core.db.get_layer_num()-1;
-    if layer <= 1 {
+    let mut scope = core.db.get_scope_num()-1;
+    if scope <= 1 {
         let _ = core.db.unset_nameref(name, None);
     }else{
-        layer -= 1;
-        let _ = core.db.unset_nameref(name, Some(layer));
+        scope -= 1;
+        let _ = core.db.unset_nameref(name, Some(scope));
     }
 
     0
@@ -72,7 +72,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             if args.len() > 2 {
                 let name = args.remove(2);
                 if let Err(e) = unset_var(core, &name) {
-                    return super::error_exit(1, &args[0], &e, core);
+                    return super::error(1, &args[0], &e, core);
                 }else{
                     return 0;
                 }
@@ -89,7 +89,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             args.remove(1);
             if !name.contains("[") {
                 if let Err(e) = unset_all(core, &name) {
-                    return super::error_exit(1, &args[0], &e, core);
+                    return super::error(1, &args[0], &e, core);
                 }else{
                     return 0;
                 }
@@ -101,7 +101,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             if !index.ends_with("]") {
                 let msg = format!("{}: invalid variable", &name);
-                return super::error_exit_text(1, &args[0], &msg, core);
+                return super::error_(1, &args[0], &msg, core);
             }
 
             index.remove(0);
@@ -115,7 +115,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                         Ok(Some(mut v)) => {
                             if !f.is_empty() {
                                 let e = ExecError::ArrayIndexInvalid(index.to_string());
-                                return super::error_exit(1, &args[0], &e, core);
+                                return super::error(1, &args[0], &e, core);
                             }
                             if let Ok(n) = v.eval(core) {
                                 index = n;
@@ -123,14 +123,14 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                         },
                         _ => {
                             let e = ExecError::ArrayIndexInvalid(index.to_string());
-                            return super::error_exit(1, &args[0], &e, core);
+                            return super::error(1, &args[0], &e, core);
                         },
                     }
                 }
             }
 
             if let Err(e) = core.db.unset_array_elem(&name, &index) {
-                return super::error_exit_text(1, &args[0], &String::from(&e), core);
+                return super::error_(1, &args[0], &String::from(&e), core);
             }
             return 0;
         }

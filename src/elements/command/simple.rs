@@ -206,22 +206,22 @@ impl SimpleCommand {
     }
 
     fn set_local_params(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let layer = core.db.get_layer_num() - 1;
+        let scope = core.db.get_scope_num() - 1;
         if core.options.query("posix") {
             for s in self.substitutions.clone().iter_mut() {
                 s.eval(core, None, false)?;
             }
         }
         for s in self.substitutions.iter_mut() {
-            s.eval(core, Some(layer), false)?;
+            s.eval(core, Some(scope), false)?;
         }
 
         Ok(())
     }
 
     fn set_environment_variables(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let layer = core.db.get_layer_num() - 1;
-        core.db.set_layer_to_env(layer);
+        let scope = core.db.get_scope_num() - 1;
+        core.db.set_scope_to_env(scope);
         Ok(())
     }
 

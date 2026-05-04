@@ -15,7 +15,7 @@ fn to_num(w: &str, sub: &str, core: &mut ShellCore) -> Result<ArithElem, ExecErr
         return Err(ArithError::OperandExpected(w.to_string()).into());
     }
 
-    let name = w.to_string(); //w.eval_as_value(core)?;
+    let name = w.to_string();
     str_to_num(&name, sub, core)
 }
 

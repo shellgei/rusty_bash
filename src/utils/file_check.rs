@@ -13,6 +13,8 @@ use std::os::fd::RawFd;
 
 #[cfg(target_os = "android")]
 use std::os::android::fs::MetadataExt;
+#[cfg(target_os = "freebsd")]
+use std::os::freebsd::fs::MetadataExt;
 #[cfg(target_os = "linux")]
 use std::os::linux::fs::MetadataExt;
 #[cfg(target_os = "macos")]

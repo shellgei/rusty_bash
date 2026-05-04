@@ -36,7 +36,7 @@ fn type_no_opt_sub(core: &mut ShellCore, com: &String) -> i32 {
     }
 
     let s = format!("{}: not found", &com);
-    super::error_exit_text(1, "type", &s, core)
+    super::error_(1, "type", &s, core)
 }
 
 fn type_no_opt(core: &mut ShellCore, args: &[String]) -> i32 {

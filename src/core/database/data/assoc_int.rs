@@ -189,8 +189,8 @@ impl Data for IntAssocData {
         self.flags.contains(flag)
     }
 
-    fn get_flags(&mut self) -> String {
-        self.flags.clone()
+    fn get_flags(&mut self) -> &str {
+        &self.flags
     }
 }
 

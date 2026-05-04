@@ -4,7 +4,7 @@
 use crate::{arg, ShellCore};
 use nix::libc;
 use nix::sys::resource;
-use nix::sys::resource::Resource;
+use nix::sys::resource::{Resource, rlim_t};
 
 fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
     &[
@@ -27,6 +27,7 @@ fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
             "-d",
             Resource::RLIMIT_DATA,
         ),
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         (
             "scheduling priority                 ",
             "",
@@ -39,6 +40,7 @@ fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
             "-f",
             Resource::RLIMIT_FSIZE,
         ),
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         (
             "pending signals                     ",
             "",
@@ -63,18 +65,21 @@ fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
             "-n",
             Resource::RLIMIT_NOFILE,
         ),
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         (
             "pipe size                ",
             "512 bytes",
             "-p",
             Resource::RLIMIT_SIGPENDING,
         ), //dummy
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         (
             "POSIX message queues         ",
             "bytes",
             "-q",
             Resource::RLIMIT_MSGQUEUE,
         ),
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         (
             "real-time priority                  ",
             "",
@@ -99,12 +104,14 @@ fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
             "-u",
             Resource::RLIMIT_NPROC,
         ),
+        #[cfg(not(any(target_os = "freebsd", target_os = "netbsd", target_os = "openbsd")))]
         (
             "virtual memory              ",
             "kbytes",
             "-v",
             Resource::RLIMIT_AS,
         ),
+        #[cfg(any(target_os = "linux", target_os = "android"))]
         (
             "file locks                          ",
             "",
@@ -132,14 +139,7 @@ fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i
     let mut infty = nix::sys::resource::RLIM_INFINITY;
 
     if item.starts_with("pipe size") {
-        #[cfg(any(target_arch = "arm", target_arch = "x86"))]
-        {
-            v = ((libc::PIPE_BUF as u64) / 512) as u32;
-        }
-        #[cfg(not(any(target_arch = "arm", target_arch = "x86")))]
-        {
-            v = (libc::PIPE_BUF as u64) / 512;
-        }
+        v = ((libc::PIPE_BUF as rlim_t) / 512) as rlim_t;
     }
 
     if unit.starts_with("kbytes") {
@@ -169,22 +169,9 @@ fn print_all(soft: bool) -> i32 {
 }
 
 fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
-    #[cfg(any(target_arch = "arm", target_arch = "x86"))]
     let mut limit = match num.as_str() {
         "unlimited" => nix::sys::resource::RLIM_INFINITY,
-        numstr => match numstr.parse::<u32>() {
-            Ok(n) => n,
-            Err(e) => {
-                dbg!("{:?}", &e);
-                return 1;
-            }
-        },
-    };
-
-    #[cfg(not(any(target_arch = "arm", target_arch = "x86")))]
-    let mut limit = match num.as_str() {
-        "unlimited" => nix::sys::resource::RLIM_INFINITY,
-        numstr => match numstr.parse::<u64>() {
+        numstr => match numstr.parse::<rlim_t>() {
             Ok(n) => n,
             Err(e) => {
                 dbg!("{:?}", &e);
