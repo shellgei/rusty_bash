@@ -37,10 +37,16 @@ command_not_found_handle() { #command_not_found should be loaded before bash-com
 }
 
 
-export BASH_COMPLETION=/opt/homebrew/Cellar/bash-completion/1.3_3/etc/bash_completion
-if [ "$(uname)" = "Darwin" -a -f /opt/homebrew/Cellar/bash-completion/1.3_3/etc/bash_completion ]; then
-	source /opt/homebrew/Cellar/bash-completion/1.3_3/etc/bash_completion
-	complete -d cd
+if [ "$(uname)" = "Darwin" ]; then
+    brew_prefix="$(brew --prefix 2>/dev/null)"
+    for bash_completion in "$brew_prefix/share/bash-completion/bash_completion" "$brew_prefix/etc/bash_completion"; do
+        if [ -f "$bash_completion" ]; then
+            export BASH_COMPLETION="$bash_completion"
+            source "$bash_completion"
+            complete -d cd
+            break
+        fi
+    done
 elif [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
     _comp_complete_load scp #for completion of rsync
