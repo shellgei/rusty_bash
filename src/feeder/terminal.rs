@@ -12,8 +12,8 @@ use history::{history_for_readline, remove_current_history_entry, update_current
 use prompt::make_prompt_string;
 use std::sync::atomic::Ordering::Relaxed;
 use sushline::readline::{
-    CompletionRequest, CompletionResponse, HistoryExpansionPolicy, Hooks, Prompt, ReadlineResult,
-    Editor, Terminal, expand_history,
+    CompletionRequest, CompletionResponse, Editor, HistoryExpansionPolicy, Hooks, Prompt,
+    ReadlineResult, Terminal, expand_history,
 };
 
 struct SushHooks<'a> {

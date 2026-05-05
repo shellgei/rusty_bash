@@ -52,8 +52,7 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat_end(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<bool, ParseError> {
+    fn eat_end(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<bool, ParseError> {
         if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
         }
@@ -62,10 +61,9 @@ impl BracedParam {
             self.text += &feeder.consume(1);
             return Ok(true);
         }
-        if let Some(a) = subword::parse(feeder, core,
-                             &Some(WordMode::PermitAnyChar))? {
-            self.unknown += &a.get_text();
-            self.text += &a.get_text();
+        if let Some(a) = subword::parse(feeder, core, &Some(WordMode::PermitAnyChar))? {
+            self.unknown += a.get_text();
+            self.text += a.get_text();
             return Ok(false);
         }
         Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())))
@@ -94,7 +92,7 @@ impl BracedParam {
                 ans.extension = Some(op);
             }
         }
-        while ! ans.eat_end(feeder, core)?{}
+        while !ans.eat_end(feeder, core)? {}
 
         Ok(Some(ans))
     }
