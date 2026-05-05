@@ -350,7 +350,7 @@ fn compgen_large_g(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     path_expansion::expand(&glob, &core.shopts)
 }
 
-fn compgen_large_w(core: &mut ShellCore, args: &[String]) -> Vec<String> {
+pub fn compgen_large_w(core: &mut ShellCore, args: &[String]) -> Vec<String> {
     let mut ans: Vec<String> = vec![];
     let mut words = args[2].to_string();
 

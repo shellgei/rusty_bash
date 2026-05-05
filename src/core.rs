@@ -11,7 +11,7 @@ pub mod jobtable;
 pub mod options;
 pub mod time_keeper;
 
-use self::completion::{Completion, CompletionEntry};
+use self::completion::{Completion, CompletionSpec};
 use self::database::DataBase;
 use self::file_descs::FileDescriptors;
 use self::options::Options;
