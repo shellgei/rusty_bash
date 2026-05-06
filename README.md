@@ -98,6 +98,7 @@ Followings are not difficult but very important tasks.
 * alpha: checkout this branch if you want to develop.
 * beta: we are using the head version of this branch on a day-to-day basis.
 * main: the beta version is merged to this branch if fatal problems are not found for a week.
+* alpha-sushiline: a version with [sushiline](https://github.com/t-koba/sushline), which is a clone of GNU Readline
 
 ## List of Features
 
