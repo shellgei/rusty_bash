@@ -63,7 +63,7 @@ impl Substr {
 
         if offset.text.is_empty() {
             if self.length.is_none() {
-                return Err(ExecError::BadSubstitution(String::new()));
+                return Err(ExecError::BadSubstitution(self.text.clone()));
             }
             //offset.text = "0".to_string();
         }
@@ -91,7 +91,7 @@ impl Substr {
         }
 
         let mut length = match self.length.clone() {
-            None => return Err(ExecError::BadSubstitution("".to_string())),
+            None => return Err(ExecError::BadSubstitution(self.text.clone())),
             Some(ofs) => ofs,
         };
 
@@ -123,7 +123,7 @@ impl Substr {
 
         if offset.text.is_empty() {
             if self.length.is_none() {
-                return Err(ExecError::BadSubstitution(String::new()));
+                return Err(ExecError::BadSubstitution(self.text.clone()));
             }
             //offset.text = "0".to_string();
         }
@@ -149,7 +149,7 @@ impl Substr {
         }
 
         let mut length = match self.length.clone() {
-            None => return Err(ExecError::BadSubstitution("".to_string())),
+            None => return Err(ExecError::BadSubstitution(self.text.clone())),
             Some(ofs) => ofs,
         };
 
@@ -175,7 +175,7 @@ impl Substr {
 
         if offset.text.is_empty() {
             if self.length.is_none() {
-                return Err(ExecError::BadSubstitution(String::new()));
+                return Err(ExecError::BadSubstitution(self.text.clone()));
             }
             //offset.text = "0".to_string();
         }
