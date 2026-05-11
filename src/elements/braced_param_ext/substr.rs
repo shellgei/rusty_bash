@@ -4,7 +4,7 @@
 use super::BracedParamExtension;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::substitution::variable::Variable;
-use crate::error::arith::ArithError;
+//use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
 
@@ -62,7 +62,10 @@ impl Substr {
         let offset = self.offset.as_mut().unwrap();
 
         if offset.text.is_empty() {
-            return Err(ExecError::BadSubstitution(String::new()));
+            if self.length.is_none() {
+                return Err(ExecError::BadSubstitution(String::new()));
+            }
+            //offset.text = "0".to_string();
         }
 
         *array = core.db.get_vec("@", false)?;
@@ -92,9 +95,11 @@ impl Substr {
             Some(ofs) => ofs,
         };
 
+        /*
         if length.text.is_empty() {
-            return Err(ExecError::BadSubstitution("".to_string()));
-        }
+            length.text = "0".to_string();
+            //return Err(ExecError::BadSubstitution("".to_string()));
+        }*/
 
         let n = length.eval_as_int(core)?;
         if n < 0 {
@@ -117,7 +122,10 @@ impl Substr {
         let offset = self.offset.as_mut().unwrap();
 
         if offset.text.is_empty() {
-            return Err(ExecError::BadSubstitution(String::new()));
+            if self.length.is_none() {
+                return Err(ExecError::BadSubstitution(String::new()));
+            }
+            //offset.text = "0".to_string();
         }
 
         let mut n = offset.eval_as_int(core)?;
@@ -145,9 +153,11 @@ impl Substr {
             Some(ofs) => ofs,
         };
 
+        /*
         if length.text.is_empty() {
-            return Err(ExecError::BadSubstitution("".to_string()));
-        }
+            length.text = "0".to_string();
+            //return Err(ExecError::BadSubstitution("".to_string()));
+        }*/
 
         let n = length.eval_as_int(core)?;
         if n < 0 {
@@ -164,8 +174,10 @@ impl Substr {
         let offset = self.offset.as_mut().unwrap();
 
         if offset.text.is_empty() {
-            let err = ArithError::OperandExpected("".to_string());
-            return Err(ExecError::ArithError("".to_string(), err));
+            if self.length.is_none() {
+                return Err(ExecError::BadSubstitution(String::new()));
+            }
+            //offset.text = "0".to_string();
         }
 
         let mut ans: String;
