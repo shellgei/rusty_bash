@@ -101,6 +101,10 @@ impl Redirect {
         match file_open_result {
             Ok(file) => {
                 let fd = file.into_raw_fd();
+                if fd == self.left_fd {
+                    return Ok(());
+                }
+
                 if let Err(e) = core.fds.replace(fd, self.left_fd) {
                     core.fds.close(fd);
                     self.left_fd = -1;
