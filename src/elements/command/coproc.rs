@@ -13,10 +13,12 @@ use crate::utils;
 use crate::{Feeder, ShellCore};
 //use nix::unistd;
 use nix::unistd::Pid;
+use nix::sys::signal::killpg;
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
 use std::thread;
 use crate::core::jobtable::JobEntry;
+use nix::sys::wait::WaitStatus::Signaled;
 
 #[derive(Debug, Clone, Default)]
 pub struct Coprocess {
@@ -103,6 +105,9 @@ impl Command for Coprocess {
                     let _ = unsafe{libc::close(fds[1])};
                     return;
                 }
+                Ok(Signaled(pid, s, _)) => {
+                    let _ = killpg(pid, s);
+                },
                 _ => {},
             }
         });
