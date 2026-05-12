@@ -60,6 +60,7 @@ impl FileDescriptors {
         if fd < 0 || fd >= 256 {
             return;
         }
+
         self.fds[fd as usize] = None;
         let _ = unistd::close(fd);
     }

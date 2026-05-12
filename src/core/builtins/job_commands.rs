@@ -8,7 +8,7 @@ pub mod jobs;
 pub mod kill; 
 pub mod wait; 
 
-use libc;
+//use libc;
 use crate::core::JobEntry;
 use crate::ShellCore;
 
@@ -108,6 +108,7 @@ fn remove_coproc(core: &mut ShellCore, pos: usize) {
         let _ = core.db.unset(&name, None, false);
         let _ = core.db.unset(&(name.to_owned() + "_PID"), None, false);
 
+        /*
         if let Ok(fd0) = core.db.get_elem(&name, "0") {
             if let Ok(n) = fd0.parse::<i32>() {
                 let _ = unsafe{libc::close(n)};
@@ -120,6 +121,7 @@ fn remove_coproc(core: &mut ShellCore, pos: usize) {
         }
 
         let _ = core.db.unset(&(name), None, false);
+        */
     }
 }
 
