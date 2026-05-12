@@ -29,6 +29,7 @@ pub struct Redirect {
     extra_left_backup: RawFd, // &>, &>>用
     here_data: Word,
     pub called_as_heredoc: bool,
+    right_close: bool,
 }
 
 impl Redirect {
@@ -56,6 +57,10 @@ impl Redirect {
         }
 
         self.right.text = args[0].clone();
+        self.right_close = self.right.text.ends_with("-");
+        if self.right_close {
+            self.right.text.pop();
+        }
 
         if core.options.query("noclobber")
             && (self.symbol.as_str() == ">" || self.symbol.as_str() == ">>")
@@ -131,7 +136,7 @@ impl Redirect {
     }
 
     fn redirect_output_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.right.text == "-" {
+        if self.right_close && self.right.text.is_empty() {
             self.set_left_fd(1);
             core.fds.close(self.left_fd);
             return Ok(());
@@ -147,12 +152,16 @@ impl Redirect {
             self.left_backup = core.fds.backup(self.left_fd);
         }
 
-        core.fds.share(right_fd, self.left_fd)
+        if self.right_close {
+            core.fds.replace(right_fd, self.left_fd)
+        }else{
+            core.fds.share(right_fd, self.left_fd)
+        }
     }
 
     fn redirect_input_fd(&mut self, restore: bool,
                          core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.right.text == "-" {
+        if self.right_close && self.right.text.is_empty() {
             self.set_left_fd(0);
             core.fds.close(self.left_fd);
             return Ok(());
@@ -168,7 +177,11 @@ impl Redirect {
             self.left_backup = core.fds.backup(self.left_fd);
         }
 
-        core.fds.share(right_fd, self.left_fd)
+        if self.right_close {
+            core.fds.replace(right_fd, self.left_fd)
+        }else{
+            core.fds.share(right_fd, self.left_fd)
+        }
     }
 
     fn redirect_append(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
