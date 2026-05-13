@@ -114,10 +114,6 @@ impl Command for Coprocess {
                 }
                 _ => {},
             }
-            /*
-            let _ = unsafe{libc::close(fds[0])};
-            let _ = unsafe{libc::close(fds[1])};
-            */
         });
 
         Ok(None)
