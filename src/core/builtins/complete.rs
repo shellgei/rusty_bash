@@ -192,6 +192,9 @@ pub fn complete(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut o_options = vec![];
     let mut args = arg::dissolve_options(&args);
     //arg::consume_arg("--", &mut args);  // This code makes a bug with "complete -F _comp_complete_minimal -- scp"
+    if 2 < args.len() && args[1].starts_with("-") && args[2] == "--" {  // complete -f --
+        args.remove(2);
+    }
 
     if args[1] == "-W" {
         return complete_large_w(core, &args);
