@@ -8,9 +8,10 @@ use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {
     run_script(core);
-    core.write_history_to_file();
 
     if ! core.is_subshell {
+        core.write_history_to_file();
+
         for e in core.job_table.iter_mut() {
             if e.coproc_name.is_some() {
                 let _ = signal::killpg(e.pids[0], signal::SIGTERM);
