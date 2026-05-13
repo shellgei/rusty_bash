@@ -46,14 +46,20 @@ impl FileDescriptors {
 
     pub fn tcsetpgrp(&mut self, fd: RawFd, pgid: Pid) -> Result<(), ExecError> {
         if let Some(fd) = self.fds[fd as usize].as_mut() {
-            return Ok(unistd::tcsetpgrp(fd, pgid)?);
+            return match unistd::tcsetpgrp(fd, pgid) {
+                Ok(res) => Ok(res),
+                Err(e) => return Err(ExecError::Errno("tcsetpgrp".to_string(), e)),
+            };
         }
         Ok(())
     }
 
     pub fn tcgetpgrp(&mut self, fd: RawFd) -> Result<Pid, ExecError> {
         if let Some(fd) = self.fds[fd as usize].as_mut() {
-            return Ok(unistd::tcgetpgrp(fd)?);
+            return match unistd::tcgetpgrp(fd) {
+                Ok(res) => Ok(res),
+                Err(e) => return Err(ExecError::Errno("tcgetpgrp".to_string(), e)),
+            };
         }
         Err(ExecError::Other("cannot get process group".to_string()))
     }
@@ -67,15 +73,19 @@ impl FileDescriptors {
         let _ = unistd::close(fd);
     }
 
-    pub fn pipe(&mut self) -> (RawFd, RawFd) {
-        let (recv, send) = unistd::pipe().expect("Cannot open pipe");
+    pub fn pipe(&mut self) -> Result<(RawFd, RawFd), ExecError> {
+        let (recv, send) = match unistd::pipe() {
+            Ok(fds) => fds,
+            Err(e) => return Err(ExecError::Errno("cannot make pipe".to_string(), e)),
+        };
+
         let fd_recv = recv.as_raw_fd();
         let fd_send = send.as_raw_fd();
 
         self.fds[fd_recv as usize] = Some(recv);
         self.fds[fd_send as usize] = Some(send);
 
-        (fd_recv, fd_send)
+        Ok((fd_recv, fd_send))
     }
 
     pub fn backup(&mut self, from: RawFd) -> RawFd {

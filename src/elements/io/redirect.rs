@@ -216,7 +216,7 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (recv, send) = core.fds.pipe();
+        let (recv, send) = core.fds.pipe()?;
 
         if restore {
             self.left_backup = core.fds.backup(0);
@@ -230,8 +230,8 @@ impl Redirect {
             true => self.here_data.text.clone(),
         };
 
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}", &text);
@@ -239,10 +239,11 @@ impl Redirect {
                 core.fds.close(send);
                 process::exit(0);
             }
-            ForkResult::Parent { child: _ } => {
+            Ok(ForkResult::Parent { child: _ }) => {
                 core.fds.close(send);
                 core.fds.replace(recv, 0)?;
             }
+            Err(e) => return Err(ExecError::Errno("here document".to_string(), e)),
         }
         Ok(())
     }
@@ -253,7 +254,7 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (recv, send) = core.fds.pipe();
+        let (recv, send) = core.fds.pipe()?;
 
         if restore {
             self.left_backup = core.fds.backup(0);
@@ -261,8 +262,8 @@ impl Redirect {
 
         let text = self.right.eval_as_herestring(core)?;
 
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = writeln!(&mut f, "{}", &text);
@@ -270,10 +271,11 @@ impl Redirect {
                 core.fds.close(send);
                 process::exit(0);
             }
-            ForkResult::Parent { child: _ } => {
+            Ok(ForkResult::Parent { child: _ }) => {
                 core.fds.close(send);
                 core.fds.replace(recv, 0)?;
             }
+            Err(e) => return Err(ExecError::Errno("here string".to_string(), e)),
         }
         Ok(())
     }

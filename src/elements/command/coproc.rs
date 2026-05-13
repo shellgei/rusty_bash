@@ -46,13 +46,13 @@ impl Command for Coprocess {
         com.set_force_fork();
 
         let mut prevp = Pipe::new("|".to_string());
-        prevp.set(-1, pgid, core);
+        prevp.set(-1, pgid, core)?;
 
         prevp.send = unsafe{libc::fcntl(prevp.send, libc::F_DUPFD_CLOEXEC, 60)};
         prevp.recv = unsafe{libc::fcntl(prevp.recv, libc::F_DUPFD_CLOEXEC, 60)};
 
         let mut lastp = Pipe::new("|".to_string());
-        lastp.set(prevp.recv, pgid, core);
+        lastp.set(prevp.recv, pgid, core)?;
 
         lastp.send = unsafe{libc::fcntl(lastp.send, libc::F_DUPFD_CLOEXEC, 60)};
         lastp.recv = unsafe{libc::fcntl(lastp.recv, libc::F_DUPFD_CLOEXEC, 60)};

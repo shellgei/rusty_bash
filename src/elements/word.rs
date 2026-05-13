@@ -146,10 +146,11 @@ impl Word {
         Ok(w.make_glob_string())
     }
 
-    pub fn set_pipe(&mut self, core: &mut ShellCore) {
+    pub fn set_pipe(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for sw in self.subwords.iter_mut() {
-            sw.set_pipe(core);
+            sw.set_pipe(core)?;
         }
+        Ok(())
     }
 
     pub fn dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {

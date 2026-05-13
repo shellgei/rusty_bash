@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{arg, ShellCore};
+use crate::error::exec::ExecError;
 use nix::libc;
 use nix::sys::resource;
 use nix::sys::resource::{Resource, rlim_t};
@@ -170,7 +171,7 @@ fn print_all(soft: bool) -> i32 {
     0
 }
 
-fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
+fn set_limit(opt: &String, num: &String, soft: bool, hard: bool, core: &mut ShellCore) -> i32 {
     let mut limit = match num.as_str() {
         "unlimited" => nix::sys::resource::RLIM_INFINITY,
         numstr => match numstr.parse::<rlim_t>() {
@@ -188,6 +189,8 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
 
             if unit.starts_with("kbytes") {
                 limit *= 1024;
+            }else if *opt2 == "-n" {
+                limit = std::cmp::max(4, limit);
             }
 
             if soft {
@@ -199,8 +202,7 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
 
             match resource::setrlimit(*key, soft_limit, hard_limit) {
                 Err(e) => {
-                    dbg!("{:?}", &e);
-                    return 1;
+                    return super::error(1, "ulimit", &ExecError::Errno("cannot modify limit".to_string(), e), core);
                 }
                 _ => return 0,
             }
@@ -210,7 +212,7 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
     0
 }
 
-pub fn ulimit(_: &mut ShellCore, args: &[String]) -> i32 {
+pub fn ulimit(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     let mut soft = arg::consume_arg("-S", &mut args);
     let mut hard = arg::consume_arg("-H", &mut args);
@@ -224,7 +226,7 @@ pub fn ulimit(_: &mut ShellCore, args: &[String]) -> i32 {
             soft = true;
             hard = true;
         }
-        return set_limit(&args[1], &args[2], soft, hard);
+        return set_limit(&args[1], &args[2], soft, hard, core);
     }
 
     print_one_item(&args, !hard)

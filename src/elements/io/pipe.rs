@@ -67,18 +67,19 @@ impl Pipe {
         }
     }
 
-    pub fn set(&mut self, prev: RawFd, pgid: Pid, core: &mut ShellCore) {
+    pub fn set(&mut self, prev: RawFd, pgid: Pid, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.text != ">()" {
-            (self.recv, self.send) = core.fds.pipe();
+            (self.recv, self.send) = core.fds.pipe()?;
             self.prev = prev;
         }
 
         if self.text == ">()" {
-            (self.proc_sub_recv, self.proc_sub_send) = core.fds.pipe();
+            (self.proc_sub_recv, self.proc_sub_send) = core.fds.pipe()?;
             self.prev = self.proc_sub_recv;
         }
 
         self.pgid = pgid;
+        Ok(())
     }
 
     pub fn connect(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {

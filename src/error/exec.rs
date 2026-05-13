@@ -39,18 +39,20 @@ pub enum ExecError {
     SubstringMinus(i128),
     UnsupportedWaitStatus(WaitStatus),
     UnboundVariable(String),
-    Errno(Errno),
+    Errno(String, Errno),
     Other(String),
 
     ParseError(ParseError),
     ArithError(String, ArithError),
 }
 
+/*
 impl From<Errno> for ExecError {
     fn from(e: Errno) -> ExecError {
         ExecError::Errno(e)
     }
 }
+*/
 
 impl From<ParseIntError> for ExecError {
     fn from(e: ParseIntError) -> ExecError {
@@ -115,7 +117,11 @@ impl From<&ExecError> for String {
             ExecError::SubstringMinus(n) => format!("{n}: substring expression < 0"),
             ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {ws:?}"),
             ExecError::UnboundVariable(name) => format!("{name}: unbound variable"),
-            ExecError::Errno(e) => format!("system error {e:?}"),
+            ExecError::Errno(com, e) => match e {
+                Errno::EPERM => format!("{com}: Operation not permitted"),
+                Errno::EMFILE => format!("{com}: Too many open files"),
+                _ => format!("{com}: system error {e:?}"),
+            },
             ExecError::Bug(msg) => format!("INTERNAL BUG: {msg}"),
             ExecError::Other(name) => name.to_string(),
 

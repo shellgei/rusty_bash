@@ -76,8 +76,8 @@ pub trait Command {
         core: &mut ShellCore,
         pipe: &mut Pipe,
     ) -> Result<Option<Pid>, ExecError> {
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 if let Err(e) = self.fork_exec_child(core, pipe) {
                     e.print(core);
                     core.db.exit_status = 1;
@@ -85,11 +85,12 @@ pub trait Command {
 
                 exit::normal(core)
             }
-            ForkResult::Parent { child } => {
+            Ok(ForkResult::Parent { child }) => {
                 proc_ctrl::set_pgid(core, child, pipe.pgid);
                 pipe.parent_close(core);
                 Ok(Some(child))
             }
+            Err(e) => return Err(ExecError::Errno("command".to_string(), e)),
         }
     }
 
