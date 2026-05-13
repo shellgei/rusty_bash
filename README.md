@@ -197,7 +197,7 @@ Bash Variables
 |-------------------|----|-------------------|----|-------------------|----|
 | _ | :heavy_check_mark: | BASH | :no_good: | BASHOPTS | :no_good: |
 | BASHPID | :heavy_check_mark: | BASH_ALIASES | :no_good: | BASH_ARGC | :no_good: |
-| BASH_ARGV | :no_good: | BASH_ARGV0 | :no_good: | BASH_CMDS | :no_good: |
+| BASH_ARGV | :construction: | BASH_ARGV0 | :construction: | BASH_CMDS | :no_good: |
 | BASH_COMMAND | :no_good: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
 | BASH_EXECUTION_STRING | :no_good: | BASH_LINENO | :no_good: | BASH_LOADABLES_PATH | :no_good: |
 | BASH_REMATCH | :heavy_check_mark: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
@@ -205,7 +205,7 @@ Bash Variables
 | CHILD_MAX | :no_good: | COLUMNS | :no_good: | COMP_CWORD | :no_good: |
 | COMP_LINE | :no_good: | COMP_POINT | :no_good: | COMP_TYPE | :no_good: |
 | COMP_KEY | :no_good: | COMP_WORDBREAKS | :no_good: | COMP_WORDS | :no_good: |
-| COMPREPLY | :no_good: | COPROC | :no_good: | DIRSTACK | :no_good: |
+| COMPREPLY | :no_good: | COPROC | :heavy_check_mark: | DIRSTACK | :no_good: |
 | EMACS | :no_good: | ENV | :no_good: | EPOCHREALTIME | :heavy_check_mark: |
 | EPOCHSECONDS | :heavy_check_mark: | EUID | :no_good: | EXECIGNORE | :no_good: |
 | FCEDIT | :no_good: | FIGNORE | :no_good: | FUNCNAME | :heavy_check_mark: |
@@ -227,7 +227,7 @@ Bash Variables
 | READLINE_POINT | :no_good: | REPLY | :no_good: | SECONDS | :heavy_check_mark: |
 | SHELL | :heavy_check_mark: | SHELLOPTS | :no_good: | SHLVL | :heavy_check_mark: |
 | SRANDOM | :heavy_check_mark: | TIMEFORMAT | :no_good: | TMOUT | :no_good: |
-| TMPDIR | :no_good: | UID | :no_good: | | |
+| TMPDIR | :no_good: | UID | :heavy_check_mark: | | |
 
 ### beyond Bash
 
