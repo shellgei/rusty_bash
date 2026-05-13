@@ -72,29 +72,6 @@ impl BracedParam {
         Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())))
     } 
 
-    /*
-    fn eat_unknown(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<bool, ParseError> {
-        if feeder.is_empty() {
-            feeder.feed_additional_line(core)?;
-        }
-
-        if feeder.starts_with("}") {
-            return Ok(true);
-        }
-
-        let len = match feeder.starts_with("\\}") {
-            true => 2,
-            false => feeder.scanner_char(),
-        };
-
-        let unknown = feeder.consume(len);
-        self.unknown += &unknown.clone();
-        self.text += &unknown;
-        Ok(false)
-    }
-    */
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if !feeder.starts_with("${") {
             return Ok(None);
