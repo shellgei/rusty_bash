@@ -221,6 +221,8 @@ fn main_loop(core: &mut ShellCore, command: &str) {
         }
     }
     core.write_history_to_file();
+
+    dbg!("{:?}", &core.job_table);
     exit::normal(core);
 }
 

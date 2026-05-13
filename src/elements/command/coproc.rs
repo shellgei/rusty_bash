@@ -13,7 +13,7 @@ use crate::utils;
 use crate::{Feeder, ShellCore};
 //use nix::unistd;
 use nix::unistd::Pid;
-use nix::sys::signal::killpg;
+use nix::sys::signal;
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
 use std::thread;
@@ -107,7 +107,7 @@ impl Command for Coprocess {
                     exit_status.store(es, Relaxed);
                 }
                 Ok(Signaled(pid, sig, _)) => {
-                    let _ = killpg(pid, sig);
+                    let _ = signal::killpg(pid, sig);
                     exit_status.store(sig as i32 + 128, Relaxed);
                 },
                 Err(_) => {
