@@ -17,6 +17,8 @@ use nix::sys::signal::killpg;
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
 use std::thread;
+use std::sync::Arc;
+use std::sync::atomic::Ordering::Relaxed;
 use crate::core::jobtable::JobEntry;
 use nix::sys::wait::WaitStatus::Signaled;
 
@@ -83,6 +85,7 @@ impl Command for Coprocess {
         );
         entry.coproc_name = Some(self.name.clone());
         entry.coproc_fds = fds.clone();
+        let exit_status = Arc::clone(&entry.coproc_exit_status);
 
         if let Some(pid) = core.get_jobentry_pid_by_coproc_name(&self.name) {
             let msg = format!("warning: execute_coproc: coproc [{}:{}] still exists",
@@ -100,14 +103,19 @@ impl Command for Coprocess {
 
         thread::spawn(move || {
             match wait::waitpid(pid, None) {
-                Ok(WaitStatus::Exited(_, _)) | Err(_) => {
+                Ok(WaitStatus::Exited(_, es)) => {
                     let _ = unsafe{libc::close(fds[0])};
                     let _ = unsafe{libc::close(fds[1])};
-                    return;
+                    exit_status.store(es, Relaxed);
                 }
-                Ok(Signaled(pid, s, _)) => {
-                    let _ = killpg(pid, s);
+                Ok(Signaled(pid, sig, _)) => {
+                    let _ = killpg(pid, sig);
+                    exit_status.store(sig as i32 + 128, Relaxed);
                 },
+                Err(_) => {
+                    let _ = unsafe{libc::close(fds[0])};
+                    let _ = unsafe{libc::close(fds[1])};
+                }
                 _ => {},
             }
         });

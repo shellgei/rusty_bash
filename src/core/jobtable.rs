@@ -1,4 +1,4 @@
-//SPDX-FileCopyrightText: 2023 Ryuichi Ueda ryuichiueda@gmail.com
+//SPDX-FileCopyrightText: 2026 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::error::exec::ExecError;
@@ -10,7 +10,7 @@ use nix::unistd;
 use nix::unistd::Pid;
 use std::{thread, time};
 use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
+use std::sync::atomic::{AtomicBool, AtomicI32};
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Default)]
@@ -24,22 +24,27 @@ pub struct JobEntry {
     pub no_control: bool,
     pub coproc_name: Option<String>,
     pub coproc_fds: Vec<i32>,
+    pub coproc_exit_status: Arc<AtomicI32>,
 }
 
-fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool) -> Result<(), ExecError> {
+fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool, es_arc: &Arc<AtomicI32>) -> Result<(), ExecError> {
     let waitflags = WaitPidFlag::WNOHANG | WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
 
     match wait::waitpid(*pid, Some(waitflags)) {
         Ok(s) => {
             if s != WaitStatus::StillAlive || !still(status) {
                 *status = s;
+                if coproc {
+                    dbg!("BUG {:?}", &status);
+                }
             }
         },
         Err(e) => {
             if ! coproc {
                 return Err(ExecError::Errno(e));
             }
-            *status = WaitStatus::Exited(*pid, 0);
+            let es = es_arc.load(Relaxed);
+            *status = WaitStatus::Exited(*pid, es);
         },
     }
 
@@ -91,7 +96,7 @@ impl JobEntry {
                 match wait {
                     true => exit_status = wait_block(pid, status)?,
                     false => {
-                        wait_nonblock(pid, status, self.coproc_name.is_some())?;
+                        wait_nonblock(pid, status, self.coproc_name.is_some(), &self.coproc_exit_status)?;
                     }
                 }
             }
@@ -113,6 +118,13 @@ impl JobEntry {
                     }
                 }
                 _ => {}
+            }
+        }
+
+        if self.coproc_name.is_some() && self.change {
+            if let WaitStatus::Exited(_, es) = &self.proc_statuses[0] {
+                self.display_status = "Done".to_string();
+                return Ok(*es);
             }
         }
 
