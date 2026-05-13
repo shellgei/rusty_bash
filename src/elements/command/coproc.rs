@@ -104,8 +104,6 @@ impl Command for Coprocess {
         thread::spawn(move || {
             match wait::waitpid(pid, None) {
                 Ok(WaitStatus::Exited(_, es)) => {
-                    let _ = unsafe{libc::close(fds[0])};
-                    let _ = unsafe{libc::close(fds[1])};
                     exit_status.store(es, Relaxed);
                 }
                 Ok(Signaled(pid, sig, _)) => {
@@ -113,11 +111,11 @@ impl Command for Coprocess {
                     exit_status.store(sig as i32 + 128, Relaxed);
                 },
                 Err(_) => {
-                    let _ = unsafe{libc::close(fds[0])};
-                    let _ = unsafe{libc::close(fds[1])};
                 }
                 _ => {},
             }
+            let _ = unsafe{libc::close(fds[0])};
+            let _ = unsafe{libc::close(fds[1])};
         });
 
         Ok(None)
