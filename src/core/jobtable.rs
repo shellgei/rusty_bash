@@ -123,6 +123,8 @@ impl JobEntry {
 
         if self.coproc_name.is_some() && self.change {
             if let WaitStatus::Exited(_, es) = &self.proc_statuses[0] {
+                let _ = unsafe{libc::close(self.coproc_fds[0])};
+                let _ = unsafe{libc::close(self.coproc_fds[1])};
                 self.display_status = "Done".to_string();
                 return Ok(*es);
             }
@@ -284,11 +286,13 @@ impl JobEntry {
 }
 
 impl ShellCore {
+    /*
     fn close_coproc(&mut self, pos: usize) {
         let name = self.job_table[pos].coproc_name.clone().unwrap();
         let _ = self.db.unset(&name, None, false);
         let _ = self.db.unset(&(name.clone() + "_PID"), None, false);
 
+        /*
         if let Ok(fd0) = self.db.get_elem(&name, "0") {
             if let Ok(n) = fd0.parse::<i32>() {
                 let _ = unsafe{libc::close(n)};
@@ -301,7 +305,8 @@ impl ShellCore {
         }
 
         let _ = self.db.unset(&(name), None, false);
-    }
+        */
+    }*/
 
     pub fn jobtable_check_status(&mut self) -> Result<(), ExecError> {
         if self.is_subshell {
@@ -319,7 +324,10 @@ impl ShellCore {
             if  table.coproc_name.is_some() 
             && (table.display_status == "Done" 
                 || table.display_status == "Killed") {
-                self.close_coproc(i);
+                let name = table.coproc_name.clone().unwrap();
+                let _ = self.db.unset(&name, None, false);
+                let _ = self.db.unset(&(name.clone() + "_PID"), None, false);
+                //self.close_coproc(i);
             }
         }
 
