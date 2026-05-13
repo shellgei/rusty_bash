@@ -136,14 +136,14 @@ Followings are not difficult but very important tasks.
 | dirs | :no_good: | disown | :heavy_check_mark: | echo | :no_good: |
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
 | fc | :no_good: | fg | :construction: | getopts | :construction: |
-| hash | :no_good: | help | :no_good: | history | :construction: |
+| hash | :heavy_check_mark: | help | :no_good: | history | :construction: |
 | jobs | :construction: | kill | :under_construction: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :heavy_check_mark: | pushd | :no_good: |
 | readonly | :no_good: | return | :heavy_check_mark: | false | :heavy_check_mark: |
 | shift | :heavy_check_mark: | suspend | :no_good: | test | :heavy_check_mark: |
-| times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
-| type | :no_good: | typeset | :no_good: | ulimit | :heavy_check_mark: |
+| times | :no_good: | trap | :under_construction: | true | :heavy_check_mark: |
+| type | :no_good: | typeset | :heavy_check_mark: | ulimit | :heavy_check_mark: |
 | umask | :no_good: | unalias | :heavy_check_mark: | unset | :construction: |
 | wait | :construction: | export | :heavy_check_mark: |
 
@@ -169,7 +169,7 @@ Followings are not difficult but very important tasks.
 | checkhash | :no_good: | checkjobs | :no_good: | checkwinsize | :no_good: |
 | cmdhist | :no_good: | compat31 | :no_good: | compat32 | :no_good: |
 | compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
-| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :no_good: |
+| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :under_construction: |
 | extdebug | :no_good: | extglob | :heavy_check_mark: | extquote | :no_good: |
 | failglob | :no_good: | force_fignore | :no_good: | globstar | :heavy_check_mark: |
 | gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
