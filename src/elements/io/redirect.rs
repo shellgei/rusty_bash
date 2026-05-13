@@ -138,7 +138,7 @@ impl Redirect {
     fn redirect_output_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.right_close && self.right.text.is_empty() {
             self.set_left_fd(1);
-            self.coproc_check(self.left_fd, core);
+            self.coproc_check(self.left_fd, -1, core);
             core.fds.close(self.left_fd);
             return Ok(());
         }
@@ -154,7 +154,7 @@ impl Redirect {
         }
 
         if self.right_close {
-            self.coproc_check(right_fd, core);
+            self.coproc_check(right_fd, self.left_fd, core);
             core.fds.replace(right_fd, self.left_fd)
         }else{
             core.fds.share(right_fd, self.left_fd)
@@ -165,7 +165,7 @@ impl Redirect {
                          core: &mut ShellCore) -> Result<(), ExecError> {
         if self.right_close && self.right.text.is_empty() {
             self.set_left_fd(0);
-            self.coproc_check(self.left_fd, core);
+            self.coproc_check(self.left_fd, -1, core);
             core.fds.close(self.left_fd);
             return Ok(());
         }
@@ -181,7 +181,7 @@ impl Redirect {
         }
 
         if self.right_close {
-            self.coproc_check(right_fd, core);
+            self.coproc_check(right_fd, self.left_fd, core);
             core.fds.replace(right_fd, self.left_fd)
         }else{
             core.fds.share(right_fd, self.left_fd)
@@ -292,18 +292,20 @@ impl Redirect {
         Ok(())
     }
 
-    fn coproc_check(&mut self, fd: RawFd, core: &mut ShellCore) {
-        for e in &core.job_table {
+    fn coproc_check(&mut self, old_fd: RawFd, new_fd: RawFd, core: &mut ShellCore) {
+        for e in core.job_table.iter_mut() {
             if let Some(name) = &e.coproc_name {
                 if let Ok(fd0) = core.db.get_elem(&name, "0") {
-                    if fd.to_string() == fd0 {
+                    if old_fd.to_string() == fd0 {
                         let _ = core.db.set_array_elem(&name, "-1", 0, Some(0), false);
+                        e.coproc_fds[0] = new_fd;
                     }
                 }
 
                 if let Ok(fd1) = core.db.get_elem(&name, "1") {
-                    if fd.to_string() == fd1 {
+                    if old_fd.to_string() == fd1 {
                         let _ = core.db.set_array_elem(&name, "-1", 1, Some(0), false);
+                        e.coproc_fds[1] = new_fd;
                     }
                 }
             }
