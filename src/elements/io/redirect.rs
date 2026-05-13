@@ -443,7 +443,7 @@ impl Redirect {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
-        feeder.set_backup(); //追加
+        feeder.set_backup();
 
         if Self::eat_left(feeder, &mut ans, core)
             && Self::eat_symbol(feeder, &mut ans, core)
@@ -452,7 +452,7 @@ impl Redirect {
             feeder.pop_backup();
             Some(ans)
         } else {
-            feeder.rewind(); //追加
+            feeder.rewind();
             None
         }
     }

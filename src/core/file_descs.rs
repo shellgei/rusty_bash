@@ -115,8 +115,7 @@ impl FileDescriptors {
         }
 
         if unsafe{dup2(from, to)} < 0 {
-            //return Err(ExecError::Other("dup2 error".to_string()));
-            return Err(ExecError:: BadFd(from));
+            return Err(ExecError::BadFd(from));
         }
 
         Ok(())
