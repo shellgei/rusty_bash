@@ -130,19 +130,19 @@ Followings are not difficult but very important tasks.
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: |
 | shopt | :construction: | : | :heavy_check_mark: | . | :heavy_check_mark: | [ | :no_good: |
 | alias | :heavy_check_mark: | bg | :construction: | bind | :no_good: |
-| break | :heavy_check_mark: | builtin | :heavy_check_mark: | caller | :under_construction: |
+| break | :heavy_check_mark: | builtin | :heavy_check_mark: | caller | :construction: |
 | command | :heavy_check_mark: | compgen | :construction: | complete | :construction: |
 | compopt | :no_good: | continue | :heavy_check_mark: | declare | :no_good: |
 | dirs | :no_good: | disown | :heavy_check_mark: | echo | :no_good: |
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
 | fc | :no_good: | fg | :construction: | getopts | :construction: |
 | hash | :heavy_check_mark: | help | :no_good: | history | :construction: |
-| jobs | :construction: | kill | :under_construction: | let | :no_good: |
+| jobs | :construction: | kill | :construction: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :heavy_check_mark: | pushd | :no_good: |
 | readonly | :no_good: | return | :heavy_check_mark: | false | :heavy_check_mark: |
 | shift | :heavy_check_mark: | suspend | :no_good: | test | :heavy_check_mark: |
-| times | :no_good: | trap | :under_construction: | true | :heavy_check_mark: |
+| times | :no_good: | trap | :construction: | true | :heavy_check_mark: |
 | type | :no_good: | typeset | :heavy_check_mark: | ulimit | :heavy_check_mark: |
 | umask | :no_good: | unalias | :heavy_check_mark: | unset | :construction: |
 | wait | :construction: | export | :heavy_check_mark: |
@@ -156,7 +156,7 @@ Followings are not difficult but very important tasks.
 | [-+]O | :no_good: | -- | :no_good: | --debugger | :no_good: |
 | --dimp-po-strings | :no_good: | --help | :heavy_check_mark: | --init-file | :no_good: |
 | --rcfile | :no_good: | --noediting | :no_good: | --noprofile | :no_good: |
-| --norc | :no_good: | --posix | :under_construction: | --restricted | :heavy_check_mark: |
+| --norc | :no_good: | --posix | :construction: | --restricted | :heavy_check_mark: |
 | -v, --verbose | :no_good: | --version | :heavy_check_mark: | -e | :heavy_check_mark: |
 | --pipefail | :heavy_check_mark: | -B | :heavy_check_mark: |  |  |
 
@@ -169,7 +169,7 @@ Followings are not difficult but very important tasks.
 | checkhash | :no_good: | checkjobs | :no_good: | checkwinsize | :no_good: |
 | cmdhist | :no_good: | compat31 | :no_good: | compat32 | :no_good: |
 | compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
-| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :under_construction: |
+| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :construction: |
 | extdebug | :no_good: | extglob | :heavy_check_mark: | extquote | :no_good: |
 | failglob | :no_good: | force_fignore | :no_good: | globstar | :heavy_check_mark: |
 | gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
