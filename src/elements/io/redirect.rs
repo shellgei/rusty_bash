@@ -284,6 +284,11 @@ impl Redirect {
                 core.fds.close(self.left_fd);
             } else {
                 core.fds.replace(self.left_backup, self.left_fd)?;
+                if core.fds.read_used_fd == self.left_fd {
+                    core.fds.read_used_fd = -1;
+                    core.fds.close(self.left_fd);
+            } else {
+                }
             }
         }
         if self.extra_left_backup >= 0 {

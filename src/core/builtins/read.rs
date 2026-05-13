@@ -162,6 +162,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
         if let Ok(n) = fd.parse::<i32>() {
             if n >= 3 && n < 256 {
                 backup = Some(core.fds.backup(0));
+                core.fds.read_used_fd = n;
                 fdn = n;
                 let _ = core.fds.replace(n, 0); //TODO: use unistd::read
             }
@@ -177,7 +178,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     if let Some(fd) = backup {
         let _ = core.fds.replace(0, fdn);
         let _ = core.fds.replace(fd, 0);
-        core.fds.close(fd-1); //TODO: Why -1 ????? (use unistd::read)
+        //core.fds.close(fd-1); //erasing backup at io/redirects.rs
     }
 
     ans

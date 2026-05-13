@@ -19,6 +19,7 @@ use std::fs::File;
 #[derive(Default, Debug)]
 pub struct FileDescriptors {
     fds: Vec<Option<OwnedFd>>,
+    pub read_used_fd: i32,
 }
 
 impl FileDescriptors {
@@ -27,6 +28,7 @@ impl FileDescriptors {
         for _ in 0..256 {
             data.fds.push(None);
         }
+        data.read_used_fd = -1;
 
         data
     }
