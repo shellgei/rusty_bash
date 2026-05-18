@@ -4,14 +4,6 @@
 use crate::elements::word::Word;
 use super::BracedParamExtension;
 
-/*
-use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::substitution::variable::Variable;
-use crate::error::arith::ArithError;
-use crate::error::exec::ExecError;
-use crate::{Feeder, ShellCore};
-*/
-
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
     pub text: String,
