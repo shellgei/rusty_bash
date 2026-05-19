@@ -28,8 +28,15 @@ impl Substr {
         ans.text += &feeder.consume(1);
 
         let mode = WordMode::ParamExt(vec![":".to_string(), "}".to_string()]);
-        ans.offset = Word::parse(feeder, core, Some(mode))?;
+        ans.offset = match Word::parse(feeder, core, Some(mode))? {
+            Some(w) => {
+                ans.text += &w.text.clone();
+                Some(w)
+            },
+            None => None,
+        };
 
+        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
