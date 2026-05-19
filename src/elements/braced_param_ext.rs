@@ -3,8 +3,11 @@
 
 mod substr;
 
+use crate::{Feeder, ShellCore};
+use crate::error::parse::ParseError;
 use core::fmt;
 use core::fmt::Debug;
+use self::substr::Substr;
 
 impl Clone for Box<dyn BracedParamExtension> {
     fn clone(&self) -> Box<dyn BracedParamExtension> {
@@ -21,4 +24,13 @@ impl Debug for dyn BracedParamExtension {
 pub trait BracedParamExtension {
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension>;
     fn get_text(&self) -> String;
+} 
+
+pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+-> Result<Option<Box<dyn BracedParamExtension>>, ParseError> {
+    if let Some(a) = Substr::parse(feeder, core) {
+        Ok(Some(Box::new(a)))
+    } else {
+        Ok(None)
+    }
 }
