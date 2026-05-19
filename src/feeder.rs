@@ -143,6 +143,10 @@ impl Feeder {
         self.remaining.starts_with(s)
     }
 
+    pub fn starts_withs<T: AsRef<str>>(&self, vs: &[T]) -> bool {
+        vs.iter().any(|s| self.remaining.starts_with(s.as_ref()))
+    } 
+
     pub fn len(&self) -> usize {
         self.remaining.len()
     }
