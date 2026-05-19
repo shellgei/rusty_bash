@@ -8,6 +8,7 @@ use crate::elements::subword::{ExecError, WordMode};
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 use super::Subword;
+use crate::elements::braced_param_ext;
 
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
@@ -81,6 +82,11 @@ impl BracedParam {
         ans.text += &feeder.consume(2);
 
         ans.eat_param(feeder, core);
+        if let Some(op) = braced_param_ext::parse(feeder, core)? {
+            ans.text += &op.get_text();
+            ans.extension = Some(op);
+        }
+
         while !ans.eat_end(feeder, core)?{}
 
         Ok(Some(ans))
