@@ -28,7 +28,7 @@ pub trait BracedParamExtension {
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
 -> Result<Option<Box<dyn BracedParamExtension>>, ParseError> {
-    if let Some(a) = Substr::parse(feeder, core) {
+    if let Some(a) = Substr::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else {
         Ok(None)
