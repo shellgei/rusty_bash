@@ -17,6 +17,7 @@ use super::subword::simple::SimpleSubword;
 #[derive(Debug, Clone)]
 pub enum WordMode {
     PermitAnyChar,
+    ParamExt(Vec<String>),
 }
 
 #[derive(Debug, Clone, Default)]

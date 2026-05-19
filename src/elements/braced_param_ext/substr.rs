@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::word::Word;
+use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
 use super::BracedParamExtension;
 
@@ -23,20 +23,21 @@ impl Substr {
         if !feeder.starts_with(":") {
             return None;
         }
-        /*
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":") {
+        let mode = WordMode::ParamExt(vec![":".to_string(), "}".to_string()]);
+        ans.offset = match Word::parse(feeder, core, Some(mode)) {
             Ok(Some(a)) => {
+                /*
                 ans.text += &a.text.clone();
                 Self::eat_length(feeder, &mut ans, core);
+                */
                 Some(a)
             }
             _ => None,
         };
 
-        Some(ans)*/
-        None
+        Some(ans)
     }
 }
