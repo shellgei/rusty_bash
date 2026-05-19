@@ -11,7 +11,7 @@ use crate::{Feeder, ShellCore};
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
     pub text: String,
-    pub offset: Option<ArithmeticExpr>,
+    pub offset: ArithmeticExpr,
     pub length: Option<ArithmeticExpr>,
 }
 
@@ -59,9 +59,9 @@ impl Substr {
         core: &mut ShellCore,
         ifs: &str,
     ) -> Result<(), ExecError> {
-        let offset = self.offset.as_mut().unwrap();
+        //let offset = self.offset.as_mut().unwrap();
 
-        if offset.text.is_empty() {
+        if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
@@ -69,7 +69,7 @@ impl Substr {
         }
 
         *array = core.db.get_vec("@", false)?;
-        let mut n = offset.eval_as_int(core)?;
+        let mut n = self.offset.eval_as_int(core)?;
         let len = array.len();
 
         if n < 0 {
@@ -119,16 +119,16 @@ impl Substr {
         text: &mut String,
         core: &mut ShellCore,
     ) -> Result<(), ExecError> {
-        let offset = self.offset.as_mut().unwrap();
+        //let offset = self.offset.as_mut().unwrap();
 
-        if offset.text.is_empty() {
+        if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
             //offset.text = "0".to_string();
         }
 
-        let mut n = offset.eval_as_int(core)?;
+        let mut n = self.offset.eval_as_int(core)?;
         let len = core.db.index_based_len(name);
         if n < 0 {
             n += len as i128;
@@ -171,9 +171,9 @@ impl Substr {
     }
 
     pub fn get(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
-        let offset = self.offset.as_mut().unwrap();
+        //let offset = self.offset.as_mut().unwrap();
 
-        if offset.text.is_empty() {
+        if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
@@ -181,7 +181,7 @@ impl Substr {
         }
 
         let mut ans: String;
-        let mut n = offset.eval_as_int(core)?;
+        let mut n = self.offset.eval_as_int(core)?;
         let len = text.chars().count();
 
         if n < 0 {
@@ -240,9 +240,9 @@ impl Substr {
             Ok(Some(a)) => {
                 ans.text += &a.text.clone();
                 Self::eat_length(feeder, &mut ans, core);
-                Some(a)
+                a
             }
-            _ => None,
+            _ => ArithmeticExpr::new(),
         };
 
         Some(ans)
