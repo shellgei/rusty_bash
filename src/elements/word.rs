@@ -27,7 +27,7 @@ pub enum WordMode {
     Value,
     PermitAnyChar,
     //ReparseOfSubstitution,
-    ParamOption(Vec<String>),
+    ParamExt(Vec<String>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -277,7 +277,7 @@ impl Word {
                     return false;
                 }
             }
-            Some(WordMode::ParamOption(v)) => {
+            Some(WordMode::ParamExt(v)) => {
                 if feeder.starts_withs(v) {
                     return false;
                 }
@@ -304,7 +304,7 @@ impl Word {
                     return false;
                 }
             },*/
-            Some(WordMode::ParamOption(v)) => {
+            Some(WordMode::ParamExt(v)) => {
                 if feeder.starts_withs(v) {
                     return false;
                 }

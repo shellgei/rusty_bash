@@ -39,7 +39,7 @@ impl Subword for SingleQuoted {
 impl SingleQuoted {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
                  mode: &Option<WordMode>) -> Option<Self> {
-        if let Some(WordMode::ParamOption(_)) = mode {
+        if let Some(WordMode::ParamExt(_)) = mode {
             if core.options.query("posix") {
                 return None;
             }

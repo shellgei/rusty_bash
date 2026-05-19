@@ -63,7 +63,7 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if let Some(a) = Remove::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
-    } else if let Some(a) = Substr::parse(feeder, core) {
+    } else if let Some(a) = Substr::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = Escape::parse(feeder, core) {
         Ok(Some(Box::new(a)))

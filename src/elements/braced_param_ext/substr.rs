@@ -6,6 +6,7 @@ use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::substitution::variable::Variable;
 //use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
@@ -229,15 +230,16 @@ impl Substr {
         };
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         if !feeder.starts_with(":") {
-            return None;
+            return Ok(None);
         }
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":") {
-            Ok(Some(a)) => {
+        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":")? {
+            Some(a) => {
                 ans.text += &a.text.clone();
                 Self::eat_length(feeder, &mut ans, core);
                 a
@@ -245,6 +247,6 @@ impl Substr {
             _ => ArithmeticExpr::new(),
         };
 
-        Some(ans)
+        Ok(Some(ans))
     }
 }
