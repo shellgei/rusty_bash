@@ -16,7 +16,6 @@ use crate::{utils, Feeder, ShellCore};
 #[derive(Debug, Clone)]
 pub enum WordMode {
     Alias,
-//    AlterWord,
     Arithmetic,
     AssocIndex,
     EvalLet,
@@ -26,8 +25,7 @@ pub enum WordMode {
     RightOfSubstitution,
     Value,
     PermitAnyChar,
-    //ReparseOfSubstitution,
-    ParamExt(Vec<String>),
+    Exclude(Vec<String>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -277,7 +275,7 @@ impl Word {
                     return false;
                 }
             }
-            Some(WordMode::ParamExt(v)) => {
+            Some(WordMode::Exclude(v)) => {
                 if feeder.starts_withs(v) {
                     return false;
                 }
@@ -304,7 +302,7 @@ impl Word {
                     return false;
                 }
             },*/
-            Some(WordMode::ParamExt(v)) => {
+            Some(WordMode::Exclude(v)) => {
                 if feeder.starts_withs(v) {
                     return false;
                 }

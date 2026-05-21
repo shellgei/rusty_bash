@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedParamExtension;
+use super::BracedExcludeension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subword::single_quoted::SingleQuoted;
@@ -26,7 +26,7 @@ pub struct ValueCheck {
     in_double_quoted: bool,
 }
 
-impl BracedParamExtension for ValueCheck {
+impl BracedExcludeension for ValueCheck {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -59,7 +59,7 @@ impl BracedParamExtension for ValueCheck {
         }
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
+    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
         Box::new(self.clone())
     }
     fn is_value_check(&self) -> bool {
@@ -192,7 +192,7 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        let mode = WordMode::ParamExt(vec!["}".to_string()]);
+        let mode = WordMode::Exclude(vec!["}".to_string()]);
         //let mode = WordMode::AlterWord;
         ans.alternative_value = Some(Word::default());
 

@@ -174,7 +174,7 @@ fn last_resort(
 ) -> Result<Option<Box<dyn Subword>>, ParseError> {
     match mode {
         None => Ok(None),
-        Some(WordMode::ParamExt(v)) => {
+        Some(WordMode::Exclude(v)) => {
             if feeder.is_empty() || feeder.starts_withs(v) {
                 return Ok(None);
             }

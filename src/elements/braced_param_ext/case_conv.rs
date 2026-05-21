@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedParamExtension;
+use super::BracedExcludeension;
 use crate::elements::word::{Word, WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -10,7 +10,7 @@ use crate::utils::glob::GlobElem;
 use crate::{Feeder, ShellCore};
 use crate::elements::substitution::variable::Variable;
 
-impl BracedParamExtension for CaseConv {
+impl BracedExcludeension for CaseConv {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -23,7 +23,7 @@ impl BracedParamExtension for CaseConv {
         self.get_text(text, core)
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
+    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
         Box::new(self.clone())
     }
 }
@@ -124,7 +124,7 @@ impl CaseConv {
         if let Some(w) = Word::parse(
             feeder,
             core,
-            Some(WordMode::ParamExt(vec!["}".to_string()])),
+            Some(WordMode::Exclude(vec!["}".to_string()])),
             //Some(WordMode::AlterWord),
         )? {
             ans.text += &w.text.clone();
