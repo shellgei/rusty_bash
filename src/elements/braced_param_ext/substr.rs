@@ -4,19 +4,11 @@
 use crate::elements::word::Word;
 use super::BracedParamExtension;
 
-/*
-use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::substitution::variable::Variable;
-use crate::error::arith::ArithError;
-use crate::error::exec::ExecError;
-use crate::{Feeder, ShellCore};
-*/
-
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
     pub text: String,
-    pub offset: Option<Word>,
-    pub length: Option<Word>,
+    pub offset: Option<Word>, //本来は計算式を入れられる
+    pub length: Option<Word>, //同上
 }
 
 impl BracedParamExtension for Substr {
