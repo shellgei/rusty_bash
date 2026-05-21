@@ -122,13 +122,12 @@ impl Word {
         core: &mut ShellCore,
         mode: Option<WordMode>,
     ) -> Result<Option<Word>, ParseError> {
-        if feeder.starts_with("#") {
-            return Ok(None);
-        }
         if let Some(WordMode::Exclude(ref v)) = mode {
             if feeder.starts_withs(v) {
                 return Ok(None);
             }
+        }else if feeder.starts_with("#") {
+            return Ok(None);
         }
 
         let mut subwords = vec![];
