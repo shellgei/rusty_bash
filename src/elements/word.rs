@@ -117,54 +117,28 @@ impl Word {
             .collect()
     }
 
-    fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
-        if feeder.starts_with("#") && mode.is_none() || feeder.is_empty() {
-            return false;
-        }
-
-        match mode {
-            Some(WordMode::Exclude(v)) => {
-                if feeder.starts_withs(v) {
-                    return false;
-                }
-            }
-            _ => {}
-        }
-        true
-    }
-
-    fn post_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
-        if feeder.is_empty() {
-            return false;
-        }
-
-        match mode {
-            Some(WordMode::Exclude(v)) => {
-                if feeder.starts_withs(v) {
-                    return false;
-                }
-            }
-            _ => {}
-        }
-        true
-    }
-
-
     pub fn parse(
         feeder: &mut Feeder,
         core: &mut ShellCore,
         mode: Option<WordMode>,
     ) -> Result<Option<Word>, ParseError> {
-        if !Self::pre_check(feeder, &mode) {
+        if feeder.starts_with("#") {
             return Ok(None);
+        }
+        if let Some(WordMode::Exclude(ref v)) = mode {
+            if feeder.starts_withs(v) {
+                return Ok(None);
+            }
         }
 
         let mut subwords = vec![];
         while let Some(sw) = subword::parse(feeder, core, &mode)? {
             subwords.push(sw);
 
-            if !Self::post_check(feeder, &mode) {
-                break;
+            if let Some(WordMode::Exclude(ref v)) = mode {
+                if feeder.starts_withs(v) {
+                    break;
+                }
             }
         }
 
