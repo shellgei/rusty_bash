@@ -17,7 +17,7 @@ use super::subword::simple::SimpleSubword;
 #[derive(Debug, Clone)]
 pub enum WordMode {
     PermitAnyChar,
-    ParamExt(Vec<String>),
+    Exclude(Vec<String>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -123,7 +123,7 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::ParamExt(v)) => {
+            Some(WordMode::Exclude(v)) => {
                 if feeder.starts_withs(v) {
                     return false;
                 }
@@ -139,7 +139,7 @@ impl Word {
         }
 
         match mode {
-            Some(WordMode::ParamExt(v)) => {
+            Some(WordMode::Exclude(v)) => {
                 if feeder.starts_withs(v) {
                     return false;
                 }
