@@ -23,7 +23,7 @@ use self::arithmetic::Arithmetic;
 use self::braced_param::BracedParam;
 use self::command_sub::CommandSubstitution;
 use self::simple::SimpleSubword;
-use crate::elements::word::WordMode;
+use crate::elements::word::mode::WordMode;
 use crate::error::{exec::ExecError, parse::ParseError};
 use crate::utils::splitter;
 use crate::{Feeder, ShellCore};

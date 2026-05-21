@@ -4,7 +4,7 @@
 use crate::elements::command::paren::ParenCommand;
 use crate::elements::command::Command;
 use crate::elements::subword::Subword;
-use crate::elements::word::WordMode;
+use crate::elements::word::mode::WordMode;
 use crate::elements::Pipe;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
+pub mod mode;
 pub mod path_expansion;
 mod split;
 pub mod substitution;
@@ -12,7 +13,9 @@ use crate::elements::subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{utils, Feeder, ShellCore};
+use self::mode::WordMode;
 
+/*
 #[derive(Debug, Clone)]
 pub enum WordMode {
     Alias,
@@ -26,7 +29,7 @@ pub enum WordMode {
     Value,
     PermitAnyChar,
     Exclude(Vec<String>),
-}
+}*/
 
 #[derive(Debug, Clone, Default)]
 pub struct Word {

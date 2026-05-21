@@ -5,7 +5,7 @@ use super::{alias, SimpleCommand, SubsArgType};
 use crate::elements::command;
 use crate::elements::command::{Command, ParenCommand};
 use crate::elements::substitution::Substitution;
-use crate::elements::word::{Word, WordMode};
+use crate::elements::word::{Word, mode::WordMode};
 use crate::error::parse::ParseError;
 use crate::{utils, Feeder, ShellCore};
 

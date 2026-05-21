@@ -4,7 +4,7 @@
 use super::array::Array;
 use crate::core::database::data::Data;
 use crate::elements::word::Word;
-use crate::elements::word::WordMode;
+use crate::elements::word::mode::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};

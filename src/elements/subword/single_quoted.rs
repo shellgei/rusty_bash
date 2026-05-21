@@ -3,7 +3,7 @@
 
 use super::Subword;
 use crate::{Feeder, ShellCore};
-use crate::elements::word::WordMode;
+use crate::elements::word::mode::WordMode;
 
 #[derive(Debug, Clone)]
 pub struct SingleQuoted {

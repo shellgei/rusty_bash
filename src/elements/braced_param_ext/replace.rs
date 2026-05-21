@@ -3,7 +3,7 @@
 
 use super::BracedExcludeension;
 use crate::elements::substitution::variable::Variable;
-use crate::elements::word::{Word, WordMode};
+use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;

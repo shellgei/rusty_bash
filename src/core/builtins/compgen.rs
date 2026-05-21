@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::word::{path_expansion, tilde_expansion};
-use crate::elements::word::{Word, WordMode};
+use crate::elements::word::{Word, mode::WordMode};
 use crate::utils;
 use crate::utils::{arg, directory, glob};
 use crate::{file_check, Feeder, ShellCore};
