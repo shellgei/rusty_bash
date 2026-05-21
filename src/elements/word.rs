@@ -133,8 +133,7 @@ impl Word {
         true
     }
 
-    fn post_check(feeder: &mut Feeder, core: &mut ShellCore,
-                  mode: &Option<WordMode>) -> bool {
+    fn post_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
         if feeder.is_empty() {
             return false;
         }
@@ -164,7 +163,7 @@ impl Word {
         while let Some(sw) = subword::parse(feeder, core, &mode)? {
             subwords.push(sw);
 
-            if !Self::post_check(feeder, core, &mode) {
+            if !Self::post_check(feeder, &mode) {
                 break;
             }
         }
