@@ -92,10 +92,24 @@ pub trait Subword {
 
 fn last_resort(
     feeder: &mut Feeder,
-    _: &mut ShellCore,
+    core: &mut ShellCore,
     mode: &Option<WordMode>,
 ) -> Result<Option<Box<dyn Subword>>, ParseError> {
     match mode {
+        Some(WordMode::Exclude(v)) => {
+            if feeder.is_empty() || feeder.starts_withs(v) {
+                return Ok(None);
+            }   
+
+            let len = feeder.scanner_char();
+            let c = SimpleSubword {
+                text: feeder.consume(len),
+            };  
+            if feeder.is_empty() {
+                feeder.feed_additional_line(core)?;
+            }   
+            Ok(Some(Box::new(c)))
+        }
         Some(WordMode::PermitAnyChar) => {
             if feeder.len() == 0 {
                 return Ok(None);
