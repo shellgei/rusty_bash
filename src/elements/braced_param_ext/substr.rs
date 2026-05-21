@@ -31,7 +31,6 @@ impl Substr {
         ans.offset = match Word::parse(feeder, core, Some(mode))? {
             Some(w) => {
                 ans.text += &w.text.clone();
-                dbg!("{:?}", &feeder);
                 Some(w)
             },
             None => None,

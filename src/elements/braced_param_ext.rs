@@ -24,7 +24,7 @@ impl Debug for dyn BracedParamExtension {
 pub trait BracedParamExtension {
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension>;
     fn get_text(&self) -> String;
-} 
+}
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
 -> Result<Option<Box<dyn BracedParamExtension>>, ParseError> {
