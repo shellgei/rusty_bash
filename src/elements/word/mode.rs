@@ -29,36 +29,19 @@ impl WordMode {
         }
 
         match self {
-            Self::Arithmetic | Self::CompgenF => {
-                if feeder.starts_with("}") {
-                    return false;
-                }
-            }
-            Self::Exclude(v) => {
-                if feeder.starts_withs(v) {
-                    return false;
-                }
-            }
-            _ => {}
+            Self::Arithmetic | Self::CompgenF => ! feeder.starts_with("}"),
+            Self::Exclude(v) => ! feeder.starts_withs(v),
+            _ => true,
         }
-        true
     }
 
     pub fn post_check(&self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
         match self {
-            WordMode::Arithmetic | WordMode::CompgenF => {
-                if feeder.starts_withs(&["]", "}"]) || feeder.scanner_math_symbol(core) != 0 {
-                    return false;
-                }
-            },
-            WordMode::Exclude(v) => {
-                if feeder.starts_withs(v) {
-                    return false;
-                }
-            }
-            _ => {}
+            WordMode::Arithmetic | WordMode::CompgenF => 
+                ! feeder.starts_withs(&["]", "}"]) && feeder.scanner_math_symbol(core) == 0,
+            WordMode::Exclude(v) => ! feeder.starts_withs(v),
+            _ => true,
         }
-        true
     }
 
     pub fn last_resort(&self, feeder: &mut Feeder, core: &mut ShellCore)
