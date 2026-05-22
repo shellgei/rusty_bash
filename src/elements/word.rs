@@ -15,22 +15,6 @@ use crate::error::parse::ParseError;
 use crate::{utils, Feeder, ShellCore};
 use self::mode::WordMode;
 
-/*
-#[derive(Debug, Clone)]
-pub enum WordMode {
-    Alias,
-    Arithmetic,
-    AssocIndex,
-    EvalLet,
-    CompgenF,
-    ReadCommand,
-    Heredoc,
-    RightOfSubstitution,
-    Value,
-    PermitAnyChar,
-    Exclude(Vec<String>),
-}*/
-
 #[derive(Debug, Clone, Default)]
 pub struct Word {
     pub text: String,
@@ -268,22 +252,8 @@ impl Word {
     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
         if feeder.starts_with("#") && mode.is_none() || feeder.is_empty() {
             return false;
-        }
-
-        match mode {
-            Some(WordMode::Arithmetic) 
-            //| Some(WordMode::AlterWord) 
-            | Some(WordMode::CompgenF) => {
-                if feeder.starts_with("}") {
-                    return false;
-                }
-            }
-            Some(WordMode::Exclude(v)) => {
-                if feeder.starts_withs(v) {
-                    return false;
-                }
-            }
-            _ => {}
+        }else if let Some(m) = mode {
+            return m.pre_check(feeder);
         }
         true
     }
@@ -291,27 +261,10 @@ impl Word {
     fn post_check(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>) -> bool {
         if feeder.is_empty() {
             return false;
+        }else if let Some(m) = mode {
+            return m.post_check(feeder, core);
         }
 
-        match mode {
-            Some(WordMode::Arithmetic) | Some(WordMode::CompgenF) => {
-                if feeder.starts_withs(&["]", "}"]) || feeder.scanner_math_symbol(core) != 0 {
-                    return false;
-                }
-            },
-            /*
-            Some(WordMode::AlterWord) => {
-                if feeder.starts_with("}") {
-                    return false;
-                }
-            },*/
-            Some(WordMode::Exclude(v)) => {
-                if feeder.starts_withs(v) {
-                    return false;
-                }
-            }
-            _ => {}
-        }
         true
     }
 
