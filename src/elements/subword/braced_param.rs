@@ -94,14 +94,15 @@ impl Subword for BracedParam {
             return vec![];
         }
 
-        let index_is_asterisk =
-            self.param.index.is_some() && self.param.index.as_ref().unwrap().text == "[*]";
+        let asterisk = self.param.index.is_some() 
+                       && self.param.index.as_ref().unwrap().text == "[*]"
+                       || self.param.name == "*";
 
-        if ifs.is_empty() && (self.param.name == "*" || index_is_asterisk) {
+        if ifs.is_empty() && asterisk {
             return self.make_split();
         }
 
-        if (!self.treat_as_array && !index_is_asterisk && self.param.name != "*")
+        if (!self.treat_as_array && !asterisk)
             || ifs.starts_with(" ")
             || self.array.is_none()
         {
