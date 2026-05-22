@@ -3,6 +3,7 @@
 
 mod parse;
 mod indirect;
+mod nameref;
 
 use crate::elements::braced_param_ext::BracedExcludeension;
 use crate::elements::substitution::variable::Variable;
@@ -43,8 +44,8 @@ impl Subword for BracedParam {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if core.db.exist_nameref(&self.param.name) && ! self.indirect {
-            //return self.solve_nameref(core);
-            self.solve_nameref(core)?;
+            nameref::solve(&mut self.param, core)?;
+            return self.substitute(core);
         }
         self.check()?;
 
@@ -126,32 +127,6 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn solve_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-            let mut circular_check_vec = vec![];
-            let org_name = self.param.name.clone();
-            loop {
-                let bkup = self.param.name.clone();
-                self.param.check_nameref(core)?;
-                if self.param.name == bkup {
-                    self.param.name = utils::gen_not_exist_var(core);
-                }
-
-                if circular_check_vec.contains(&self.param.name) {
-                    ExecError::CircularNameRef(org_name).print(core);
-                    self.param.name = utils::gen_not_exist_var(core);
-                    break;
-                }
-                if ! core.db.exist_nameref(&self.param.name) {
-                    break;
-                }
-                circular_check_vec.push(self.param.name.clone());
-            }
-
-            Ok(())
-
-//            self.substitute(core)
-    }
-
     fn check(&mut self) -> Result<(), ExecError> {
         if self.param.name.is_empty() || !utils::is_param(&self.param.name) {
             return Err(ExecError::BadSubstitution(self.text.clone()));
