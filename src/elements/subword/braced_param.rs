@@ -3,7 +3,6 @@
 
 mod parse;
 mod indirect;
-mod nameref;
 
 use crate::elements::braced_param_ext::BracedExcludeension;
 use crate::elements::substitution::variable::Variable;
@@ -44,7 +43,7 @@ impl Subword for BracedParam {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if core.db.exist_nameref(&self.param.name) && ! self.indirect {
-            nameref::solve(&mut self.param, core)?;
+            self.param.solve_nameref(core)?;
             return self.substitute(core);
         }
         self.check()?;
