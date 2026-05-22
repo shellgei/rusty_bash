@@ -1,4 +1,5 @@
 //SPDX-FileCopyrightText: 2025 @caro@mi.shellgei.org
+//SPDX-FileCopyrightText: 2026 @ru@mi.shiellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
@@ -10,7 +11,8 @@ pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)
     if ifs.chars().all(|c| " \t\n".contains(c)) {
         split_str_normal(sw, ifs)
     } else {
-        split_str_special(sw, ifs, prev_char)
+        let shave_prev = prev_char.is_none() || " \t\n".contains(prev_char.unwrap());
+        split_str_custom_ifs(sw, ifs, shave_prev)
     }
 }
 
@@ -60,15 +62,10 @@ fn scanner_ifs_blank(s: &str, blank: &[char], delim: &[char]) -> usize {
     ans
 }
 
-fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
+fn split_str_custom_ifs(s: &str, ifs: &str, shave_prev: bool) -> Vec<(String, bool)> {
     let mut ans = vec![];
     let mut remaining = s.to_string();
     let mut shaved = false;
-
-    let shave_prev = match prev_char {
-        None => true,
-        Some(c) => " \t\n".contains(c),
-    };
 
     let blank: Vec<char> = ifs.chars().filter(|s| " \t\n".contains(*s)).collect();
     let delim: Vec<char> = ifs.chars().filter(|s| !" \t\n".contains(*s)).collect();
