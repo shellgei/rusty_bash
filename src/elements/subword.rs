@@ -166,61 +166,6 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
-/*
-fn last_resort(
-    feeder: &mut Feeder,
-    core: &mut ShellCore,
-    mode: &Option<WordMode>,
-) -> Result<Option<Box<dyn Subword>>, ParseError> {
-    match mode {
-        None => Ok(None),
-        Some(WordMode::Exclude(v)) => {
-            if feeder.is_empty() || feeder.starts_withs(v) {
-                return Ok(None);
-            }
-
-            let len = feeder.scanner_char();
-            let c = FillerSubword {
-                text: feeder.consume(len),
-            };
-            if feeder.is_empty() {
-                feeder.feed_additional_line(core)?;
-            }
-            Ok(Some(Box::new(c)))
-        }
-        Some(WordMode::ReadCommand) => {
-            if feeder.is_empty() || feeder.starts_withs(&["\n", "\t", " "]) {
-                Ok(None)
-            } else {
-                Ok(Some(From::from(&feeder.consume(1))))
-            }
-        }
-        Some(WordMode::Alias) => {
-            if feeder.starts_with("\t") {
-                Ok(Some(From::from(&feeder.consume(1))))
-            } else {
-                Ok(None)
-            }
-        }
-        Some(WordMode::AssocIndex) => {
-            if !feeder.starts_with("]") {
-                Ok(Some(From::from(&feeder.consume(1))))
-            } else {
-                Ok(None)
-            }
-        }
-        Some(WordMode::PermitAnyChar) => {
-            if feeder.is_empty() {
-                Ok(None)
-            } else {
-                Ok(Some(From::from(&feeder.consume(1))))
-            }
-        }
-        _ => Ok(None),
-    }
-}
-*/
-
 pub fn parse(
     feeder: &mut Feeder,
     core: &mut ShellCore,
@@ -259,8 +204,7 @@ pub fn parse(
     } else if let Some(a) = EvalLetParen::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
     } else if mode.is_some() {
-        mode.as_ref().unwrap().last_resort(feeder, core)
-//        last_resort(feeder, core, mode)
+        mode.as_ref().unwrap().subword_post_check(feeder, core)
     }else{
         Ok(None)
     }

@@ -23,7 +23,7 @@ pub enum WordMode {
 
 
 impl WordMode {
-    pub fn pre_check(&self, feeder: &mut Feeder) -> bool {
+    pub fn word_pre_check(&self, feeder: &mut Feeder) -> bool {
         if feeder.is_empty() {
             return false;
         }
@@ -35,7 +35,7 @@ impl WordMode {
         }
     }
 
-    pub fn post_check(&self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
+    pub fn word_post_check(&self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
         match self {
             WordMode::Arithmetic | WordMode::CompgenF => 
                 ! feeder.starts_withs(&["]", "}"]) && feeder.scanner_math_symbol(core) == 0,
@@ -44,7 +44,7 @@ impl WordMode {
         }
     }
 
-    pub fn last_resort(&self, feeder: &mut Feeder, core: &mut ShellCore)
+    pub fn subword_post_check(&self, feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Box<dyn Subword>>, ParseError> {
         match self {
             WordMode::Exclude(v) => {
@@ -62,31 +62,27 @@ impl WordMode {
                 Ok(Some(Box::new(c)))
             }
             WordMode::ReadCommand => {
-                if feeder.is_empty() || feeder.starts_withs(&["\n", "\t", " "]) {
-                    Ok(None)
-                } else {
-                    Ok(Some(From::from(&feeder.consume(1))))
+                match feeder.is_empty() || feeder.starts_withs(&["\n", "\t", " "]) {
+                    true  => Ok(None),
+                    false => Ok(Some(From::from(&feeder.consume(1)))),
                 }
             }
             WordMode::Alias => {
-                if feeder.starts_with("\t") {
-                    Ok(Some(From::from(&feeder.consume(1))))
-                } else {
-                    Ok(None)
+                match feeder.starts_with("\t") {
+                    true  => Ok(Some(From::from(&feeder.consume(1)))),
+                    false => Ok(None),
                 }
             }
             WordMode::AssocIndex => {
-                if !feeder.starts_with("]") {
-                    Ok(Some(From::from(&feeder.consume(1))))
-                } else {
-                    Ok(None)
+                match feeder.starts_with("]") {
+                    false => Ok(Some(From::from(&feeder.consume(1)))),
+                    true  => Ok(None),
                 }
             }
             WordMode::PermitAnyChar => {
-                if feeder.is_empty() {
-                    Ok(None)
-                } else {
-                    Ok(Some(From::from(&feeder.consume(1))))
+                match feeder.is_empty() {
+                    true  => Ok(None),
+                    false => Ok(Some(From::from(&feeder.consume(1)))),
                 }
             }
             _ => Ok(None),

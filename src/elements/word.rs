@@ -253,7 +253,7 @@ impl Word {
         if feeder.starts_with("#") && mode.is_none() || feeder.is_empty() {
             return false;
         }else if let Some(m) = mode {
-            return m.pre_check(feeder);
+            return m.word_pre_check(feeder);
         }
         true
     }
@@ -262,7 +262,7 @@ impl Word {
         if feeder.is_empty() {
             return false;
         }else if let Some(m) = mode {
-            return m.post_check(feeder, core);
+            return m.word_post_check(feeder, core);
         }
 
         true
