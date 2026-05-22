@@ -43,27 +43,7 @@ impl Subword for BracedParam {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if core.db.exist_nameref(&self.param.name) && ! self.indirect {
-            let mut circular_check_vec = vec![];
-            let org_name = self.param.name.clone();
-            loop {
-                let bkup = self.param.name.clone();
-                self.param.check_nameref(core)?;
-                if self.param.name == bkup {
-                    self.param.name = utils::gen_not_exist_var(core);
-                }
-
-                if circular_check_vec.contains(&self.param.name) {
-                    ExecError::CircularNameRef(org_name).print(core);
-                    self.param.name = utils::gen_not_exist_var(core);
-                    break;
-                }
-                if ! core.db.exist_nameref(&self.param.name) {
-                    break;
-                }
-                circular_check_vec.push(self.param.name.clone());
-            }
-
-            return self.substitute(core);
+            return self.substitute_with_nameref(core);
         }
         self.check()?;
 
@@ -145,6 +125,30 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
+    fn substitute_with_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+            let mut circular_check_vec = vec![];
+            let org_name = self.param.name.clone();
+            loop {
+                let bkup = self.param.name.clone();
+                self.param.check_nameref(core)?;
+                if self.param.name == bkup {
+                    self.param.name = utils::gen_not_exist_var(core);
+                }
+
+                if circular_check_vec.contains(&self.param.name) {
+                    ExecError::CircularNameRef(org_name).print(core);
+                    self.param.name = utils::gen_not_exist_var(core);
+                    break;
+                }
+                if ! core.db.exist_nameref(&self.param.name) {
+                    break;
+                }
+                circular_check_vec.push(self.param.name.clone());
+            }
+
+            return self.substitute(core);
+    }
+
     fn check(&mut self) -> Result<(), ExecError> {
         if self.param.name.is_empty() || !utils::is_param(&self.param.name) {
             return Err(ExecError::BadSubstitution(self.text.clone()));
