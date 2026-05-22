@@ -32,7 +32,6 @@ use self::double_quoted::DoubleQuoted;
 use self::escaped_char::EscapedChar;
 use self::ext_glob::ExtGlob;
 use self::file_input::FileInput;
-use self::filler::FillerSubword;
 use self::parameter::Parameter;
 use self::paren::EvalLetParen;
 use self::process_sub::ProcessSubstitution;
@@ -167,6 +166,7 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
+/*
 fn last_resort(
     feeder: &mut Feeder,
     core: &mut ShellCore,
@@ -202,21 +202,6 @@ fn last_resort(
                 Ok(None)
             }
         }
-        /*
-        Some(WordMode::AlterWord) => {
-            if feeder.is_empty() || feeder.starts_with("}") {
-                return Ok(None);
-            }
-
-            let len = feeder.scanner_char();
-            let c = FillerSubword {
-                text: feeder.consume(len),
-            };
-            if feeder.is_empty() {
-                feeder.feed_additional_line(core)?;
-            }
-            Ok(Some(Box::new(c)))
-        }*/
         Some(WordMode::AssocIndex) => {
             if !feeder.starts_with("]") {
                 Ok(Some(From::from(&feeder.consume(1))))
@@ -234,6 +219,7 @@ fn last_resort(
         _ => Ok(None),
     }
 }
+*/
 
 pub fn parse(
     feeder: &mut Feeder,
@@ -254,9 +240,7 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if let Some(a) = CommandSubstitution::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
-    }
-    //else if let Some(a) = CommandSubstitutionOld::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = ProcessSubstitution::parse(feeder, core, mode)? {
+    } else if let Some(a) = ProcessSubstitution::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = SingleQuoted::parse(feeder, core, mode) {
         Ok(Some(Box::new(a)))
@@ -274,7 +258,10 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if let Some(a) = EvalLetParen::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
-    } else {
-        last_resort(feeder, core, mode)
+    } else if mode.is_some() {
+        mode.as_ref().unwrap().last_resort(feeder, core)
+//        last_resort(feeder, core, mode)
+    }else{
+        Ok(None)
     }
 }
