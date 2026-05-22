@@ -23,7 +23,7 @@ use self::arithmetic::Arithmetic;
 use self::braced_param::BracedParam;
 use self::command_sub::CommandSubstitution;
 use self::simple::SimpleSubword;
-use crate::elements::word::WordMode;
+use crate::elements::word::mode::WordMode;
 use crate::error::{exec::ExecError, parse::ParseError};
 use crate::utils::splitter;
 use crate::{Feeder, ShellCore};
@@ -32,7 +32,6 @@ use self::double_quoted::DoubleQuoted;
 use self::escaped_char::EscapedChar;
 use self::ext_glob::ExtGlob;
 use self::file_input::FileInput;
-use self::filler::FillerSubword;
 use self::parameter::Parameter;
 use self::paren::EvalLetParen;
 use self::process_sub::ProcessSubstitution;
@@ -138,7 +137,7 @@ pub trait Subword {
     }
     fn set_heredoc_flag(&mut self) {}
 
-    fn set_pipe(&mut self, _: &mut ShellCore) {}
+    fn set_pipe(&mut self, _: &mut ShellCore) -> Result<(), ExecError> { Ok(()) }
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
@@ -167,74 +166,6 @@ fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
     true
 }
 
-fn last_resort(
-    feeder: &mut Feeder,
-    core: &mut ShellCore,
-    mode: &Option<WordMode>,
-) -> Result<Option<Box<dyn Subword>>, ParseError> {
-    match mode {
-        None => Ok(None),
-        Some(WordMode::ParamOption(v)) => {
-            if feeder.is_empty() || feeder.starts_withs(v) {
-                return Ok(None);
-            }
-
-            let len = feeder.scanner_char();
-            let c = FillerSubword {
-                text: feeder.consume(len),
-            };
-            if feeder.is_empty() {
-                feeder.feed_additional_line(core)?;
-            }
-            Ok(Some(Box::new(c)))
-        }
-        Some(WordMode::ReadCommand) => {
-            if feeder.is_empty() || feeder.starts_withs(&["\n", "\t", " "]) {
-                Ok(None)
-            } else {
-                Ok(Some(From::from(&feeder.consume(1))))
-            }
-        }
-        Some(WordMode::Alias) => {
-            if feeder.starts_with("\t") {
-                Ok(Some(From::from(&feeder.consume(1))))
-            } else {
-                Ok(None)
-            }
-        }
-        /*
-        Some(WordMode::AlterWord) => {
-            if feeder.is_empty() || feeder.starts_with("}") {
-                return Ok(None);
-            }
-
-            let len = feeder.scanner_char();
-            let c = FillerSubword {
-                text: feeder.consume(len),
-            };
-            if feeder.is_empty() {
-                feeder.feed_additional_line(core)?;
-            }
-            Ok(Some(Box::new(c)))
-        }*/
-        Some(WordMode::AssocIndex) => {
-            if !feeder.starts_with("]") {
-                Ok(Some(From::from(&feeder.consume(1))))
-            } else {
-                Ok(None)
-            }
-        }
-        Some(WordMode::PermitAnyChar) => {
-            if feeder.is_empty() {
-                Ok(None)
-            } else {
-                Ok(Some(From::from(&feeder.consume(1))))
-            }
-        }
-        _ => Ok(None),
-    }
-}
-
 pub fn parse(
     feeder: &mut Feeder,
     core: &mut ShellCore,
@@ -254,9 +185,7 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if let Some(a) = CommandSubstitution::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
-    }
-    //else if let Some(a) = CommandSubstitutionOld::parse(feeder, core)?{ Ok(Some(Box::new(a))) }
-    else if let Some(a) = ProcessSubstitution::parse(feeder, core, mode)? {
+    } else if let Some(a) = ProcessSubstitution::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = SingleQuoted::parse(feeder, core, mode) {
         Ok(Some(Box::new(a)))
@@ -274,7 +203,9 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if let Some(a) = EvalLetParen::parse(feeder, core, mode)? {
         Ok(Some(Box::new(a)))
-    } else {
-        last_resort(feeder, core, mode)
+    } else if mode.is_some() {
+        mode.as_ref().unwrap().subword_post_check(feeder, core)
+    }else{
+        Ok(None)
     }
 }

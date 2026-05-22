@@ -3,7 +3,7 @@
 
 mod parse;
 
-use crate::elements::braced_param_ext::BracedParamExtension;
+use crate::elements::braced_param_ext::BracedExcludeension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
@@ -16,7 +16,7 @@ pub struct BracedParam {
     text: String,
     array: Option<Vec<String>>,
     param: Variable,
-    extension: Option<Box<dyn BracedParamExtension>>,
+    extension: Option<Box<dyn BracedExcludeension>>,
     unknown: String,
     treat_as_array: bool,
     num: bool,

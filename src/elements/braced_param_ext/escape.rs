@@ -4,7 +4,7 @@
 use crate::elements::substitution::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
-use super::BracedParamExtension;
+use super::BracedExcludeension;
 
 #[derive(Debug, Clone, Default)]
 pub struct Escape {
@@ -12,7 +12,7 @@ pub struct Escape {
     pub symbol: String,
 }
 
-impl BracedParamExtension for Escape {
+impl BracedExcludeension for Escape {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -52,7 +52,7 @@ impl BracedParamExtension for Escape {
         Ok(())
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
+    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
         Box::new(self.clone())
     }
     fn has_array_replace(&self) -> bool {

@@ -3,7 +3,8 @@
 
 use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 use crate::elements::subword::{Arithmetic, CommandSubstitution, DoubleQuoted};
-use crate::elements::word::{Word, WordMode};
+use crate::elements::word::Word;
+use crate::elements::word::mode::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};

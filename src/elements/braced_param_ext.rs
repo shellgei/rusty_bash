@@ -22,9 +22,9 @@ use crate::{Feeder, ShellCore};
 use core::fmt;
 use core::fmt::Debug;
 
-pub trait BracedParamExtension {
+pub trait BracedExcludeension {
     fn exec(&mut self, _: &Variable, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
-    fn boxed_clone(&self) -> Box<dyn BracedParamExtension>;
+    fn boxed_clone(&self) -> Box<dyn BracedExcludeension>;
     fn get_text(&self) -> String;
     fn has_array_replace(&self) -> bool {
         false
@@ -54,7 +54,7 @@ pub trait BracedParamExtension {
 pub fn parse(
     feeder: &mut Feeder,
     core: &mut ShellCore,
-) -> Result<Option<Box<dyn BracedParamExtension>>, ParseError> {
+) -> Result<Option<Box<dyn BracedExcludeension>>, ParseError> {
     if let Some(a) = Replace::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ValueCheck::parse(feeder, core)? {
@@ -63,7 +63,7 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if let Some(a) = Remove::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
-    } else if let Some(a) = Substr::parse(feeder, core) {
+    } else if let Some(a) = Substr::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = Escape::parse(feeder, core) {
         Ok(Some(Box::new(a)))
@@ -72,13 +72,13 @@ pub fn parse(
     }
 }
 
-impl Clone for Box<dyn BracedParamExtension> {
-    fn clone(&self) -> Box<dyn BracedParamExtension> {
+impl Clone for Box<dyn BracedExcludeension> {
+    fn clone(&self) -> Box<dyn BracedExcludeension> {
         self.boxed_clone()
     }
 }
 
-impl Debug for dyn BracedParamExtension {
+impl Debug for dyn BracedExcludeension {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.get_text()).finish()
     }

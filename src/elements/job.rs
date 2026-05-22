@@ -134,18 +134,19 @@ impl Job {
     }
 
     fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<Option<Pid>, ExecError> {
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pgid);
                 if let Err(e) = self.exec(core, false) {
                     e.print(core);
                 }
                 exit::normal(core)
             }
-            ForkResult::Parent { child } => {
+            Ok(ForkResult::Parent { child }) => {
                 proc_ctrl::set_pgid(core, child, pgid);
                 Ok(Some(child))
             }
+            Err(e) => return Err(ExecError::Errno("fork".to_string(), e)),
         }
     }
 

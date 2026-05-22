@@ -41,7 +41,7 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool, es_arc: &Arc<
         },
         Err(e) => {
             if ! coproc {
-                return Err(ExecError::Errno(e));
+                return Err(ExecError::Errno("waitpid".to_string(), e));
             }
             let es = es_arc.load(Relaxed);
             *status = WaitStatus::Exited(*pid, es);
@@ -52,7 +52,10 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool, es_arc: &Arc<
 }
 
 fn wait_block(pid: &Pid, status: &mut WaitStatus) -> Result<i32, ExecError> {
-    *status = wait::waitpid(*pid, Some(WaitPidFlag::WUNTRACED))?;
+    *status = match wait::waitpid(*pid, Some(WaitPidFlag::WUNTRACED)) {
+        Ok(s) => s,
+        Err(e) => return Err(ExecError::Errno("wait".to_string(), e)),
+    };
     let exit_status = match status {
         WaitStatus::Exited(_, es) => *es,
         WaitStatus::Stopped(_, _) => 148,

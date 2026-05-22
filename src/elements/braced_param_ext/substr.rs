@@ -1,21 +1,22 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedParamExtension;
+use super::BracedExcludeension;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::substitution::variable::Variable;
 //use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
     pub text: String,
-    pub offset: Option<ArithmeticExpr>,
+    pub offset: ArithmeticExpr,
     pub length: Option<ArithmeticExpr>,
 }
 
-impl BracedParamExtension for Substr {
+impl BracedExcludeension for Substr {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -28,7 +29,7 @@ impl BracedParamExtension for Substr {
         self.get(text, core)
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
+    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
         Box::new(self.clone())
     }
     fn has_array_replace(&self) -> bool {
@@ -59,9 +60,9 @@ impl Substr {
         core: &mut ShellCore,
         ifs: &str,
     ) -> Result<(), ExecError> {
-        let offset = self.offset.as_mut().unwrap();
+        //let offset = self.offset.as_mut().unwrap();
 
-        if offset.text.is_empty() {
+        if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
@@ -69,7 +70,7 @@ impl Substr {
         }
 
         *array = core.db.get_vec("@", false)?;
-        let mut n = offset.eval_as_int(core)?;
+        let mut n = self.offset.eval_as_int(core)?;
         let len = array.len();
 
         if n < 0 {
@@ -119,16 +120,16 @@ impl Substr {
         text: &mut String,
         core: &mut ShellCore,
     ) -> Result<(), ExecError> {
-        let offset = self.offset.as_mut().unwrap();
+        //let offset = self.offset.as_mut().unwrap();
 
-        if offset.text.is_empty() {
+        if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
             //offset.text = "0".to_string();
         }
 
-        let mut n = offset.eval_as_int(core)?;
+        let mut n = self.offset.eval_as_int(core)?;
         let len = core.db.index_based_len(name);
         if n < 0 {
             n += len as i128;
@@ -171,9 +172,9 @@ impl Substr {
     }
 
     pub fn get(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
-        let offset = self.offset.as_mut().unwrap();
+        //let offset = self.offset.as_mut().unwrap();
 
-        if offset.text.is_empty() {
+        if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
@@ -181,7 +182,7 @@ impl Substr {
         }
 
         let mut ans: String;
-        let mut n = offset.eval_as_int(core)?;
+        let mut n = self.offset.eval_as_int(core)?;
         let len = text.chars().count();
 
         if n < 0 {
@@ -229,22 +230,23 @@ impl Substr {
         };
     }
 
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Self> {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
         if !feeder.starts_with(":") {
-            return None;
+            return Ok(None);
         }
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":") {
-            Ok(Some(a)) => {
+        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":")? {
+            Some(a) => {
                 ans.text += &a.text.clone();
                 Self::eat_length(feeder, &mut ans, core);
-                Some(a)
+                a
             }
-            _ => None,
+            _ => ArithmeticExpr::new(),
         };
 
-        Some(ans)
+        Ok(Some(ans))
     }
 }

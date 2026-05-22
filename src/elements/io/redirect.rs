@@ -4,7 +4,7 @@
 use crate::elements::subword;
 use crate::elements::subword::filler::FillerSubword;
 use crate::elements::word::Word;
-use crate::elements::word::WordMode;
+use crate::elements::word::mode::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::{exit, file_check};
@@ -216,7 +216,7 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (recv, send) = core.fds.pipe();
+        let (recv, send) = core.fds.pipe()?;
 
         if restore {
             self.left_backup = core.fds.backup(0);
@@ -230,8 +230,8 @@ impl Redirect {
             true => self.here_data.text.clone(),
         };
 
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}", &text);
@@ -239,10 +239,11 @@ impl Redirect {
                 core.fds.close(send);
                 process::exit(0);
             }
-            ForkResult::Parent { child: _ } => {
+            Ok(ForkResult::Parent { child: _ }) => {
                 core.fds.close(send);
                 core.fds.replace(recv, 0)?;
             }
+            Err(e) => return Err(ExecError::Errno("here document".to_string(), e)),
         }
         Ok(())
     }
@@ -253,7 +254,7 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (recv, send) = core.fds.pipe();
+        let (recv, send) = core.fds.pipe()?;
 
         if restore {
             self.left_backup = core.fds.backup(0);
@@ -261,8 +262,8 @@ impl Redirect {
 
         let text = self.right.eval_as_herestring(core)?;
 
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = writeln!(&mut f, "{}", &text);
@@ -270,10 +271,11 @@ impl Redirect {
                 core.fds.close(send);
                 process::exit(0);
             }
-            ForkResult::Parent { child: _ } => {
+            Ok(ForkResult::Parent { child: _ }) => {
                 core.fds.close(send);
                 core.fds.replace(recv, 0)?;
             }
+            Err(e) => return Err(ExecError::Errno("here string".to_string(), e)),
         }
         Ok(())
     }
@@ -284,6 +286,11 @@ impl Redirect {
                 core.fds.close(self.left_fd);
             } else {
                 core.fds.replace(self.left_backup, self.left_fd)?;
+                if core.fds.read_used_fd == self.left_fd {
+                    core.fds.read_used_fd = -1;
+                    core.fds.close(self.left_fd);
+            } else {
+                }
             }
         }
         if self.extra_left_backup >= 0 {
@@ -436,7 +443,7 @@ impl Redirect {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
-        feeder.set_backup(); //追加
+        feeder.set_backup();
 
         if Self::eat_left(feeder, &mut ans, core)
             && Self::eat_symbol(feeder, &mut ans, core)
@@ -445,7 +452,7 @@ impl Redirect {
             feeder.pop_backup();
             Some(ans)
         } else {
-            feeder.rewind(); //追加
+            feeder.rewind();
             None
         }
     }

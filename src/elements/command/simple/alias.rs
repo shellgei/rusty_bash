@@ -3,7 +3,7 @@
 
 use super::SimpleCommand;
 use crate::elements::command;
-use crate::elements::word::{Word, WordMode};
+use crate::elements::word::{Word, mode::WordMode};
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 

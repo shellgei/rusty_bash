@@ -36,7 +36,9 @@ impl Pipeline {
         core.time_keeper.set(self.time);
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
-            p.set(prev, pgid, core);
+            if let Err(e) = p.set(prev, pgid, core) {
+                return (pids, self.exclamation%2 == 1, Some(e));
+            }
 
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
@@ -52,8 +54,8 @@ impl Pipeline {
 
         let lastpipe = (!core.db.flags.contains('m')) && core.shopts.query("lastpipe");
         let mut lastp = Pipe::end(prev, pgid, lastpipe);
-        let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
         let mut err = None;
+        let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
         if lastpipe {
             if let Err(e) = lastp.restore_lastpipe(core) {
                 err = Some(e);
