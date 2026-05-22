@@ -2,14 +2,14 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod parse;
+mod indirect;
 
 use crate::elements::braced_param_ext::BracedExcludeension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
-use crate::utils;
+use crate::{ShellCore, utils};
 use crate::utils::splitter;
-use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
@@ -43,7 +43,8 @@ impl Subword for BracedParam {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if core.db.exist_nameref(&self.param.name) && ! self.indirect {
-            return self.substitute_with_nameref(core);
+            //return self.solve_nameref(core);
+            self.solve_nameref(core)?;
         }
         self.check()?;
 
@@ -125,7 +126,7 @@ impl Subword for BracedParam {
 }
 
 impl BracedParam {
-    fn substitute_with_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn solve_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
             let mut circular_check_vec = vec![];
             let org_name = self.param.name.clone();
             loop {
@@ -146,7 +147,9 @@ impl BracedParam {
                 circular_check_vec.push(self.param.name.clone());
             }
 
-            return self.substitute(core);
+            Ok(())
+
+//            self.substitute(core)
     }
 
     fn check(&mut self) -> Result<(), ExecError> {
@@ -211,62 +214,6 @@ impl BracedParam {
             }
         }
 
-        Ok(())
-    }
-
-    fn indirect_preparation(&mut self, core: &mut ShellCore) -> Result<bool, ExecError> {
-        if ! core.db.exist(&self.param.name)
-        && ! core.db.exist_nameref(&self.param.name) {
-            return Err(ExecError::InvalidIndirectExpansion(self.param.name.to_string()));
-        }
-
-        if core.db.has_flag(&self.param.name, 'n') {
-            if self.text.contains("[") {
-                self.text = String::new();
-            } else if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
-                self.text = nameref;
-            }else{
-                self.text = String::new();
-            }
-            return Ok(false);
-        }
-
-        if self.param.is_var_array() { // ${!name[@]}, ${!name[*]}
-            self.index_replace(core)?;
-            return Ok(false);
-        }
-
-        self.indirect_replace(core)?;
-        self.check()?;
-        Ok(true)
-    }
-
-    fn indirect_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut sw = self.clone();
-        sw.indirect = false;
-        sw.unknown = String::new();
-        sw.treat_as_array = false;
-        sw.num = false;
-
-        sw.substitute(core)?;
-
-        if sw.text.contains('[') {
-            let mut feeder = Feeder::new(&("${".to_owned() + &sw.text + "}"));
-            if let Ok(Some(mut bp)) = BracedParam::parse(&mut feeder, core) {
-                bp.substitute(core)?;
-                self.param.name = bp.param.name;
-                self.param.index = bp.param.index;
-            } else {
-                return Err(ExecError::InvalidName(sw.text.clone()));
-            }
-        } else {
-            self.param.name = sw.text.clone();
-            self.param.index = None;
-        }
-
-        if !utils::is_param(&self.param.name) {
-            return Err(ExecError::InvalidName(self.param.name.clone()));
-        }
         Ok(())
     }
 
