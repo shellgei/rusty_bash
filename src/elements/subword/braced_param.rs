@@ -198,18 +198,11 @@ impl BracedParam {
             false => value.to_string(),
         };
 
-        self.text = self.extension(self.text.clone(), core)?;
-        Ok(())
-    }
-
-    fn extension(
-        &mut self,
-        text: String,
-        core: &mut ShellCore,
-    ) -> Result<String, ExecError> {
-        match self.extension.as_mut() {
-            Some(op) => op.exec(&self.param, &text, core),
-            None => Ok(text.clone()),
+        if let Some(op) = self.extension.as_mut() {
+            self.text = op.exec(&self.param, &self.text, core)?;
         }
+
+        //self.text = self.extension(self.text.clone(), core)?;
+        Ok(())
     }
 }
