@@ -14,11 +14,7 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
     let ifs = core.db.get_param("IFS").unwrap();
 
     let (pos, mut split) = find_pos(word, &ifs);
-    if split.is_empty() {
-        return vec![word.clone()];
-    }
-
-    if split.len() == 1 {
+    if split.len() <= 1 {
         return vec![word.clone()];
     }
 
