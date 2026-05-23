@@ -20,6 +20,7 @@ use faccess::PathExt;
 use io_streams::StreamReader;
 use std::io::Read;
 use std::path::Path;
+use std::{thread, time};
 
 pub fn reserved(w: &str) -> bool {
     matches!(
@@ -148,6 +149,10 @@ pub fn is_var(s: &str) -> bool {
 
 pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>)
 -> Result<String, InputError> {
+    if timeout.is_some() {
+        return read_line_stdin_unbuffered_nonblock(delim, timeout.unwrap());
+    }
+
     let mut line = vec![];
     let mut ch: [u8; 1] = Default::default();
     let mut stdin = StreamReader::stdin().unwrap();
@@ -165,6 +170,47 @@ pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>)
                 }
                 break;
             }
+            Ok(_) => {
+                line.push(ch[0]);
+                if d == ch[0] {
+                    break;
+                }
+            }
+            Err(_) => return Err(InputError::Eof),
+        }
+    }
+
+    match String::from_utf8(line) {
+        Ok(s) => Ok(s),
+        Err(_) => Err(InputError::NotUtf8),
+    }
+}
+
+pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32)
+-> Result<String, InputError> {
+    let start = clock::monotonic_time();
+
+    let mut stdin = termion::async_stdin();
+    let mut line = vec![];
+    let mut ch: [u8; 1] = Default::default();
+
+    let mut d = 10; //\n
+    if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+        d = c;
+    }
+
+
+    loop {
+        let cur = clock::monotonic_time();
+
+        if (cur - start).as_secs_f32() > timeout {
+            return Err(InputError::Timeout);
+        }
+
+        thread::sleep(time::Duration::from_millis(1));
+
+        match stdin.read(&mut ch) {
+            Ok(0) => {},
             Ok(_) => {
                 line.push(ch[0]);
                 if d == ch[0] {

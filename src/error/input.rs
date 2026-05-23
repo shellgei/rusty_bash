@@ -6,6 +6,7 @@ pub enum InputError {
     NotUtf8,
     NoSuchFile(String),
     Interrupt,
+    Timeout,
     Eof,
 }
 
@@ -16,6 +17,7 @@ impl From<&InputError> for String {
             InputError::NoSuchFile(filename) => format!("{filename}: No such file or directory"),
             InputError::Eof => "syntax error: unexpected end of file".to_string(),
             InputError::Interrupt => "interrupted".to_string(),
+            InputError::Timeout => "timeout".to_string(),
         }
     }
 }

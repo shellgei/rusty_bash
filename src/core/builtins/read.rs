@@ -3,7 +3,7 @@
 
 use super::error_;
 use crate::elements::substitution::variable::Variable;
-use crate::{arg, error, utils, ShellCore};
+use crate::{arg, error, utils, ShellCore, InputError};
 
 fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
     let mut pos = 0;
@@ -27,8 +27,12 @@ fn read_(
     delim: &String,
     timeout: Option<f32>,
 ) -> i32 {
-    let mut remaining = utils::read_line_stdin_unbuffered(delim, timeout)
-                        .unwrap_or("".to_string());
+    let mut remaining = match utils::read_line_stdin_unbuffered(delim, timeout) {
+        Err(InputError::Timeout) => return 142,
+        Ok(s) => s,
+        Err(_) => "".to_string(),
+    };
+
     if remaining.is_empty() {
         return 1;
     }
@@ -62,8 +66,9 @@ fn read_(
     while !args.is_empty() && !remaining.is_empty() && *limit != 0 {
         let (mut word, tail_escaped) =
         match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout) {
-            Some(w) => w,
-            None => break,
+            Err(_) => return 142,
+            Ok(Some(w)) => w,
+            Ok(None) => break,
         };
 
         check_word_limit(&mut word, limit);
@@ -107,8 +112,12 @@ fn read_a(
     delim: &String,
     timeout: Option<f32>,
 ) -> i32 {
-    let mut remaining = utils::read_line_stdin_unbuffered(delim, timeout)
-                        .unwrap_or("".to_string());
+    let mut remaining = match utils::read_line_stdin_unbuffered(delim, timeout) {
+        Err(InputError::Timeout) => return 142,
+        Ok(s) => s,
+        Err(_) => "".to_string(),
+    };
+
     if remaining.is_empty() {
         return 1;
     }
@@ -130,8 +139,9 @@ fn read_a(
     while !remaining.is_empty() {
         let (mut word, tail_escaped) =
             match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout) {
-            Some(w) => w,
-            None => break,
+            Err(_) => return 142,
+            Ok(Some(w)) => w,
+            Ok(None) => break,
         };
         check_word_limit(&mut word, limit);
         if ! tail_escaped {
@@ -202,9 +212,19 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let ans = if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
-        read_a(core, &a, r_opt, &mut limit, &delim, timeout)
+        let es = read_a(core, &a, r_opt, &mut limit, &delim, timeout);
+        if es == 142 {
+            let _ = core.db.unset(&a, None, core.shopts.query("localvar_unset"));
+        }
+        es
     }else{
-        read_(core, &mut args, r_opt, &mut limit, &delim, timeout)
+        let es = read_(core, &mut args, r_opt, &mut limit, &delim, timeout);
+        if es == 142 {
+            for a in args {
+                let _ = core.db.unset(&a, None, core.shopts.query("localvar_unset"));
+            }
+        }
+        es
     };
 
     if let Some(fd) = backup {
@@ -221,7 +241,7 @@ fn eat_word(
     ignore_escape: bool,
     delim: &String,
     timeout: Option<f32>,
-) -> Option<(String, bool)> { //bool: tail space is escaped
+) -> Result<Option<(String, bool)>, InputError> { //bool: tail space is escaped
     let mut esc = false;
     let mut pos = 0;
     let mut escape_pos = vec![];
@@ -247,8 +267,13 @@ fn eat_word(
             remaining.pop();
             remaining.pop();
 
-            let line = utils::read_line_stdin_unbuffered(delim, timeout)
-                       .unwrap_or("".to_string());
+            //let line = utils::read_line_stdin_unbuffered(delim, timeout)
+             //          .unwrap_or("".to_string());
+            let line = match utils::read_line_stdin_unbuffered(delim, timeout) {
+                Err(InputError::Timeout) => return Err(InputError::Timeout),
+                Ok(s) => s,
+                Err(_) => "".to_string(),
+            };
             if !line.is_empty() {
                 *remaining += &line;
                 return eat_word(remaining, ifs, ignore_escape, delim, timeout);
@@ -265,7 +290,7 @@ fn eat_word(
         ans.remove(p);
     }
 
-    Some((ans, tail_escaped))
+    Ok(Some((ans, tail_escaped)))
 }
 
 fn tail_is_escaped(remaining: &String) -> bool {
