@@ -79,6 +79,12 @@ pub fn read_(
         consume_ifs(&mut remaining, &ifs, limit);
     }
 
+    for a in args {
+        if let Err(e) = Variable::parse_and_set(&a, "", core) {
+            return super::error_(1, "read", &String::from(&e), core);
+        }
+    }
+
     0
 }
 
@@ -109,7 +115,8 @@ pub fn read_a(
 
     let mut pos = 0;
     while !remaining.is_empty() {
-        let (mut word, tail_escaped) = match eat_word(&mut remaining, &ifs, ignore_escape, delim) {
+        let (mut word, tail_escaped) =
+            match eat_word(&mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
         };
