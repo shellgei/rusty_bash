@@ -68,7 +68,7 @@ pub fn read_(
         }
 
         if ! tail_escaped {
-            consume_tail_ifs(&mut word, &tail_space);
+            consume_tail_ifs(&mut word, &tail_space, ignore_escape);
         }
 
         if let Err(e) = Variable::parse_and_set(&args[0], &word, core) {
@@ -115,7 +115,7 @@ pub fn read_a(
         };
         check_word_limit(&mut word, limit);
         if ! tail_escaped {
-            consume_tail_ifs(&mut word, &tail_space);
+            consume_tail_ifs(&mut word, &tail_space, ignore_escape);
         }
 
         if let Err(e) = core.db.set_array_elem(name, &word, pos, None, false) {
@@ -238,15 +238,37 @@ pub fn eat_word(
     Some((ans, tail_escaped))
 }
 
-pub fn consume_tail_ifs(remaining: &mut String, ifs: &str) {
-    loop {
-        if let Some(c) = remaining.chars().last() {
-            if ifs.contains(c) {
-                remaining.pop();
-                continue;
-            }
+fn tail_is_escaped(remaining: &String) -> bool {
+    let mut esc = false;
+    let mut ans = false;
+
+    for c in remaining.chars() {
+        if esc || c == '\\' {
+            ans = esc;
+            esc = !esc;
+        }else {
+            ans = false;
         }
-        break;
+    }
+
+    ans
+}
+
+pub fn consume_tail_ifs(remaining: &mut String, ifs: &str, ignore_escape: bool) {
+    let mut esc = false;
+    if ! ignore_escape {
+        esc = tail_is_escaped(remaining);
+    }
+
+    if let Some(c) = remaining.chars().last() {
+        if ifs.contains(c) {
+            remaining.pop();
+            if esc {
+                remaining.pop();
+            }
+
+            consume_tail_ifs(remaining, ifs, ignore_escape);
+        }
     }
 }
 
