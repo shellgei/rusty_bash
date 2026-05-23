@@ -25,8 +25,10 @@ fn read_(
     ignore_escape: bool,
     limit: &mut usize,
     delim: &String,
+    timeout: Option<f32>,
 ) -> i32 {
-    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+    let mut remaining = utils::read_line_stdin_unbuffered(delim, timeout)
+                        .unwrap_or("".to_string());
     if remaining.is_empty() {
         return 1;
     }
@@ -59,7 +61,7 @@ fn read_(
 
     while !args.is_empty() && !remaining.is_empty() && *limit != 0 {
         let (mut word, tail_escaped) =
-        match eat_word(&mut remaining, &ifs, ignore_escape, delim) {
+        match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout) {
             Some(w) => w,
             None => break,
         };
@@ -103,8 +105,10 @@ fn read_a(
     ignore_escape: bool,
     limit: &mut usize,
     delim: &String,
+    timeout: Option<f32>,
 ) -> i32 {
-    let mut remaining = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+    let mut remaining = utils::read_line_stdin_unbuffered(delim, timeout)
+                        .unwrap_or("".to_string());
     if remaining.is_empty() {
         return 1;
     }
@@ -125,7 +129,7 @@ fn read_a(
     let mut pos = 0;
     while !remaining.is_empty() {
         let (mut word, tail_escaped) =
-            match eat_word(&mut remaining, &ifs, ignore_escape, delim) {
+            match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout) {
             Some(w) => w,
             None => break,
         };
@@ -153,7 +157,15 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut args = arg::dissolve_options(args);
     let r_opt = arg::consume_arg("-r", &mut args);
-
+    let timeout = match arg::consume_with_next_arg("-t", &mut args) {
+        None => None,
+        Some(s) => match s.parse::<f32>() {
+            Ok(t) => Some(t), 
+            Err(_) => {
+                return error_(1, "read", "invalid timeout", core);
+            },
+        }
+    };
 
     let mut limit = usize::MAX;
     let limit_str = arg::consume_with_next_arg("-n", &mut args);
@@ -190,9 +202,9 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let ans = if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
-        read_a(core, &a, r_opt, &mut limit, &delim)
+        read_a(core, &a, r_opt, &mut limit, &delim, timeout)
     }else{
-        read_(core, &mut args, r_opt, &mut limit, &delim)
+        read_(core, &mut args, r_opt, &mut limit, &delim, timeout)
     };
 
     if let Some(fd) = backup {
@@ -208,6 +220,7 @@ fn eat_word(
     ifs: &str,
     ignore_escape: bool,
     delim: &String,
+    timeout: Option<f32>,
 ) -> Option<(String, bool)> { //bool: tail space is escaped
     let mut esc = false;
     let mut pos = 0;
@@ -234,10 +247,11 @@ fn eat_word(
             remaining.pop();
             remaining.pop();
 
-            let line = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
+            let line = utils::read_line_stdin_unbuffered(delim, timeout)
+                       .unwrap_or("".to_string());
             if !line.is_empty() {
                 *remaining += &line;
-                return eat_word(remaining, ifs, ignore_escape, delim);
+                return eat_word(remaining, ifs, ignore_escape, delim, timeout);
             }
         }
     }

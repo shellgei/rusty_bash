@@ -146,7 +146,8 @@ pub fn is_var(s: &str) -> bool {
     !s.chars().any(|c| !name_c(c))
 }
 
-pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
+pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>)
+-> Result<String, InputError> {
     let mut line = vec![];
     let mut ch: [u8; 1] = Default::default();
     let mut stdin = StreamReader::stdin().unwrap();
