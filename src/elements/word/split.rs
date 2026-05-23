@@ -44,15 +44,17 @@ fn gen_word(sws: Vec<Box<dyn Subword>>, remain: bool) -> Word {
 }
 
 pub fn find_pos(word: &Word, ifs: &str) -> SplitResult {
-    let mut prev_char = None;
+    //let mut prev_char = None;
+    let mut strip_left = true;
     for (i, sw) in word.subwords.iter().enumerate() {
-        let split = sw.split(ifs, prev_char);
+        let split = sw.split(ifs, strip_left);
         if split.len() >= 2 {
             return (i, split);
         }
 
         if !sw.get_text().is_empty() {
-            prev_char = sw.get_text().chars().last();
+            let prev_char = sw.get_text().chars().last();
+            strip_left = prev_char.is_none() || " \t\n".contains(prev_char.unwrap());
         }
     }
     (0, vec![])

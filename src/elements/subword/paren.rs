@@ -31,7 +31,7 @@ impl Subword for EvalLetParen {
         Ok(())
     }
 
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, _: &str, _: bool) -> Vec<(Box<dyn Subword>, bool)> {
         vec![]
     }
 }

@@ -89,7 +89,7 @@ impl Subword for BracedParam {
         }
     }
 
-    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, ifs: &str, strip_left: bool) -> Vec<(Box<dyn Subword>, bool)> {
         if self.text.is_empty() {
             return vec![];
         }
@@ -106,7 +106,7 @@ impl Subword for BracedParam {
             || ifs.starts_with(" ")
             || self.array.is_none()
         {
-            return splitter::split(&self.text, ifs, prev_char)
+            return splitter::split(&self.text, ifs, strip_left)
                 .iter()
                 .map(|s| (From::from(&s.0), s.1))
                 .collect();

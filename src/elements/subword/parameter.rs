@@ -38,14 +38,14 @@ impl Subword for Parameter {
         self.text == "$@"
     }
 
-    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, ifs: &str, strip_left: bool) -> Vec<(Box<dyn Subword>, bool)> {
         if self.text.is_empty() {
             return vec![];
         }
 
         if ifs.contains(" ") || self.array.is_none() {
             //TODO: add \t and \n ?
-            return splitter::split(self.get_text(), ifs, prev_char)
+            return splitter::split(self.get_text(), ifs, strip_left)
                 .iter()
                 .map(|s| (From::from(&s.0), s.1))
                 .collect();

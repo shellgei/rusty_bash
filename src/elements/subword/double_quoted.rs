@@ -78,7 +78,7 @@ impl Subword for DoubleQuoted {
         Some(text)
     }
 
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, _: &str, _: bool) -> Vec<(Box<dyn Subword>, bool)> {
         let mut ans = vec![];
         let mut last = 0;
         let mut tmp = Self::default();

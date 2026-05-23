@@ -19,7 +19,7 @@ impl Subword for SimpleSubword {
     fn boxed_clone(&self) -> Box<dyn Subword> {
         Box::new(self.clone())
     }
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, _: &str, _: bool) -> Vec<(Box<dyn Subword>, bool)> {
         vec![]
     }
 }

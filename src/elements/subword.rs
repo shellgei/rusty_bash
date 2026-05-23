@@ -85,9 +85,9 @@ pub trait Subword {
         Ok(vec![])
     }
 
-    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, ifs: &str, strip_left: bool) -> Vec<(Box<dyn Subword>, bool)> {
         //bool: true if it should remain
-        splitter::split(self.get_text(), ifs, prev_char)
+        splitter::split(self.get_text(), ifs, strip_left)
             .iter()
             .map(|s| (From::from(&s.0), s.1))
             .collect()

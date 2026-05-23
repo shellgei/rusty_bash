@@ -2,7 +2,7 @@
 //SPDX-FileCopyrightText: 2026 @ru@mi.shiellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
+pub fn split(sw: &str, ifs: &str, strip_left: bool) -> Vec<(String, bool)> {
     //bool: true if it should remain
     if ifs.is_empty() {
         return vec![(sw.to_string(), false)];
@@ -11,7 +11,7 @@ pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)
     if ifs.chars().all(|c| " \t\n".contains(c)) {
         split_str_normal(sw, ifs)
     } else {
-        let strip_left = prev_char.is_none() || " \t\n".contains(prev_char.unwrap());
+        //let strip_left = prev_char.is_none() || " \t\n".contains(prev_char.unwrap());
         split_str_custom_ifs(&mut sw.to_string(), ifs, strip_left)
     }
 }

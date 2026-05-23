@@ -22,7 +22,7 @@ impl Subword for VarName {
     fn is_name(&self) -> bool {
         true
     }
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, _: &str, _: bool) -> Vec<(Box<dyn Subword>, bool)> {
         vec![]
     }
 }
