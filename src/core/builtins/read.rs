@@ -45,12 +45,17 @@ pub fn read_(
     args.remove(0);
     if args.is_empty() {
         args.push("REPLY".to_string());
+        tail_space = "\n".to_string();
+        if *limit < remaining.len() {
+            consume_ifs(&mut remaining, " \t", limit);
+        }
+    }else {
+        consume_ifs(&mut remaining, " \t", limit);
     }
 
-    consume_ifs(&mut remaining, " \t", limit);
-
     while !args.is_empty() && !remaining.is_empty() && *limit != 0 {
-        let (mut word, tail_escaped) = match eat_word(&mut remaining, &ifs, ignore_escape, delim) {
+        let (mut word, tail_escaped) =
+        match eat_word(&mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
         };
@@ -236,7 +241,7 @@ pub fn eat_word(
     let tail = remaining.split_off(pos);
     let mut ans = remaining.clone();
     *remaining = tail;
-    let tail_escaped = ans.ends_with("\\ ");
+    let tail_escaped = tail_is_escaped(&ans) && ans.ends_with(" ");
 
     for p in escape_pos {
         ans.remove(p);
