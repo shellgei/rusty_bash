@@ -95,13 +95,13 @@ fn split_str_custom_ifs(s: &str, ifs: &str, shave_prev: bool) -> Vec<(String, bo
 
     if ans.is_empty() {
         ans.push(("".to_string(), false));
-        ans.push(("".to_string(), false));
     }
 
     if shaved && ans.len() < 2 {
         //if the string is modified, the splitting is applied.
         ans.push(("".to_string(), false));
     }
+
 
     ans
 }
