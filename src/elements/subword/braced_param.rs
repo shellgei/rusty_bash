@@ -98,16 +98,16 @@ impl Subword for BracedParam {
                        && self.param.index.as_ref().unwrap().text == "[*]"
                        || self.param.name == "*";
 
-        if ifs.is_empty() && asterisk {
-            return self.make_split();
-        }
+        let non_array = (!self.treat_as_array && !asterisk)
+                        || ifs.starts_with(" ")
+                        || self.array.is_none();
 
-        if (!self.treat_as_array && !asterisk)
-            || ifs.starts_with(" ")
-            || self.array.is_none() {
+        if ifs.is_empty() && asterisk {
+            self.array_to_split()
+        }else if non_array {
             splitter::split(self.get_text(), ifs, strip_left)
         }else{
-            self.make_split()
+            self.array_to_split()
         }
     }
 
@@ -133,7 +133,7 @@ impl BracedParam {
         Ok(())
     }
 
-    fn make_split(&self) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+    fn array_to_split(&self) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.array.is_none() {
             return None;
         }
@@ -199,7 +199,6 @@ impl BracedParam {
             self.text = op.exec(&self.param, &self.text, core)?;
         }
 
-        //self.text = self.extension(self.text.clone(), core)?;
         Ok(())
     }
 }
