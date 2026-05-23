@@ -18,9 +18,9 @@ use crate::error::exec::ExecError;
 use crate::error::input::InputError;
 use faccess::PathExt;
 use io_streams::StreamReader;
+use std::{thread, time};
 use std::io::Read;
 use std::path::Path;
-use std::{thread, time};
 
 pub fn reserved(w: &str) -> bool {
     matches!(
@@ -207,7 +207,9 @@ pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32)
             return Err(InputError::Timeout);
         }
 
-        thread::sleep(time::Duration::from_millis(1));
+        if timeout > 0.001 {
+            thread::sleep(time::Duration::from_millis(1));
+        }
 
         match stdin.read(&mut ch) {
             Ok(0) => {},
