@@ -50,7 +50,7 @@ pub fn read_(
     consume_ifs(&mut remaining, " \t", limit);
 
     while !args.is_empty() && !remaining.is_empty() && *limit != 0 {
-        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape, delim) {
+        let (mut word, tail_escaped) = match eat_word(&mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
         };
@@ -67,7 +67,9 @@ pub fn read_(
             }
         }
 
-        consume_tail_ifs(&mut word, &tail_space);
+        if ! tail_escaped {
+            consume_tail_ifs(&mut word, &tail_space);
+        }
 
         if let Err(e) = Variable::parse_and_set(&args[0], &word, core) {
             return super::error_(1, "read", &String::from(&e), core);
@@ -107,12 +109,14 @@ pub fn read_a(
 
     let mut pos = 0;
     while !remaining.is_empty() {
-        let mut word = match eat_word(core, &mut remaining, &ifs, ignore_escape, delim) {
+        let (mut word, tail_escaped) = match eat_word(&mut remaining, &ifs, ignore_escape, delim) {
             Some(w) => w,
             None => break,
         };
         check_word_limit(&mut word, limit);
-        consume_tail_ifs(&mut word, &tail_space);
+        if ! tail_escaped {
+            consume_tail_ifs(&mut word, &tail_space);
+        }
 
         if let Err(e) = core.db.set_array_elem(name, &word, pos, None, false) {
             let msg = format!("{:?}", &e);
@@ -164,7 +168,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
                 backup = Some(core.fds.backup(0));
                 core.fds.read_used_fd = n;
                 fdn = n;
-                let _ = core.fds.replace(n, 0); //TODO: use unistd::read
+                let _ = core.fds.replace(n, 0);
             }
         }
     }
@@ -178,19 +182,17 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     if let Some(fd) = backup {
         let _ = core.fds.replace(0, fdn);
         let _ = core.fds.replace(fd, 0);
-        //core.fds.close(fd-1); //erasing backup at io/redirects.rs
     }
 
     ans
 }
 
 pub fn eat_word(
-    _core: &mut ShellCore,
     remaining: &mut String,
     ifs: &str,
     ignore_escape: bool,
     delim: &String,
-) -> Option<String> {
+) -> Option<(String, bool)> { //bool: tail space is escaped
     let mut esc = false;
     let mut pos = 0;
     let mut escape_pos = vec![];
@@ -219,7 +221,7 @@ pub fn eat_word(
             let line = utils::read_line_stdin_unbuffered(delim).unwrap_or("".to_string());
             if !line.is_empty() {
                 *remaining += &line;
-                return eat_word(_core, remaining, ifs, ignore_escape, delim);
+                return eat_word(remaining, ifs, ignore_escape, delim);
             }
         }
     }
@@ -227,12 +229,13 @@ pub fn eat_word(
     let tail = remaining.split_off(pos);
     let mut ans = remaining.clone();
     *remaining = tail;
+    let tail_escaped = ans.ends_with("\\ ");
 
     for p in escape_pos {
         ans.remove(p);
     }
 
-    Some(ans)
+    Some((ans, tail_escaped))
 }
 
 pub fn consume_tail_ifs(remaining: &mut String, ifs: &str) {
