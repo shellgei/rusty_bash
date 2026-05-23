@@ -11,7 +11,7 @@ use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd;
 use nix::unistd::Pid;
 use std::ffi::CString;
-use std::process;
+use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
 
 pub fn wait_pipeline(
@@ -85,7 +85,10 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
         Ok(WaitStatus::Exited(_pid, status)) => status,
         Ok(WaitStatus::Signaled(pid, signal, coredump)) => error::signaled(pid, signal, coredump),
         Ok(WaitStatus::Stopped(pid, signal)) => {
-            eprintln!("Stopped Pid: {pid:?}, Signal: {signal:?}");
+            match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+                Ok("1") => {},
+                _ => eprintln!("Stopped Pid: {pid:?}, Signal: {signal:?}"),
+            }
             148
         }
         Ok(unsupported) => {
