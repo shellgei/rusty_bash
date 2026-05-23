@@ -3,10 +3,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub fn split(sw: &str, ifs: &str, strip_left: bool)
--> Option<Vec<(String, bool)>> {
-    //bool: true if it should remain
+-> Option<Vec<(String, bool)>> { //bool: true if it should remain
     if ifs.is_empty() {
-        //return vec![(sw.to_string(), false)];
         return None;
     }
 
