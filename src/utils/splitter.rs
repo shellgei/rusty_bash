@@ -132,8 +132,11 @@ fn split_str_normal(s: &str, ifs: &str)
         }
     }
 
-    ans.push((s[from..].to_string(), false));
+    if ans.len() < 1 {
+        return None;
+    }
 
+    ans.push((s[from..].to_string(), false));
     Some(ans)
 }
 
