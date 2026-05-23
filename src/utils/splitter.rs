@@ -84,17 +84,19 @@ fn shave_blank(remaining: &mut String, ans: &mut Vec<(String, bool)>,
 fn split_str_custom_ifs(remaining: &mut String, ifs: &str, strip_left: bool)
 -> Option<Vec<(String, bool)>> {
     let mut ans = vec![];
-
     let blank: Vec<char> = ifs.chars().filter(|s| " \t\n".contains(*s)).collect();
     let delim: Vec<char> = ifs.chars().filter(|s| !" \t\n".contains(*s)).collect();
 
     if strip_left {
         let len = scanner_blank(&remaining, &blank);
+        *remaining = remaining.split_off(len);
         if len > 0 {
             ans.push(("".to_string(), false));
-            ans.push(("".to_string(), false));
+            if remaining.is_empty() {
+                ans.push(("".to_string(), false));
+                return Some(ans);
+            }
         }
-        *remaining = remaining.split_off(len);
     }
 
     while !remaining.is_empty() {
