@@ -11,8 +11,8 @@ pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)
     if ifs.chars().all(|c| " \t\n".contains(c)) {
         split_str_normal(sw, ifs)
     } else {
-        let shave_prev = prev_char.is_none() || " \t\n".contains(prev_char.unwrap());
-        split_str_custom_ifs(sw, ifs, shave_prev)
+        let strip_left = prev_char.is_none() || " \t\n".contains(prev_char.unwrap());
+        split_str_custom_ifs(&mut sw.to_string(), ifs, strip_left)
     }
 }
 
@@ -62,35 +62,40 @@ fn scanner_ifs_blank(s: &str, blank: &[char], delim: &[char]) -> usize {
     ans
 }
 
-fn split_str_custom_ifs(s: &str, ifs: &str, shave_prev: bool) -> Vec<(String, bool)> {
+fn eat_word(remaining: &mut String, ans: &mut Vec<(String, bool)>, ifs: &str) {
+    let len = scanner_word(&remaining, ifs);
+    let tail = remaining.split_off(len);
+    ans.push((remaining.to_string(), true));
+    *remaining = tail;
+}
+
+fn shave_blank(remaining: &mut String, ans: &mut Vec<(String, bool)>,
+               blank: &Vec<char>, delim: &Vec<char>) {
+    let len = scanner_ifs_blank(&remaining, &blank, &delim);
+    if len > 0 {
+        *remaining = remaining.split_off(len);
+        if remaining.is_empty() {
+            ans.push(("".to_string(), false));
+        }
+    }
+}
+
+fn split_str_custom_ifs(remaining: &mut String, ifs: &str, strip_left: bool) -> Vec<(String, bool)> {
     let mut ans = vec![];
-    let mut remaining = s.to_string();
     let mut shaved = false;
 
     let blank: Vec<char> = ifs.chars().filter(|s| " \t\n".contains(*s)).collect();
     let delim: Vec<char> = ifs.chars().filter(|s| !" \t\n".contains(*s)).collect();
 
-    if shave_prev {
+    if strip_left {
         let len = scanner_blank(&remaining, &blank);
         shaved = len > 0;
-        let tail = remaining.split_off(len);
-        remaining = tail;
+        *remaining = remaining.split_off(len);
     }
 
     while !remaining.is_empty() {
-        let len = scanner_word(&remaining, ifs);
-        let tail = remaining.split_off(len);
-
-        ans.push((remaining.to_string(), true));
-        remaining = tail;
-
-        let len = scanner_ifs_blank(&remaining, &blank, &delim);
-        if len > 0 {
-            remaining = remaining.split_off(len);
-            if remaining.is_empty() {
-                ans.push(("".to_string(), false));
-            }
-        }
+        eat_word(remaining, &mut ans, ifs);
+        shave_blank(remaining, &mut ans, &blank, &delim);
     }
 
     if ans.is_empty() {
