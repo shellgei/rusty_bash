@@ -10,7 +10,7 @@ use crate::elements::substitution::variable::Variable;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use crate::{ShellCore, utils};
-use crate::utils::splitter;
+use super::splitter;
 
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
@@ -104,20 +104,11 @@ impl Subword for BracedParam {
 
         if (!self.treat_as_array && !asterisk)
             || ifs.starts_with(" ")
-            || self.array.is_none()
-        {
-            let splits = splitter::split(&self.text, ifs, strip_left);
-            if splits.is_none() {
-                return None;
-            }
-
-            return Some(splits.unwrap()
-                .iter()
-                .map(|s| (From::from(&s.0), s.1))
-                .collect());
+            || self.array.is_none() {
+            splitter::split(self.get_text(), ifs, strip_left)
+        }else{
+            self.make_split()
         }
-
-        self.make_split()
     }
 
     fn set_heredoc_flag(&mut self) {

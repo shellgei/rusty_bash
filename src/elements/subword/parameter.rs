@@ -4,8 +4,8 @@
 use super::Subword;
 //use crate::elements::substitution::variable::Variable;
 use crate::error::exec::ExecError;
-use crate::utils::splitter;
 use crate::{Feeder, ShellCore};
+use super::splitter;
 
 #[derive(Debug, Clone, Default)]
 pub struct Parameter {
@@ -45,15 +45,7 @@ impl Subword for Parameter {
 
         if ifs.contains(" ") || self.array.is_none() {
             //TODO: add \t and \n ?
-            let splits = splitter::split(self.get_text(), ifs, strip_left);
-            if splits.is_none() {
-                return None;
-            }
-
-            return Some(splits.unwrap()
-                .iter()
-                .map(|s| (From::from(&s.0), s.1))
-                .collect());
+            return splitter::split(self.get_text(), ifs, strip_left);
         }
 
         let mut ans = vec![];

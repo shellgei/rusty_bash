@@ -2,17 +2,30 @@
 //SPDX-FileCopyrightText: 2026 @ru@mi.shiellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
+use super::Subword;
+
 pub fn split(sw: &str, ifs: &str, strip_left: bool)
--> Option<Vec<(String, bool)>> { //bool: true if it should remain
+-> Option<Vec<(Box<dyn Subword>, bool)>> { //bool: true if it should remain
     if ifs.is_empty() {
         return None;
     }
 
-    if ifs.chars().all(|c| " \t\n".contains(c)) {
+    let ans = if ifs.chars().all(|c| " \t\n".contains(c)) {
         split_str_normal(sw, ifs)
     } else {
         split_str_custom_ifs(&mut sw.to_string(), ifs, strip_left)
+    };
+
+    if ans.is_none() {
+        return None;
     }
+
+    let sws = ans.unwrap()
+                  .iter()
+                  .map(|s| (From::from(&s.0), s.1))
+                  .collect();
+
+    Some(sws)
 }
 
 fn scanner_blank(s: &str, blank: &[char]) -> usize {

@@ -10,7 +10,6 @@ pub mod file;
 pub mod file_check;
 pub mod glob;
 pub mod restricted_shell;
-pub mod splitter;
 
 use libc;
 use crate::{Feeder, ShellCore, Script};
