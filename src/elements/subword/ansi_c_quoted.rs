@@ -41,8 +41,8 @@ impl Subword for AnsiCQuoted {
         ans
     }
 
-    fn split(&self, _: &str, _: bool) -> Vec<(Box<dyn Subword>, bool)> {
-        vec![]
+    fn split(&self, _: &str, _: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+        None
     }
 
     fn set_heredoc_flag(&mut self) {

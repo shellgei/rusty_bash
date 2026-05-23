@@ -2,16 +2,17 @@
 //SPDX-FileCopyrightText: 2026 @ru@mi.shiellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub fn split(sw: &str, ifs: &str, strip_left: bool) -> Vec<(String, bool)> {
+pub fn split(sw: &str, ifs: &str, strip_left: bool)
+-> Option<Vec<(String, bool)>> {
     //bool: true if it should remain
     if ifs.is_empty() {
-        return vec![(sw.to_string(), false)];
+        //return vec![(sw.to_string(), false)];
+        return None;
     }
 
     if ifs.chars().all(|c| " \t\n".contains(c)) {
         split_str_normal(sw, ifs)
     } else {
-        //let strip_left = prev_char.is_none() || " \t\n".contains(prev_char.unwrap());
         split_str_custom_ifs(&mut sw.to_string(), ifs, strip_left)
     }
 }
@@ -80,7 +81,8 @@ fn shave_blank(remaining: &mut String, ans: &mut Vec<(String, bool)>,
     }
 }
 
-fn split_str_custom_ifs(remaining: &mut String, ifs: &str, strip_left: bool) -> Vec<(String, bool)> {
+fn split_str_custom_ifs(remaining: &mut String, ifs: &str, strip_left: bool)
+-> Option<Vec<(String, bool)>> {
     let mut ans = vec![];
     let mut shaved = false;
 
@@ -107,11 +109,11 @@ fn split_str_custom_ifs(remaining: &mut String, ifs: &str, strip_left: bool) -> 
         ans.push(("".to_string(), false));
     }
 
-
-    ans
+    Some(ans)
 }
 
-fn split_str_normal(s: &str, ifs: &str) -> Vec<(String, bool)> {
+fn split_str_normal(s: &str, ifs: &str)
+-> Option<Vec<(String, bool)>> {
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
@@ -133,7 +135,7 @@ fn split_str_normal(s: &str, ifs: &str) -> Vec<(String, bool)> {
 
     ans.push((s[from..].to_string(), false));
 
-    ans
+    Some(ans)
 }
 
 fn scanner_word(s: &str, ifs: &str) -> usize {

@@ -85,12 +85,18 @@ pub trait Subword {
         Ok(vec![])
     }
 
-    fn split(&self, ifs: &str, strip_left: bool) -> Vec<(Box<dyn Subword>, bool)> {
-        //bool: true if it should remain
-        splitter::split(self.get_text(), ifs, strip_left)
-            .iter()
+    fn split(&self, ifs: &str, strip_left: bool)
+    -> Option<Vec<(Box<dyn Subword>, bool)>> { //bool: true if it should remain as an arg
+        let splits = splitter::split(self.get_text(), ifs, strip_left);
+        if splits.is_none() {
+            return None;
+        }
+
+        let ans = splits.unwrap().iter()
             .map(|s| (From::from(&s.0), s.1))
-            .collect()
+            .collect();
+
+        Some(ans)
     }
 
     fn make_glob_string(&mut self) -> String {

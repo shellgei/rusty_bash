@@ -38,24 +38,29 @@ impl Subword for Parameter {
         self.text == "$@"
     }
 
-    fn split(&self, ifs: &str, strip_left: bool) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.text.is_empty() {
-            return vec![];
+            return None;
         }
 
         if ifs.contains(" ") || self.array.is_none() {
             //TODO: add \t and \n ?
-            return splitter::split(self.get_text(), ifs, strip_left)
+            let splits = splitter::split(self.get_text(), ifs, strip_left);
+            if splits.is_none() {
+                return None;
+            }
+
+            return Some(splits.unwrap()
                 .iter()
                 .map(|s| (From::from(&s.0), s.1))
-                .collect();
+                .collect());
         }
 
         let mut ans = vec![];
         for p in self.array.clone().unwrap() {
             ans.push((From::from(&p), true));
         }
-        ans
+        Some(ans)
     }
 
     fn is_simple_param(&self) -> bool {

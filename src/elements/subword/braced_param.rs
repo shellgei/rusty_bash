@@ -89,9 +89,9 @@ impl Subword for BracedParam {
         }
     }
 
-    fn split(&self, ifs: &str, strip_left: bool) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.text.is_empty() {
-            return vec![];
+            return None;
         }
 
         let asterisk = self.param.index.is_some() 
@@ -106,10 +106,15 @@ impl Subword for BracedParam {
             || ifs.starts_with(" ")
             || self.array.is_none()
         {
-            return splitter::split(&self.text, ifs, strip_left)
+            let splits = splitter::split(&self.text, ifs, strip_left);
+            if splits.is_none() {
+                return None;
+            }
+
+            return Some(splits.unwrap()
                 .iter()
                 .map(|s| (From::from(&s.0), s.1))
-                .collect();
+                .collect());
         }
 
         self.make_split()
@@ -137,16 +142,16 @@ impl BracedParam {
         Ok(())
     }
 
-    fn make_split(&self) -> Vec<(Box<dyn Subword>, bool)> {
+    fn make_split(&self) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.array.is_none() {
-            return vec![];
+            return None;
         }
 
         let mut ans = vec![];
         for p in self.array.clone().unwrap() {
             ans.push((From::from(&p), true));
         }
-        ans
+        Some(ans)
     }
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
