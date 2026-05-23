@@ -19,7 +19,7 @@ fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
     false
 }
 
-pub fn read_(
+fn read_(
     core: &mut ShellCore,
     args: &mut Vec<String>,
     ignore_escape: bool,
@@ -47,10 +47,14 @@ pub fn read_(
         args.push("REPLY".to_string());
         tail_space = "\n".to_string();
         if *limit < remaining.len() {
-            consume_ifs(&mut remaining, " \t", limit);
+            let mut ifs_tmp = ifs.clone();
+            ifs_tmp.retain(|e| " \t".contains(e));
+            consume_ifs(&mut remaining, &ifs_tmp, limit);
         }
     }else {
-        consume_ifs(&mut remaining, " \t", limit);
+        let mut ifs_tmp = ifs.clone();
+        ifs_tmp.retain(|e| " \t".contains(e));
+        consume_ifs(&mut remaining, &ifs_tmp, limit);
     }
 
     while !args.is_empty() && !remaining.is_empty() && *limit != 0 {
@@ -93,7 +97,7 @@ pub fn read_(
     0
 }
 
-pub fn read_a(
+fn read_a(
     core: &mut ShellCore,
     name: &str,
     ignore_escape: bool,
@@ -199,7 +203,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     ans
 }
 
-pub fn eat_word(
+fn eat_word(
     remaining: &mut String,
     ifs: &str,
     ignore_escape: bool,
@@ -266,7 +270,7 @@ fn tail_is_escaped(remaining: &String) -> bool {
     ans
 }
 
-pub fn consume_tail_ifs(remaining: &mut String, ifs: &str, ignore_escape: bool) {
+fn consume_tail_ifs(remaining: &mut String, ifs: &str, ignore_escape: bool) {
     let mut esc = false;
     if ! ignore_escape {
         esc = tail_is_escaped(remaining);
@@ -284,7 +288,7 @@ pub fn consume_tail_ifs(remaining: &mut String, ifs: &str, ignore_escape: bool) 
     }
 }
 
-pub fn consume_ifs(remaining: &mut String, ifs: &str, limit: &mut usize) {
+fn consume_ifs(remaining: &mut String, ifs: &str, limit: &mut usize) {
     let special_ifs: Vec<char> = ifs.chars().filter(|s| !" \t\n".contains(*s)).collect();
     let mut pos = 0;
     let mut special_ifs_exist = false;
