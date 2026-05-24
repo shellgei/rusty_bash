@@ -4,6 +4,7 @@
 use super::error_;
 use crate::elements::substitution::variable::Variable;
 use crate::{arg, error, utils, ShellCore, InputError};
+use crate::error::exec::ExecError;
 
 fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
     let mut pos = 0;
@@ -170,9 +171,12 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     let timeout = match arg::consume_with_next_arg("-t", &mut args) {
         None => None,
         Some(s) => match s.parse::<f32>() {
-            Ok(t) => Some(t), 
+            Ok(t) => match t >= 0.0 {
+                true  => Some(t), 
+                false => return super::error(1, "read", &ExecError::InvalidTimeout(s), core),
+            },
             Err(_) => {
-                return error_(1, "read", "invalid timeout", core);
+                return super::error(1, "read", &ExecError::InvalidTimeout(s), core);
             },
         }
     };
