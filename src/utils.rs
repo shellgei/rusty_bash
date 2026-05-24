@@ -147,10 +147,12 @@ pub fn is_var(s: &str) -> bool {
     !s.chars().any(|c| !name_c(c))
 }
 
-pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>)
+pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: bool)
 -> Result<String, InputError> {
     if timeout.is_some() {
-        return read_line_stdin_unbuffered_nonblock(delim, timeout.unwrap());
+        if ! subshell {
+            return read_line_stdin_unbuffered_nonblock(delim, timeout.unwrap());
+        }
     }
 
     let mut line = vec![];

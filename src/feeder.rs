@@ -119,7 +119,7 @@ impl Feeder {
             }
         }
 
-        utils::read_line_stdin_unbuffered("", None)
+        utils::read_line_stdin_unbuffered("", None, false)
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {

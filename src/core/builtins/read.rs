@@ -28,7 +28,7 @@ fn read_(
     delim: &String,
     timeout: Option<f32>,
 ) -> i32 {
-    let mut remaining = match utils::read_line_stdin_unbuffered(delim, timeout) {
+    let mut remaining = match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell) {
         Err(InputError::Timeout) => return 142,
         Ok(s) => s,
         Err(_) => "".to_string(),
@@ -66,7 +66,7 @@ fn read_(
 
     while !args.is_empty() && !remaining.is_empty() && *limit != 0 {
         let (mut word, tail_escaped) =
-        match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout) {
+        match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout, core) {
             Err(_) => return 142,
             Ok(Some(w)) => w,
             Ok(None) => break,
@@ -113,7 +113,7 @@ fn read_a(
     delim: &String,
     timeout: Option<f32>,
 ) -> i32 {
-    let mut remaining = match utils::read_line_stdin_unbuffered(delim, timeout) {
+    let mut remaining = match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell) {
         Err(InputError::Timeout) => return 142,
         Ok(s) => s,
         Err(_) => "".to_string(),
@@ -139,7 +139,7 @@ fn read_a(
     let mut pos = 0;
     while !remaining.is_empty() {
         let (mut word, tail_escaped) =
-            match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout) {
+            match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout, core) {
             Err(_) => return 142,
             Ok(Some(w)) => w,
             Ok(None) => break,
@@ -245,6 +245,7 @@ fn eat_word(
     ignore_escape: bool,
     delim: &String,
     timeout: Option<f32>,
+    core: &mut ShellCore,
 ) -> Result<Option<(String, bool)>, InputError> { //bool: tail space is escaped
     let mut esc = false;
     let mut pos = 0;
@@ -273,14 +274,14 @@ fn eat_word(
 
             //let line = utils::read_line_stdin_unbuffered(delim, timeout)
              //          .unwrap_or("".to_string());
-            let line = match utils::read_line_stdin_unbuffered(delim, timeout) {
+            let line = match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell) {
                 Err(InputError::Timeout) => return Err(InputError::Timeout),
                 Ok(s) => s,
                 Err(_) => "".to_string(),
             };
             if !line.is_empty() {
                 *remaining += &line;
-                return eat_word(remaining, ifs, ignore_escape, delim, timeout);
+                return eat_word(remaining, ifs, ignore_escape, delim, timeout, core);
             }
         }
     }
