@@ -21,6 +21,8 @@ use io_streams::StreamReader;
 use std::{thread, time};
 use std::io::Read;
 use std::path::Path;
+use std::sync::mpsc;
+use std::time::Duration;
 
 pub fn reserved(w: &str) -> bool {
     matches!(
@@ -150,7 +152,9 @@ pub fn is_var(s: &str) -> bool {
 pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: bool)
 -> Result<String, InputError> {
     if timeout.is_some() {
-        if ! subshell {
+        if subshell {
+            return read_line_stdin_unbuffered_thread(delim, timeout.unwrap());
+        }else{
             return read_line_stdin_unbuffered_nonblock(delim, timeout.unwrap());
         }
     }
@@ -228,6 +232,52 @@ pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32)
     match String::from_utf8(line) {
         Ok(s) => Ok(s),
         Err(_) => Err(InputError::NotUtf8),
+    }
+}
+
+pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32)
+-> Result<String, InputError> {
+    let (tx, rx) = mpsc::channel();
+    let delim = delim.to_string();
+
+    thread::spawn(move || {
+        let mut line = vec![];
+        let mut ch: [u8; 1] = Default::default();
+        let mut stdin = StreamReader::stdin().unwrap();
+    
+        let mut d = 10; //\n
+        if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+            d = c;
+        }
+    
+        loop {
+            match stdin.read(&mut ch) {
+                Ok(0) => {
+                    if line.is_empty() {
+                        return Err(InputError::Eof);
+                    }
+                    break;
+                }
+                Ok(_) => {
+                    line.push(ch[0]);
+                    if d == ch[0] {
+                        break;
+                    }
+                }
+                Err(_) => return Err(InputError::Eof),
+            }
+        }
+
+        match String::from_utf8(line) {
+            Ok(s) => Ok(tx.send(s).unwrap()),
+            Err(_) => return Err(InputError::Eof),
+        }
+    });
+
+    match rx.recv_timeout(Duration::from_secs_f32(timeout)) {
+        Ok(line) => Ok(line),
+        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => Err(InputError::Timeout),
+        Err(_) => Err(InputError::Eof),
     }
 }
 
