@@ -145,7 +145,7 @@ impl Feeder {
 
     pub fn starts_withs(&self, vs: &Vec<String>) -> bool {
         vs.iter().any(|s| self.remaining.starts_with(s))
-    } 
+    }
 
     pub fn len(&self) -> usize {
         self.remaining.len()
