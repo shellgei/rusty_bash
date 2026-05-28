@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2026 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::braced_param_ext::BracedExcludeension;
+use crate::elements::braced_param_ext::BracedParamExtension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword;
 use crate::elements::subword::{ExecError, WordMode};
@@ -14,7 +14,7 @@ use crate::elements::braced_param_ext;
 pub struct BracedParam {
     text: String,
     param: Variable,
-    extension: Option<Box<dyn BracedExcludeension>>,
+    extension: Option<Box<dyn BracedParamExtension>>,
     unknown: String,
 }
 

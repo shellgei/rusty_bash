@@ -4,7 +4,7 @@
 use crate::{Feeder, ShellCore};
 use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
-use super::BracedExcludeension;
+use super::BracedParamExtension;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
@@ -13,9 +13,9 @@ pub struct Substr {
     pub length: Option<Word>, //同上
 }
 
-impl BracedExcludeension for Substr {
+impl BracedParamExtension for Substr {
     fn get_text(&self) -> String { self.text.clone() }
-    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> { Box::new(self.clone()) }
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> { Box::new(self.clone()) }
 }
 
 impl Substr {
