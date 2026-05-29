@@ -30,7 +30,7 @@ impl WordMode {
 
         match self {
             Self::Arithmetic | Self::CompgenF => ! feeder.starts_with("}"),
-            Self::Exclude(v) => ! feeder.starts_withs(v),
+            Self::Exclude(v) => ! feeder.starts_with_one_of(v),
             _ => true,
         }
     }
@@ -38,8 +38,8 @@ impl WordMode {
     pub fn word_post_check(&self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
         match self {
             WordMode::Arithmetic | WordMode::CompgenF => 
-                ! feeder.starts_withs(&["]", "}"]) && feeder.scanner_math_symbol(core) == 0,
-            WordMode::Exclude(v) => ! feeder.starts_withs(v),
+                ! feeder.starts_with_one_of(&["]", "}"]) && feeder.scanner_math_symbol(core) == 0,
+            WordMode::Exclude(v) => ! feeder.starts_with_one_of(v),
             _ => true,
         }
     }
@@ -48,7 +48,7 @@ impl WordMode {
     -> Result<Option<Box<dyn Subword>>, ParseError> {
         match self {
             WordMode::Exclude(v) => {
-                if feeder.is_empty() || feeder.starts_withs(v) {
+                if feeder.is_empty() || feeder.starts_with_one_of(v) {
                     return Ok(None);
                 }
     
@@ -62,7 +62,7 @@ impl WordMode {
                 Ok(Some(Box::new(c)))
             }
             WordMode::ReadCommand => {
-                match feeder.is_empty() || feeder.starts_withs(&["\n", "\t", " "]) {
+                match feeder.is_empty() || feeder.starts_with_one_of(&["\n", "\t", " "]) {
                     true  => Ok(None),
                     false => Ok(Some(From::from(&feeder.consume(1)))),
                 }

@@ -46,7 +46,7 @@ impl ArithmeticExpr {
     }
 
     fn eat_ternary_symbol(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        if feeder.starts_withs(&["?", ":"]) {
+        if feeder.starts_with_one_of(&["?", ":"]) {
             let symbol = feeder.consume(1);
             ans.in_ternary = symbol == "?";
             ans.text += &symbol.clone();
