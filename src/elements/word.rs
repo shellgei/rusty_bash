@@ -123,7 +123,7 @@ impl Word {
         mode: Option<WordMode>,
     ) -> Result<Option<Word>, ParseError> {
         if let Some(WordMode::Exclude(ref v)) = mode {
-            if feeder.starts_withs(v) {
+            if feeder.starts_with_one_of(v) {
                 return Ok(None);
             }
         }else if feeder.starts_with("#") {
@@ -135,7 +135,7 @@ impl Word {
             subwords.push(sw);
 
             if let Some(WordMode::Exclude(ref v)) = mode {
-                if feeder.starts_withs(v) {
+                if feeder.starts_with_one_of(v) {
                     break;
                 }
             }
