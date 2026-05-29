@@ -11,7 +11,6 @@ use self::elem::ArithElem;
 use crate::elements::word::Word;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::utils::exit;
 use crate::{Feeder, ShellCore};
 
 #[derive(Debug, Clone, Default)]
@@ -88,11 +87,10 @@ impl ArithmeticExpr {
 
         match self.eval_elems(core, true)? {
             ArithElem::Integer(n) => Ok(n),
-            ArithElem::Float(f) => {
-                let msg = format!("sush: {}: Not integer. {}", &self.text, f);
+            e => {
+                let msg = format!("sush: {}: Not integer. {}", &self.text, e);
                 Err(ExecError::Other(msg))
             }
-            _ => exit::internal("invalid calculation result"),
         }
     }
 

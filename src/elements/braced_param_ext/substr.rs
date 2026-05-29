@@ -22,11 +22,15 @@ impl BracedExcludeension for Substr {
     }
     fn exec(
         &mut self,
-        _: &Variable,
+        v: &Variable,
         text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
-        self.get(text, core)
+        if core.db.exist(&v.name) {
+            self.get(text, core)
+        }else{
+            Ok(self.text.clone())
+        }
     }
 
     fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
@@ -120,13 +124,10 @@ impl Substr {
         text: &mut String,
         core: &mut ShellCore,
     ) -> Result<(), ExecError> {
-        //let offset = self.offset.as_mut().unwrap();
-
         if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
-            //offset.text = "0".to_string();
         }
 
         let mut n = self.offset.eval_as_int(core)?;
@@ -140,8 +141,6 @@ impl Substr {
             }
         }
 
-        //let start = std::cmp::max(0, n) as usize;
-        //*array = core.db.get_vec_from(name, start, true)?;
         *array = core.db.get_vec_from(name, n as usize, true)?;
 
         if self.length.is_none() {
@@ -153,12 +152,6 @@ impl Substr {
             None => return Err(ExecError::BadSubstitution(self.text.clone())),
             Some(ofs) => ofs,
         };
-
-        /*
-        if length.text.is_empty() {
-            length.text = "0".to_string();
-            //return Err(ExecError::BadSubstitution("".to_string()));
-        }*/
 
         let n = length.eval_as_int(core)?;
         if n < 0 {
@@ -172,13 +165,10 @@ impl Substr {
     }
 
     pub fn get(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
-        //let offset = self.offset.as_mut().unwrap();
-
         if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
-            //offset.text = "0".to_string();
         }
 
         let mut ans: String;
@@ -199,7 +189,7 @@ impl Substr {
             .map(|(_, c)| c)
             .collect();
 
-        if self.length.is_some() {
+        if self.length.is_some() || !ans.is_empty() {
             ans = self.length(&ans, core)?;
         }
 
