@@ -96,8 +96,6 @@ impl BracedParam {
             }
         }
         while ! ans.eat_end(feeder, core)?{}
-        //while ! ans.eat_unknown(feeder, core)?{}
-        //ans.text += &feeder.consume(1);
         Ok(Some(ans))
     }
 }

@@ -8,12 +8,15 @@ use crate::elements::substitution::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
+use crate::elements::subword;
+use crate::elements::word::mode::WordMode;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
     pub text: String,
     pub offset: ArithmeticExpr,
     pub length: Option<ArithmeticExpr>,
+    unknown: String,
 }
 
 impl BracedExcludeension for Substr {
@@ -64,13 +67,10 @@ impl Substr {
         core: &mut ShellCore,
         ifs: &str,
     ) -> Result<(), ExecError> {
-        //let offset = self.offset.as_mut().unwrap();
-
         if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
-            //offset.text = "0".to_string();
         }
 
         *array = core.db.get_vec("@", false)?;
@@ -99,12 +99,6 @@ impl Substr {
             None => return Err(ExecError::BadSubstitution(self.text.clone())),
             Some(ofs) => ofs,
         };
-
-        /*
-        if length.text.is_empty() {
-            length.text = "0".to_string();
-            //return Err(ExecError::BadSubstitution("".to_string()));
-        }*/
 
         let n = length.eval_as_int(core)?;
         if n < 0 {
@@ -189,7 +183,15 @@ impl Substr {
             .map(|(_, c)| c)
             .collect();
 
-        if self.length.is_some() || !ans.is_empty() {
+        if ans.is_empty() {
+            return Ok(ans);
+        }
+
+        if !self.unknown.is_empty() {
+            return Err(ParseError::UnexpectedSymbol(self.unknown.clone()).into());
+        }
+
+        if self.length.is_some() {
             ans = self.length(&ans, core)?;
         }
 
@@ -220,6 +222,25 @@ impl Substr {
         };
     }
 
+    fn eat_unknown(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<bool, ParseError> {
+        if feeder.is_empty() {
+            feeder.feed_additional_line(core)?;
+        }
+
+        if feeder.starts_with("}") {
+            return Ok(true);
+        }
+
+        if let Some(a) = subword::parse(feeder, core,
+                             &Some(WordMode::PermitAnyChar))? {
+            self.unknown += &a.get_text();
+            self.text += &a.get_text();
+            return Ok(false);
+        }
+        Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())))
+    } 
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         if !feeder.starts_with(":") {
@@ -237,6 +258,7 @@ impl Substr {
             _ => ArithmeticExpr::new(),
         };
 
+        while ! ans.eat_unknown(feeder, core)?{}
         Ok(Some(ans))
     }
 }
