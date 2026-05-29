@@ -99,15 +99,15 @@ fn last_resort(
         Some(WordMode::Exclude(v)) => {
             if feeder.is_empty() || feeder.starts_withs(v) {
                 return Ok(None);
-            }   
+            }
 
             let len = feeder.scanner_char();
             let c = SimpleSubword {
                 text: feeder.consume(len),
-            };  
+            };
             if feeder.is_empty() {
                 feeder.feed_additional_line(core)?;
-            }   
+            }
             Ok(Some(Box::new(c)))
         }
         Some(WordMode::PermitAnyChar) => {
