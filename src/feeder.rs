@@ -143,7 +143,7 @@ impl Feeder {
         self.remaining.starts_with(s)
     }
 
-    pub fn starts_withs(&self, vs: &Vec<String>) -> bool {
+    pub fn starts_with_one_of(&self, vs: &Vec<String>) -> bool {
         vs.iter().any(|s| self.remaining.starts_with(s))
     }
 
