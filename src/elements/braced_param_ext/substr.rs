@@ -14,6 +14,7 @@ pub struct Substr {
     pub text: String,
     pub offset: ArithmeticExpr,
     pub length: Option<ArithmeticExpr>,
+    unknown: String,
 }
 
 impl BracedExcludeension for Substr {
@@ -22,11 +23,15 @@ impl BracedExcludeension for Substr {
     }
     fn exec(
         &mut self,
-        _: &Variable,
+        v: &Variable,
         text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
-        self.get(text, core)
+        if core.db.exist(&v.name) {
+            self.get(text, core)
+        }else{
+            Ok(self.text.clone())
+        }
     }
 
     fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
@@ -50,6 +55,11 @@ impl BracedExcludeension for Substr {
             _ => self.set_partial_array(&param.name, array, text, core),
         }
     }
+
+    fn receive_unknown(&mut self, unknown: &mut String) {
+        self.unknown = unknown.clone();
+        unknown.clear();
+    }
 }
 
 impl Substr {
@@ -60,13 +70,10 @@ impl Substr {
         core: &mut ShellCore,
         ifs: &str,
     ) -> Result<(), ExecError> {
-        //let offset = self.offset.as_mut().unwrap();
-
         if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
-            //offset.text = "0".to_string();
         }
 
         *array = core.db.get_vec("@", false)?;
@@ -96,12 +103,6 @@ impl Substr {
             Some(ofs) => ofs,
         };
 
-        /*
-        if length.text.is_empty() {
-            length.text = "0".to_string();
-            //return Err(ExecError::BadSubstitution("".to_string()));
-        }*/
-
         let n = length.eval_as_int(core)?;
         if n < 0 {
             return Err(ExecError::SubstringMinus(n));
@@ -120,13 +121,10 @@ impl Substr {
         text: &mut String,
         core: &mut ShellCore,
     ) -> Result<(), ExecError> {
-        //let offset = self.offset.as_mut().unwrap();
-
         if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
-            //offset.text = "0".to_string();
         }
 
         let mut n = self.offset.eval_as_int(core)?;
@@ -140,8 +138,6 @@ impl Substr {
             }
         }
 
-        //let start = std::cmp::max(0, n) as usize;
-        //*array = core.db.get_vec_from(name, start, true)?;
         *array = core.db.get_vec_from(name, n as usize, true)?;
 
         if self.length.is_none() {
@@ -153,12 +149,6 @@ impl Substr {
             None => return Err(ExecError::BadSubstitution(self.text.clone())),
             Some(ofs) => ofs,
         };
-
-        /*
-        if length.text.is_empty() {
-            length.text = "0".to_string();
-            //return Err(ExecError::BadSubstitution("".to_string()));
-        }*/
 
         let n = length.eval_as_int(core)?;
         if n < 0 {
@@ -172,13 +162,10 @@ impl Substr {
     }
 
     pub fn get(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
-        //let offset = self.offset.as_mut().unwrap();
-
         if self.offset.text.is_empty() {
             if self.length.is_none() {
                 return Err(ExecError::BadSubstitution(self.text.clone()));
             }
-            //offset.text = "0".to_string();
         }
 
         let mut ans: String;
@@ -199,6 +186,14 @@ impl Substr {
             .map(|(_, c)| c)
             .collect();
 
+        if ans.is_empty() {
+            return Ok(ans);
+        }
+
+        if !self.unknown.is_empty() {
+            return Err(ParseError::UnexpectedSymbol(self.unknown.clone()).into());
+        }
+
         if self.length.is_some() {
             ans = self.length(&ans, core)?;
         }
@@ -216,18 +211,19 @@ impl Substr {
             .collect())
     }
 
-    fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+    fn eat_length(&mut self, feeder: &mut Feeder,
+                  core: &mut ShellCore) -> Result<(), ParseError> {
         if !feeder.starts_with(":") {
-            return;
+            return Ok(());
         }
-        ans.text += &feeder.consume(1);
-        ans.length = match ArithmeticExpr::parse(feeder, core, true, ":") {
-            Ok(Some(a)) => {
-                ans.text += &a.text.clone();
-                Some(a)
-            }
-            _ => None,
-        };
+        self.text += &feeder.consume(1);
+
+        self.length = ArithmeticExpr::parse(feeder, core, true, ":")?;
+        if let Some(ref a) = self.length {
+            self.text += &a.text.clone();
+        }
+
+        Ok(())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
@@ -238,15 +234,10 @@ impl Substr {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":")? {
-            Some(a) => {
-                ans.text += &a.text.clone();
-                Self::eat_length(feeder, &mut ans, core);
-                a
-            }
-            _ => ArithmeticExpr::new(),
-        };
-
+        ans.offset = ArithmeticExpr::parse(feeder, core, true, ":")?
+                                     .unwrap_or(ArithmeticExpr::new());
+        ans.text += &ans.offset.text.clone();
+        ans.eat_length(feeder, core)?;
         Ok(Some(ans))
     }
 }

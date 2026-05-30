@@ -119,7 +119,7 @@ impl Feeder {
             }
         }
 
-        utils::read_line_stdin_unbuffered("")
+        utils::read_line_stdin_unbuffered("", None, false)
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
@@ -187,7 +187,7 @@ impl Feeder {
         self.remaining.starts_with(s)
     }
 
-    pub fn starts_withs<T: AsRef<str>>(&self, vs: &[T]) -> bool {
+    pub fn starts_with_one_of<T: AsRef<str>>(&self, vs: &[T]) -> bool {
         vs.iter().any(|s| self.remaining.starts_with(s.as_ref()))
     }
 

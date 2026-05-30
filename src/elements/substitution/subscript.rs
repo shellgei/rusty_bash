@@ -77,7 +77,7 @@ impl Subscript {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        if feeder.starts_withs(&["@", "*"]) {
+        if feeder.starts_with_one_of(&["@", "*"]) {
             let s = feeder.consume(1);
             ans.text += &s.clone();
             ans.data = SubscriptType::Array(s);

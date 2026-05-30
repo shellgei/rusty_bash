@@ -26,8 +26,8 @@ impl Subword for ExtGlob {
     fn is_extglob(&self) -> bool {
         true
     }
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
-        vec![]
+    fn split(&self, _: &str, _: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+        None
     }
 }
 

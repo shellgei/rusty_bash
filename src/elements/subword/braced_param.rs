@@ -2,14 +2,15 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod parse;
+mod indirect;
+mod subscript;
 
 use crate::elements::braced_param_ext::BracedExcludeension;
 use crate::elements::substitution::variable::Variable;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
-use crate::utils;
-use crate::utils::splitter;
-use crate::{Feeder, ShellCore};
+use crate::{ShellCore, utils};
+use super::splitter;
 
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
@@ -43,42 +44,19 @@ impl Subword for BracedParam {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if core.db.exist_nameref(&self.param.name) && ! self.indirect {
-            let mut circular_check_vec = vec![];
-            let org_name = self.param.name.clone();
-            loop {
-                let bkup = self.param.name.clone();
-                self.param.check_nameref(core)?;
-                if self.param.name == bkup {
-                    self.param.name = utils::gen_not_exist_var(core);
-                }
-
-                if circular_check_vec.contains(&self.param.name) {
-                    ExecError::CircularNameRef(org_name).print(core);
-                    self.param.name = utils::gen_not_exist_var(core);
-                    break;
-                }
-                if ! core.db.exist_nameref(&self.param.name) {
-                    break;
-                }
-                circular_check_vec.push(self.param.name.clone());
-            }
-
+            self.param.solve_nameref(core)?;
             return self.substitute(core);
         }
         self.check()?;
 
-        if self.indirect {
-            if ! self.indirect_preparation(core)? {
-                return Ok(());
-            }
+        if self.indirect && ! self.indirect_preparation(core)? {
+            return Ok(());
         }
 
-        if self.param.is_array() {
-            if let Some(op) = self.extension.as_mut() {
-                if op.has_array_replace() {
-                    return self.array_replace(core);
-                }
-            }
+        if self.param.is_array() 
+        && let Some(op) = self.extension.as_mut()
+        && op.has_array_replace() {
+            return self.array_replace(core);
         }
 
         match self.param.index.is_some() {
@@ -96,10 +74,9 @@ impl Subword for BracedParam {
     }
 
     fn get_elem(&mut self) -> Vec<String> {
-        if let Some(op) = self.extension.as_mut() {
-            if op.array_to_single() {
-                return vec![self.text.clone()];
-            }
+        if let Some(op) = self.extension.as_mut()
+        && op.array_to_single() {
+            return vec![self.text.clone()];
         }
 
         self.array.clone().unwrap_or_default()
@@ -112,29 +89,26 @@ impl Subword for BracedParam {
         }
     }
 
-    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.text.is_empty() {
-            return vec![];
+            return None;
         }
 
-        let index_is_asterisk =
-            self.param.index.is_some() && self.param.index.as_ref().unwrap().text == "[*]";
+        let asterisk = self.param.index.is_some() 
+                       && self.param.index.as_ref().unwrap().text == "[*]"
+                       || self.param.name == "*";
 
-        if ifs.is_empty() && (self.param.name == "*" || index_is_asterisk) {
-            return self.make_split();
+        let non_array = (!self.treat_as_array && !asterisk)
+                        || ifs.starts_with(" ")
+                        || self.array.is_none();
+
+        if ifs.is_empty() && asterisk {
+            self.array_to_split()
+        }else if non_array {
+            splitter::split(self.get_text(), ifs, strip_left)
+        }else{
+            self.array_to_split()
         }
-
-        if (!self.treat_as_array && !index_is_asterisk && self.param.name != "*")
-            || ifs.starts_with(" ")
-            || self.array.is_none()
-        {
-            return splitter::split(&self.text, ifs, prev_char)
-                .iter()
-                .map(|s| (From::from(&s.0), s.1))
-                .collect();
-        }
-
-        self.make_split()
     }
 
     fn set_heredoc_flag(&mut self) {
@@ -159,16 +133,16 @@ impl BracedParam {
         Ok(())
     }
 
-    fn make_split(&self) -> Vec<(Box<dyn Subword>, bool)> {
+    fn array_to_split(&self) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.array.is_none() {
-            return vec![];
+            return None;
         }
 
         let mut ans = vec![];
         for p in self.array.clone().unwrap() {
             ans.push((From::from(&p), true));
         }
-        ans
+        Some(ans)
     }
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -210,62 +184,6 @@ impl BracedParam {
         Ok(())
     }
 
-    fn indirect_preparation(&mut self, core: &mut ShellCore) -> Result<bool, ExecError> {
-        if ! core.db.exist(&self.param.name)
-        && ! core.db.exist_nameref(&self.param.name) {
-            return Err(ExecError::InvalidIndirectExpansion(self.param.name.to_string()));
-        }
-
-        if core.db.has_flag(&self.param.name, 'n') {
-            if self.text.contains("[") {
-                self.text = String::new();
-            } else if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
-                self.text = nameref;
-            }else{
-                self.text = String::new();
-            }
-            return Ok(false);
-        }
-
-        if self.param.is_var_array() { // ${!name[@]}, ${!name[*]}
-            self.index_replace(core)?;
-            return Ok(false);
-        }
-
-        self.indirect_replace(core)?;
-        self.check()?;
-        Ok(true)
-    }
-
-    fn indirect_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut sw = self.clone();
-        sw.indirect = false;
-        sw.unknown = String::new();
-        sw.treat_as_array = false;
-        sw.num = false;
-
-        sw.substitute(core)?;
-
-        if sw.text.contains('[') {
-            let mut feeder = Feeder::new(&("${".to_owned() + &sw.text + "}"));
-            if let Ok(Some(mut bp)) = BracedParam::parse(&mut feeder, core) {
-                bp.substitute(core)?;
-                self.param.name = bp.param.name;
-                self.param.index = bp.param.index;
-            } else {
-                return Err(ExecError::InvalidName(sw.text.clone()));
-            }
-        } else {
-            self.param.name = sw.text.clone();
-            self.param.index = None;
-        }
-
-        if !utils::is_param(&self.param.name) {
-            return Err(ExecError::InvalidName(self.param.name.clone()));
-        }
-        Ok(())
-    }
-
     fn non_subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.param.name == "*" || self.param.name == "@" {
             self.array = Some(core.db.get_position_params());
@@ -277,87 +195,10 @@ impl BracedParam {
             false => value.to_string(),
         };
 
-        self.text = self.extension(self.text.clone(), core)?;
+        if let Some(op) = self.extension.as_mut() {
+            self.text = op.exec(&self.param, &self.text, core)?;
+        }
+
         Ok(())
-    }
-
-    fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let index = self
-            .param
-            .index
-            .clone()
-            .unwrap()
-            .eval(core, &self.param.name)?;
-
-        if self.num {
-            self.text = core.db.get_elem_len(&self.param.name, &index)?.to_string();
-            return Ok(());
-        }
-
-        if core.db.is_single(&self.param.name) {
-            let param = core.db.get_param(&self.param.name)?;
-            let tmp = match index.as_str() {
-                //case: a=aaa; echo ${a[@]}; (output: aaa)
-                "@" | "*" | "0" => param, //.unwrap_or("".to_string()),
-                _ => "".to_string(),
-            };
-            self.text = self.extension(tmp, core)?;
-            return Ok(());
-        }
-
-        let ifs = core.db.get_ifs_head();
-
-        if index.as_str() == "@" {
-            self.atmark_operation(core, " ")
-        } else if index.as_str() == "*" {
-            self.atmark_operation(core, &ifs)
-        } else {
-            let tmp = core.db.get_elem(&self.param.name, &index)?;
-            self.text = self.extension(tmp, core)?;
-            Ok(())
-        }
-    }
-
-    fn atmark_operation(&mut self, core: &mut ShellCore, ifs: &str) -> Result<(), ExecError> {
-        let mut arr = core.db.get_vec(&self.param.name, true)?;
-        self.array = Some(arr.clone());
-        if self.num {
-            self.text = arr.len().to_string();
-            return Ok(());
-        }
-
-        self.text = match self.num {
-            true => core.db.get_var_len(&self.param.name).to_string(),
-            false => core.db.get_vec(&self.param.name, true)?.join(ifs),
-        };
-
-        if arr.len() <= 1 || self.has_value_check() {
-            self.text = self.extension(self.text.clone(), core)?;
-        } else {
-            for item in arr.iter_mut() {
-                *item = self.extension(item.clone(), core)?;
-            }
-            self.text = arr.join(ifs);
-            self.array = Some(arr);
-        }
-        Ok(())
-    }
-
-    fn has_value_check(&mut self) -> bool {
-        match self.extension.as_mut() {
-            Some(op) => op.is_value_check(),
-            _ => false,
-        }
-    }
-
-    fn extension(
-        &mut self,
-        text: String,
-        core: &mut ShellCore,
-    ) -> Result<String, ExecError> {
-        match self.extension.as_mut() {
-            Some(op) => op.exec(&self.param, &text, core),
-            None => Ok(text.clone()),
-        }
     }
 }

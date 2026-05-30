@@ -10,7 +10,6 @@ pub mod file;
 pub mod file_check;
 pub mod glob;
 pub mod restricted_shell;
-pub mod splitter;
 
 use libc;
 use crate::{Feeder, ShellCore, Script};
@@ -19,8 +18,11 @@ use crate::error::exec::ExecError;
 use crate::error::input::InputError;
 use faccess::PathExt;
 use io_streams::StreamReader;
+use std::{thread, time};
 use std::io::Read;
 use std::path::Path;
+use std::sync::mpsc;
+use std::time::Duration;
 
 pub fn reserved(w: &str) -> bool {
     matches!(
@@ -130,17 +132,6 @@ pub fn is_param(s: &str) -> bool {
     }
 
     is_var(s)
-    /*
-    /* variable */
-    if first_ch.is_ascii_digit() {
-        return false;
-    }
-
-    let name_c = |c: char| {
-        c.is_ascii_lowercase() || c.is_ascii_uppercase() || c.is_ascii_digit() || '_' == c
-    };
-    !s.chars().any(|c| !name_c(c))
-        */
 }
 
 pub fn is_var(s: &str) -> bool {
@@ -158,43 +149,16 @@ pub fn is_var(s: &str) -> bool {
     !s.chars().any(|c| !name_c(c))
 }
 
-/*
-pub fn read_line_unbuffered(file: &mut File, delim: &str) -> Result<String, InputError> {
-    let mut line = vec![];
-    let mut ch: [u8; 1] = Default::default();
-    let mut stdin = BufReader::new(file);
-
-    let mut d = 10; //\n
-    if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
-        d = c;
-    }
-
-    loop {
-        match stdin.read(&mut ch) {
-            Ok(0) => {
-                if line.is_empty() {
-                    return Err(InputError::Eof);
-                }
-                break;
-            }
-            Ok(_) => {
-                line.push(ch[0]);
-                if d == ch[0] {
-                    break;
-                }
-            }
-            Err(_) => return Err(InputError::Eof),
+pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: bool)
+-> Result<String, InputError> {
+    if timeout.is_some() {
+        if subshell {
+            return read_line_stdin_unbuffered_thread(delim, timeout.unwrap());
+        }else{
+            return read_line_stdin_unbuffered_nonblock(delim, timeout.unwrap());
         }
     }
 
-    match String::from_utf8(line) {
-        Ok(s) => Ok(s),
-        Err(_) => Err(InputError::NotUtf8),
-    }
-}
-*/
-
-pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     let mut line = vec![];
     let mut ch: [u8; 1] = Default::default();
     let mut stdin = StreamReader::stdin().unwrap();
@@ -225,6 +189,95 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     match String::from_utf8(line) {
         Ok(s) => Ok(s),
         Err(_) => Err(InputError::NotUtf8),
+    }
+}
+
+pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32)
+-> Result<String, InputError> {
+    let start = clock::monotonic_time();
+
+    let mut stdin = termion::async_stdin();
+    let mut line = vec![];
+    let mut ch: [u8; 1] = Default::default();
+
+    let mut d = 10; //\n
+    if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+        d = c;
+    }
+
+
+    loop {
+        let cur = clock::monotonic_time();
+
+        if (cur - start).as_secs_f32() > timeout {
+            return Err(InputError::Timeout);
+        }
+
+        if timeout > 0.001 {
+            thread::sleep(time::Duration::from_millis(1));
+        }
+
+        match stdin.read(&mut ch) {
+            Ok(0) => {},
+            Ok(_) => {
+                line.push(ch[0]);
+                if d == ch[0] {
+                    break;
+                }
+            }
+            Err(_) => return Err(InputError::Eof),
+        }
+    }
+
+    match String::from_utf8(line) {
+        Ok(s) => Ok(s),
+        Err(_) => Err(InputError::NotUtf8),
+    }
+}
+
+pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32)
+-> Result<String, InputError> {
+    let (tx, rx) = mpsc::channel();
+    let delim = delim.to_string();
+
+    thread::spawn(move || {
+        let mut line = vec![];
+        let mut ch: [u8; 1] = Default::default();
+        let mut stdin = StreamReader::stdin().unwrap();
+    
+        let mut d = 10; //\n
+        if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+            d = c;
+        }
+    
+        loop {
+            match stdin.read(&mut ch) {
+                Ok(0) => {
+                    if line.is_empty() {
+                        return Err(InputError::Eof);
+                    }
+                    break;
+                }
+                Ok(_) => {
+                    line.push(ch[0]);
+                    if d == ch[0] {
+                        break;
+                    }
+                }
+                Err(_) => return Err(InputError::Eof),
+            }
+        }
+
+        match String::from_utf8(line) {
+            Ok(s) => Ok(tx.send(s).unwrap()),
+            Err(_) => return Err(InputError::Eof),
+        }
+    });
+
+    match rx.recv_timeout(Duration::from_secs_f32(timeout)) {
+        Ok(line) => Ok(line),
+        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => Err(InputError::Timeout),
+        Err(_) => Err(InputError::Eof),
     }
 }
 
@@ -317,12 +370,6 @@ pub fn groups() -> Vec<String> {
 }
 
 pub fn run_error_script(core: &mut ShellCore) {
-    /*
-    if core.error_script_run {
-        return;
-    }
-
-    */
     if core.error_script.is_empty() {
         return;
     }

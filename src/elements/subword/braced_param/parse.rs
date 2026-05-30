@@ -96,8 +96,11 @@ impl BracedParam {
             }
         }
         while ! ans.eat_end(feeder, core)?{}
-        //while ! ans.eat_unknown(feeder, core)?{}
-        //ans.text += &feeder.consume(1);
+        
+        if ans.extension.is_some() {
+            ans.extension.as_mut().unwrap().receive_unknown(&mut ans.unknown);
+        }
+
         Ok(Some(ans))
     }
 }

@@ -16,6 +16,7 @@ pub mod filler;
 pub mod parameter;
 mod paren;
 mod process_sub;
+mod splitter;
 mod varname;
 
 use self::ansi_c_quoted::AnsiCQuoted;
@@ -25,7 +26,6 @@ use self::command_sub::CommandSubstitution;
 use self::simple::SimpleSubword;
 use crate::elements::word::mode::WordMode;
 use crate::error::{exec::ExecError, parse::ParseError};
-use crate::utils::splitter;
 use crate::{Feeder, ShellCore};
 //use self::command_sub_old::CommandSubstitutionOld;
 use self::double_quoted::DoubleQuoted;
@@ -85,12 +85,9 @@ pub trait Subword {
         Ok(vec![])
     }
 
-    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
-        //bool: true if it should remain
-        splitter::split(self.get_text(), ifs, prev_char)
-            .iter()
-            .map(|s| (From::from(&s.0), s.1))
-            .collect()
+    fn split(&self, ifs: &str, strip_left: bool)
+    -> Option<Vec<(Box<dyn Subword>, bool)>> { //bool: true if it should remain as an arg
+        splitter::split(self.get_text(), ifs, strip_left)
     }
 
     fn make_glob_string(&mut self) -> String {

@@ -4,8 +4,8 @@
 use super::Subword;
 //use crate::elements::substitution::variable::Variable;
 use crate::error::exec::ExecError;
-use crate::utils::splitter;
 use crate::{Feeder, ShellCore};
+use super::splitter;
 
 #[derive(Debug, Clone, Default)]
 pub struct Parameter {
@@ -38,24 +38,21 @@ impl Subword for Parameter {
         self.text == "$@"
     }
 
-    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.text.is_empty() {
-            return vec![];
+            return None;
         }
 
         if ifs.contains(" ") || self.array.is_none() {
             //TODO: add \t and \n ?
-            return splitter::split(self.get_text(), ifs, prev_char)
-                .iter()
-                .map(|s| (From::from(&s.0), s.1))
-                .collect();
+            return splitter::split(self.get_text(), ifs, strip_left);
         }
 
         let mut ans = vec![];
         for p in self.array.clone().unwrap() {
             ans.push((From::from(&p), true));
         }
-        ans
+        Some(ans)
     }
 
     fn is_simple_param(&self) -> bool {

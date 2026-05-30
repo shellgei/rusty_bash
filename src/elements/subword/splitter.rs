@@ -1,17 +1,31 @@
 //SPDX-FileCopyrightText: 2025 @caro@mi.shellgei.org
+//SPDX-FileCopyrightText: 2026 @ru@mi.shiellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub fn split(sw: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
-    //bool: true if it should remain
+use super::Subword;
+
+pub fn split(sw: &str, ifs: &str, strip_left: bool)
+-> Option<Vec<(Box<dyn Subword>, bool)>> { //bool: true if it should remain
     if ifs.is_empty() {
-        return vec![(sw.to_string(), false)];
+        return None;
     }
 
-    if ifs.chars().all(|c| " \t\n".contains(c)) {
+    let ans = if ifs.chars().all(|c| " \t\n".contains(c)) {
         split_str_normal(sw, ifs)
     } else {
-        split_str_special(sw, ifs, prev_char)
+        split_str_custom_ifs(&mut sw.to_string(), ifs, strip_left)
+    };
+
+    if ans.is_none() {
+        return None;
     }
+
+    let sws = ans.unwrap()
+                  .iter()
+                  .map(|s| (From::from(&s.0), s.1))
+                  .collect();
+
+    Some(sws)
 }
 
 fn scanner_blank(s: &str, blank: &[char]) -> usize {
@@ -60,56 +74,56 @@ fn scanner_ifs_blank(s: &str, blank: &[char], delim: &[char]) -> usize {
     ans
 }
 
-fn split_str_special(s: &str, ifs: &str, prev_char: Option<char>) -> Vec<(String, bool)> {
+fn eat_word(remaining: &mut String, ans: &mut Vec<(String, bool)>, ifs: &str) {
+    let len = scanner_word(&remaining, ifs);
+    let tail = remaining.split_off(len);
+    ans.push((remaining.to_string(), true));
+    *remaining = tail;
+}
+
+fn shave_blank(remaining: &mut String, ans: &mut Vec<(String, bool)>,
+               blank: &Vec<char>, delim: &Vec<char>) {
+    let len = scanner_ifs_blank(&remaining, &blank, &delim);
+    if len > 0 {
+        *remaining = remaining.split_off(len);
+        if remaining.is_empty() {
+            ans.push(("".to_string(), false));
+        }
+    }
+}
+
+fn split_str_custom_ifs(remaining: &mut String, ifs: &str, strip_left: bool)
+-> Option<Vec<(String, bool)>> {
     let mut ans = vec![];
-    let mut remaining = s.to_string();
-    let mut shaved = false;
-
-    let shave_prev = match prev_char {
-        None => true,
-        Some(c) => " \t\n".contains(c),
-    };
-
     let blank: Vec<char> = ifs.chars().filter(|s| " \t\n".contains(*s)).collect();
     let delim: Vec<char> = ifs.chars().filter(|s| !" \t\n".contains(*s)).collect();
 
-    if shave_prev {
+    if strip_left {
         let len = scanner_blank(&remaining, &blank);
-        shaved = len > 0;
-        let tail = remaining.split_off(len);
-        remaining = tail;
-    }
-
-    while !remaining.is_empty() {
-        let len = scanner_word(&remaining, ifs);
-        let tail = remaining.split_off(len);
-
-        ans.push((remaining.to_string(), true));
-        remaining = tail;
-
-        let len = scanner_ifs_blank(&remaining, &blank, &delim);
+        *remaining = remaining.split_off(len);
         if len > 0 {
-            remaining = remaining.split_off(len);
+            ans.push(("".to_string(), false));
             if remaining.is_empty() {
                 ans.push(("".to_string(), false));
+                return Some(ans);
             }
         }
     }
 
-    if ans.is_empty() {
-        ans.push(("".to_string(), false));
-        ans.push(("".to_string(), false));
+    while !remaining.is_empty() {
+        eat_word(remaining, &mut ans, ifs);
+        shave_blank(remaining, &mut ans, &blank, &delim);
     }
 
-    if shaved && ans.len() < 2 {
-        //if the string is modified, the splitting is applied.
-        ans.push(("".to_string(), false));
+    if ans.len() < 2 {
+        return None;
     }
 
-    ans
+    Some(ans)
 }
 
-fn split_str_normal(s: &str, ifs: &str) -> Vec<(String, bool)> {
+fn split_str_normal(s: &str, ifs: &str)
+-> Option<Vec<(String, bool)>> {
     let mut esc = false;
     let mut from = 0;
     let mut pos = 0;
@@ -129,9 +143,12 @@ fn split_str_normal(s: &str, ifs: &str) -> Vec<(String, bool)> {
         }
     }
 
-    ans.push((s[from..].to_string(), false));
+    if ans.len() < 1 {
+        return None;
+    }
 
-    ans
+    ans.push((s[from..].to_string(), false));
+    Some(ans)
 }
 
 fn scanner_word(s: &str, ifs: &str) -> usize {

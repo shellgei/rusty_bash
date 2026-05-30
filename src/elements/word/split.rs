@@ -13,14 +13,12 @@ pub fn eval(word: &Word, core: &mut ShellCore) -> Vec<Word> {
 
     let ifs = core.db.get_param("IFS").unwrap();
 
-    let (pos, mut split) = find_pos(word, &ifs);
-    if split.is_empty() {
-        return vec![word.clone()];
-    }
-
-    if split.len() == 1 {
-        return vec![word.clone()];
-    }
+    let (pos, mut split) = match find_pos(word, &ifs) {
+        Some(res) => res,
+        None => return vec![word.clone()],
+    };
+    //if split.len() <= 0 {
+   // }
 
     let mut left = word.subwords[..pos].to_vec();
     let remain = split[0].1;
@@ -47,17 +45,18 @@ fn gen_word(sws: Vec<Box<dyn Subword>>, remain: bool) -> Word {
     }
 }
 
-pub fn find_pos(word: &Word, ifs: &str) -> SplitResult {
-    let mut prev_char = None;
+pub fn find_pos(word: &Word, ifs: &str) -> Option<SplitResult> {
+    let mut strip_left = true;
     for (i, sw) in word.subwords.iter().enumerate() {
-        let split = sw.split(ifs, prev_char);
-        if split.len() >= 2 {
-            return (i, split);
+        let mut split = sw.split(ifs, strip_left);
+        if split.is_some() && split.as_mut().unwrap().len() >= 2 {
+            return Some((i, split.unwrap()));
         }
 
         if !sw.get_text().is_empty() {
-            prev_char = sw.get_text().chars().last();
+            let prev_char = sw.get_text().chars().last();
+            strip_left = prev_char.is_none() || " \t\n".contains(prev_char.unwrap());
         }
     }
-    (0, vec![])
+    None
 }

@@ -4,6 +4,7 @@
 use crate::core::database::data::uninit::Uninit;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::utils;
 use crate::utils::arg;
 use crate::{Feeder, ShellCore};
 use super::subscript::Subscript;
@@ -34,6 +35,30 @@ impl Variable {
             }
         }
 
+        Ok(())
+    }
+
+    pub fn solve_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut circular_check_vec = vec![];
+        let org_name = self.name.clone();
+        loop {
+            let bkup = self.name.clone();
+            self.check_nameref(core)?;
+            if self.name == bkup {
+                self.name = utils::gen_not_exist_var(core);
+            }
+    
+            if circular_check_vec.contains(&self.name) {
+                ExecError::CircularNameRef(org_name).print(core);
+                self.name = utils::gen_not_exist_var(core);
+                break;
+            }
+            if ! core.db.exist_nameref(&self.name) {
+                break;
+            }
+            circular_check_vec.push(self.name.clone());
+        }
+    
         Ok(())
     }
 

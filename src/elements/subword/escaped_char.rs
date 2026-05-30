@@ -35,8 +35,8 @@ impl Subword for EscapedChar {
         self.text.clone()
     }
 
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
-        vec![]
+    fn split(&self, _: &str, _: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+        None
     }
 
     fn is_escaped_char(&self) -> bool {
