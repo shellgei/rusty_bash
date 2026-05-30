@@ -241,6 +241,9 @@ fn feed_script(feeder: &mut Feeder, core: &mut ShellCore) -> (bool, bool) {
             signal::check_trap(core);
             (true, false)
         }
+        Err(InputError::BinaryFile(f)) => {
+            exit::is_binary(&f, core);
+        }
         _ => (false, true),
     }
 }

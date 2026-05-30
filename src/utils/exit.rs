@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, Script, ShellCore};
-use crate::utils::ExecError;
+use crate::utils::{ExecError, InputError};
 use nix::sys::signal;
 use std::process;
 
@@ -60,6 +60,16 @@ pub fn permission_denied(command_name: &str, core: &mut ShellCore) -> ! {
 pub fn not_found(command_name: &str, core: &mut ShellCore) -> ! {
     ExecError::CommandNotFound(command_name.to_string()).print(core);
     process::exit(127)
+}
+
+pub fn is_a_dir(command_name: &str, core: &mut ShellCore) -> ! {
+    ExecError::IsDir(command_name.to_string()).print(core);
+    process::exit(126)
+}
+
+pub fn is_binary(command_name: &str, core: &mut ShellCore) -> ! {
+    InputError::BinaryFile(command_name.to_string()).print(core);
+    process::exit(126)
 }
 
 pub fn internal(s: &str) -> ! {

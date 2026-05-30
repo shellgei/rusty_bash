@@ -3,7 +3,7 @@
 
 use crate::error::exec::ExecError;
 use crate::utils::c_string;
-use crate::{error, exit, signal, Feeder, Script, ShellCore};
+use crate::{error, file_check, exit, signal, Feeder, Script, ShellCore};
 use nix::errno::Errno;
 use nix::sys::signal::Signal;
 use nix::sys::wait;
@@ -139,6 +139,10 @@ pub fn set_pgid(core: &mut ShellCore, pid: Pid, pgid: Pid) {
 }
 
 pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! {
+    if file_check::is_dir(&args[0]){
+        exit::is_a_dir(&args[0], core);
+    }
+
     let cargs = c_string::to_cargs(args);
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
