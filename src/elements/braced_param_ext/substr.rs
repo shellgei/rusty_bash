@@ -7,7 +7,7 @@ use super::BracedParamExtension;
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
     pub text: String,
-    pub offset: Option<Word>,
+    pub offset: Word,
     pub length: Option<Word>,
 }
 
