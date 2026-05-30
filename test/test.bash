@@ -870,4 +870,14 @@ res=$($com <<< 'A=abc; echo ${A:1}' )
 res=$($com <<< 'A=あいうえお; echo ${A:2}' )
 [ "$res" = "うえお" ] || err $LINENO
 
+res=$($com <<< 'A=あいうえお; echo ${A:}' )
+[ "$?" = 1 ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+#res=$($com <<< 'A=あ; echo ${A: }' )
+#[ "$res" = "あ" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:6}' )
+[ "$res" = "" ] || err $LINENO
+
 echo OK $0
