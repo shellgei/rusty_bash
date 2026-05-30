@@ -8,8 +8,6 @@ use crate::elements::substitution::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
-use crate::elements::subword;
-use crate::elements::word::mode::WordMode;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
@@ -56,6 +54,11 @@ impl BracedExcludeension for Substr {
             "*" => self.set_partial_position_params(array, text, core, &ifs),
             _ => self.set_partial_array(&param.name, array, text, core),
         }
+    }
+
+    fn receive_unknown(&mut self, unknown: &mut String) {
+        self.unknown = unknown.clone();
+        unknown.clear();
     }
 }
 
@@ -223,25 +226,6 @@ impl Substr {
         Ok(())
     }
 
-    fn eat_unknown(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<bool, ParseError> {
-        if feeder.is_empty() {
-            feeder.feed_additional_line(core)?;
-        }
-
-        if feeder.starts_with("}") {
-            return Ok(true);
-        }
-
-        if let Some(a) = subword::parse(feeder, core,
-                             &Some(WordMode::PermitAnyChar))? {
-            self.unknown += &a.get_text();
-            self.text += &a.get_text();
-            return Ok(false);
-        }
-        Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())))
-    } 
-
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         if !feeder.starts_with(":") {
@@ -250,16 +234,10 @@ impl Substr {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":")? {
-            Some(a) => {
-                ans.text += &a.text.clone();
-                ans.eat_length(feeder, core)?;
-                a
-            }
-            _ => ArithmeticExpr::new(),
-        };
-
-        while ! ans.eat_unknown(feeder, core)?{}
+        ans.offset = ArithmeticExpr::parse(feeder, core, true, ":")?
+                                     .unwrap_or(ArithmeticExpr::new());
+        ans.text += &ans.offset.text.clone();
+        ans.eat_length(feeder, core)?;
         Ok(Some(ans))
     }
 }

@@ -49,6 +49,8 @@ pub trait BracedExcludeension {
     fn array_to_single(&mut self) -> bool {
         false
     }
+
+    fn receive_unknown(&mut self, _: &mut String) {}
 }
 
 pub fn parse(
