@@ -19,6 +19,22 @@ impl BracedParamExtension for Substr {
 }
 
 impl Substr {
+    fn eat_length(&mut self, feeder: &mut Feeder, core: &mut ShellCore) {
+        if !feeder.starts_with(":") {
+            return;
+        }   
+        self.text += &feeder.consume(1);
+
+        let mode = WordMode::Exclude(vec!["}".to_string()]);
+        self.length = match Word::parse(feeder, core, Some(mode)) {
+            Ok(Some(a)) => {
+                self.text += &a.text.clone();
+                Some(a)
+            }   
+            _ => None,
+        };
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         if !feeder.starts_with(":") {
@@ -31,6 +47,7 @@ impl Substr {
         ans.offset = match Word::parse(feeder, core, Some(mode))? {
             Some(w) => {
                 ans.text += &w.text.clone();
+                ans.eat_length(feeder, core);
                 w
             },
             None => Word::default(),
