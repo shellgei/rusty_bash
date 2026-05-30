@@ -3,6 +3,8 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::word::{Word, WordMode};
+use crate::elements::substitution::variable::Variable;
+use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use super::BracedParamExtension;
 
@@ -15,6 +17,12 @@ pub struct Substr {
 
 impl BracedParamExtension for Substr {
     fn get_text(&self) -> String { self.text.clone() }
+
+    fn exec(&mut self, _: &Variable, text: &str,
+            core: &mut ShellCore) -> Result<String, ExecError> {
+        Ok(self.text.clone())
+    }
+
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension> { Box::new(self.clone()) }
 }
 
