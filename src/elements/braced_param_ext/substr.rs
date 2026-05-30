@@ -24,9 +24,12 @@ impl BracedParamExtension for Substr {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
 
-        let mut n = match self.offset.eval_as_value(core)?.parse::<i32>() {
-            Ok(num) => num,
-            _ => return Err(ExecError::BadSubstitution(self.text.clone())),
+        let mut n = match self.offset.eval_as_value(core)?.trim() {
+            "" => 0,
+            s => match s.parse::<i32>() {
+               Ok(num) => num,
+                _ => return Err(ExecError::BadSubstitution(self.text.clone())),
+            },
         };
         let len = text.chars().count() as i32;
 
@@ -37,7 +40,7 @@ impl BracedParamExtension for Substr {
             }
         }
 
-        let mut ans = text.chars().enumerate()
+        let ans = text.chars().enumerate()
             .filter(|(i, _)| (*i as i32) >= n)
             .map(|(_, c)| c).collect::<String>();
 
