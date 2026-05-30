@@ -864,4 +864,10 @@ res=$($com <<< 'A=${ }; echo NG')
 res=$($com <<< 'A=${ }')
 [ "$?" == 1 ] || err $LINENO
 
+res=$($com <<< 'A=abc; echo ${A:1}' )
+[ "$res" = "bc" ] || err $LINENO
+
+res=$($com <<< 'A=あいうえお; echo ${A:2}' )
+[ "$res" = "うえお" ] || err $LINENO
+
 echo OK $0

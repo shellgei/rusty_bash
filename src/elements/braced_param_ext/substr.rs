@@ -20,7 +20,28 @@ impl BracedParamExtension for Substr {
 
     fn exec(&mut self, _: &Variable, text: &str,
             core: &mut ShellCore) -> Result<String, ExecError> {
-        Ok(self.text.clone())
+        if self.offset.text.is_empty() && self.length.is_none() {
+            return Err(ExecError::BadSubstitution(self.text.clone()));
+        }
+
+        let mut n = match self.offset.eval_as_value(core)?.parse::<i32>() {
+            Ok(num) => num,
+            _ => return Err(ExecError::BadSubstitution(self.text.clone())),
+        };
+        let len = text.chars().count() as i32;
+
+        if n < 0 { 
+            n += len;
+            if n < 0 { 
+                return Ok("".to_string());
+            }
+        }
+
+        let mut ans = text.chars().enumerate()
+            .filter(|(i, _)| (*i as i32) >= n)
+            .map(|(_, c)| c).collect::<String>();
+
+        Ok(ans)
     }
 
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension> { Box::new(self.clone()) }
@@ -44,7 +65,7 @@ impl Substr {
             None => Word::default(),
         };
 
-        dbg!("{:?}", &ans);
+        //dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }

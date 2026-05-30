@@ -33,6 +33,11 @@ impl Subword for BracedParam {
         }
 
         self.text = core.db.get_param(&self.param.text)?;
+
+        if let Some(op) = self.extension.as_mut() {
+            self.text = op.exec(&self.param, &self.text, core)?;
+        }
+
         Ok(())
     }
 }
