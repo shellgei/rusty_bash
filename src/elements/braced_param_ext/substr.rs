@@ -27,10 +27,8 @@ impl Substr {
         self.text += &feeder.consume(1);
 
         let mode = WordMode::Exclude(vec!["}".to_string()]);
-        self.length = Word::parse(feeder, core, Some(mode))?;
-        if let Some(ref a) = self.length {
-            self.text += &a.text.clone();
-        }
+        self.length = Some( Word::parse(feeder, core, Some(mode))?.unwrap_or(Word::default()) );
+        self.text += &self.length.as_mut().unwrap().text.clone();
 
         Ok(())
     }
