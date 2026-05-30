@@ -11,7 +11,8 @@ use std::sync::atomic::Ordering::Relaxed;
 pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
     if core.is_subshell {
-        builtins::error_(127, &args[0], "called from subshell", core);
+        //builtins::error_(127, &args[0], "called from subshell", core);
+        return 1;
     }
 
     if args.len() <= 1 {
