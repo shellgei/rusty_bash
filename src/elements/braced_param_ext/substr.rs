@@ -208,18 +208,19 @@ impl Substr {
             .collect())
     }
 
-    fn eat_length(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) {
+    fn eat_length(&mut self, feeder: &mut Feeder,
+                  core: &mut ShellCore) -> Result<(), ParseError> {
         if !feeder.starts_with(":") {
-            return;
+            return Ok(());
         }
-        ans.text += &feeder.consume(1);
-        ans.length = match ArithmeticExpr::parse(feeder, core, true, ":") {
-            Ok(Some(a)) => {
-                ans.text += &a.text.clone();
-                Some(a)
-            }
-            _ => None,
-        };
+        self.text += &feeder.consume(1);
+
+        self.length = ArithmeticExpr::parse(feeder, core, true, ":")?;
+        if let Some(ref a) = self.length {
+            self.text += &a.text.clone();
+        }
+
+        Ok(())
     }
 
     fn eat_unknown(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
@@ -252,7 +253,7 @@ impl Substr {
         ans.offset = match ArithmeticExpr::parse(feeder, core, true, ":")? {
             Some(a) => {
                 ans.text += &a.text.clone();
-                Self::eat_length(feeder, &mut ans, core);
+                ans.eat_length(feeder, core)?;
                 a
             }
             _ => ArithmeticExpr::new(),
