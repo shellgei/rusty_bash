@@ -34,11 +34,11 @@ impl InputError {
             return;
         }
 
-        if core.db.flags.contains('i') {
+//        if core.db.flags.contains('i') {
             eprintln!("{}: {}", &name, &s);
-        } else {
+ /*       } else {
             let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
             eprintln!("{}: line {}: {}", &name, &lineno, s);
-        }
+        }*/
     }
 }

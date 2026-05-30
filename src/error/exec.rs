@@ -104,7 +104,7 @@ impl From<&ExecError> for String {
             ExecError::InvalidOption(opt) => format!("{opt}: invalid option"),
             ExecError::InvalidTimeout(tm) => format!("{tm}: invalid timeout specification"),
             ExecError::Interrupted => "interrupted".to_string(),
-            ExecError::IsDir(dir) => format!("{dir}: is a directory"),
+            ExecError::IsDir(dir) => format!("{dir}: Is a directory"),
             ExecError::ValidOnlyInFunction => "can only be used in a function".to_string(),
             ExecError::VariableReadOnly(name) => format!("{name}: readonly variable"),
             ExecError::VariableInvalid(name) => format!("`{name}': not a valid identifier"),
