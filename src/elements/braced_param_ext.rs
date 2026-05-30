@@ -4,8 +4,8 @@
 mod substr;
 
 use crate::{Feeder, ShellCore};
-use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::error::exec::ExecError;
 use crate::elements::substitution::variable::Variable;
 use core::fmt;
 use core::fmt::Debug;
