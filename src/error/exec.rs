@@ -3,6 +3,7 @@
 
 use crate::error::arith::ArithError;
 use crate::error::parse::ParseError;
+use crate::error::input::InputError;
 use crate::ShellCore;
 use nix::errno::Errno;
 use nix::sys::wait::WaitStatus;
@@ -45,16 +46,9 @@ pub enum ExecError {
     Other(String),
 
     ParseError(ParseError),
+    InputError(InputError),
     ArithError(String, ArithError),
 }
-
-/*
-impl From<Errno> for ExecError {
-    fn from(e: Errno) -> ExecError {
-        ExecError::Errno(e)
-    }
-}
-*/
 
 impl From<ParseIntError> for ExecError {
     fn from(e: ParseIntError) -> ExecError {
@@ -65,6 +59,12 @@ impl From<ParseIntError> for ExecError {
 impl From<ParseError> for ExecError {
     fn from(e: ParseError) -> ExecError {
         ExecError::ParseError(e)
+    }
+}
+
+impl From<InputError> for ExecError {
+    fn from(e: InputError) -> ExecError {
+        ExecError::InputError(e)
     }
 }
 
@@ -131,6 +131,7 @@ impl From<&ExecError> for String {
 
             ExecError::ArithError(s, a) => format!("{}: {}", s, String::from(a)),
             ExecError::ParseError(p) => From::from(p),
+            ExecError::InputError(p) => From::from(p),
             _ => {"".to_string()},
         }
     }

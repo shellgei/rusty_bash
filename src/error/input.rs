@@ -9,6 +9,7 @@ pub enum InputError {
     NotUtf8,
     NoSuchFile(String),
     Interrupt,
+    IsDir(String),
     Timeout,
     Eof,
 }
@@ -21,6 +22,7 @@ impl From<&InputError> for String {
             InputError::NoSuchFile(filename) => format!("{filename}: No such file or directory"),
             InputError::Eof => "syntax error: unexpected end of file".to_string(),
             InputError::Interrupt => "interrupted".to_string(),
+            InputError::IsDir(dir) => format!("{dir}: is a directory"),
             InputError::Timeout => "timeout".to_string(),
         }
     }
@@ -34,11 +36,13 @@ impl InputError {
             return;
         }
 
-//        if core.db.flags.contains('i') {
+        if let Self::BinaryFile(_) = self {
             eprintln!("{}: {}", &name, &s);
- /*       } else {
+        } else if core.db.flags.contains('i') {
+            eprintln!("{}: {}", &name, &s);
+        } else {
             let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
             eprintln!("{}: line {}: {}", &name, &lineno, s);
-        }*/
+        }
     }
 }

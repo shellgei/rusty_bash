@@ -1,8 +1,8 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2026 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::error::parse::ParseError;
-use crate::{file_check, Feeder, Script, ShellCore};
+use crate::{file_check, Feeder, InputError, Script, ShellCore};
 
 fn check_error(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.db.flags.contains('r') && args[1].contains('/') {
@@ -17,8 +17,9 @@ fn check_error(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if file_check::is_dir(&args[1]) {
-        eprintln!("sush: source: {}: is a directory", &args[1]);
-        return 1;
+        let err = InputError::IsDir(args[1].clone());
+        return super::error(1, &args[0], &err.into(), core);
+        //eprintln!("sush: source: {}: is a directory", &args[1]);
     }
     0
 }
