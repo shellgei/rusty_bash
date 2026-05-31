@@ -72,6 +72,10 @@ pub fn input_interrupt_check(feeder: &mut Feeder, core: &mut ShellCore) -> bool 
 }
 
 pub fn check_trap(core: &mut ShellCore) {
+    if core.is_subshell {
+        return;
+    }
+
     let bkup = core.db.exit_status;
 
     let mut scripts = vec![];

@@ -27,6 +27,7 @@ fn run_script(core: &mut ShellCore) {
         return;
     }
 
+    let exit_status_bkup = core.db.exit_status;
     core.exit_script_run = true;
     if core.exit_script.is_empty() {
         return;
@@ -44,6 +45,8 @@ fn run_script(core: &mut ShellCore) {
         }
         Ok(None) => {}
     };
+
+    core.db.exit_status = exit_status_bkup;
 }
 
 /* error at exec */

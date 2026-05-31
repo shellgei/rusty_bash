@@ -5,7 +5,7 @@ use super::pipeline::Pipeline;
 use crate::core::jobtable::JobEntry;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::signal;
+//use crate::signal;
 use crate::utils::exit;
 use crate::{proc_ctrl, Feeder, ShellCore};
 use nix::sys::wait::WaitStatus;
@@ -38,7 +38,7 @@ impl Job {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
 
-        signal::check_trap(core);
+        //signal::check_trap(core);
 
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
             if core.return_flag {
@@ -63,9 +63,9 @@ impl Job {
             }
 
             do_next = (core.db.exit_status == 0) == (end == "&&");
-            signal::check_trap(core);
+            //signal::check_trap(core);
         }
-        signal::check_trap(core);
+        //signal::check_trap(core);
         Ok(())
     }
 

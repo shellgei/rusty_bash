@@ -6,7 +6,7 @@ use super::command::Command;
 use super::Pipe;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{Feeder, ShellCore};
+use crate::{Feeder, ShellCore, signal};
 use nix::unistd::Pid;
 
 #[derive(Debug, Clone, Default)]
@@ -36,6 +36,7 @@ impl Pipeline {
         core.time_keeper.set(self.time);
 
         for (i, p) in self.pipes.iter_mut().enumerate() {
+            signal::check_trap(core);
             if let Err(e) = p.set(prev, pgid, core) {
                 return (pids, self.exclamation%2 == 1, Some(e));
             }
@@ -55,6 +56,7 @@ impl Pipeline {
         let lastpipe = (!core.db.flags.contains('m')) && core.shopts.query("lastpipe");
         let mut lastp = Pipe::end(prev, pgid, lastpipe);
         let mut err = None;
+        signal::check_trap(core);
         let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
         if lastpipe {
             if let Err(e) = lastp.restore_lastpipe(core) {

@@ -114,7 +114,7 @@ fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
                     trap.store(true, Relaxed);
                 }
             }
-            thread::sleep(time::Duration::from_millis(5));
+            thread::sleep(time::Duration::from_millis(1));
         }
     });
 }

@@ -149,12 +149,17 @@ pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! 
     if !fullpath.is_empty() {
         let _ = unistd::execv(&cfullpath, &cargs);
     }
-    let result = unistd::execvp(&cargs[0], &cargs);
 
-    match result {
+    match unistd::execvp(&cargs[0], &cargs) {
         Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),
         Err(Errno::EACCES) => exit::permission_denied(&args[0], core),
-        Err(Errno::ENOENT) => run_command_not_found(&args[0], core),
+        Err(Errno::ENOENT) => {
+            if core.db.get_param("PATH").unwrap_or("".to_string()).is_empty() {
+                ExecError::NoFile(args[0].clone()).print(core);
+                process::exit(127);
+            }
+            run_command_not_found(&args[0], core)
+        },
         Err(err) => {
             eprintln!("Failed to execute. {err:?}");
             process::exit(127)
