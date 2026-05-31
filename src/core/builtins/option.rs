@@ -66,6 +66,7 @@ pub fn set_short_options(core: &mut ShellCore, args: &mut Vec<String>) {
         ('e', ""),
         ('r', ""),
         ('H', ""),
+        ('i', ""),
         ('x', ""),
         ('v', ""),
     ] {
@@ -147,21 +148,6 @@ pub fn set(core: &mut ShellCore, args: &[String]) -> i32 {
             return 0;
         } else {
             set_bash_flags(core, &args);
-            /*
-            if args[2] == "monitor" {
-                if positive && !core.db.flags.contains('m') {
-                    core.db.flags.push('m');
-                } else if !positive {
-                    core.db.flags.retain(|f| f != 'm');
-                }
-            }else if args[2] == "allexport" {
-                if positive && !core.db.flags.contains('a') {
-                    core.db.flags.push('a');
-                } else if !positive {
-                    core.db.flags.retain(|f| f != 'a');
-                }
-            }*/
-
             return match core.options.set(&args[2], positive) {
                 Ok(()) => 0,
                 Err(e) => {
