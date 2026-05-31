@@ -216,6 +216,18 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let ans = if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
+        if core.db.exist_nameref(&a) {
+            let mut v = Variable::default();
+            v.text = a.clone();
+            v.name = a.clone();
+            if v.solve_nameref(core).is_err() {
+                return super::error(1, "read", &ExecError::InvalidName(a.to_string()), core);
+            }
+            if v.index.is_some() {
+                return super::error(1, "read", &ExecError::InvalidName(a.to_string()), core);
+            }
+        }
+
         let es = read_a(core, &a, r_opt, &mut limit, &delim, timeout);
         if es == 142 {
             let _ = core.db.unset(&a, None, core.shopts.query("localvar_unset"));

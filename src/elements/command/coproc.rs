@@ -7,6 +7,7 @@ use crate::elements::command;
 use crate::elements::command::{
     BraceCommand, IfCommand, ParenCommand, SimpleCommand, WhileCommand
 };
+use crate::elements::substitution::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
@@ -38,6 +39,21 @@ impl Command for Coprocess {
             return Ok(None);
         }
         core.jobtable_check_status()?;
+
+        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
+
+        if core.db.exist_nameref(&self.name) {
+            let mut v = Variable::default();
+            v.text = self.name.clone();
+            v.name = self.name.clone();
+            v.solve_nameref(core)?;
+            if v.index.is_some() {
+                let name = format!("{}{}", v.name, v.index.unwrap().text);
+                return Err(ExecError::InvalidName(name));
+            }else{
+                self.name = v.name;
+            }
+        }
 
         let backup = core.tty_fd.clone();
         core.tty_fd = None;
