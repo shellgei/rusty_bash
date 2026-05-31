@@ -5,6 +5,7 @@ use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
 use crate::{error, file_check, proc_ctrl, utils, ShellCore};
+use std::fs;
 
 pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
@@ -60,7 +61,7 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
             return_value = 0;
             match large_v {
                 true => println!("{} is {}", &com, &path),
-                false => println!("{}", &com),
+                false => println!("{}", &path),
             }
         } else if file_check::is_executable(com) {
             return_value = 0;
@@ -109,10 +110,25 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut args = args[..pos].to_vec();
     args = arg::dissolve_options(&args);
+    let default_path = arg::consume_arg("-p", &mut args);
+    let bkup_path = core.db.get_param("PATH").unwrap_or("".to_string());
+    if default_path {
+        let mut paths = fs::read_to_string("/etc/environment").unwrap_or("".to_string());
+        paths.retain(|e| e != '"');
+        paths = paths.trim_end().to_string();
+        if paths.starts_with("PATH=") {
+            paths = paths[5..].to_string();
+            let _ = core.db.set_param("PATH", &paths, None);
+        }
+    }
 
     let last_option = args.last().unwrap();
     if last_option == "-V" || last_option == "-v" {
-        return command_v(&words, core, last_option == "-V");
+        let ans = command_v(&words, core, last_option == "-V");
+        if default_path {
+            let _ = core.db.set_param("PATH", &bkup_path, None);
+        }
+        return ans;
     } else if core.builtins.contains_key(&words[0]) {
         return core.builtins[&words[0]](core, &words[..]);
     }
@@ -122,6 +138,9 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     command.args = words;
     if let Ok(pid) = command.exec_command(core, &mut pipe) {
         proc_ctrl::wait_pipeline(core, vec![pid], false);
+        if default_path {
+            let _ = core.db.set_param("PATH", &bkup_path, None);
+        }
     }
 
     core.db.exit_status
