@@ -202,7 +202,13 @@ impl Substr {
     }
 
     fn length(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
-        let n = self.length.as_mut().unwrap().eval_as_int(core)?;
+        let mut n = self.length.as_mut().unwrap().eval_as_int(core)?;
+        
+        if n < 0 {
+            let str_len = text.chars().count();
+            n = str_len as i128 + n as i128;
+        }
+        //dbg!("{:?}", &n);
         Ok(text
             .chars()
             .enumerate()
