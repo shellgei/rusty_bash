@@ -272,6 +272,7 @@ impl Redirect {
                 process::exit(0);
             }
             Ok(ForkResult::Parent { child: _ }) => {
+                core.now_herestring = true;
                 core.fds.close(send);
                 core.fds.replace(recv, 0)?;
             }

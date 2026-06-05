@@ -73,6 +73,7 @@ pub struct ShellCore {
     pub valid_assoc_expand_once: bool,
     pub proc_sub_pid: Vec<Pid>,
     pub proc_sub_fd: Vec<RawFd>,
+    pub now_herestring: bool,
 }
 
 impl ShellCore {

@@ -168,7 +168,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut args = arg::dissolve_options(args);
     let r_opt = arg::consume_arg("-r", &mut args);
-    let timeout = match arg::consume_with_next_arg("-t", &mut args) {
+    let mut timeout = match arg::consume_with_next_arg("-t", &mut args) {
         None => None,
         Some(s) => match s.parse::<f32>() {
             Ok(t) => match t >= 0.0 {
@@ -180,6 +180,10 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
             },
         }
     };
+
+    if core.now_herestring {
+        timeout = None;
+    }
 
     let mut limit = usize::MAX;
     let limit_str = arg::consume_with_next_arg("-n", &mut args);
@@ -284,8 +288,6 @@ fn eat_word(
             remaining.pop();
             remaining.pop();
 
-            //let line = utils::read_line_stdin_unbuffered(delim, timeout)
-             //          .unwrap_or("".to_string());
             let line = match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell) {
                 Err(InputError::Timeout) => return Err(InputError::Timeout),
                 Ok(s) => s,
