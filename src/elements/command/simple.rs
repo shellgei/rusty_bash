@@ -58,6 +58,7 @@ impl Command for SimpleCommand {
         core.db.set_param("BASH_COMMAND", &self.text, None)?;
 
         self.args.clear();
+        core.now_herestring = false;
         let mut words = self.words.to_vec();
         for w in words.iter_mut() {
             w.set_pipe(core)?; //for >()

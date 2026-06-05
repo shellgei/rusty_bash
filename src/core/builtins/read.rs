@@ -6,21 +6,6 @@ use crate::elements::substitution::variable::Variable;
 use crate::{arg, error, utils, ShellCore, InputError};
 use crate::error::exec::ExecError;
 
-/*
-fn check_word_limit(word: &mut String, limit: &mut usize) -> bool {
-    let mut pos = 0;
-    for c in word.chars() {
-        if *limit == 0 {
-            let _ = word.split_off(pos);
-            return true;
-        }
-        *limit -= 1;
-
-        pos += c.len_utf8();
-    }
-    false
-}*/
-
 fn read_(
     core: &mut ShellCore,
     args: &mut Vec<String>,
@@ -168,13 +153,17 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut args = arg::dissolve_options(args);
+    let _e_opt = arg::consume_arg("-e", &mut args);
     let r_opt = arg::consume_arg("-r", &mut args);
     let mut timeout = match arg::consume_with_next_arg("-t", &mut args) {
         None => None,
         Some(s) => match s.parse::<f32>() {
-            Ok(t) => match t >= 0.0 {
-                true  => Some(t), 
-                false => return super::error(1, "read", &ExecError::InvalidTimeout(s), core),
+            Ok(t) => if t > 0.0 {
+                Some(t)
+            }else if t < 0.0 {
+                return super::error(1, "read", &ExecError::InvalidTimeout(s), core)
+            }else {
+                return 0;
             },
             Err(_) => {
                 return super::error(1, "read", &ExecError::InvalidTimeout(s), core);
@@ -187,11 +176,18 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     let mut limit = usize::MAX;
-    let limit_str = arg::consume_with_next_arg("-n", &mut args);
-    let delim = match arg::consume_with_next_arg("-d", &mut args) {
-        Some(c) => c,
-        None => "\n".to_string(),
-    };
+    let mut delim = "\n".to_string();
+    let mut limit_str = arg::consume_with_next_arg("-n", &mut args);
+    if limit_str.is_none() {
+        limit_str = arg::consume_with_next_arg("-N", &mut args);
+        if limit_str.is_some() {
+            delim = "".to_string();
+        }
+    }
+
+    if let Some(c) = arg::consume_with_next_arg("-d", &mut args) {
+        delim = c;
+    }
 
     if let Some(limit_str) = limit_str {
         match limit_str.parse::<usize>() {
