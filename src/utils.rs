@@ -149,13 +149,13 @@ pub fn is_var(s: &str) -> bool {
     !s.chars().any(|c| !name_c(c))
 }
 
-pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: bool)
+pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: bool, limit: &mut usize)
 -> Result<String, InputError> {
     if timeout.is_some() {
         if subshell {
-            return read_line_stdin_unbuffered_thread(delim, timeout.unwrap());
+            return read_line_stdin_unbuffered_thread(delim, timeout.unwrap(), limit);
         }else{
-            return read_line_stdin_unbuffered_nonblock(delim, timeout.unwrap());
+            return read_line_stdin_unbuffered_nonblock(delim, timeout.unwrap(), limit);
         }
     }
 
@@ -178,7 +178,8 @@ pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: b
             }
             Ok(_) => {
                 line.push(ch[0]);
-                if d == ch[0] {
+                *limit -= 1;
+                if d == ch[0] || *limit == 0 {
                     break;
                 }
             }
@@ -192,7 +193,7 @@ pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: b
     }
 }
 
-pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32)
+pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32, limit: &mut usize)
 -> Result<String, InputError> {
     let start = clock::monotonic_time();
 
@@ -204,7 +205,6 @@ pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32)
     if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
         d = c;
     }
-
 
     loop {
         let cur = clock::monotonic_time();
@@ -221,7 +221,8 @@ pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32)
             Ok(0) => {},
             Ok(_) => {
                 line.push(ch[0]);
-                if d == ch[0] {
+                *limit -= 1;
+                if d == ch[0] || *limit == 0 {
                     break;
                 }
             }
@@ -235,10 +236,12 @@ pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32)
     }
 }
 
-pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32)
+pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32, limit: &mut usize)
 -> Result<String, InputError> {
     let (tx, rx) = mpsc::channel();
     let delim = delim.to_string();
+    
+    let mut limit_internal = limit.clone();
 
     thread::spawn(move || {
         let mut line = vec![];
@@ -260,7 +263,8 @@ pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32)
                 }
                 Ok(_) => {
                     line.push(ch[0]);
-                    if d == ch[0] {
+                    limit_internal -= 1;
+                    if d == ch[0] || limit_internal == 0 {
                         break;
                     }
                 }
@@ -275,7 +279,10 @@ pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32)
     });
 
     match rx.recv_timeout(Duration::from_secs_f32(timeout)) {
-        Ok(line) => Ok(line),
+        Ok(line) => {
+            *limit -= line.len();
+            Ok(line)
+        },
         Err(std::sync::mpsc::RecvTimeoutError::Timeout) => Err(InputError::Timeout),
         Err(_) => Err(InputError::Eof),
     }

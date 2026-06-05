@@ -127,7 +127,8 @@ impl Feeder {
             }
         }
 
-        utils::read_line_stdin_unbuffered("", None, false)
+        let mut tmp = std::usize::MAX;
+        utils::read_line_stdin_unbuffered("", None, false, &mut tmp)
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
