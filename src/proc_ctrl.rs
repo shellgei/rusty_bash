@@ -146,6 +146,11 @@ pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! 
     let cargs = c_string::to_cargs(args);
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
+    if let Some(path) = core.exec_command_path_bkup.as_ref() {
+        let _  = core.db.set_param("PATH", path, Some(0));
+        unsafe { env::set_var("PATH", path); }
+    }
+
     if !fullpath.is_empty() {
         let _ = unistd::execv(&cfullpath, &cargs);
     }

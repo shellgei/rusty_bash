@@ -111,8 +111,8 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = args[..pos].to_vec();
     args = arg::dissolve_options(&args);
     let default_path = arg::consume_arg("-p", &mut args);
-    let bkup_path = core.db.get_param("PATH").unwrap_or("".to_string());
     if default_path {
+        core.exec_command_path_bkup = Some(core.db.get_param("PATH").unwrap_or("".to_string()));
         let mut paths = fs::read_to_string("/etc/environment").unwrap_or("".to_string());
         paths.retain(|e| e != '"');
         paths = paths.trim_end().to_string();
@@ -126,10 +126,15 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     if last_option == "-V" || last_option == "-v" {
         let ans = command_v(&words, core, last_option == "-V");
         if default_path {
-            let _ = core.db.set_param("PATH", &bkup_path, None);
+            let _ = core.db.set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+            core.exec_command_path_bkup = None;
         }
         return ans;
     } else if core.builtins.contains_key(&words[0]) {
+        if default_path {
+            let _ = core.db.set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+            core.exec_command_path_bkup = None;
+        }
         return core.builtins[&words[0]](core, &words[..]);
     }
 
@@ -138,9 +143,11 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     command.args = words;
     if let Ok(pid) = command.exec_command(core, &mut pipe) {
         proc_ctrl::wait_pipeline(core, vec![pid], false);
-        if default_path {
-            let _ = core.db.set_param("PATH", &bkup_path, None);
-        }
+    }
+
+    if default_path {
+        let _ = core.db.set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+        core.exec_command_path_bkup = None;
     }
 
     core.db.exit_status
