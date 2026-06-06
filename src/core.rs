@@ -74,6 +74,7 @@ pub struct ShellCore {
     pub proc_sub_pid: Vec<Pid>,
     pub proc_sub_fd: Vec<RawFd>,
     pub exec_command_path_bkup: Option<String>,
+    pub now_herestring: bool,
 }
 
 impl ShellCore {
