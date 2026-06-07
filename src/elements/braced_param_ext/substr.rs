@@ -2,11 +2,11 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::substitution::variable::Variable;
 use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
-use crate::error::exec::ExecError;
 use super::BracedParamExtension;
+use crate::elements::substitution::variable::Variable;
+use crate::error::exec::ExecError;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substr {
