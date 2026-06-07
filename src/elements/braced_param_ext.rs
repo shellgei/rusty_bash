@@ -5,8 +5,8 @@ mod substr;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::substitution::variable::Variable;
-use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
+use crate::error::parse::ParseError;
 use core::fmt;
 use core::fmt::Debug;
 use self::substr::Substr;
