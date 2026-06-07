@@ -2,8 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::elements::substitution::variable::Variable;
 use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
+use crate::error::exec::ExecError;
 use super::BracedParamExtension;
 
 #[derive(Debug, Clone, Default)]
@@ -14,6 +16,11 @@ pub struct Substr {
 }
 
 impl BracedParamExtension for Substr {
+    fn exec(&mut self, v: &Variable, text: &str, core: &mut ShellCore)
+    -> Result<String, ExecError> {
+        Ok(text.to_string())
+    } 
+
     fn get_text(&self) -> String { self.text.clone() }
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension> { Box::new(self.clone()) }
 }
