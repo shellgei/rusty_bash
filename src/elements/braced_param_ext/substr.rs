@@ -19,7 +19,7 @@ impl BracedParamExtension for Substr {
     fn exec(&mut self, v: &Variable, text: &str, core: &mut ShellCore)
     -> Result<String, ExecError> {
         Ok(text.to_string())
-    } 
+    }
 
     fn get_text(&self) -> String { self.text.clone() }
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension> { Box::new(self.clone()) }
