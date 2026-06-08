@@ -5,18 +5,18 @@ use crate::{Feeder, ShellCore};
 use crate::error::parse::ParseError;
 
 #[derive(Debug, Clone, Default)]
-pub struct Variable {
+pub struct Parameter {
     pub text: String,
 }
 
-impl Variable {
+impl Parameter {
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_name(core);
         if len == 0 {
             return Ok(None);
         }
-        let ans = Variable { text: feeder.consume(len) };
+        let ans = Parameter { text: feeder.consume(len) };
         Ok(Some(ans))
     }
 }
