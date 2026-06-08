@@ -3,7 +3,7 @@
 
 use super::BracedExcludeension;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::substitution::variable::Variable;
+use crate::elements::variable::Variable;
 //use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;

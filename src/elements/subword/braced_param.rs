@@ -6,7 +6,7 @@ mod indirect;
 mod subscript;
 
 use crate::elements::braced_param_ext::BracedExcludeension;
-use crate::elements::substitution::variable::Variable;
+use crate::elements::variable::Variable;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use crate::{ShellCore, utils};

@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::error_;
-use crate::elements::substitution::variable::Variable;
+use crate::elements::variable::Variable;
 use crate::{arg, error, utils, ShellCore, InputError};
 use crate::error::exec::ExecError;
 

@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::substitution::variable::Variable;
+use crate::elements::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
 use super::BracedExcludeension;

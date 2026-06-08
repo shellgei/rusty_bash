@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::Subword;
-//use crate::elements::substitution::variable::Variable;
+//use crate::elements::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
 use super::splitter;

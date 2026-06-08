@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::elements::command::{
     BraceCommand, IfCommand, ParenCommand, SimpleCommand, WhileCommand
 };
-use crate::elements::substitution::variable::Variable;
+use crate::elements::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;

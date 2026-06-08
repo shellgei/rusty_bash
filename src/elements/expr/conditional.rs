@@ -8,7 +8,7 @@ use self::elem::CondElem;
 use super::arithmetic::elem::ArithElem;
 use crate::elements::expr::arithmetic::elem::{float, int};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::substitution::variable::Variable;
+use crate::elements::variable::Variable;
 use crate::elements::word::Word;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;

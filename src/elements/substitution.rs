@@ -4,10 +4,9 @@
 pub mod array;
 pub mod subscript;
 pub mod value;
-pub mod variable;
 
 use self::value::Value;
-use self::variable::Variable;
+use super::variable::Variable;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};

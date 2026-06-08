@@ -11,6 +11,7 @@ pub mod pipeline;
 pub mod script;
 pub mod substitution;
 pub mod subword;
+pub mod variable;
 pub mod word;
 
 use self::io::pipe::Pipe;

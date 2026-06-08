@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::BracedExcludeension;
-use crate::elements::substitution::variable::Variable;
+use crate::elements::variable::Variable;
 use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subword::single_quoted::SingleQuoted;
 use crate::elements::subword::Subword;

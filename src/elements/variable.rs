@@ -7,7 +7,7 @@ use crate::error::parse::ParseError;
 use crate::utils;
 use crate::utils::arg;
 use crate::{Feeder, ShellCore};
-use super::subscript::Subscript;
+use crate::elements::substitution::subscript::Subscript;
 
 #[derive(Debug, Clone, Default)]
 pub struct Variable {
