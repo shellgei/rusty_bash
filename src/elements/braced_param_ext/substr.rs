@@ -46,7 +46,7 @@ impl Substr {
         ans.text += &ans.offset.text.clone();
         ans.eat_length(feeder, core)?;
 
-        dbg!("{:?}", &ans);
+//        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
