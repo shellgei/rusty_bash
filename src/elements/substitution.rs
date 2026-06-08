@@ -2,18 +2,17 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod value;
-pub mod variable;
 
 use crate::{Feeder, ShellCore};
+use crate::elements::parameter::Parameter;
 use crate::error::parse::ParseError;
 use crate::error::exec::ExecError;
 use self::value::Value;
-use self::variable::Variable;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
-    pub left_hand: Variable,
+    pub left_hand: Parameter,
     right_hand: Option<Value>,
 }
 
@@ -49,7 +48,7 @@ impl Substitution {
         let mut ans = Self::default();
         feeder.set_backup();
 
-        match Variable::parse(feeder, core) {
+        match Parameter::parse(feeder, core) {
             Ok(Some(v)) => {
                 ans.text += &v.text.clone();
                 ans.left_hand = v;
