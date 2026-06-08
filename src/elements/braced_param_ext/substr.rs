@@ -16,10 +16,34 @@ pub struct Substr {
 }
 
 impl BracedParamExtension for Substr {
-    fn exec(&mut self, v: &Variable, text: &str, core: &mut ShellCore)
-    -> Result<String, ExecError> {
-        Ok(text.to_string())
-    } 
+    fn exec(&mut self, _: &Variable, text: &str,
+            core: &mut ShellCore) -> Result<String, ExecError> {
+        if self.offset.text.is_empty() && self.length.is_none() {
+            return Err(ExecError::BadSubstitution(self.text.clone()));
+        }    //↑ echo ${A:}のようなパターンでエラーを返す
+     
+        let mut n = match self.offset.eval_as_value(core)?.trim() {
+            "" => 0,   //空文字や空白文字だけの場合は0扱い
+            s => match s.parse::<i32>() { //数字に変換
+               Ok(num) => num,
+                _ => return Err(ExecError::BadSubstitution(self.text.clone())),
+            },  
+        };  
+        let len = text.chars().count() as i32; //加工前の文字列の文字数をカウント
+     
+        if n < 0 {     //オフセットがマイナス指定のとき
+            n += len;
+            if n < 0 { //文字列の長さよりマイナスが大きければ空文字に
+                return Ok("".to_string());
+            }   
+        }   
+     
+        let ans = text.chars().enumerate()       //textを1文字ずつにバラして番号づけ
+            .filter(|(i, _)| (*i as i32) >= n)   //オフセット値より番号が大きい部分だけ残す
+            .map(|(_, c)| c).collect::<String>(); //番号を除去してString型に戻す
+     
+        Ok(ans)
+    }
 
     fn get_text(&self) -> String { self.text.clone() }
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension> { Box::new(self.clone()) }
