@@ -29,8 +29,8 @@ impl BracedParamExtension for Substr {
                 _ => return Err(ExecError::BadSubstitution(self.text.clone())),
             },  
         };  
+
         let len = text.chars().count() as i32; //加工前の文字列の文字数をカウント
-     
         if n < 0 {     //オフセットがマイナス指定のとき
             n += len;
             if n < 0 { //文字列の長さよりマイナスが大きければ空文字に
