@@ -22,7 +22,7 @@ impl BracedParamExtension for Substr {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }    //↑ echo ${A:}のようなパターンでエラーを返す
      
-        let mut n = match self.offset.eval_as_value(core)?.trim() {
+        let mut offset = match self.offset.eval_as_value(core)?.trim() {
             "" => 0,   //空文字や空白文字だけの場合は0扱い
             s => match s.parse::<i32>() { //数字に変換
                Ok(num) => num,
@@ -31,15 +31,15 @@ impl BracedParamExtension for Substr {
         };  
 
         let len = text.chars().count() as i32; //加工前の文字列の文字数をカウント
-        if n < 0 {     //オフセットがマイナス指定のとき
-            n += len;
-            if n < 0 { //文字列の長さよりマイナスが大きければ空文字に
+        if offset < 0 {     //オフセットがマイナス指定のとき
+            offset += len;
+            if offset < 0 { //文字列の長さよりマイナスが大きければ空文字に
                 return Ok("".to_string());
             }   
         }   
      
         let ans = text.chars().enumerate()       //textを1文字ずつにバラして番号づけ
-            .filter(|(i, _)| (*i as i32) >= n)   //オフセット値より番号が大きい部分だけ残す
+            .filter(|(i, _)| (*i as i32) >= offset)   //オフセット値より番号が大きい部分だけ残す
             .map(|(_, c)| c).collect::<String>(); //番号を除去してString型に戻す
      
         Ok(ans)
