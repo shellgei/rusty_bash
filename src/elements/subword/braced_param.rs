@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::braced_param_ext::BracedParamExtension;
-use crate::elements::substitution::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::elements::subword;
 use crate::elements::subword::{ExecError, WordMode};
 use crate::error::parse::ParseError;
@@ -13,7 +13,7 @@ use crate::elements::braced_param_ext;
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     text: String,
-    param: Variable,
+    param: Parameter,
     extension: Option<Box<dyn BracedParamExtension>>,
     unknown: String,
 }

@@ -5,7 +5,7 @@ use crate::{Feeder, ShellCore};
 use crate::elements::word::{Word, WordMode};
 use crate::error::parse::ParseError;
 use super::BracedParamExtension;
-use crate::elements::substitution::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::error::exec::ExecError;
 
 #[derive(Debug, Clone, Default)]
@@ -16,7 +16,7 @@ pub struct Substr {
 }
 
 impl BracedParamExtension for Substr {
-    fn exec(&mut self, v: &Variable, text: &str, core: &mut ShellCore)
+    fn exec(&mut self, v: &Parameter, text: &str, core: &mut ShellCore)
     -> Result<String, ExecError> {
         Ok(text.to_string())
     }
@@ -53,7 +53,7 @@ impl Substr {
         ans.text += &ans.offset.text.clone();
         ans.eat_length(feeder, core)?;
 
-        dbg!("{:?}", &ans);
+//        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }

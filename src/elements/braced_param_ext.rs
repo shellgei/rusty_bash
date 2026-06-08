@@ -4,7 +4,7 @@
 mod substr;
 
 use crate::{Feeder, ShellCore};
-use crate::elements::substitution::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use core::fmt;
@@ -24,7 +24,7 @@ impl Debug for dyn BracedParamExtension {
 }
 
 pub trait BracedParamExtension {
-    fn exec(&mut self, _: &Variable, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
+    fn exec(&mut self, _: &Parameter, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension>;
     fn get_text(&self) -> String;
 }

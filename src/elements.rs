@@ -10,5 +10,6 @@ pub mod io;
 pub mod word;
 pub mod substitution;
 pub mod subword;
+pub mod parameter;
 
 use self::io::pipe::Pipe;
