@@ -1,13 +1,15 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod subscript;
+
 use crate::core::database::data::uninit::Uninit;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::utils::arg;
 use crate::{Feeder, ShellCore};
-use crate::elements::substitution::subscript::Subscript;
+use crate::elements::parameter::subscript::Subscript;
 
 #[derive(Debug, Clone, Default)]
 pub struct Parameter {

@@ -3,7 +3,7 @@
 
 use super::{BracedParam, Parameter};
 use crate::elements::braced_param_ext;
-use crate::elements::substitution::subscript::Subscript;
+use crate::elements::parameter::subscript::Subscript;
 use crate::elements::subword;
 use crate::elements::word::mode::WordMode;
 use crate::error::parse::ParseError;

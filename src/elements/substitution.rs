@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod array;
-pub mod subscript;
 pub mod value;
 
 use self::value::Value;
