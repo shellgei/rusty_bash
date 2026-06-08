@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::BracedExcludeension;
-use crate::elements::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subword::single_quoted::SingleQuoted;
 use crate::elements::subword::Subword;
@@ -33,7 +33,7 @@ impl BracedExcludeension for ValueCheck {
 
     fn exec(
         &mut self,
-        variable: &Variable,
+        variable: &Parameter,
         text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
@@ -153,7 +153,7 @@ impl ValueCheck {
 
     fn set_value(
         &mut self,
-        variable: &Variable,
+        variable: &Parameter,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
         let mut value = self.set_alter_word(core)?;

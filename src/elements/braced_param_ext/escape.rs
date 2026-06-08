@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
 use super::BracedExcludeension;
@@ -16,13 +16,13 @@ impl BracedExcludeension for Escape {
     fn get_text(&self) -> String {
         self.text.clone()
     }
-    fn exec(&mut self, _: &Variable, text: &str, _: &mut ShellCore) -> Result<String, ExecError> {
+    fn exec(&mut self, _: &Parameter, text: &str, _: &mut ShellCore) -> Result<String, ExecError> {
         self.replace_single_data(text)
     }
 
     fn init_array(
         &mut self,
-        param: &Variable,
+        param: &Parameter,
         array: &mut Vec<String>,
         _: &mut String,
         core: &mut ShellCore,

@@ -8,7 +8,7 @@ use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::{Feeder, ShellCore};
-use crate::elements::variable::Variable;
+use crate::elements::parameter::Parameter;
 
 impl BracedExcludeension for CaseConv {
     fn get_text(&self) -> String {
@@ -16,7 +16,7 @@ impl BracedExcludeension for CaseConv {
     }
     fn exec(
         &mut self,
-        _: &Variable,
+        _: &Parameter,
         text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {

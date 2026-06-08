@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::error_;
-use crate::elements::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::{arg, error, utils, ShellCore, InputError};
 use crate::error::exec::ExecError;
 
@@ -74,7 +74,7 @@ fn read_(
             consume_tail_ifs(&mut word, &tail_space, ignore_escape);
         }
 
-        if let Err(e) = Variable::parse_and_set(&args[0], &word, core) {
+        if let Err(e) = Parameter::parse_and_set(&args[0], &word, core) {
             return super::error_(1, "read", &String::from(&e), core);
         }
 
@@ -83,7 +83,7 @@ fn read_(
     }
 
     for a in args {
-        if let Err(e) = Variable::parse_and_set(&a, "", core) {
+        if let Err(e) = Parameter::parse_and_set(&a, "", core) {
             return super::error_(1, "read", &String::from(&e), core);
         }
     }
@@ -218,7 +218,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let ans = if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
         if core.db.exist_nameref(&a) {
-            let mut v = Variable::default();
+            let mut v = Parameter::default();
             v.text = a.clone();
             v.name = a.clone();
             if v.solve_nameref(core).is_err() {

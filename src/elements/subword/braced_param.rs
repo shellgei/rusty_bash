@@ -6,7 +6,7 @@ mod indirect;
 mod subscript;
 
 use crate::elements::braced_param_ext::BracedExcludeension;
-use crate::elements::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use crate::{ShellCore, utils};
@@ -16,7 +16,7 @@ use super::splitter;
 pub struct BracedParam {
     text: String,
     array: Option<Vec<String>>,
-    param: Variable,
+    param: Parameter,
     extension: Option<Box<dyn BracedExcludeension>>,
     unknown: String,
     treat_as_array: bool,

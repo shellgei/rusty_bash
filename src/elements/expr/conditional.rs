@@ -8,7 +8,7 @@ use self::elem::CondElem;
 use super::arithmetic::elem::ArithElem;
 use crate::elements::expr::arithmetic::elem::{float, int};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::elements::word::Word;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
@@ -208,7 +208,7 @@ impl ConditionalExpr {
                         true
                     } else {
                         let mut f = Feeder::new(&operand);
-                        if let Some(v) = Variable::parse(&mut f, core)? {
+                        if let Some(v) = Parameter::parse(&mut f, core)? {
                             v.exist(core)?
                         } else {
                             false

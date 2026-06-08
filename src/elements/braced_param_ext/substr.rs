@@ -3,7 +3,7 @@
 
 use super::BracedExcludeension;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::variable::Variable;
+use crate::elements::parameter::Parameter;
 //use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -23,7 +23,7 @@ impl BracedExcludeension for Substr {
     }
     fn exec(
         &mut self,
-        v: &Variable,
+        v: &Parameter,
         text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
@@ -43,7 +43,7 @@ impl BracedExcludeension for Substr {
 
     fn init_array(
         &mut self,
-        param: &Variable,
+        param: &Parameter,
         array: &mut Vec<String>,
         text: &mut String,
         core: &mut ShellCore,

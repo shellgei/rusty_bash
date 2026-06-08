@@ -14,7 +14,7 @@ use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
 use self::value_check::ValueCheck;
-use crate::elements::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -23,7 +23,7 @@ use core::fmt;
 use core::fmt::Debug;
 
 pub trait BracedExcludeension {
-    fn exec(&mut self, _: &Variable, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
+    fn exec(&mut self, _: &Parameter, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
     fn boxed_clone(&self) -> Box<dyn BracedExcludeension>;
     fn get_text(&self) -> String;
     fn has_array_replace(&self) -> bool {
@@ -34,7 +34,7 @@ pub trait BracedExcludeension {
     }
     fn init_array(
         &mut self,
-        _: &Variable,
+        _: &Parameter,
         _: &mut Vec<String>,
         _: &mut String,
         _: &mut ShellCore,
