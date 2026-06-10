@@ -41,8 +41,11 @@ impl BracedParamExtension for Substr {
         let ans = text.chars().enumerate()       //textを1文字ずつにバラして番号づけ
             .filter(|(i, _)| (*i as i32) >= offset)   //オフセット値より番号が大きい部分だけ残す
             .map(|(_, c)| c).collect::<String>(); //番号を除去してString型に戻す
-     
-        Ok(ans)
+        
+        if self.length.is_none() {
+            return Ok(ans);
+        }
+
     }
 
     fn get_text(&self) -> String { self.text.clone() }
