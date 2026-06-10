@@ -25,7 +25,7 @@ fn word_to_num(w: &Word, text: &str, core: &mut ShellCore)
         },
     };
 
-    if n < 0 {  //オフセットがマイナス指定のとき
+    if n < 0 {  //マイナス指定のとき
         Ok(n + text.chars().count() as i32) //加工前の文字列の文字数を足す
     }else {
         Ok(n)
