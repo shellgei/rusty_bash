@@ -52,7 +52,12 @@ impl BracedParamExtension for Substr {
             return Ok(ans);
         }
 
-        let mut length = self.length.as_mut().unwrap().eval_as_int(core)?;
+        let length = word_to_num(self.length.as_ref().unwrap(), &ans, core)?;
+        let ans = ans.chars().enumerate()
+            .filter(|(i, _)| (*i as i32) < length)
+            .map(|(_, c)| c).collect::<String>();
+
+        Ok(ans)
     }
 
     fn get_text(&self) -> String { self.text.clone() }
