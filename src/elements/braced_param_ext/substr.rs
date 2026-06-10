@@ -46,6 +46,7 @@ impl BracedParamExtension for Substr {
             return Ok(ans);
         }
 
+        let mut length = self.length.as_mut().unwrap().eval_as_int(core)?;
     }
 
     fn get_text(&self) -> String { self.text.clone() }
