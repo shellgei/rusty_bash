@@ -30,9 +30,9 @@ impl BracedParamExtension for Substr {
             },  
         };  
 
-        let len = text.chars().count() as i32; //加工前の文字列の文字数をカウント
+        let org_len = text.chars().count() as i32; //加工前の文字列の文字数をカウント
         if offset < 0 {     //オフセットがマイナス指定のとき
-            offset += len;
+            offset += org_len;
             if offset < 0 { //文字列の長さよりマイナスが大きければ空文字に
                 return Ok("".to_string());
             }   
