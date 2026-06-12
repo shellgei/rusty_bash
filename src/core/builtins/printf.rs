@@ -387,7 +387,8 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
     ans
 }
 
-/* TODO: Use [u8] instead of String for any output */
+/* TODO: Use [u8] as the return type instead of String for any output */
+/* or directly output to stdout */
 fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
     let mut ans = String::new();
 
