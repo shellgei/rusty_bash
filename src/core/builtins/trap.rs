@@ -15,6 +15,7 @@ use std::{thread, time};
 
 pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
+    core.traplist.sort();
     if args.len() == 1 {
         for e in &core.traplist {
             if e.0 == 0 {

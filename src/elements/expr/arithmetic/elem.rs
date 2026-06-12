@@ -8,7 +8,7 @@ pub mod variable;
 
 use super::ArithmeticExpr;
 use super::Word;
-use crate::elements::substitution::subscript::Subscript;
+use crate::elements::parameter::subscript::Subscript;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::{utils, ShellCore};

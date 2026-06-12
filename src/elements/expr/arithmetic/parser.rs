@@ -3,7 +3,7 @@
 
 use super::elem::{float, int};
 use super::{ArithElem, ArithmeticExpr};
-use crate::elements::substitution::subscript::Subscript;
+use crate::elements::parameter::subscript::Subscript;
 use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;

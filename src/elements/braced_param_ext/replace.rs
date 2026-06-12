@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::BracedExcludeension;
-use crate::elements::substitution::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -27,7 +27,7 @@ impl BracedExcludeension for Replace {
     }
     fn exec(
         &mut self,
-        param: &Variable,
+        param: &Parameter,
         text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
@@ -43,7 +43,7 @@ impl BracedExcludeension for Replace {
 
     fn init_array(
         &mut self,
-        param: &Variable,
+        param: &Parameter,
         array: &mut Vec<String>,
         text: &mut String,
         core: &mut ShellCore,

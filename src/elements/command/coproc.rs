@@ -7,7 +7,7 @@ use crate::elements::command;
 use crate::elements::command::{
     BraceCommand, IfCommand, ParenCommand, SimpleCommand, WhileCommand
 };
-use crate::elements::substitution::variable::Variable;
+use crate::elements::parameter::Parameter;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
@@ -43,7 +43,7 @@ impl Command for Coprocess {
         core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
 
         if core.db.exist_nameref(&self.name) {
-            let mut v = Variable::default();
+            let mut v = Parameter::default();
             v.text = self.name.clone();
             v.name = self.name.clone();
             v.solve_nameref(core)?;

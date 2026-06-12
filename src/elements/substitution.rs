@@ -2,12 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod array;
-pub mod subscript;
 pub mod value;
-pub mod variable;
 
 use self::value::Value;
-use self::variable::Variable;
+use super::parameter::Parameter;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
@@ -15,7 +13,7 @@ use crate::{Feeder, ShellCore};
 #[derive(Debug, Clone, Default)]
 pub struct Substitution {
     pub text: String,
-    pub left_hand: Variable,
+    pub left_hand: Parameter,
     pub right_hand: Option<Value>,
     append: bool,
     lineno: usize,
@@ -234,7 +232,7 @@ impl Substitution {
         feeder: &mut Feeder,
         core: &mut ShellCore,
     ) -> Result<bool, ParseError> {
-        self.left_hand = match Variable::parse(feeder, core)? {
+        self.left_hand = match Parameter::parse(feeder, core)? {
             Some(a) => a,
             None => return Ok(false),
         };

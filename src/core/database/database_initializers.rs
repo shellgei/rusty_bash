@@ -30,6 +30,11 @@ impl DataBase {
         self.init_as_num("UID", &unistd::getuid().to_string(), None)?;
         self.set_flag("UID", 'i', 0);
         self.set_flag("UID", 'r', 0);
+
+        if let Ok(path) = env::var("PATH") {
+            self.set_param("PATH", &path, None)?;
+            self.set_flag("PATH", 'x', 0);
+        }
     
         self.params[0].insert("RANDOM".to_string(), Box::new(RandomVar::new()));
         self.params[0].insert("SRANDOM".to_string(), Box::new(SRandomVar::new()));

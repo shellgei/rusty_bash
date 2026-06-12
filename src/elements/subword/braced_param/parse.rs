@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::{BracedParam, Variable};
+use super::{BracedParam, Parameter};
 use crate::elements::braced_param_ext;
-use crate::elements::substitution::subscript::Subscript;
+use crate::elements::parameter::subscript::Subscript;
 use crate::elements::subword;
 use crate::elements::word::mode::WordMode;
 use crate::error::parse::ParseError;
@@ -30,7 +30,7 @@ impl BracedParam {
     fn eat_param(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         let len = feeder.scanner_name(core);
         if len != 0 {
-            ans.param = Variable::default();
+            ans.param = Parameter::default();
             ans.param.name = feeder.consume(len);
             ans.text += &ans.param.name;
             return true;
@@ -42,7 +42,7 @@ impl BracedParam {
         }
 
         if len != 0 {
-            ans.param = Variable::default();
+            ans.param = Parameter::default();
             ans.param.name = feeder.consume(len);
             ans.treat_as_array = ans.param.name == "@" && !ans.num;
             ans.text += &ans.param.name;

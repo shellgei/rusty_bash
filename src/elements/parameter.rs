@@ -1,23 +1,25 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod subscript;
+
 use crate::core::database::data::uninit::Uninit;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::utils::arg;
 use crate::{Feeder, ShellCore};
-use super::subscript::Subscript;
+use crate::elements::parameter::subscript::Subscript;
 
 #[derive(Debug, Clone, Default)]
-pub struct Variable {
+pub struct Parameter {
     pub text: String,
     pub name: String,
     pub index: Option<Subscript>,
     pub lineno: usize,
 }
 
-impl Variable {
+impl Parameter {
     pub fn check_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let nameref = match core.db.get_nameref(&self.name)? {
             Some(nref) => nref,
