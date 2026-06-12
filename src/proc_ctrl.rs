@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::error::exec::ExecError;
-use crate::utils::c_string;
+use crate::utils::string_binary;
 use crate::{error, file_check, exit, signal, Feeder, Script, ShellCore};
 use nix::errno::Errno;
 use nix::sys::signal::Signal;
@@ -143,7 +143,7 @@ pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! 
         exit::is_a_dir(&args[0], core);
     }
 
-    let cargs = c_string::to_cargs(args);
+    let cargs = string_binary::to_cargs(args);
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
     if let Some(path) = core.exec_command_path_bkup.as_ref() {

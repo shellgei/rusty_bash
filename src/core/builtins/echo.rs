@@ -3,7 +3,7 @@
 
 use crate::elements::ansi_c_str::AnsiCString;
 use crate::error::exec::ExecError;
-use crate::utils::c_string;
+use crate::utils::string_binary;
 use crate::{Feeder, ShellCore};
 use std::ffi::CString;
 use std::io;
@@ -12,8 +12,8 @@ use std::io::{stdout, Write};
 fn arg_to_c_str(arg: &str, core: &mut ShellCore) -> Result<CString, ExecError> {
     let mut f = Feeder::new(arg);
     let ans = match AnsiCString::parse(&mut f, core, true) {
-        Ok(Some(mut ansi_c_str)) => c_string::to_carg(&ansi_c_str.eval()),
-        Ok(None) => c_string::to_carg(arg),
+        Ok(Some(mut ansi_c_str)) => string_binary::to_carg(&ansi_c_str.eval()),
+        Ok(None) => string_binary::to_carg(arg),
         Err(e) => return Err(ExecError::ParseError(e)),
     };
 
@@ -55,7 +55,7 @@ pub fn echo(core: &mut ShellCore, args: &[String]) -> i32 {
         first = false;
 
         let bytes = match e_opt {
-            false => c_string::to_carg(a).into_bytes(),
+            false => string_binary::to_carg(a).into_bytes(),
             true => match arg_to_c_str(a, core) {
                 Ok(v) => v.into_bytes(),
                 Err(e) => {

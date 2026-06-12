@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod arg;
-pub mod c_string;
 pub mod clock;
 pub mod directory;
 pub mod exit;
@@ -10,6 +9,7 @@ pub mod file;
 pub mod file_check;
 pub mod glob;
 pub mod restricted_shell;
+pub mod string_binary;
 
 use libc;
 use crate::{Feeder, ShellCore, Script};

@@ -4,8 +4,7 @@
 use crate::elements::substitution::Substitution;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::{error, Feeder, ShellCore};
-use std::io::{stdout, Write};
+use crate::{error, Feeder, ShellCore, utils};
 
 #[derive(Debug, Clone)]
 enum PrintfToken {
@@ -20,7 +19,8 @@ enum PrintfToken {
     Q,
     Other(String),
     Normal(String),
-    EscapedChar(String),
+    EscapedOctet(String),
+    EscapedChar(char),
 }
 
 impl PrintfToken {
@@ -192,7 +192,8 @@ impl PrintfToken {
 
                 Ok(formatted)
             }
-            Self::EscapedChar(s) => Ok(esc_to_str(&s)),
+            Self::EscapedOctet(s) => Ok(esc_to_octet(&s)),
+            Self::EscapedChar(c) => Ok(esc_to_str(*c)),
             Self::Normal(s) => Ok(s.clone()),
         }
     }
@@ -205,25 +206,30 @@ fn pop(args: &mut Vec<String>) -> String {
     }
 }
 
-fn esc_to_str(s: &String) -> String {
-    if *"0" <= s[0..1] && s[0..1] <= *"7" {
-        let oct = (u32::from_str_radix(s, 8).unwrap() % 256) as u8;
-        return char::from(oct).to_string();
+fn esc_to_str(c: char) -> String {
+    match c {
+        'a' => char::from(7).to_string(),
+        'b' => char::from(8).to_string(),
+        'e' | 'E' => char::from(27).to_string(),
+        'f' => char::from(12).to_string(),
+        'n' => '\n'.to_string(),
+        'r' => '\r'.to_string(),
+        't' => '\t'.to_string(),
+        'v' => char::from(11).to_string(),
+        '\\' => '\\'.to_string(),
+        '\'' => '\''.to_string(),
+        '"' => '"'.to_string(),
+        c => ("\\".to_owned() + &c.to_string()).to_string(),
     }
+}
 
-    match s.as_ref() {
-        "a" => char::from(7).to_string(),
-        "b" => char::from(8).to_string(),
-        "e" | "E" => char::from(27).to_string(),
-        "f" => char::from(12).to_string(),
-        "n" => "\n".to_string(),
-        "r" => "\r".to_string(),
-        "t" => "\t".to_string(),
-        "v" => char::from(11).to_string(),
-        "\\" => "\\".to_string(),
-        "'" => "'".to_string(),
-        "\"" => "\"".to_string(),
-        c => ("\\".to_owned() + c).to_string(),
+fn esc_to_octet(s: &String) -> String {
+    let oct = (u32::from_str_radix(s, 8).unwrap() % 256) as u8;
+
+    if oct < 128 {
+        char::from(oct).to_string()
+    }else{
+        char::from_u32(0xE000 + oct as u32).expect("printf internal error").to_string()
     }
 }
 
@@ -234,7 +240,7 @@ fn replace_escape(s: &str) -> String {
     for ch in s.chars() {
         if esc || ch == '\\' {
             if esc {
-                ans.push_str(&esc_to_str(&ch.to_string()));
+                ans.push_str(&esc_to_str(ch));
             }
             esc = !esc;
             continue;
@@ -332,7 +338,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
         if len > 0 {
             let tail = remaining.split_off(len);
             let s = remaining[1..].to_string();
-            ans.push(PrintfToken::EscapedChar(s));
+            ans.push(PrintfToken::EscapedOctet(s));
             remaining = tail;
             continue;
         }
@@ -341,7 +347,7 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
         if len > 0 {
             remaining.remove(0);
             let ch = remaining.remove(0);
-            ans.push(PrintfToken::EscapedChar(ch.to_string()));
+            ans.push(PrintfToken::EscapedChar(ch));
             continue;
         }
 
@@ -387,8 +393,6 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
     ans
 }
 
-/* TODO: Use [u8] as the return type instead of String for any output */
-/* or directly output to stdout */
 fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
     let mut ans = String::new();
 
@@ -480,11 +484,6 @@ pub fn printf(core: &mut ShellCore, args: &[String]) -> i32 {
             return 1;
         }
     };
-    print!("{}", &s);
-    /* to output 0xff, we cannot use String */
-    //dbg!("{:?}", &utils::c_string::to_carg(&s));
-    //unsafe{libc::fputs(utils::c_string::to_carg(&s).as_ptr(), stdout)};
-    //unsafe{libc::fflush(stdout)};
-    stdout().flush().unwrap();
+    utils::string_binary::to_stdout(&s);
     0
 }
