@@ -21,7 +21,7 @@ pub fn to_carg(arg: &str) -> CString {
             let ch = unsafe { char::from_u32_unchecked(unicode8num) }.to_string();
             unicode8num = 0; //　^ An error occurs on debug mode.
             tmp.push_str(&ch);
-        } else {
+        } else if c != '\0' {
             tmp.push(c);
         }
     }
