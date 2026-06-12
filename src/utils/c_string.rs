@@ -8,8 +8,8 @@ pub fn to_carg(arg: &str) -> CString {
     let mut unicode8num = 0;
 
     for c in arg.chars() {
-        if c as u32 >= 0xE080 && c as u32 <= 0xE0FF {
-            let num: u8 = (c as u32 - 0xE000) as u8;
+        if c as u32 >= 0xE080 && c as u32 <= 0xE0FF { //a char in [0x80, 0xFF] is shifted to an
+            let num: u8 = (c as u32 - 0xE000) as u8;  // unused UTF-8 region.
             let ch = unsafe { String::from_utf8_unchecked(vec![num]) };
             tmp.push_str(&ch);
         } else if c as u32 >= 0xE200 && c as u32 <= 0xE4FF {
