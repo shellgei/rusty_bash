@@ -4,8 +4,8 @@
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::SimpleCommand;
-use crate::elements::pipeline::Pipeline;
 use crate::elements::job::Job;
+use crate::elements::pipeline::Pipeline;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
@@ -18,11 +18,10 @@ impl From<SimpleCommand> for ParenCommand {
         pip.text = c.get_text();
         pip.commands.push(c.boxed_clone());
 
-
         let job = Job {
             text: pip.text.clone(),
             pipelines: vec![pip],
-            pipeline_ends: vec!["".to_string()]
+            pipeline_ends: vec!["".to_string()],
         };
 
         let script = Script {
@@ -111,7 +110,14 @@ impl ParenCommand {
             start = "`";
         }
 
-        if command::eat_inner_script(feeder, core, start, vec![")"], &mut ans.script, substitution)? {
+        if command::eat_inner_script(
+            feeder,
+            core,
+            start,
+            vec![")"],
+            &mut ans.script,
+            substitution,
+        )? {
             ans.text.push_str(start);
             ans.text.push_str(&ans.script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1));

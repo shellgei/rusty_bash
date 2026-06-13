@@ -162,12 +162,12 @@ fn subs(
                         .set_param2(&name, sub, &(left + *n).to_string(), None)?;
                     return Ok(ArithElem::Integer(left + *n));
                 }
-            } else if let Ok(left) = val_str.parse::<f64>() {
-                if let ArithElem::Float(f) = right_value {
-                    core.db
-                        .set_param2(&name, sub, &(left + *f).to_string(), None)?;
-                    return Ok(ArithElem::Float(left + *f));
-                }
+            } else if let Ok(left) = val_str.parse::<f64>()
+                && let ArithElem::Float(f) = right_value
+            {
+                core.db
+                    .set_param2(&name, sub, &(left + *f).to_string(), None)?;
+                return Ok(ArithElem::Float(left + *f));
             }
         }
         _ => {}

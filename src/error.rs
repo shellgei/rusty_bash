@@ -32,7 +32,7 @@ pub fn exponent(s: &str) -> String {
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
     match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-        Ok("1") => {},
+        Ok("1") => {}
         _ => match coredump {
             true => eprintln!("Pid: {pid:?}, Signal: {signal:?} (core dumped)"),
             false => eprintln!("Pid: {pid:?}, Signal: {signal:?}"),

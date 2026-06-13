@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::Terminal;
-use crate::error::input::InputError;
 use crate::ShellCore;
+use crate::error::input::InputError;
 use std::sync::atomic::Ordering::Relaxed;
 use termion::event;
 use termion::event::Key;

@@ -97,14 +97,14 @@ impl ArithmeticCommand {
             ..Default::default()
         };
 
-        if let Some(c) = ArithmeticExpr::parse(feeder, core, true, "((")? {
-            if feeder.starts_with("))") {
-                ans.text += &c.text;
-                ans.text += &feeder.consume(2);
-                ans.expressions.push(c);
-                feeder.pop_backup();
-                return Ok(Some(ans));
-            }
+        if let Some(c) = ArithmeticExpr::parse(feeder, core, true, "((")?
+            && feeder.starts_with("))")
+        {
+            ans.text += &c.text;
+            ans.text += &feeder.consume(2);
+            ans.expressions.push(c);
+            feeder.pop_backup();
+            return Ok(Some(ans));
         }
         feeder.rewind();
         Ok(None)

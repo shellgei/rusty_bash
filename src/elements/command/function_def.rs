@@ -69,27 +69,34 @@ impl FunctionDefinition {
     }
 
     pub fn run_as_command(&mut self, args: &mut [String], core: &mut ShellCore) {
-        if ! core.db.exist("FUNCNAME") {
-            if  core.script_name == "-" {
+        if !core.db.exist("FUNCNAME") {
+            if core.script_name == "-" {
                 let _ = core.db.init_array("FUNCNAME", None, Some(0), false);
-            }else {
-                let _ = core.db.init_array("FUNCNAME", Some(vec!["main".to_string()]),
-                                           Some(0), false);
+            } else {
+                let _ =
+                    core.db
+                        .init_array("FUNCNAME", Some(vec!["main".to_string()]), Some(0), false);
             }
         }
 
         let mut array = core.db.get_vec("FUNCNAME", false).unwrap(); //TODO: implement array push
         array.insert(0, args[0].clone()); //TODO: We must put the name not only in 0 but also 1..
-        let _ = core.db.init_array("FUNCNAME", Some(array.clone()), None, false);
+        let _ = core
+            .db
+            .init_array("FUNCNAME", Some(array.clone()), None, false);
 
         let mut linenos = core.db.get_vec("BASH_LINENO", false).unwrap();
         let lineno = core.db.get_param("LINENO").unwrap_or("0".to_string());
         linenos.insert(0, lineno.to_string());
-        let _ = core.db.init_array("BASH_LINENO", Some(linenos.clone()), None, false);
+        let _ = core
+            .db
+            .init_array("BASH_LINENO", Some(linenos.clone()), None, false);
 
         let mut source = core.db.get_vec("BASH_SOURCE", false).unwrap();
         source.insert(0, self.file.clone());
-        let _ = core.db.init_array("BASH_SOURCE", Some(source.clone()), None, false);
+        let _ = core
+            .db
+            .init_array("BASH_SOURCE", Some(source.clone()), None, false);
 
         args[0] = core.db.position_parameters[0][0].clone();
         core.db.position_parameters.push(args.to_vec());
@@ -106,16 +113,19 @@ impl FunctionDefinition {
         core.db.position_parameters.pop();
 
         array.remove(0);
-        if array.is_empty() 
-        || ( core.script_name != "-" && array[0] == "main" ) {
-            let _ = core.db.unset("FUNCNAME", Some(0), core.shopts.query("localvar_unset"));
-        }else {
+        if array.is_empty() || (core.script_name != "-" && array[0] == "main") {
+            let _ = core
+                .db
+                .unset("FUNCNAME", Some(0), core.shopts.query("localvar_unset"));
+        } else {
             let _ = core.db.init_array("FUNCNAME", Some(array), Some(0), false);
         }
 
         linenos.remove(0);
         source.remove(0);
-        let _ = core.db.init_array("BASH_LINENO", Some(linenos), None, false);
+        let _ = core
+            .db
+            .init_array("BASH_LINENO", Some(linenos), None, false);
         let _ = core.db.init_array("BASH_SOURCE", Some(source), None, false);
     }
 

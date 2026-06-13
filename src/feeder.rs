@@ -6,7 +6,7 @@ mod terminal;
 
 use crate::error::input::InputError;
 use crate::error::parse::ParseError;
-use crate::{utils, ShellCore};
+use crate::{ShellCore, utils};
 use std::fs::File;
 use std::io::{BufRead, BufReader, ErrorKind, Lines};
 use std::sync::atomic::Ordering::Relaxed;
@@ -121,13 +121,13 @@ impl Feeder {
                     if e.kind() == ErrorKind::InvalidData {
                         return Err(InputError::BinaryFile(self.script_file.clone()));
                     }
-                    return Err(InputError::Eof)
-                },
+                    return Err(InputError::Eof);
+                }
                 _ => return Err(InputError::Eof),
             }
         }
 
-        let mut tmp = std::usize::MAX;
+        let mut tmp = usize::MAX;
         utils::read_line_stdin_unbuffered("", None, false, &mut tmp)
     }
 

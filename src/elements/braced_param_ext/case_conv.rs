@@ -2,13 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::BracedExcludeension;
+use crate::elements::parameter::Parameter;
 use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::{Feeder, ShellCore};
-use crate::elements::parameter::Parameter;
 
 impl BracedExcludeension for CaseConv {
     fn get_text(&self) -> String {

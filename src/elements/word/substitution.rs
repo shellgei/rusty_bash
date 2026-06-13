@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::ShellCore;
 use crate::elements::subword::Subword;
 use crate::elements::subword::braced_param::BracedParam;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
-use crate::ShellCore;
 
 pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
     for i in word.scan_pos("$") {

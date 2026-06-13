@@ -3,9 +3,9 @@
 
 use super::Subword;
 //use crate::elements::parameter::Parameter;
+use super::splitter;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
-use super::splitter;
 
 #[derive(Debug, Clone, Default)]
 pub struct Parameter {
@@ -29,7 +29,7 @@ impl Subword for Parameter {
         if self.text == "$*" || self.text == "$@" {
             self.array = Some(core.db.get_position_params());
         }
-        
+
         self.text = core.db.get_param(&self.text[1..])?;
         Ok(())
     }

@@ -15,7 +15,7 @@ pub enum ParsedDataType {
     None,
     Single(Word),
     Array(Array),
-    Obj(Box::<dyn Data>),
+    Obj(Box<dyn Data>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -26,8 +26,8 @@ pub struct Value {
     pub evaluated_array: Option<Vec<(String, bool, String)>>, //bool: true if append
 }
 
-impl From<Box::<dyn Data>> for Value {
-    fn from(mut d: Box::<dyn Data>) -> Self {
+impl From<Box<dyn Data>> for Value {
+    fn from(mut d: Box<dyn Data>) -> Self {
         Self {
             text: (*d.get_fmt_string()).to_string(),
             value: ParsedDataType::Obj(d),
@@ -46,7 +46,7 @@ impl Value {
         match self.value.clone() {
             ParsedDataType::Single(v) => self.eval_as_value(&v, core, name),
             ParsedDataType::Array(mut a) => self.eval_as_array(&mut a, core, name, append),
-            ParsedDataType::Obj(_) => {Ok(())},
+            ParsedDataType::Obj(_) => Ok(()),
             ParsedDataType::None => {
                 self.evaluated_string = Some("".to_string());
                 Ok(())
@@ -55,10 +55,7 @@ impl Value {
     }
 
     pub fn is_obj(&self) -> bool {
-        match self.value {
-            ParsedDataType::Obj(_) => true,
-            _ => false,
-        }
+        matches!(self.value, ParsedDataType::Obj(_))
     }
 
     fn eval_as_value(

@@ -85,8 +85,8 @@ pub trait Subword {
         Ok(vec![])
     }
 
-    fn split(&self, ifs: &str, strip_left: bool)
-    -> Option<Vec<(Box<dyn Subword>, bool)>> { //bool: true if it should remain as an arg
+    fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+        //bool: true if it should remain as an arg
         splitter::split(self.get_text(), ifs, strip_left)
     }
 
@@ -134,7 +134,9 @@ pub trait Subword {
     }
     fn set_heredoc_flag(&mut self) {}
 
-    fn set_pipe(&mut self, _: &mut ShellCore) -> Result<(), ExecError> { Ok(()) }
+    fn set_pipe(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {
+        Ok(())
+    }
 }
 
 fn replace_history_expansion(feeder: &mut Feeder, core: &mut ShellCore) -> bool {
@@ -202,7 +204,7 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if mode.is_some() {
         mode.as_ref().unwrap().subword_post_check(feeder, core)
-    }else{
+    } else {
         Ok(None)
     }
 }

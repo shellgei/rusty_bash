@@ -1,12 +1,22 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::utils::arg;
 use crate::ShellCore;
+use crate::utils::arg;
 
 fn print_enabled(core: &mut ShellCore) -> i32 {
-    let mut list = core.builtins.keys().map(|e| e.to_string()).collect::<Vec<String>>();
-    list.append(&mut core.subst_builtins.keys().map(|e| e.to_string()).collect::<Vec<String>>());
+    let mut list = core
+        .builtins
+        .keys()
+        .map(|e| e.to_string())
+        .collect::<Vec<String>>();
+    list.append(
+        &mut core
+            .subst_builtins
+            .keys()
+            .map(|e| e.to_string())
+            .collect::<Vec<String>>(),
+    );
     list.sort();
 
     list.iter().for_each(|e| println!("enable {e}"));
@@ -14,10 +24,32 @@ fn print_enabled(core: &mut ShellCore) -> i32 {
 }
 
 fn print_all(core: &mut ShellCore) -> i32 {
-    let mut list = core.builtins.keys().map(|e| e.to_string()).collect::<Vec<String>>();
-    list.append(&mut core.subst_builtins.keys().map(|e| e.to_string()).collect::<Vec<String>>());
-    list.append(&mut core.disabled_builtins.keys().map(|e| e.to_owned() + "*").collect::<Vec<String>>());
-    list.append(&mut core.disabled_subst_builtins.keys().map(|e| e.to_owned() + "*").collect::<Vec<String>>());
+    let mut list = core
+        .builtins
+        .keys()
+        .map(|e| e.to_string())
+        .collect::<Vec<String>>();
+    list.append(
+        &mut core
+            .subst_builtins
+            .keys()
+            .map(|e| e.to_string())
+            .collect::<Vec<String>>(),
+    );
+    list.append(
+        &mut core
+            .disabled_builtins
+            .keys()
+            .map(|e| e.to_owned() + "*")
+            .collect::<Vec<String>>(),
+    );
+    list.append(
+        &mut core
+            .disabled_subst_builtins
+            .keys()
+            .map(|e| e.to_owned() + "*")
+            .collect::<Vec<String>>(),
+    );
     list.sort();
 
     for e in &mut list {
@@ -37,7 +69,7 @@ fn disable_builtins(core: &mut ShellCore, commands: &[String]) -> i32 {
     for com in commands {
         if let Some(func) = core.builtins.remove(com) {
             core.disabled_builtins.insert(com.to_string(), func);
-        }else if let Some(func) = core.subst_builtins.remove(com) {
+        } else if let Some(func) = core.subst_builtins.remove(com) {
             core.disabled_subst_builtins.insert(com.to_string(), func);
         }
     }
@@ -48,7 +80,7 @@ fn enable_builtins(core: &mut ShellCore, commands: &[String]) -> i32 {
     for com in commands {
         if let Some(func) = core.disabled_builtins.remove(com) {
             core.builtins.insert(com.to_string(), func);
-        }else if let Some(func) = core.disabled_subst_builtins.remove(com) {
+        } else if let Some(func) = core.disabled_subst_builtins.remove(com) {
             core.subst_builtins.insert(com.to_string(), func);
         }
     }
@@ -61,11 +93,11 @@ pub fn enable(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if args.len() < 2 {
         return print_enabled(core);
-    }else if args[1] == "-n" {
+    } else if args[1] == "-n" {
         disable_builtins(core, &args[2..]);
-    }else if args[1] == "-a" {
+    } else if args[1] == "-a" {
         print_all(core);
-    }else if ! args[1].starts_with("-") {
+    } else if !args[1].starts_with("-") {
         enable_builtins(core, &args[1..]);
     }
 

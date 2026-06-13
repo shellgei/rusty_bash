@@ -3,8 +3,8 @@
 
 use super::error_;
 use crate::elements::parameter::Parameter;
-use crate::{arg, error, utils, ShellCore, InputError};
 use crate::error::exec::ExecError;
+use crate::{InputError, ShellCore, arg, error, utils};
 
 fn read_(
     core: &mut ShellCore,
@@ -14,11 +14,12 @@ fn read_(
     delim: &String,
     timeout: Option<f32>,
 ) -> i32 {
-    let mut remaining = match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell, limit) {
-        Err(InputError::Timeout) => return 142,
-        Ok(s) => s,
-        Err(_) => "".to_string(),
-    };
+    let mut remaining =
+        match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell, limit) {
+            Err(InputError::Timeout) => return 142,
+            Ok(s) => s,
+            Err(_) => "".to_string(),
+        };
 
     if remaining.is_empty() {
         return 1;
@@ -44,15 +45,24 @@ fn read_(
             ifs_tmp.retain(|e| " \t".contains(e));
             consume_ifs(&mut remaining, &ifs_tmp);
         }
-    }else {
+    } else {
         let mut ifs_tmp = ifs.clone();
         ifs_tmp.retain(|e| " \t".contains(e));
         consume_ifs(&mut remaining, &ifs_tmp);
     }
 
-    while !args.is_empty() && !remaining.is_empty()/* && *limit != 0*/ {
-        let (mut word, tail_escaped) =
-        match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout, core, limit) {
+    while !args.is_empty() && !remaining.is_empty()
+    /* && *limit != 0*/
+    {
+        let (mut word, tail_escaped) = match eat_word(
+            &mut remaining,
+            &ifs,
+            ignore_escape,
+            delim,
+            timeout,
+            core,
+            limit,
+        ) {
             Err(_) => return 142,
             Ok(Some(w)) => w,
             Ok(None) => break,
@@ -60,7 +70,9 @@ fn read_(
 
         //check_word_limit(&mut word, limit);
 
-        if args.len() == 1/* && *limit != 0*/ {
+        if args.len() == 1
+        /* && *limit != 0*/
+        {
             let bkup = remaining.clone();
             consume_ifs(&mut remaining, &ifs);
 
@@ -70,7 +82,7 @@ fn read_(
             }
         }
 
-        if ! tail_escaped {
+        if !tail_escaped {
             consume_tail_ifs(&mut word, &tail_space, ignore_escape);
         }
 
@@ -83,7 +95,7 @@ fn read_(
     }
 
     for a in args {
-        if let Err(e) = Parameter::parse_and_set(&a, "", core) {
+        if let Err(e) = Parameter::parse_and_set(a, "", core) {
             return super::error_(1, "read", &String::from(&e), core);
         }
     }
@@ -99,11 +111,12 @@ fn read_a(
     delim: &String,
     timeout: Option<f32>,
 ) -> i32 {
-    let mut remaining = match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell, limit) {
-        Err(InputError::Timeout) => return 142,
-        Ok(s) => s,
-        Err(_) => "".to_string(),
-    };
+    let mut remaining =
+        match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell, limit) {
+            Err(InputError::Timeout) => return 142,
+            Ok(s) => s,
+            Err(_) => "".to_string(),
+        };
 
     if remaining.is_empty() {
         return 1;
@@ -124,14 +137,21 @@ fn read_a(
 
     let mut pos = 0;
     while !remaining.is_empty() {
-        let (mut word, tail_escaped) =
-            match eat_word(&mut remaining, &ifs, ignore_escape, delim, timeout, core, limit) {
+        let (mut word, tail_escaped) = match eat_word(
+            &mut remaining,
+            &ifs,
+            ignore_escape,
+            delim,
+            timeout,
+            core,
+            limit,
+        ) {
             Err(_) => return 142,
             Ok(Some(w)) => w,
             Ok(None) => break,
         };
         //check_word_limit(&mut word, limit);
-        if ! tail_escaped {
+        if !tail_escaped {
             consume_tail_ifs(&mut word, &tail_space, ignore_escape);
         }
 
@@ -158,17 +178,19 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut timeout = match arg::consume_with_next_arg("-t", &mut args) {
         None => None,
         Some(s) => match s.parse::<f32>() {
-            Ok(t) => if t > 0.0 {
-                Some(t)
-            }else if t < 0.0 {
-                return super::error(1, "read", &ExecError::InvalidTimeout(s), core)
-            }else {
-                return 0;
-            },
+            Ok(t) => {
+                if t > 0.0 {
+                    Some(t)
+                } else if t < 0.0 {
+                    return super::error(1, "read", &ExecError::InvalidTimeout(s), core);
+                } else {
+                    return 0;
+                }
+            }
             Err(_) => {
                 return super::error(1, "read", &ExecError::InvalidTimeout(s), core);
-            },
-        }
+            }
+        },
     };
 
     if core.now_herestring {
@@ -206,21 +228,23 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
             fd.remove(0);
         }
 
-        if let Ok(n) = fd.parse::<i32>() {
-            if n >= 3 && n < 256 {
-                backup = Some(core.fds.backup(0));
-                core.fds.read_used_fd = n;
-                fdn = n;
-                let _ = core.fds.replace(n, 0);
-            }
+        if let Ok(n) = fd.parse::<i32>()
+            && (3..256).contains(&n)
+        {
+            backup = Some(core.fds.backup(0));
+            core.fds.read_used_fd = n;
+            fdn = n;
+            let _ = core.fds.replace(n, 0);
         }
     }
 
     let ans = if let Some(a) = arg::consume_with_next_arg("-a", &mut args) {
         if core.db.exist_nameref(&a) {
-            let mut v = Parameter::default();
-            v.text = a.clone();
-            v.name = a.clone();
+            let mut v = Parameter {
+                text: a.clone(),
+                name: a.clone(),
+                ..Default::default()
+            };
             if v.solve_nameref(core).is_err() {
                 return super::error(1, "read", &ExecError::InvalidName(a.to_string()), core);
             }
@@ -234,7 +258,7 @@ pub fn read(core: &mut ShellCore, args: &[String]) -> i32 {
             let _ = core.db.unset(&a, None, core.shopts.query("localvar_unset"));
         }
         es
-    }else{
+    } else {
         let es = read_(core, &mut args, r_opt, &mut limit, &delim, timeout);
         if es == 142 {
             for a in args {
@@ -260,7 +284,8 @@ fn eat_word(
     timeout: Option<f32>,
     core: &mut ShellCore,
     limit: &mut usize,
-) -> Result<Option<(String, bool)>, InputError> { //bool: tail space is escaped
+) -> Result<Option<(String, bool)>, InputError> {
+    //bool: tail space is escaped
     let mut esc = false;
     let mut pos = 0;
     let mut escape_pos = vec![];
@@ -281,20 +306,22 @@ fn eat_word(
         pos += c.len_utf8();
     }
 
-    if let Some(p) = escape_pos.last() {
-        if p + 2 == remaining.len() && remaining.ends_with('\n') {
-            remaining.pop();
-            remaining.pop();
+    if let Some(p) = escape_pos.last()
+        && p + 2 == remaining.len()
+        && remaining.ends_with('\n')
+    {
+        remaining.pop();
+        remaining.pop();
 
-            let line = match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell, limit) {
-                Err(InputError::Timeout) => return Err(InputError::Timeout),
-                Ok(s) => s,
-                Err(_) => "".to_string(),
-            };
-            if !line.is_empty() {
-                *remaining += &line;
-                return eat_word(remaining, ifs, ignore_escape, delim, timeout, core, limit);
-            }
+        let line = match utils::read_line_stdin_unbuffered(delim, timeout, core.is_subshell, limit)
+        {
+            Err(InputError::Timeout) => return Err(InputError::Timeout),
+            Ok(s) => s,
+            Err(_) => "".to_string(),
+        };
+        if !line.is_empty() {
+            *remaining += &line;
+            return eat_word(remaining, ifs, ignore_escape, delim, timeout, core, limit);
         }
     }
 
@@ -310,7 +337,7 @@ fn eat_word(
     Ok(Some((ans, tail_escaped)))
 }
 
-fn tail_is_escaped(remaining: &String) -> bool {
+fn tail_is_escaped(remaining: &str) -> bool {
     let mut esc = false;
     let mut ans = false;
 
@@ -318,7 +345,7 @@ fn tail_is_escaped(remaining: &String) -> bool {
         if esc || c == '\\' {
             ans = esc;
             esc = !esc;
-        }else {
+        } else {
             ans = false;
         }
     }
@@ -328,19 +355,19 @@ fn tail_is_escaped(remaining: &String) -> bool {
 
 fn consume_tail_ifs(remaining: &mut String, ifs: &str, ignore_escape: bool) {
     let mut esc = false;
-    if ! ignore_escape {
+    if !ignore_escape {
         esc = tail_is_escaped(remaining);
     }
 
-    if let Some(c) = remaining.chars().last() {
-        if ifs.contains(c) {
+    if let Some(c) = remaining.chars().last()
+        && ifs.contains(c)
+    {
+        remaining.pop();
+        if esc {
             remaining.pop();
-            if esc {
-                remaining.pop();
-            }
-
-            consume_tail_ifs(remaining, ifs, ignore_escape);
         }
+
+        consume_tail_ifs(remaining, ifs, ignore_escape);
     }
 }
 

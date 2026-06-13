@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2026 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::ShellCore;
 use super::{BracedParam, ExecError};
+use crate::ShellCore;
 
 impl BracedParam {
     pub fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -74,11 +74,7 @@ impl BracedParam {
         }
     }
 
-    fn extension(
-        &mut self,
-        text: String,
-        core: &mut ShellCore,
-    ) -> Result<String, ExecError> {
+    fn extension(&mut self, text: String, core: &mut ShellCore) -> Result<String, ExecError> {
         match self.extension.as_mut() {
             Some(op) => op.exec(&self.param, &text, core),
             None => Ok(text.clone()),

@@ -5,8 +5,8 @@ use crate::ShellCore;
 use crate::core::builtins;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
-use std::{thread, time};
 use std::sync::atomic::Ordering::Relaxed;
+use std::{thread, time};
 
 pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
@@ -21,7 +21,7 @@ pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
             Err(e) => {
                 e.print(core);
                 return 1;
-            },
+            }
         }
     }
 
@@ -35,7 +35,7 @@ pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
             Err(e) => {
                 e.print(core);
                 return 1;
-            },
+            }
         }
     }
 
@@ -45,7 +45,7 @@ pub fn wait(core: &mut ShellCore, args: &[String]) -> i32 {
             Err(e) => {
                 e.print(core);
                 return 1;
-            },
+            }
         }
     }
     1
@@ -98,7 +98,7 @@ fn wait_all(core: &mut ShellCore) -> Result<i32, ExecError> {
     for pos in 0..core.job_table.len() {
         let result = core.job_table[pos].nonblock_wait(&core.sigint)?;
         exit_status = result.0;
-        if result.1 { 
+        if result.1 {
             remove_list.push(pos);
         }
     }
@@ -170,17 +170,17 @@ fn wait_next(
 
             let es = job.update_status(false, true)?;
             //if let Ok(es) = job.update_status(false, true) {
-                if job.display_status == "Done"
-                    || job.display_status == "Killed"
-                    || (job.display_status == "Stopped" && !f_opt)
-                {
-                    exit_status = es;
-                    drop = i;
-                    end = true;
-                    remove_job = job.display_status == "Done" || job.display_status == "Killed";
-                    pid = job.pids[0].to_string();
-                    break;
-                }
+            if job.display_status == "Done"
+                || job.display_status == "Killed"
+                || (job.display_status == "Stopped" && !f_opt)
+            {
+                exit_status = es;
+                drop = i;
+                end = true;
+                remove_job = job.display_status == "Done" || job.display_status == "Killed";
+                pid = job.pids[0].to_string();
+                break;
+            }
             //}
         }
 
@@ -202,8 +202,12 @@ fn wait_next(
     Ok((exit_status, true))
 }
 
-
-fn wait_pid(core: &mut ShellCore, pid: i32, var_name: &Option<String>, f_opt: bool) -> Result<(i32, bool), ExecError> {
+fn wait_pid(
+    core: &mut ShellCore,
+    pid: i32,
+    var_name: &Option<String>,
+    f_opt: bool,
+) -> Result<(i32, bool), ExecError> {
     match super::pid_to_array_pos(pid, &core.job_table) {
         Some(i) => wait_a_job(core, i, var_name, f_opt),
         None => Ok((127, false)),
@@ -223,12 +227,11 @@ fn wait_a_job(
         ));
     }
 
-
-    let ans = core.job_table[pos].nonblock_wait(&mut core.sigint)?;
+    let ans = core.job_table[pos].nonblock_wait(&core.sigint)?;
     if let Some(var) = var_name {
-          let _ = core.db.unset(var, None, false);
-          let pid = core.job_table[pos].pids[0].to_string();
-           core.db.set_param(var, &pid, None)?;
+        let _ = core.db.unset(var, None, false);
+        let pid = core.job_table[pos].pids[0].to_string();
+        core.db.set_param(var, &pid, None)?;
     }
 
     if f_opt && core.job_table[pos].display_status == "Stopped" {
@@ -238,4 +241,3 @@ fn wait_a_job(
         Ok(ans)
     }
 }
-

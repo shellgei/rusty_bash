@@ -3,14 +3,14 @@
 
 pub mod bg;
 pub mod disown;
-pub mod fg; 
-pub mod jobs; 
-pub mod kill; 
-pub mod wait; 
+pub mod fg;
+pub mod jobs;
+pub mod kill;
+pub mod wait;
 
 //use libc;
-use crate::core::JobEntry;
 use crate::ShellCore;
+use crate::core::JobEntry;
 
 pub fn set(core: &mut ShellCore) {
     core.builtins.insert("jobs".to_string(), jobs::jobs);
@@ -105,7 +105,7 @@ fn jobspec_to_array_poss(core: &mut ShellCore, jobspec: &str) -> Vec<usize> {
 
 fn remove_coproc(core: &mut ShellCore, pos: usize) {
     if let Some(name) = &core.job_table[pos].coproc_name {
-        let _ = core.db.unset(&name, None, false);
+        let _ = core.db.unset(name, None, false);
         let _ = core.db.unset(&(name.to_owned() + "_PID"), None, false);
 
         /*
@@ -131,4 +131,3 @@ fn remove(core: &mut ShellCore, pos: usize) {
     core.job_table.remove(pos);
     core.job_table_priority.retain(|id| *id != job_id);
 }
-

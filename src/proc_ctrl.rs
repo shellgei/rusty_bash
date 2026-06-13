@@ -3,7 +3,7 @@
 
 use crate::error::exec::ExecError;
 use crate::utils::string_binary;
-use crate::{error, file_check, exit, signal, Feeder, Script, ShellCore};
+use crate::{Feeder, Script, ShellCore, error, exit, file_check, signal};
 use nix::errno::Errno;
 use nix::sys::signal::Signal;
 use nix::sys::wait;
@@ -11,8 +11,8 @@ use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd;
 use nix::unistd::Pid;
 use std::ffi::CString;
-use std::{env, process};
 use std::sync::atomic::Ordering::Relaxed;
+use std::{env, process};
 
 pub fn wait_pipeline(
     core: &mut ShellCore,
@@ -86,7 +86,7 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
         Ok(WaitStatus::Signaled(pid, signal, coredump)) => error::signaled(pid, signal, coredump),
         Ok(WaitStatus::Stopped(pid, signal)) => {
             match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
-                Ok("1") => {},
+                Ok("1") => {}
                 _ => eprintln!("Stopped Pid: {pid:?}, Signal: {signal:?}"),
             }
             148
@@ -116,10 +116,10 @@ fn set_foreground(core: &mut ShellCore) -> Result<(), ExecError> {
     let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
         .unwrap_or_else(|_| panic!("{}", error::internal("cannot get pgid")));
 
-    if let Ok(n) = core.fds.tcgetpgrp(*fd) {
-        if n == pgid {
-            return Ok(());
-        }
+    if let Ok(n) = core.fds.tcgetpgrp(*fd)
+        && n == pgid
+    {
+        return Ok(());
     }
 
     signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視
@@ -139,7 +139,7 @@ pub fn set_pgid(core: &mut ShellCore, pid: Pid, pgid: Pid) {
 }
 
 pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! {
-    if file_check::is_dir(&args[0]){
+    if file_check::is_dir(&args[0]) {
         exit::is_a_dir(&args[0], core);
     }
 
@@ -147,8 +147,10 @@ pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! 
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
 
     if let Some(path) = core.exec_command_path_bkup.as_ref() {
-        let _  = core.db.set_param("PATH", path, Some(0));
-        unsafe { env::set_var("PATH", path); }
+        let _ = core.db.set_param("PATH", path, Some(0));
+        unsafe {
+            env::set_var("PATH", path);
+        }
     }
 
     if !fullpath.is_empty() {
@@ -159,12 +161,17 @@ pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! 
         Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),
         Err(Errno::EACCES) => exit::permission_denied(&args[0], core),
         Err(Errno::ENOENT) => {
-            if core.db.get_param("PATH").unwrap_or("".to_string()).is_empty() {
+            if core
+                .db
+                .get_param("PATH")
+                .unwrap_or("".to_string())
+                .is_empty()
+            {
                 ExecError::NoFile(args[0].clone()).print(core);
                 process::exit(127);
             }
             run_command_not_found(&args[0], core)
-        },
+        }
         Err(err) => {
             eprintln!("Failed to execute. {err:?}");
             process::exit(127)

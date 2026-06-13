@@ -3,9 +3,9 @@
 
 pub mod array;
 pub mod array_int;
+pub mod array_ondemand;
 pub mod assoc;
 pub mod assoc_int;
-pub mod array_ondemand;
 pub mod random;
 pub mod seconds;
 pub mod single;
@@ -16,9 +16,9 @@ pub mod uninit;
 
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
+use crate::utils;
 use std::fmt;
 use std::fmt::Debug;
-use crate::utils;
 
 fn to_int(s: &str) -> Result<isize, ExecError> {
     match s.parse::<isize>() {
@@ -30,7 +30,7 @@ fn to_int(s: &str) -> Result<isize, ExecError> {
 fn case_change(flags: &str, text: &mut String) {
     if flags.contains('l') {
         *text = text.to_lowercase();
-    }else if flags.contains('u') {
+    } else if flags.contains('u') {
         *text = text.to_uppercase();
     }
 }
@@ -76,7 +76,7 @@ pub trait Data {
 
     fn clear(&mut self) {}
 
-    fn set_as_single(&mut self, name: &str,  _: &str) -> Result<(), ExecError> {
+    fn set_as_single(&mut self, name: &str, _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)
     }
 
@@ -91,8 +91,7 @@ pub trait Data {
         self.readonly_check(name)?;
         Err(ExecError::Other("not an array".to_string()))
     }
-    fn append_to_array_elem(&mut self, name: &str, _: &str,
-                            _: &str) -> Result<(), ExecError> {
+    fn append_to_array_elem(&mut self, name: &str, _: &str, _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         Err(ExecError::Other("not an array".to_string()))
     }
@@ -101,8 +100,7 @@ pub trait Data {
         self.readonly_check(name)?;
         Err(ExecError::Other("not an associative table".to_string()))
     }
-    fn append_to_assoc_elem(&mut self, name: &str, _: &str,
-                            _: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(&mut self, name: &str, _: &str, _: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         Err(ExecError::Other("not an associative table".to_string()))
     }
@@ -209,23 +207,23 @@ pub trait Data {
     fn get_flags(&mut self) -> &str;
 
     fn nameref_check(&mut self, name: &str, value: &str) -> Result<(), ExecError> {
-        if ! self.has_flag('n') {
+        if !self.has_flag('n') {
             return Ok(());
         }
 
         if value.contains('[') {
             let splits: Vec<&str> = value.split('[').collect();
-            if ! utils::is_var(&splits[0]) || ! splits[1].ends_with(']') {
-                    return Err(ExecError::InvalidNameRef(value.to_string()));
+            if !utils::is_var(splits[0]) || !splits[1].ends_with(']') {
+                return Err(ExecError::InvalidNameRef(value.to_string()));
             }
 
             if name == splits[0] {
-                    return Err(ExecError::SelfRef(name.to_string()));
+                return Err(ExecError::SelfRef(name.to_string()));
             }
-        }else if value == "" {
-        }else if ! utils::is_var(value) {
+        } else if value.is_empty() {
+        } else if !utils::is_var(value) {
             return Err(ExecError::InvalidNameRef(value.to_string()));
-        }else if name == value {
+        } else if name == value {
             return Err(ExecError::SelfRef(name.to_string()));
         }
         Ok(())

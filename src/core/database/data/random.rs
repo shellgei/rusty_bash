@@ -3,14 +3,14 @@
 
 use super::Data;
 use crate::error::exec::ExecError;
+use rand_chacha::ChaCha20Rng;
 use rand_chacha::rand_core::RngCore;
 use rand_chacha::rand_core::SeedableRng;
-use rand_chacha::ChaCha20Rng;
 
 #[derive(Debug, Clone)]
 pub struct RandomVar {
     rng: ChaCha20Rng,
-    flags: String, 
+    flags: String,
 }
 
 impl Data for RandomVar {
@@ -48,7 +48,7 @@ impl Data for RandomVar {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }

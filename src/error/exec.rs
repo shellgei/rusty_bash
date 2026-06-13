@@ -1,10 +1,10 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::error::arith::ArithError;
-use crate::error::parse::ParseError;
-use crate::error::input::InputError;
 use crate::ShellCore;
+use crate::error::arith::ArithError;
+use crate::error::input::InputError;
+use crate::error::parse::ParseError;
 use nix::errno::Errno;
 use nix::sys::wait::WaitStatus;
 use std::num::ParseIntError;
@@ -81,7 +81,6 @@ impl From<ExecError> for String {
     }
 }
 
-
 //    command_error_exit(command_name, core, "Arg list too long", 126)
 //    command_error_exit(command_name, core, "Permission denied", 126)
 
@@ -99,9 +98,13 @@ impl From<&ExecError> for String {
             }
             ExecError::CircularNameRef(name) => format!("{name}: circular name reference"),
             ExecError::CommandNotFound(name) => format!("{name}: command not found"),
-            ExecError::InvalidIndirectExpansion(name) => format!("{name}: invalid indirect expansion"),
+            ExecError::InvalidIndirectExpansion(name) => {
+                format!("{name}: invalid indirect expansion")
+            }
             ExecError::InvalidName(name) => format!("`{name}': not a valid identifier"),
-            ExecError::InvalidNameRef(name) => format!("`{name}': invalid variable name for name reference"),
+            ExecError::InvalidNameRef(name) => {
+                format!("`{name}': invalid variable name for name reference")
+            }
             ExecError::InvalidOption(opt) => format!("{opt}: invalid option"),
             ExecError::InvalidTimeout(tm) => format!("{tm}: invalid timeout specification"),
             ExecError::Interrupted => "interrupted".to_string(),
@@ -114,12 +117,14 @@ impl From<&ExecError> for String {
             ExecError::PermissionDenied(name) => format!("{name}: Permission denied"),
             ExecError::SelfRef(name) => {
                 format!("{name}: nameref variable self references not allowed")
-            },
+            }
             ExecError::SyntaxError(near) => {
                 format!("syntax error near unexpected token `{}'", &near)
             }
             ExecError::Restricted(com) => format!("{com}: restricted"),
-            ExecError::RefCannotBeArray(name) => format!("{name}: reference variable cannot be an array"),
+            ExecError::RefCannotBeArray(name) => {
+                format!("{name}: reference variable cannot be an array")
+            }
             ExecError::SubstringMinus(n) => format!("{n}: substring expression < 0"),
             ExecError::UnsupportedWaitStatus(ws) => format!("Unsupported wait status: {ws:?}"),
             ExecError::UnboundVariable(name) => format!("{name}: unbound variable"),
@@ -134,7 +139,7 @@ impl From<&ExecError> for String {
             ExecError::ArithError(s, a) => format!("{}: {}", s, String::from(a)),
             ExecError::ParseError(p) => From::from(p),
             ExecError::InputError(p) => From::from(p),
-            _ => {"".to_string()},
+            _ => "".to_string(),
         }
     }
 }
@@ -143,7 +148,7 @@ impl ExecError {
     pub fn print(&self, core: &mut ShellCore) {
         let name = core.db.get_param("0").unwrap();
         let s: String = From::<&ExecError>::from(self);
-        if s == "" {
+        if s.is_empty() {
             return;
         }
 

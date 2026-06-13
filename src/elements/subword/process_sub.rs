@@ -1,11 +1,11 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::command::paren::ParenCommand;
+use crate::elements::Pipe;
 use crate::elements::command::Command;
+use crate::elements::command::paren::ParenCommand;
 use crate::elements::subword::Subword;
 use crate::elements::word::mode::WordMode;
-use crate::elements::Pipe;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
@@ -43,7 +43,10 @@ impl Subword for ProcessSubstitution {
     fn set_pipe(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.direction == '>' {
             self.pipe = Some(Pipe::new(">()".to_string()));
-            self.pipe.as_mut().unwrap().set(-1, unistd::getpgrp(), core)?;
+            self.pipe
+                .as_mut()
+                .unwrap()
+                .set(-1, unistd::getpgrp(), core)?;
         }
         Ok(())
     }

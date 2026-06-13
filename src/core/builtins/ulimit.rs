@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{arg, ShellCore};
 use crate::error::exec::ExecError;
+use crate::{ShellCore, arg};
 use nix::libc;
 use nix::sys::resource;
 use nix::sys::resource::{Resource, rlim_t};
@@ -189,7 +189,7 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool, core: &mut Shel
 
             if unit.starts_with("kbytes") {
                 limit *= 1024;
-            }else if *opt2 == "-n" {
+            } else if *opt2 == "-n" {
                 limit = std::cmp::max(4, limit);
             }
 
@@ -202,7 +202,12 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool, core: &mut Shel
 
             match resource::setrlimit(*key, soft_limit, hard_limit) {
                 Err(e) => {
-                    return super::error(1, "ulimit", &ExecError::Errno("cannot modify limit".to_string(), e), core);
+                    return super::error(
+                        1,
+                        "ulimit",
+                        &ExecError::Errno("cannot modify limit".to_string(), e),
+                        core,
+                    );
                 }
                 _ => return 0,
             }

@@ -24,10 +24,11 @@ pub fn pwd(core: &mut ShellCore, args: &[String]) -> i32 {
 
 fn show_pwd(core: &mut ShellCore, physical: bool) -> i32 {
     if let Some(mut path) = core.get_current_directory() {
-        if physical && path.is_symlink() {
-            if let Ok(c) = path.canonicalize() {
-                path = c;
-            }
+        if physical
+            && path.is_symlink()
+            && let Ok(c) = path.canonicalize()
+        {
+            path = c;
         }
         println!("{}", path.display());
         return 0;
