@@ -4,7 +4,7 @@
 use crate::elements::substitution::Substitution;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::{error, Feeder, ShellCore, utils};
+use crate::{Feeder, ShellCore, error, utils};
 
 #[derive(Debug, Clone)]
 enum PrintfToken {
@@ -174,7 +174,7 @@ impl PrintfToken {
                     .replace("!", "\\!")
                     .replace("&", "\\&");
 
-                if q == "" {
+                if q.is_empty() {
                     q = "''".to_string();
                 }
 
@@ -192,7 +192,7 @@ impl PrintfToken {
 
                 Ok(formatted)
             }
-            Self::EscapedOctet(s) => Ok(esc_to_octet(&s)),
+            Self::EscapedOctet(s) => Ok(esc_to_octet(s)),
             Self::EscapedChar(c) => Ok(esc_to_str(*c)),
             Self::Normal(s) => Ok(s.clone()),
         }
@@ -223,13 +223,15 @@ fn esc_to_str(c: char) -> String {
     }
 }
 
-fn esc_to_octet(s: &String) -> String {
+fn esc_to_octet(s: &str) -> String {
     let oct = (u32::from_str_radix(s, 8).unwrap() % 256) as u8;
 
     if oct < 128 {
         char::from(oct).to_string()
-    }else{
-        char::from_u32(0xE000 + oct as u32).expect("printf internal error").to_string()
+    } else {
+        char::from_u32(0xE000 + oct as u32)
+            .expect("printf internal error")
+            .to_string()
     }
 }
 
@@ -267,13 +269,13 @@ fn scanner_escaped_octet(remaining: &str) -> usize {
     let mut ans = 0;
     for (i, c) in remaining.chars().enumerate() {
         match (i, c) {
-            (0, '\\') => {},
+            (0, '\\') => {}
             (0, _) => break,
             (_, c) => {
-                if c < '0' || c >= '8' {
+                if !('0'..'8').contains(&c) {
                     break;
                 }
-            },
+            }
         }
         ans += 1;
     }
@@ -406,10 +408,11 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
         ans += &tok.render_value(args)?;
     }
 
-    if !args.is_empty() && !fin {
-        if let Ok(s) = format(pattern, args) {
-            ans += &s;
-        }
+    if !args.is_empty()
+        && !fin
+        && let Ok(s) = format(pattern, args)
+    {
+        ans += &s;
     }
     Ok(ans)
 }

@@ -2,15 +2,16 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use std::ffi::CString;
-use std::io::{stdout, Write};
+use std::io::{Write, stdout};
 
 pub fn to_carg(arg: &str) -> CString {
     let mut tmp = String::new();
     let mut unicode8num = 0;
 
     for c in arg.chars() {
-        if c as u32 >= 0xE080 && c as u32 <= 0xE0FF { //a char in [0x80, 0xFF] is shifted to an
-            let num: u8 = (c as u32 - 0xE000) as u8;  // unused UTF-8 region.
+        if c as u32 >= 0xE080 && c as u32 <= 0xE0FF {
+            //a char in [0x80, 0xFF] is shifted to an
+            let num: u8 = (c as u32 - 0xE000) as u8; // unused UTF-8 region.
             let ch = unsafe { String::from_utf8_unchecked(vec![num]) };
             tmp.push_str(&ch);
         } else if c as u32 >= 0xE200 && c as u32 <= 0xE4FF {
@@ -22,8 +23,9 @@ pub fn to_carg(arg: &str) -> CString {
             let ch = unsafe { char::from_u32_unchecked(unicode8num) }.to_string();
             unicode8num = 0; //　^ An error occurs on debug mode.
             tmp.push_str(&ch);
-        } else if c != '\0' { //Null chars are omitted since any command cannot handle args containing
-            tmp.push(c);      //them. 
+        } else if c != '\0' {
+            //Null chars are omitted since any command cannot handle args containing
+            tmp.push(c); //them. 
         }
     }
     CString::new(tmp.to_string()).unwrap()
@@ -33,8 +35,9 @@ pub fn to_stdout(arg: &str) {
     let mut unicode8num = 0;
 
     for c in arg.chars() {
-        if c as u32 >= 0xE080 && c as u32 <= 0xE0FF { //a char in [0x80, 0xFF] is shifted to an
-            let num: u8 = (c as u32 - 0xE000) as u8;  // unused UTF-8 region.
+        if c as u32 >= 0xE080 && c as u32 <= 0xE0FF {
+            //a char in [0x80, 0xFF] is shifted to an
+            let num: u8 = (c as u32 - 0xE000) as u8; // unused UTF-8 region.
             let ch = unsafe { String::from_utf8_unchecked(vec![num]) };
             print!("{}", ch);
         } else if c as u32 >= 0xE200 && c as u32 <= 0xE4FF {

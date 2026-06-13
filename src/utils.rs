@@ -11,18 +11,17 @@ pub mod glob;
 pub mod restricted_shell;
 pub mod string_binary;
 
-use libc;
-use crate::{Feeder, ShellCore, Script};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::input::InputError;
+use crate::{Feeder, Script, ShellCore};
 use faccess::PathExt;
 use io_streams::StreamReader;
-use std::{thread, time};
 use std::io::Read;
 use std::path::Path;
 use std::sync::mpsc;
 use std::time::Duration;
+use std::{thread, time};
 
 pub fn reserved(w: &str) -> bool {
     matches!(
@@ -149,13 +148,17 @@ pub fn is_var(s: &str) -> bool {
     !s.chars().any(|c| !name_c(c))
 }
 
-pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: bool, limit: &mut usize)
--> Result<String, InputError> {
-    if timeout.is_some() {
+pub fn read_line_stdin_unbuffered(
+    delim: &str,
+    timeout: Option<f32>,
+    subshell: bool,
+    limit: &mut usize,
+) -> Result<String, InputError> {
+    if let Some(timeout) = timeout {
         if subshell {
-            return read_line_stdin_unbuffered_thread(delim, timeout.unwrap(), limit);
-        }else{
-            return read_line_stdin_unbuffered_nonblock(delim, timeout.unwrap(), limit);
+            return read_line_stdin_unbuffered_thread(delim, timeout, limit);
+        } else {
+            return read_line_stdin_unbuffered_nonblock(delim, timeout, limit);
         }
     }
 
@@ -193,8 +196,11 @@ pub fn read_line_stdin_unbuffered(delim: &str, timeout: Option<f32>, subshell: b
     }
 }
 
-pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32, limit: &mut usize)
--> Result<String, InputError> {
+pub fn read_line_stdin_unbuffered_nonblock(
+    delim: &str,
+    timeout: f32,
+    limit: &mut usize,
+) -> Result<String, InputError> {
     let start = clock::monotonic_time();
 
     let mut stdin = termion::async_stdin();
@@ -218,7 +224,7 @@ pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32, limit: &mu
         }
 
         match stdin.read(&mut ch) {
-            Ok(0) => {},
+            Ok(0) => {}
             Ok(_) => {
                 line.push(ch[0]);
                 *limit -= 1;
@@ -236,23 +242,26 @@ pub fn read_line_stdin_unbuffered_nonblock(delim: &str, timeout: f32, limit: &mu
     }
 }
 
-pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32, limit: &mut usize)
--> Result<String, InputError> {
+pub fn read_line_stdin_unbuffered_thread(
+    delim: &str,
+    timeout: f32,
+    limit: &mut usize,
+) -> Result<String, InputError> {
     let (tx, rx) = mpsc::channel();
     let delim = delim.to_string();
-    
-    let mut limit_internal = limit.clone();
+
+    let mut limit_internal = *limit;
 
     thread::spawn(move || {
         let mut line = vec![];
         let mut ch: [u8; 1] = Default::default();
         let mut stdin = StreamReader::stdin().unwrap();
-    
+
         let mut d = 10; //\n
         if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
             d = c;
         }
-    
+
         loop {
             match stdin.read(&mut ch) {
                 Ok(0) => {
@@ -273,8 +282,11 @@ pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32, limit: &mut 
         }
 
         match String::from_utf8(line) {
-            Ok(s) => Ok(tx.send(s).unwrap()),
-            Err(_) => return Err(InputError::Eof),
+            Ok(s) => {
+                let _: () = tx.send(s).unwrap();
+                Ok(())
+            }
+            Err(_) => Err(InputError::Eof),
         }
     });
 
@@ -282,7 +294,7 @@ pub fn read_line_stdin_unbuffered_thread(delim: &str, timeout: f32, limit: &mut 
         Ok(line) => {
             *limit -= line.len();
             Ok(line)
-        },
+        }
         Err(std::sync::mpsc::RecvTimeoutError::Timeout) => Err(InputError::Timeout),
         Err(_) => Err(InputError::Eof),
     }
@@ -352,10 +364,10 @@ pub fn get_command_path(s: &str, core: &mut ShellCore) -> String {
 
 pub fn string_to_calculated_string(from: &str, core: &mut ShellCore) -> Result<String, ExecError> {
     let mut f = Feeder::new(from);
-    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
-        if f.is_empty() {
-            return a.eval(core);
-        }
+    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")?
+        && f.is_empty()
+    {
+        return a.eval(core);
     }
 
     Err(ExecError::SyntaxError(f.consume(f.len())))
@@ -370,9 +382,9 @@ pub fn gen_not_exist_var(core: &mut ShellCore) -> String {
 }
 
 pub fn groups() -> Vec<String> {
-    let num = unsafe{libc::getgroups(0, ::std::ptr::null_mut())};
+    let num = unsafe { libc::getgroups(0, ::std::ptr::null_mut()) };
     let mut groups = vec![0; num as usize];
-    unsafe{libc::getgroups(num, groups.as_mut_ptr())};
+    unsafe { libc::getgroups(num, groups.as_mut_ptr()) };
     groups.iter().map(|e| e.to_string()).collect()
 }
 

@@ -1,15 +1,15 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, Script, ShellCore};
 use crate::utils::{ExecError, InputError};
+use crate::{Feeder, Script, ShellCore};
 use nix::sys::signal;
 use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {
     run_script(core);
 
-    if ! core.is_subshell {
+    if !core.is_subshell {
         core.write_history_to_file();
 
         for e in core.job_table.iter_mut() {

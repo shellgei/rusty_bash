@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{arg, error, ShellCore};
+use crate::{ShellCore, arg, error};
 
 #[derive(Debug)]
 enum Opt {
@@ -9,7 +9,7 @@ enum Opt {
     WithArg(String),
 }
 
-struct NoArgOpt<'a>{
+struct NoArgOpt<'a> {
     name: &'a str,
     arg: &'a str,
     index: usize,
@@ -71,36 +71,55 @@ pub fn get_index(core: &mut ShellCore) -> (usize, usize) {
             index = n;
         }
 
-        if let Ok(p) = core.db.get_param("OPTIND_PREV") {
-            if let Ok(prev) = p.parse::<usize>() {
-                if index != prev {
-                    let _ = core.db.set_param("OPTIND_SUB", "0", None);
-                }
-            }
+        if let Ok(p) = core.db.get_param("OPTIND_PREV")
+            && let Ok(prev) = p.parse::<usize>()
+            && index != prev
+        {
+            let _ = core.db.set_param("OPTIND_SUB", "0", None);
         }
     }
 
-    if let Ok(s) = core.db.get_param("OPTIND_SUB") {
-        if let Ok(n) = s.parse::<usize>() {
-            subindex = n;
-        }
+    if let Ok(s) = core.db.get_param("OPTIND_SUB")
+        && let Ok(n) = s.parse::<usize>()
+    {
+        subindex = n;
     }
 
     (index, subindex)
 }
 
-fn set_no_arg_option(no_arg_opt: &NoArgOpt, core: &mut ShellCore,) -> i32 {
-    let result = core.db.set_param(no_arg_opt.name, &no_arg_opt.arg[1..], no_arg_opt.scope);
+fn set_no_arg_option(no_arg_opt: &NoArgOpt, core: &mut ShellCore) -> i32 {
+    let result = core
+        .db
+        .set_param(no_arg_opt.name, &no_arg_opt.arg[1..], no_arg_opt.scope);
     core.db.set_param("OPTARG", "", no_arg_opt.scope).ok();
 
     if !no_arg_opt.subarg || no_arg_opt.subindex + 1 == no_arg_opt.exp_args_len {
-        let _ = core.db.set_param("OPTIND", &(no_arg_opt.index + 1).to_string(), no_arg_opt.scope);
+        let _ = core.db.set_param(
+            "OPTIND",
+            &(no_arg_opt.index + 1).to_string(),
+            no_arg_opt.scope,
+        );
         let _ = core.db.set_param("OPTIND_SUB", "0", no_arg_opt.scope);
-        let _ = core.db.set_param("OPTIND_PREV", &(no_arg_opt.index + 1).to_string(), no_arg_opt.scope);
+        let _ = core.db.set_param(
+            "OPTIND_PREV",
+            &(no_arg_opt.index + 1).to_string(),
+            no_arg_opt.scope,
+        );
     } else {
-        let _ = core.db.set_param("OPTIND", &no_arg_opt.index.to_string(), no_arg_opt.scope);
-        let _ = core.db.set_param("OPTIND_SUB", &(no_arg_opt.subindex + 1).to_string(), no_arg_opt.scope);
-        let _ = core.db.set_param("OPTIND_PREV", &no_arg_opt.index.to_string(), no_arg_opt.scope);
+        let _ = core
+            .db
+            .set_param("OPTIND", &no_arg_opt.index.to_string(), no_arg_opt.scope);
+        let _ = core.db.set_param(
+            "OPTIND_SUB",
+            &(no_arg_opt.subindex + 1).to_string(),
+            no_arg_opt.scope,
+        );
+        let _ = core.db.set_param(
+            "OPTIND_PREV",
+            &no_arg_opt.index.to_string(),
+            no_arg_opt.scope,
+        );
     }
 
     if let Err(e) = result {
@@ -208,7 +227,6 @@ pub fn getopts(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if targets.iter().any(|t| t.is_single(&arg)) {
-
         let no_arg_opt = NoArgOpt {
             name: &name,
             arg: &arg,

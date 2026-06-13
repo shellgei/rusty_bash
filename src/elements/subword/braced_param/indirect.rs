@@ -1,14 +1,15 @@
 //SPDX-FileCopyrightText: 2026 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore, utils};
 use super::{BracedParam, ExecError, Subword};
+use crate::{Feeder, ShellCore, utils};
 
 impl BracedParam {
     pub(super) fn indirect_preparation(&mut self, core: &mut ShellCore) -> Result<bool, ExecError> {
-        if ! core.db.exist(&self.param.name)
-        && ! core.db.exist_nameref(&self.param.name) {
-            return Err(ExecError::InvalidIndirectExpansion(self.param.name.to_string()));
+        if !core.db.exist(&self.param.name) && !core.db.exist_nameref(&self.param.name) {
+            return Err(ExecError::InvalidIndirectExpansion(
+                self.param.name.to_string(),
+            ));
         }
 
         if core.db.has_flag(&self.param.name, 'n') {
@@ -16,13 +17,14 @@ impl BracedParam {
                 self.text = String::new();
             } else if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
                 self.text = nameref;
-            }else{
+            } else {
                 self.text = String::new();
             }
             return Ok(false);
         }
 
-        if self.param.is_var_array() { // ${!name[@]}, ${!name[*]}
+        if self.param.is_var_array() {
+            // ${!name[@]}, ${!name[*]}
             self.index_replace(core)?;
             return Ok(false);
         }

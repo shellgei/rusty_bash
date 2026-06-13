@@ -7,7 +7,7 @@ mod set_value;
 use crate::elements::substitution::Substitution;
 use crate::error::exec::ExecError;
 use crate::utils::arg;
-use crate::{env, ShellCore};
+use crate::{ShellCore, env};
 
 pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -> i32 {
     let args = args.to_owned();
@@ -19,7 +19,7 @@ pub fn local(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) -
     };
 
     if core.shopts.query("localvar_inherit") {
-        subs.into_iter().for_each(|e| e.localvar_inherit(core) );
+        subs.iter_mut().for_each(|e| e.localvar_inherit(core));
     }
 
     for sub in subs.iter_mut() {
@@ -38,9 +38,10 @@ pub fn declare(core: &mut ShellCore, args: &[String], subs: &mut [Substitution])
 
     if arg::has_option("-f", &args) {
         return print::f_option(core, &args, subs);
-    }else if subs.is_empty() {
-        return print::args_match(core, &mut args);
-    }else if arg::consume_arg("-p", &mut args) { //declare -p hoge
+    } else if subs.is_empty() {
+        return print::args_match(core, &args);
+    } else if arg::consume_arg("-p", &mut args) {
+        //declare -p hoge
         let mut names = subs.iter().map(|s| s.text.clone()).collect();
         return print::names_match(core, &mut names, &args);
     }
@@ -64,7 +65,7 @@ pub fn export(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]) 
             return 1;
         }
         match core.db.get_param(&sub.left_hand.name) {
-            Ok(v) => unsafe{env::set_var(&sub.left_hand.name, v)},
+            Ok(v) => unsafe { env::set_var(&sub.left_hand.name, v) },
             Err(e) => {
                 e.print(core);
                 return 1;
@@ -79,8 +80,8 @@ pub fn readonly(core: &mut ShellCore, args: &[String], subs: &mut [Substitution]
 
     if subs.is_empty() {
         let mut args = args.to_vec();
-        args.push("-r".to_string()); 
-        return print::args_match(core, &mut args);
+        args.push("-r".to_string());
+        return print::args_match(core, &args);
     }
 
     for sub in subs {

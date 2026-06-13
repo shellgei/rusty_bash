@@ -7,11 +7,11 @@ pub mod command;
 pub mod expr;
 pub mod io;
 pub mod job;
+pub mod parameter;
 pub mod pipeline;
 pub mod script;
 pub mod substitution;
 pub mod subword;
-pub mod parameter;
 pub mod word;
 
 use self::io::pipe::Pipe;

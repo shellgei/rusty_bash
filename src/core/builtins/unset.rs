@@ -1,20 +1,20 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, ShellCore};
-use crate::error::exec::ExecError;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
+use crate::error::exec::ExecError;
+use crate::{Feeder, ShellCore};
 
 fn unset_all(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
-    if ! core.shopts.query("localvar_unset") {
+    if !core.shopts.query("localvar_unset") {
         core.db.unset(name, None, false)?;
         return Ok(0);
     }
 
-    let mut scope = core.db.get_scope_num()-1;
+    let mut scope = core.db.get_scope_num() - 1;
     if scope <= 1 {
         core.db.unset(name, None, true)?;
-    }else{
+    } else {
         scope -= 1;
         core.db.unset(name, Some(scope), true)?;
     }
@@ -22,15 +22,15 @@ fn unset_all(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
 }
 
 fn unset_var(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
-    if ! core.shopts.query("localvar_unset") {
+    if !core.shopts.query("localvar_unset") {
         core.db.unset_var(name, None, false)?;
         return Ok(0);
     }
 
-    let mut scope = core.db.get_scope_num()-1;
+    let mut scope = core.db.get_scope_num() - 1;
     if scope <= 1 {
         core.db.unset_var(name, None, true)?;
-    }else{
+    } else {
         scope -= 1;
         core.db.unset_var(name, Some(scope), true)?;
     }
@@ -39,15 +39,15 @@ fn unset_var(core: &mut ShellCore, name: &str) -> Result<i32, ExecError> {
 }
 
 fn unset_nameref(core: &mut ShellCore, name: &str) -> i32 {
-    if ! core.shopts.query("localvar_unset") {
+    if !core.shopts.query("localvar_unset") {
         let _ = core.db.unset_nameref(name, None);
         return 0;
     }
 
-    let mut scope = core.db.get_scope_num()-1;
+    let mut scope = core.db.get_scope_num() - 1;
     if scope <= 1 {
         let _ = core.db.unset_nameref(name, None);
-    }else{
+    } else {
         scope -= 1;
         let _ = core.db.unset_nameref(name, Some(scope));
     }
@@ -73,7 +73,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
                 let name = args.remove(2);
                 if let Err(e) = unset_var(core, &name) {
                     return super::error(1, &args[0], &e, core);
-                }else{
+                } else {
                     return 0;
                 }
             }
@@ -90,7 +90,7 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
             if !name.contains("[") {
                 if let Err(e) = unset_all(core, &name) {
                     return super::error(1, &args[0], &e, core);
-                }else{
+                } else {
                     return 0;
                 }
             }
@@ -106,25 +106,22 @@ fn unset_one(core: &mut ShellCore, args: &mut Vec<String>) -> i32 {
 
             index.remove(0);
             index.pop();
-            let mut index = index;
 
-            if core.db.is_array(&name) {
-                if let Err(_) = index.parse::<isize>() {
-                    let mut f = Feeder::new(&index);
-                    match ArithmeticExpr::parse(&mut f, core, false, "[") {
-                        Ok(Some(mut v)) => {
-                            if !f.is_empty() {
-                                let e = ExecError::ArrayIndexInvalid(index.to_string());
-                                return super::error(1, &args[0], &e, core);
-                            }
-                            if let Ok(n) = v.eval(core) {
-                                index = n;
-                            }
-                        },
-                        _ => {
+            if core.db.is_array(&name) && index.parse::<isize>().is_err() {
+                let mut f = Feeder::new(&index);
+                match ArithmeticExpr::parse(&mut f, core, false, "[") {
+                    Ok(Some(mut v)) => {
+                        if !f.is_empty() {
                             let e = ExecError::ArrayIndexInvalid(index.to_string());
                             return super::error(1, &args[0], &e, core);
-                        },
+                        }
+                        if let Ok(n) = v.eval(core) {
+                            index = n;
+                        }
+                    }
+                    _ => {
+                        let e = ExecError::ArrayIndexInvalid(index.to_string());
+                        return super::error(1, &args[0], &e, core);
                     }
                 }
             }
@@ -147,8 +144,7 @@ pub fn unset(core: &mut ShellCore, args: &[String]) -> i32 {
             break;
         }
 
-        if (args[1] == "-v" || args[1] == "-f" || args[1] == "-n")
-        && args.len() == 2 {
+        if (args[1] == "-v" || args[1] == "-f" || args[1] == "-n") && args.len() == 2 {
             break;
         }
 

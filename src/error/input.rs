@@ -32,7 +32,7 @@ impl InputError {
     pub fn print(&self, core: &mut ShellCore) {
         let name = core.db.get_param("0").unwrap();
         let s: String = From::<&InputError>::from(self);
-        if s == "" {
+        if s.is_empty() {
             return;
         }
 

@@ -114,7 +114,7 @@ impl Options {
         };
 
         format!("{opt:20}\t{onoff_str}")
-            /*
+        /*
         if opt.len() < 15 {
             format!("{opt:20}\t{onoff_str}")
         } else if opt.len() < 16 {

@@ -4,12 +4,12 @@
 pub mod subscript;
 
 use crate::core::database::data::uninit::Uninit;
+use crate::elements::parameter::subscript::Subscript;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::utils::arg;
 use crate::{Feeder, ShellCore};
-use crate::elements::parameter::subscript::Subscript;
 
 #[derive(Debug, Clone, Default)]
 pub struct Parameter {
@@ -26,10 +26,10 @@ impl Parameter {
             None => return Ok(()),
         };
 
-        if ! nameref.contains('[') {
+        if !nameref.contains('[') {
             self.name = nameref;
             return Ok(());
-        }else {
+        } else {
             let mut f = Feeder::new(&nameref);
             if let Some(v) = Self::parse(&mut f, core)? {
                 self.name = v.name;
@@ -49,18 +49,18 @@ impl Parameter {
             if self.name == bkup {
                 self.name = utils::gen_not_exist_var(core);
             }
-    
+
             if circular_check_vec.contains(&self.name) {
                 ExecError::CircularNameRef(org_name).print(core);
                 self.name = utils::gen_not_exist_var(core);
                 break;
             }
-            if ! core.db.exist_nameref(&self.name) {
+            if !core.db.exist_nameref(&self.name) {
                 break;
             }
             circular_check_vec.push(self.name.clone());
         }
-    
+
         Ok(())
     }
 
@@ -164,7 +164,7 @@ impl Parameter {
 
         if a_opt || (!la_opt && self.index.is_some()) {
             let data = match prev.is_empty() {
-                true  => None,
+                true => None,
                 false => Some(prev),
             };
             return core.db.init_array(&self.name, data, scope, i_opt);
@@ -179,27 +179,23 @@ impl Parameter {
         }
 
         match prev.len() {
-            0 => {
-                match i_opt {
-                    true =>  core.db.init_as_num(&self.name, "", scope),
-                    false => {
-                        let mut opts = String::new();
-                        if a_opt {
-                            opts.push('a');
-                        }
-                        if la_opt {
-                            opts.push('A');
-                        }
-                        let d = Box::new(Uninit::new(&opts));
-                        core.db.set_entry(scope.unwrap_or(0), &self.name, d)
-                    },
+            0 => match i_opt {
+                true => core.db.init_as_num(&self.name, "", scope),
+                false => {
+                    let mut opts = String::new();
+                    if a_opt {
+                        opts.push('a');
+                    }
+                    if la_opt {
+                        opts.push('A');
+                    }
+                    let d = Box::new(Uninit::new(&opts));
+                    core.db.set_entry(scope.unwrap_or(0), &self.name, d)
                 }
             },
-            _ => {
-                match i_opt {
-                    true => core.db.init_as_num(&self.name, &prev[0], scope),
-                    false => core.db.set_param(&self.name, &prev[0], scope),
-                }
+            _ => match i_opt {
+                true => core.db.init_as_num(&self.name, &prev[0], scope),
+                false => core.db.set_param(&self.name, &prev[0], scope),
             },
         }
     }

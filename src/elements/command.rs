@@ -18,20 +18,20 @@ use self::arithmetic::ArithmeticCommand;
 use self::brace::BraceCommand;
 use self::case::CaseCommand;
 use self::coproc::Coprocess;
-use self::function_def::FunctionDefinition;
-use self::paren::ParenCommand;
 use self::r#for::ForCommand;
+use self::function_def::FunctionDefinition;
 use self::r#if::IfCommand;
-use self::r#while::WhileCommand;
+use self::paren::ParenCommand;
 use self::repeat::RepeatCommand;
 use self::simple::SimpleCommand;
 use self::test::TestCommand;
+use self::r#while::WhileCommand;
 use super::io::redirect::Redirect;
-use super::{io, Pipe};
+use super::{Pipe, io};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::exit;
-use crate::{proc_ctrl, Feeder, Script, ShellCore};
+use crate::{Feeder, Script, ShellCore, proc_ctrl};
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
 use std::fmt;
@@ -90,7 +90,7 @@ pub trait Command {
                 pipe.parent_close(core);
                 Ok(Some(child))
             }
-            Err(e) => return Err(ExecError::Errno("command".to_string(), e)),
+            Err(e) => Err(ExecError::Errno("command".to_string(), e)),
         }
     }
 

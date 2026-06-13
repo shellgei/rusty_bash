@@ -52,8 +52,7 @@ impl BracedParam {
         feeder.starts_with("}")
     }
 
-    fn eat_end(&mut self, feeder: &mut Feeder, core: &mut ShellCore)
-    -> Result<bool, ParseError> {
+    fn eat_end(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> Result<bool, ParseError> {
         if feeder.is_empty() {
             feeder.feed_additional_line(core)?;
         }
@@ -63,14 +62,13 @@ impl BracedParam {
             return Ok(true);
         }
 
-        if let Some(a) = subword::parse(feeder, core,
-                             &Some(WordMode::PermitAnyChar))? {
-            self.unknown += &a.get_text();
-            self.text += &a.get_text();
+        if let Some(a) = subword::parse(feeder, core, &Some(WordMode::PermitAnyChar))? {
+            self.unknown += a.get_text();
+            self.text += a.get_text();
             return Ok(false);
         }
         Err(ParseError::UnexpectedSymbol(feeder.consume(feeder.len())))
-    } 
+    }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
         if !feeder.starts_with("${") {
@@ -95,10 +93,10 @@ impl BracedParam {
                 ans.extension = Some(op);
             }
         }
-        while ! ans.eat_end(feeder, core)?{}
-        
-        if ans.extension.is_some() {
-            ans.extension.as_mut().unwrap().receive_unknown(&mut ans.unknown);
+        while !ans.eat_end(feeder, core)? {}
+
+        if let Some(extension) = ans.extension.as_mut() {
+            extension.receive_unknown(&mut ans.unknown);
         }
 
         Ok(Some(ans))

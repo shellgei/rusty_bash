@@ -1,9 +1,9 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use super::Pipe;
 use super::command;
 use super::command::Command;
-use super::Pipe;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore, signal};
@@ -26,7 +26,7 @@ impl Pipeline {
     ) -> (Vec<Option<Pid>>, bool, Option<ExecError>) {
         if self.commands.is_empty() {
             core.time_keeper.set(self.time);
-            return (vec![], self.exclamation%2 == 1, None);
+            return (vec![], self.exclamation % 2 == 1, None);
         }
 
         let mut prev = -1;
@@ -38,12 +38,12 @@ impl Pipeline {
         for (i, p) in self.pipes.iter_mut().enumerate() {
             signal::check_trap(core);
             if let Err(e) = p.set(prev, pgid, core) {
-                return (pids, self.exclamation%2 == 1, Some(e));
+                return (pids, self.exclamation % 2 == 1, Some(e));
             }
 
             match self.commands[i].exec(core, p) {
                 Ok(pid) => pids.push(pid),
-                Err(e) => return (pids, self.exclamation%2 == 1, Some(e)),
+                Err(e) => return (pids, self.exclamation % 2 == 1, Some(e)),
             }
 
             if i == 0 && pgid.as_raw() == 0 {
@@ -58,18 +58,16 @@ impl Pipeline {
         let mut err = None;
         signal::check_trap(core);
         let result = self.commands[self.pipes.len()].exec(core, &mut lastp);
-        if lastpipe {
-            if let Err(e) = lastp.restore_lastpipe(core) {
-                err = Some(e);
-            }
+        if lastpipe && let Err(e) = lastp.restore_lastpipe(core) {
+            err = Some(e);
         }
 
         match result {
             Ok(pid) => pids.push(pid),
-            Err(e) => return (pids, self.exclamation%2 == 1, Some(e)),
+            Err(e) => return (pids, self.exclamation % 2 == 1, Some(e)),
         }
 
-        (pids, self.exclamation%2 == 1, err)
+        (pids, self.exclamation % 2 == 1, err)
     }
 
     /*
@@ -101,7 +99,7 @@ impl Pipeline {
     pub fn get_one_line_text(&self) -> String {
         let mut ans = String::new();
 
-        if self.exclamation%2 == 1 {
+        if self.exclamation % 2 == 1 {
             ans += "! ";
         }
 
@@ -115,8 +113,7 @@ impl Pipeline {
     }
 
     fn eat_exclamation(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with("!") 
-        || feeder.starts_with("!!") || feeder.starts_with("!$") {
+        if !feeder.starts_with("!") || feeder.starts_with("!!") || feeder.starts_with("!$") {
             return false;
         }
 
@@ -128,7 +125,7 @@ impl Pipeline {
     }
 
     fn eat_time(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if ! feeder.starts_with("time") {
+        if !feeder.starts_with("time") {
             return false;
         }
 
@@ -188,9 +185,7 @@ impl Pipeline {
     ) -> Result<Option<Pipeline>, ParseError> {
         let mut ans = Pipeline::default();
 
-        while ans.eat_exclamation(feeder, core)
-            || Self::eat_time(feeder, &mut ans, core)
-        {}
+        while ans.eat_exclamation(feeder, core) || Self::eat_time(feeder, &mut ans, core) {}
 
         if !Self::eat_command(feeder, &mut ans, core)? {
             match ans.exclamation > 0 || ans.time {

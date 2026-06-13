@@ -3,10 +3,10 @@
 
 mod database_setter_backend;
 
-use std::env;
 use super::{ArrayData, Data, IntData, SingleData, Uninit};
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
+use std::env;
 
 impl DataBase {
     pub fn set_param(
@@ -26,15 +26,13 @@ impl DataBase {
             self.position_parameters[n][0] = val.to_string();
         }
 
-        if !self.flags.contains('r')
-        && (self.flags.contains('a')
-       || self.has_flag(name, 'x')) {
-            unsafe{env::set_var(name, "")};
+        if !self.flags.contains('r') && (self.flags.contains('a') || self.has_flag(name, 'x')) {
+            unsafe { env::set_var(name, "") };
         }
 
         let scope = self.get_target_scope(name, scope);
 
-        if self.params[scope].get(name).is_none() {
+        if !self.params[scope].contains_key(name) {
             self.set_entry(scope, name, Box::new(SingleData::from("")))?;
         }
 
@@ -47,7 +45,7 @@ impl DataBase {
 
         if env::var(name).is_ok() || self.flags.contains('a') {
             let v = d.get_as_single()?;
-            unsafe{env::set_var(name, &v)};
+            unsafe { env::set_var(name, &v) };
         }
         Ok(())
     }
@@ -67,7 +65,7 @@ impl DataBase {
 
         let scope = self.get_target_scope(name, scope);
 
-        if self.params[scope].get(name).is_none() {
+        if !self.params[scope].contains_key(name) {
             self.set_entry(scope, name, Box::new(SingleData::from("")))?;
         }
 
@@ -110,8 +108,13 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn set_array_elem(&mut self, name: &str, val: &str,
-        pos: isize, scope: Option<usize>, append: bool,
+    pub fn set_array_elem(
+        &mut self,
+        name: &str,
+        val: &str,
+        pos: isize,
+        scope: Option<usize>,
+        append: bool,
     ) -> Result<(), ExecError> {
         self.check_on_write(name, &Some(vec![val.to_string()]))?;
 
@@ -119,12 +122,16 @@ impl DataBase {
         let i_flag = self.has_flag(name, 'i');
         match append {
             false => self.set_elem(scope, name, pos, &val.to_string(), i_flag),
-            true  => self.append_elem(scope, name, pos, &val.to_string()),
+            true => self.append_elem(scope, name, pos, &val.to_string()),
         }
     }
 
-    pub fn set_assoc_elem(&mut self, name: &str, key: &str,
-        val: &str, scope: Option<usize>,
+    pub fn set_assoc_elem(
+        &mut self,
+        name: &str,
+        key: &str,
+        val: &str,
+        scope: Option<usize>,
     ) -> Result<(), ExecError> {
         self.check_on_write(name, &Some(vec![val.to_string()]))?;
 
@@ -146,11 +153,13 @@ impl DataBase {
         }
 
         match self.params[scope].get_mut(name) {
-            Some(d) => { d.set_flag(flag); },
+            Some(d) => {
+                d.set_flag(flag);
+            }
             None => {
                 let obj = match flag {
-                    'i' => Box::new(IntData::new()) as Box::<dyn Data>,
-                    _ => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
+                    'i' => Box::new(IntData::new()) as Box<dyn Data>,
+                    _ => Box::new(Uninit::new(&flag.to_string())) as Box<dyn Data>,
                 };
                 let _ = self.set_entry(scope, name, obj);
             }
@@ -159,11 +168,13 @@ impl DataBase {
 
     pub fn set_flag_nameref(&mut self, name: &str, flag: char, scope: usize) {
         match self.params[scope].get_mut(name) {
-            Some(d) => { d.set_flag(flag); },
+            Some(d) => {
+                d.set_flag(flag);
+            }
             None => {
                 let obj = match flag {
-                    'i' => Box::new(IntData::new()) as Box::<dyn Data>,
-                    _ => Box::new(Uninit::new(&flag.to_string())) as Box::<dyn Data>,
+                    'i' => Box::new(IntData::new()) as Box<dyn Data>,
+                    _ => Box::new(Uninit::new(&flag.to_string())) as Box<dyn Data>,
                 };
                 let _ = self.set_entry(scope, name, obj);
             }
@@ -172,7 +183,7 @@ impl DataBase {
 
     pub fn set_scope_to_env(&mut self, scope: usize) {
         for (k, v) in &mut self.params[scope] {
-            unsafe{env::set_var(k, v.get_as_single().unwrap_or("".to_string()))};
+            unsafe { env::set_var(k, v.get_as_single().unwrap_or("".to_string())) };
         }
     }
 }

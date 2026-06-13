@@ -197,10 +197,7 @@ impl Replace {
         if let Some(w) = Word::parse(
             feeder,
             core,
-            Some(WordMode::Exclude(vec![
-                "}".to_string(),
-                "/".to_string(),
-            ])),
+            Some(WordMode::Exclude(vec!["}".to_string(), "/".to_string()])),
         )? {
             ans.text += &w.text.clone();
             ans.replace_from = Some(w);

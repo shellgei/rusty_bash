@@ -1,8 +1,8 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::subword::single_quoted::SingleQuoted;
 use crate::elements::subword::Subword;
+use crate::elements::subword::single_quoted::SingleQuoted;
 use crate::elements::word::Word;
 
 enum BraceType {
@@ -121,10 +121,10 @@ fn parse(subwords: &[Box<dyn Subword>]) -> Option<(Vec<usize>, BraceType)> {
     let mut stack = vec![];
     for sw in subwords {
         stack.push(Some(sw.get_text()));
-        if sw.get_text() == "}" {
-            if let Some(found) = get_delimiters(&mut stack) {
-                return Some(found);
-            }
+        if sw.get_text() == "}"
+            && let Some(found) = get_delimiters(&mut stack)
+        {
+            return Some(found);
         }
     }
     None
@@ -265,7 +265,7 @@ fn gen_nums(start: &str, end: &str, skip: usize) -> Vec<Box<dyn Subword>> {
     let min = std::cmp::min(start_num, end_num);
     let max = std::cmp::max(start_num, end_num);
 
-    let mut ans: Vec<Box<dyn Subword>> = (min..(max + 1)).map(|n| num_to_subword(n)).collect();
+    let mut ans: Vec<Box<dyn Subword>> = (min..(max + 1)).map(num_to_subword).collect();
     if start_num > end_num {
         ans.reverse();
     }
@@ -298,7 +298,7 @@ fn gen_chars(start: &str, end: &str, skip: usize, compat_bash: bool) -> Vec<Box<
         }
     }
 
-    let mut ans: Vec<Box<dyn Subword>> = (min..max).map(|n| ascii_to_subword(n)).collect();
+    let mut ans: Vec<Box<dyn Subword>> = (min..max).map(ascii_to_subword).collect();
     ans.push(ascii_to_subword(max));
     if start_num > end_num {
         ans.reverse();

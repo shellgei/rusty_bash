@@ -8,12 +8,12 @@ mod split;
 pub mod substitution;
 pub mod tilde_expansion;
 
+use self::mode::WordMode;
 use super::subword::Subword;
 use crate::elements::subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{utils, Feeder, ShellCore};
-use self::mode::WordMode;
+use crate::{Feeder, ShellCore, utils};
 
 #[derive(Debug, Clone, Default)]
 pub struct Word {
@@ -252,7 +252,7 @@ impl Word {
     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
         if feeder.starts_with("#") && mode.is_none() || feeder.is_empty() {
             return false;
-        }else if let Some(m) = mode {
+        } else if let Some(m) = mode {
             return m.word_pre_check(feeder);
         }
         true
@@ -261,7 +261,7 @@ impl Word {
     fn post_check(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>) -> bool {
         if feeder.is_empty() {
             return false;
-        }else if let Some(m) = mode {
+        } else if let Some(m) = mode {
             return m.word_post_check(feeder, core);
         }
 

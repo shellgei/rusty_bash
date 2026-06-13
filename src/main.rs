@@ -17,7 +17,7 @@ use std::{env, process};
 
 // Internals crates
 use crate::core::builtins::source;
-use crate::core::{builtins, ShellCore};
+use crate::core::{ShellCore, builtins};
 use crate::elements::script::Script;
 use crate::feeder::Feeder;
 use crate::i18n::FLUENT_BUNDLE;
@@ -44,11 +44,11 @@ fn main() {
     let script_parts = consume_file_and_subsequents(&mut args);
 
     let mut c_opt = false;
-    if let Some(opt) = args.last() {
-        if opt == "-c" {
-            c_opt = true;
-            args.pop();
-        }
+    if let Some(opt) = args.last()
+        && opt == "-c"
+    {
+        c_opt = true;
+        args.pop();
     }
 
     let mut core = ShellCore::new();

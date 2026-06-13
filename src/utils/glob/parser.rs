@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::{extglob, GlobElem, MetaChar};
+use super::{GlobElem, MetaChar, extglob};
 
 fn eat_one_char(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     if pattern.starts_with("*") || pattern.starts_with("?") {
@@ -46,10 +46,10 @@ fn cut_metachar(pattern: &mut String) -> Option<MetaChar> {
         return None;
     }
 
-    if pattern.starts_with("[:") {
-        if let Some(cls) = cut_charclass(pattern) {
-            return Some(cls);
-        }
+    if pattern.starts_with("[:")
+        && let Some(cls) = cut_charclass(pattern)
+    {
+        return Some(cls);
     }
 
     if pattern.starts_with("\\") {

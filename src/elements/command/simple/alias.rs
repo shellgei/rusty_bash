@@ -40,11 +40,11 @@ pub fn set(
         command::eat_blank_with_comment(&mut feeder_local, core, &mut com.text);
     }
 
-    if let Some(lst) = com.words.last() {
-        if lst.text == "\\" {
-            com.words.pop();
-            feeder_local.replace(0, "\\");
-        }
+    if let Some(lst) = com.words.last()
+        && lst.text == "\\"
+    {
+        com.words.pop();
+        feeder_local.replace(0, "\\");
     }
 
     feeder.replace(0, &feeder_local.consume(feeder_local.len()));

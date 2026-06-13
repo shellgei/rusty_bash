@@ -1,17 +1,17 @@
 //SPDX-FileCopyrightText: 2026 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::error::exec::ExecError;
 use crate::ShellCore;
+use crate::error::exec::ExecError;
 use nix::sys::signal;
 use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
 use nix::unistd;
 use nix::unistd::Pid;
-use std::{thread, time};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, AtomicI32};
 use std::sync::atomic::Ordering::Relaxed;
+use std::sync::atomic::{AtomicBool, AtomicI32};
+use std::{thread, time};
 
 #[derive(Debug, Default)]
 pub struct JobEntry {
@@ -27,7 +27,12 @@ pub struct JobEntry {
     pub coproc_exit_status: Arc<AtomicI32>,
 }
 
-fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool, es_arc: &Arc<AtomicI32>) -> Result<(), ExecError> {
+fn wait_nonblock(
+    pid: &Pid,
+    status: &mut WaitStatus,
+    coproc: bool,
+    es_arc: &Arc<AtomicI32>,
+) -> Result<(), ExecError> {
     let waitflags = WaitPidFlag::WNOHANG | WaitPidFlag::WUNTRACED | WaitPidFlag::WCONTINUED;
 
     match wait::waitpid(*pid, Some(waitflags)) {
@@ -38,14 +43,14 @@ fn wait_nonblock(pid: &Pid, status: &mut WaitStatus, coproc: bool, es_arc: &Arc<
                     dbg!("BUG {:?}", &status);
                 }
             }
-        },
+        }
         Err(e) => {
-            if ! coproc {
+            if !coproc {
                 return Err(ExecError::Errno("waitpid".to_string(), e));
             }
             let es = es_arc.load(Relaxed);
             *status = WaitStatus::Exited(*pid, es);
-        },
+        }
     }
 
     Ok(())
@@ -99,7 +104,12 @@ impl JobEntry {
                 match wait {
                     true => exit_status = wait_block(pid, status)?,
                     false => {
-                        wait_nonblock(pid, status, self.coproc_name.is_some(), &self.coproc_exit_status)?;
+                        wait_nonblock(
+                            pid,
+                            status,
+                            self.coproc_name.is_some(),
+                            &self.coproc_exit_status,
+                        )?;
                     }
                 }
             }
@@ -124,13 +134,14 @@ impl JobEntry {
             }
         }
 
-        if self.coproc_name.is_some() && self.change {
-            if let WaitStatus::Exited(_, es) = &self.proc_statuses[0] {
-                let _ = unsafe{libc::close(self.coproc_fds[0])};
-                let _ = unsafe{libc::close(self.coproc_fds[1])};
-                self.display_status = "Done".to_string();
-                return Ok(*es);
-            }
+        if self.coproc_name.is_some()
+            && self.change
+            && let WaitStatus::Exited(_, es) = &self.proc_statuses[0]
+        {
+            let _ = unsafe { libc::close(self.coproc_fds[0]) };
+            let _ = unsafe { libc::close(self.coproc_fds[1]) };
+            self.display_status = "Done".to_string();
+            return Ok(*es);
         }
 
         if stopped {
@@ -262,21 +273,19 @@ impl JobEntry {
     pub fn block_wait(&mut self) -> Result<(i32, bool), ExecError> {
         let n = self.update_status(true, false)?;
         let mut finished = false;
-    
-        if self.display_status == "Done"
-            || self.display_status == "Killed" {
-                finished = true;
-        }   
+
+        if self.display_status == "Done" || self.display_status == "Killed" {
+            finished = true;
+        }
         Ok((n, finished))
     }
 
     pub fn nonblock_wait(&mut self, sigint: &Arc<AtomicBool>) -> Result<(i32, bool), ExecError> {
         loop {
             let n = self.update_status(false, false)?;
-            if self.display_status == "Done"
-                || self.display_status == "Killed" {
-                    return Ok((n, true));
-            }   
+            if self.display_status == "Done" || self.display_status == "Killed" {
+                return Ok((n, true));
+            }
 
             if sigint.load(Relaxed) {
                 return Ok((130, false));
@@ -285,7 +294,6 @@ impl JobEntry {
             thread::sleep(time::Duration::from_millis(10));
         }
     }
-
 }
 
 impl ShellCore {
@@ -324,9 +332,9 @@ impl ShellCore {
                 stopped.push(i);
             }
 
-            if  table.coproc_name.is_some() 
-            && (table.display_status == "Done" 
-                || table.display_status == "Killed") {
+            if table.coproc_name.is_some()
+                && (table.display_status == "Done" || table.display_status == "Killed")
+            {
                 let name = table.coproc_name.clone().unwrap();
                 let _ = self.db.unset(&name, None, false);
                 let _ = self.db.unset(&(name.clone() + "_PID"), None, false);
@@ -370,8 +378,10 @@ impl ShellCore {
     }
 
     pub fn get_jobentry_pid_by_coproc_name(&mut self, name: &str) -> Option<Pid> {
-        let ans = self.job_table.iter_mut().find(|e| e.coproc_name.is_some() 
-                                                 && e.coproc_name.as_ref().unwrap() == name)?;
+        let ans = self
+            .job_table
+            .iter_mut()
+            .find(|e| e.coproc_name.is_some() && e.coproc_name.as_ref().unwrap() == name)?;
 
         Some(ans.pids[0])
     }

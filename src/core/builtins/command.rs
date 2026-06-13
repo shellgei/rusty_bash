@@ -4,7 +4,7 @@
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
-use crate::{error, file_check, proc_ctrl, utils, ShellCore};
+use crate::{ShellCore, error, file_check, proc_ctrl, utils};
 use std::fs;
 
 pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -97,11 +97,9 @@ fn get_default_paths() -> Option<String> {
 }
 
 pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
-    if args.len() > 1 {
-        if core.subst_builtins.contains_key(&args[1]) {
-            //TODO
-            return super::error_(1, &args[0], "substitution command are not supported", core);
-        }
+    if args.len() > 1 && core.subst_builtins.contains_key(&args[1]) {
+        //TODO
+        return super::error_(1, &args[0], "substitution command are not supported", core);
     }
 
     let mut args = arg::dissolve_options(args);
@@ -140,13 +138,17 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     if last_option == "-V" || last_option == "-v" {
         let ans = command_v(&words, core, last_option == "-V");
         if default_path {
-            let _ = core.db.set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+            let _ = core
+                .db
+                .set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
             core.exec_command_path_bkup = None;
         }
         return ans;
     } else if core.builtins.contains_key(&words[0]) {
         if default_path {
-            let _ = core.db.set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+            let _ = core
+                .db
+                .set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
             core.exec_command_path_bkup = None;
         }
         return core.builtins[&words[0]](core, &words[..]);
@@ -160,7 +162,9 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if default_path {
-        let _ = core.db.set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+        let _ = core
+            .db
+            .set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
         core.exec_command_path_bkup = None;
     }
 

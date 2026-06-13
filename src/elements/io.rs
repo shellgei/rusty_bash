@@ -4,10 +4,10 @@
 pub mod pipe;
 pub mod redirect;
 
-use crate::elements::io::redirect::Redirect;
-use crate::elements::Pipe;
-use crate::error::exec::ExecError;
 use crate::ShellCore;
+use crate::elements::Pipe;
+use crate::elements::io::redirect::Redirect;
+use crate::error::exec::ExecError;
 
 pub fn connect(
     pipe: &mut Pipe,
