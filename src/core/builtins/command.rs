@@ -78,6 +78,16 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
     return_value
 }
 
+fn get_default_paths() -> String {
+    if let Ok(s) = fs::read_to_string("/etc/environment") {
+        return s;
+    } else if let Ok(s) = fs::read_to_string("/etc/paths") {
+        return s.replace('\n', ":");
+    }
+
+    "".to_string()
+}
+
 pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() > 1 {
         if core.subst_builtins.contains_key(&args[1]) {
@@ -113,7 +123,7 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     let default_path = arg::consume_arg("-p", &mut args);
     if default_path {
         core.exec_command_path_bkup = Some(core.db.get_param("PATH").unwrap_or("".to_string()));
-        let mut paths = fs::read_to_string("/etc/environment").unwrap_or("".to_string());
+        let mut paths = get_default_paths();
         paths.retain(|e| e != '"');
         paths = paths.trim_end().to_string();
         if paths.starts_with("PATH=") {
