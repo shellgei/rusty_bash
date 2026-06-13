@@ -78,14 +78,22 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
     return_value
 }
 
-fn get_default_paths() -> String {
-    if let Ok(s) = fs::read_to_string("/etc/environment") {
-        return s;
-    } else if let Ok(s) = fs::read_to_string("/etc/paths") {
-        return s.replace('\n', ":");
+fn get_default_paths() -> Option<String> {
+    if let Ok(mut s) = fs::read_to_string("/etc/environment") {
+        s.retain(|e| e != '"');
+        s = s.trim_end().to_string();
+        if s.starts_with("PATH=") {
+            s = s[5..].to_string();
+        }
+        return Some(s);
+    } else if let Ok(mut s) = fs::read_to_string("/etc/paths") {
+        if s.ends_with(":") {
+            s.pop();
+        }
+        return Some(s.replace('\n', ":"));
     }
 
-    "".to_string()
+    None
 }
 
 pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -123,11 +131,7 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     let default_path = arg::consume_arg("-p", &mut args);
     if default_path {
         core.exec_command_path_bkup = Some(core.db.get_param("PATH").unwrap_or("".to_string()));
-        let mut paths = get_default_paths();
-        paths.retain(|e| e != '"');
-        paths = paths.trim_end().to_string();
-        if paths.starts_with("PATH=") {
-            paths = paths[5..].to_string();
+        if let Some(paths) =  get_default_paths() {
             let _ = core.db.set_param("PATH", &paths, None);
         }
     }
