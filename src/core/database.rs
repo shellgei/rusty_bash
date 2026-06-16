@@ -223,4 +223,19 @@ impl DataBase {
         }
         Ok(true)
     }
+
+    pub fn exist(&mut self, name: &str) -> bool {
+        if let Ok(n) = name.parse::<usize>() {
+            let scope = self.position_parameters.len() - 1;
+            return n < self.position_parameters[scope].len();
+        }
+
+        let num = self.params.len();
+        for scope in (0..num).rev() {
+            if self.params[scope].contains_key(name) {
+                return true;
+            }
+        }
+        false
+    }
 }
