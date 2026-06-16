@@ -33,8 +33,12 @@ fn word_to_num(w: &Word, text: &str, core: &mut ShellCore)
 }
 
 impl BracedParamExtension for Substr {
-    fn exec(&mut self, _: &Parameter, text: &str,
+    fn exec(&mut self, v: &Parameter, text: &str,
             core: &mut ShellCore) -> Result<String, ExecError> {
+        if ! core.db.exist(&v.text) {
+            return Ok(text.to_string());
+        }
+
         if self.offset.text.is_empty() && self.length.is_none() {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }    //↑ echo ${A:}のようなパターンでエラーを返す
