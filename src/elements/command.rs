@@ -98,6 +98,7 @@ pub trait Command {
 
     fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
         let mut result = Ok(None);
+
         for r in self.get_redirects().iter_mut() {
             if let Err(e) = r.connect(true, core) {
                 result = Err(e);

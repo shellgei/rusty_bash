@@ -29,18 +29,52 @@ impl Command for SelectCommand {
             return Ok(());
         }
 
-        core.loop_level += 1;
+        let values = match self.has_in {
+            true => match self.eval_values(core) {
+                Some(vs) => vs,
+                None => return Ok(()),
+            },
+            false => core.db.get_position_params(),
+        };
 
-        let ok = self.run_with_values(core);
+//        core.loop_level += 1;
 
-        if !ok && core.db.exit_status == 0 {
-            core.db.exit_status = 1;
+        let mut input_value = String::new();
+        while let Ok(len) = std::io::stdin().read_line(&mut input_value) {
+            if core.sigint.load(Relaxed) {
+                core.db.exit_status = 130;
+                return Err(ExecError::Interrupted);
+            }
+
+            if len == 0 {
+                break;
+            }
+
+            input_value = input_value.trim().to_string();
+            let num = input_value.parse::<usize>().unwrap_or(values.len());
+            if num == 0 || num > values.len() {
+                continue;
+            }
+
+            core.db.set_param(&self.name, &values[num-1], None)?;
+            if let Some(mut s) = self.do_script.clone() {
+                let _ = s.exec(core);
+            }
+
+            /*
+            let ok = self.run_with_values(&input_value, core);
+            if !ok && core.db.exit_status == 0 {
+                core.db.exit_status = 1;
+            }*/
         }
 
+
+
+        /*
         core.loop_level -= 1;
         if core.loop_level == 0 {
             core.break_counter = 0;
-        }
+        }*/
         Ok(())
     }
 
@@ -78,57 +112,6 @@ impl SelectCommand {
         }
 
         Some(ans)
-    }
-
-    fn run_with_values(&mut self, core: &mut ShellCore) -> bool {
-        let values = match self.has_in {
-            true => match self.eval_values(core) {
-                Some(vs) => vs,
-                None => return false,
-            },
-            false => core.db.get_position_params(),
-        };
-
-        for p in values {
-            if core.sigint.load(Relaxed) {
-                return false;
-            }
-            if core.return_flag {
-                return false;
-            }
-
-            if core.db.has_flag(&self.name, 'n') {
-                if let Err(e) = core.db.set_nameref(&self.name, &p, None) {
-                    core.db.exit_status = 1;
-                    e.print(core);
-                }
-            } else {
-                if let Err(e) = core.db.set_param(&self.name, &p, None) {
-                    core.db.exit_status = 1;
-                    e.print(core);
-                }
-            }
-
-            if core.continue_counter > 0 {
-                core.continue_counter -= 1;
-            }
-
-            if let Some(mut s) = self.do_script.clone() {
-                let _ = s.exec(core);
-            }
-
-            if core.break_counter > 0 {
-                core.break_counter -= 1;
-                break;
-            }
-            if core.continue_counter > 1 {
-                break;
-            }
-        }
-        if core.continue_counter > 0 {
-            core.continue_counter -= 1;
-        }
-        true
     }
 
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
