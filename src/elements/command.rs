@@ -10,6 +10,7 @@ pub mod function_def;
 pub mod r#if;
 pub mod paren;
 pub mod repeat;
+pub mod select;
 pub mod simple;
 pub mod test;
 pub mod r#while;
@@ -19,6 +20,7 @@ use self::brace::BraceCommand;
 use self::case::CaseCommand;
 use self::coproc::Coprocess;
 use self::r#for::ForCommand;
+use self::select::SelectCommand;
 use self::function_def::FunctionDefinition;
 use self::r#if::IfCommand;
 use self::paren::ParenCommand;
@@ -264,6 +266,8 @@ pub fn parse(
     } else if let Some(a) = Coprocess::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ForCommand::parse(feeder, core)? {
+        Ok(Some(Box::new(a)))
+    } else if let Some(a) = SelectCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = WhileCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))

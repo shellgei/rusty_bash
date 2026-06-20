@@ -42,6 +42,7 @@ pub fn reserved(w: &str) -> bool {
             | "coproc"
             | "esac"
             | "repeat"
+            | "select"
     )
 }
 
