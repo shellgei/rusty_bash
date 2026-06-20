@@ -4,6 +4,7 @@
 
 use crate::utils::{arg, file};
 use crate::{ShellCore, error};
+use nix::unistd;
 
 pub fn cd(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.db.flags.contains('r') {
@@ -60,9 +61,11 @@ fn set_oldpwd(core: &mut ShellCore) {
 fn change_directory(core: &mut ShellCore, target: &str) -> i32 {
     let path = file::make_canonical_path(core, target);
     if core.set_current_directory(&path).is_ok() {
-        let _ = core
-            .db
-            .set_param("PWD", &path.display().to_string(), Some(0));
+        let hostname = unistd::gethostname().unwrap_or("".to_string().into());
+        let path = path.display().to_string();
+        //print!("\x1b]7;file://{}{}\x1ba",  file::oss_to_name(&hostname), &path);
+        print!("\x1b]7;file://{}{}\x07",  file::oss_to_name(&hostname), &path);
+        let _ = core.db.set_param("PWD", &path, Some(0));
         0
     } else {
         eprintln!("sush: cd: {:?}: No such file or directory", &path);
