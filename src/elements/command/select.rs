@@ -46,6 +46,7 @@ impl Command for SelectCommand {
             if input_value == "\n" {
                 self.print(&values, true, core);
                 input_value.clear();
+                println!("");
                 continue;
             }
 
