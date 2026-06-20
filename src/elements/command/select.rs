@@ -39,12 +39,6 @@ impl Command for SelectCommand {
 
         let mut input_value = String::new();
         while let Ok(len) = std::io::stdin().read_line(&mut input_value) {
-            /*
-            if core.sigint.load(Relaxed) {
-                core.db.exit_status = 130;
-                return Err(ExecError::Interrupted);
-            }*/
-
             if len == 0 {
                 break;
             }
@@ -61,6 +55,7 @@ impl Command for SelectCommand {
             }
 
             self.print(&values, false, core);
+            input_value.clear();
         }
 
         Ok(())
