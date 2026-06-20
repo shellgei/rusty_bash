@@ -74,6 +74,10 @@ impl Feeder {
         ans
     }
 
+    pub fn copy(&self) -> String {
+        self.remaining.clone()
+    }
+
     pub fn refer(&mut self, cutpos: usize) -> &str {
         &self.remaining[0..cutpos]
     }

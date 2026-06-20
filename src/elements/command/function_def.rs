@@ -139,6 +139,10 @@ impl FunctionDefinition {
         let len = feeder.scanner_name(core);
         self.name = feeder.consume(len).to_string();
 
+        if ! has_function_keyword && self.name == "for" {
+            return false;
+        }
+
         if self.name.is_empty() && utils::reserved(&self.name) {
             return false;
         }
@@ -147,6 +151,10 @@ impl FunctionDefinition {
 
         if feeder.starts_with("()") {
             self.text += &feeder.consume(2);
+            /*
+            if self.name == "for" {
+                return Err(ParseError::UnexpectedSymbol("(".to_string()));
+            }*/
         } else if !has_function_keyword {
             return false;
         }

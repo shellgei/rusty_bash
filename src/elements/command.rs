@@ -252,6 +252,8 @@ pub fn parse(
     feeder: &mut Feeder,
     core: &mut ShellCore,
 ) -> Result<Option<Box<dyn Command>>, ParseError> {
+    core.case_line.clear();
+
     if let Some(a) = FunctionDefinition::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = SimpleCommand::parse(feeder, core)? {

@@ -281,6 +281,8 @@ impl ForCommand {
         if !feeder.starts_with("for") {
             return Ok(None);
         }
+        core.case_line = feeder.copy();
+
         let mut ans = Self {
             lineno: feeder.lineno,
             text: feeder.consume(3),

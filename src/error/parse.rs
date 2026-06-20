@@ -26,15 +26,24 @@ impl From<&ParseError> for String {
 impl ParseError {
     pub fn print(&self, core: &mut ShellCore) {
         let name = core.db.get_param("0").unwrap();
-        let s: String = From::<&ParseError>::from(self);
+        let mut s: String = From::<&ParseError>::from(self);
+        s = s.trim_end().to_string();
         if core.db.flags.contains('i') {
             eprintln!("{}: {}", &name, &s);
-        } else if core.db.flags.contains('c') {
+        }else if core.db.flags.contains('c') && let Self::UnexpectedSymbol(_) = self {
             let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
             eprintln!("{}: -c: line {}: {}", &name, &lineno, s);
+            if ! core.case_line.is_empty() {
+                eprintln!("{}: -c: line {}: `{}'", &name, &lineno, &core.case_line.trim_end());
+                core.case_line.clear();
+            }
         } else {
             let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
             eprintln!("{}: line {}: {}", &name, &lineno, s);
+            if ! core.case_line.is_empty() {
+                eprintln!("{}: line {}: `{}'", &name, &lineno, &core.case_line.trim_end());
+                core.case_line.clear();
+            }
         }
     }
 }
