@@ -43,9 +43,18 @@ impl Command for SelectCommand {
                 break;
             }
 
+            if input_value == "\n" {
+                self.print(&values, true, core);
+                input_value.clear();
+                continue;
+            }
+
             input_value = input_value.trim().to_string();
-            let num = input_value.parse::<usize>().unwrap_or(values.len());
+            let num = input_value.parse::<usize>().unwrap_or(values.len()+1);
+            input_value.clear();
             if num == 0 || num > values.len() {
+                println!("");
+                self.print(&values, false, core);
                 continue;
             }
 
@@ -55,7 +64,6 @@ impl Command for SelectCommand {
             }
 
             self.print(&values, false, core);
-            input_value.clear();
         }
 
         Ok(())
