@@ -198,6 +198,11 @@ impl ShellCore {
             .db
             .init_array("BASH_VERSINFO", Some(bash_versinfo), None, false);
         self.db.set_flag("BASH_VERSINFO", 'r', 0);
+
+        let exepath = env::current_exe().unwrap_or("".into());
+        unsafe{ env::set_var("SHELL", &exepath); }
+        unsafe{ env::set_var("SUSH", &exepath); }
+        unsafe{ env::set_var("BASH", &exepath); }
     }
 
     pub fn flip_exit_status(&mut self) {
