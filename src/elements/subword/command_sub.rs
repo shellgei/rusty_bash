@@ -128,6 +128,7 @@ impl CommandSubstitution {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
         if let Some(ans) = Self::parse_old_style(feeder, core)? {
             return Ok(Some(ans));
         }

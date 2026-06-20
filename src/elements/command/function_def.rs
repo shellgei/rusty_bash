@@ -19,6 +19,7 @@ pub struct FunctionDefinition {
     force_fork: bool,
     _dummy: Vec<Redirect>,
     lineno: usize,
+    has_function_keyword: bool,
 }
 
 impl Command for FunctionDefinition {
@@ -130,18 +131,14 @@ impl FunctionDefinition {
     }
 
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        let has_function_keyword = feeder.starts_with("function");
-        if has_function_keyword {
+        self.has_function_keyword = feeder.starts_with("function");
+        if self.has_function_keyword {
             self.text += &feeder.consume(8);
             command::eat_blank_with_comment(feeder, core, &mut self.text);
         }
 
         let len = feeder.scanner_name(core);
         self.name = feeder.consume(len).to_string();
-
-        if ! has_function_keyword && self.name == "for" {
-            return false;
-        }
 
         if self.name.is_empty() && utils::reserved(&self.name) {
             return false;
@@ -155,7 +152,7 @@ impl FunctionDefinition {
             if self.name == "for" {
                 return Err(ParseError::UnexpectedSymbol("(".to_string()));
             }*/
-        } else if !has_function_keyword {
+        } else if !self.has_function_keyword {
             return false;
         }
 
@@ -183,9 +180,11 @@ impl FunctionDefinition {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
         let mut ans = Self::default();
         feeder.set_backup();
         ans.lineno = feeder.lineno;
+        let firstline = feeder.copy();
 
         if !ans.eat_header(feeder, core) {
             feeder.rewind();
@@ -199,6 +198,11 @@ impl FunctionDefinition {
 
         if ans.command.is_some() {
             feeder.pop_backup();
+            if ! ans.has_function_keyword && ans.name == "for" {
+                core.case_line = firstline;
+                let _ = core.db.set_param("LINENO", &ans.lineno.to_string(), None);
+                return Err(ParseError::UnexpectedSymbol("(".to_string()));
+            }
             if let Some(f) = core.source_files.last() {
                 ans.file = f.clone();
             }

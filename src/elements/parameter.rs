@@ -221,6 +221,7 @@ impl Parameter {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
         let len = feeder.scanner_name(core);
         if len == 0 {
             return Ok(None);

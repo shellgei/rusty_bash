@@ -241,6 +241,7 @@ impl Substitution {
         permit_no_equal: bool,
     ) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
+        let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
 
         feeder.set_backup();
         match ans.eat_left_hand(feeder, core) {
