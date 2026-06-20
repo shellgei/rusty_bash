@@ -263,6 +263,7 @@ fn parse_and_exec(feeder: &mut Feeder, core: &mut ShellCore, set_hist: bool) {
             }
         }
         Err(e) => {
+            let _ = core.db.set_param("LINENO", &(feeder.lineno - 1).to_string(), None);
             e.print(core);
             feeder.consume(feeder.len());
             feeder.nest = vec![("".to_string(), vec![])];
