@@ -7,7 +7,6 @@ use crate::elements::command;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
 pub struct SelectCommand {
@@ -36,15 +35,15 @@ impl Command for SelectCommand {
             },
             false => core.db.get_position_params(),
         };
-
-//        core.loop_level += 1;
+        self.print(&values, true, core);
 
         let mut input_value = String::new();
         while let Ok(len) = std::io::stdin().read_line(&mut input_value) {
+            /*
             if core.sigint.load(Relaxed) {
                 core.db.exit_status = 130;
                 return Err(ExecError::Interrupted);
-            }
+            }*/
 
             if len == 0 {
                 break;
@@ -61,20 +60,9 @@ impl Command for SelectCommand {
                 let _ = s.exec(core);
             }
 
-            /*
-            let ok = self.run_with_values(&input_value, core);
-            if !ok && core.db.exit_status == 0 {
-                core.db.exit_status = 1;
-            }*/
+            self.print(&values, false, core);
         }
 
-
-
-        /*
-        core.loop_level -= 1;
-        if core.loop_level == 0 {
-            core.break_counter = 0;
-        }*/
         Ok(())
     }
 
@@ -112,6 +100,15 @@ impl SelectCommand {
         }
 
         Some(ans)
+    }
+
+    fn print(&mut self, values: &Vec<String>, all: bool, _: &ShellCore) {
+        if all {
+            for (i, v) in values.iter().enumerate() {
+                eprintln!("{}) {}", i+1, &v);
+            }
+        }
+        eprint!("#? ");
     }
 
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
