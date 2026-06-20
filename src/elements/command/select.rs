@@ -35,6 +35,11 @@ impl Command for SelectCommand {
             },
             false => core.db.get_position_params(),
         };
+
+        if values.is_empty() {
+            return Ok(());
+        }
+
         self.print(&values, true, core);
 
         let mut input_value = String::new();
