@@ -303,13 +303,28 @@ impl ForCommand {
 
         if command::eat_inner_script(feeder, core, "do", vec!["done"], &mut ans.do_script, false)? {
             ans.text.push_str("do");
+            ans.text.push_str(&ans.do_script.as_ref().unwrap().get_text());
+            /*
             if let Some(ref mut s) = ans.do_script {
                 ans.text.push_str(&s.get_text());
-            }
+            }*/
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-            Ok(Some(ans))
+            return Ok(Some(ans));
+        } 
+
+        //if let Some(b) = BraceCommand::parse(feeder, core)? {
+        if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.do_script, false)? {
+            ans.text.push_str("{");
+            ans.text.push_str(&ans.do_script.as_ref().unwrap().get_text());
+            /*
+            if let Some(ref mut s) = ans.do_script {
+                ans.text.push_str(&s.get_text());
+            }*/
+            ans.text.push_str(&feeder.consume(1)); //done
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
+            return Ok(Some(ans));
         } else {
             Ok(None)
         }
