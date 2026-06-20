@@ -1,8 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, Script, ShellCore};
-
+use crate::{Feeder, Script, ShellCore, utils};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
@@ -27,6 +26,12 @@ pub struct ForCommand {
 
 impl Command for ForCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+        if ! self.has_arithmetic && ! utils::is_name(&self.name, core) {
+            core.db.exit_status = 1;
+            ExecError::VariableInvalid(self.name.to_string()).print(core);
+            return Ok(());
+        }
+
         core.loop_level += 1;
 
         let ok = match self.has_arithmetic {
@@ -188,13 +193,13 @@ impl ForCommand {
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
-        let len = feeder.scanner_name(core);
-        if len == 0 {
+        if let Ok(Some(w)) = Word::parse(feeder, core, None) {
+            ans.name = w.text.clone();
+            ans.text += &w.text;
+        }else{
             return false;
         }
 
-        ans.name = feeder.consume(len);
-        ans.text += &ans.name.clone();
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
         true
     }
@@ -288,9 +293,9 @@ impl ForCommand {
             return Ok(None);
         }
 
-        if !Self::eat_end(feeder, &mut ans, core) {
-            return Ok(None);
-        }
+        let _ = Self::eat_end(feeder, &mut ans, core);// {
+          //  return Ok(None);
+        //}
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
