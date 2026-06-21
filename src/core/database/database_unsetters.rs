@@ -65,36 +65,24 @@ impl DataBase {
             return Ok(false);
         }
 
-//        let mut res = false;
+        if called_scope.is_none() || called_scope.unwrap() == 0 {
+            return self.unset_surface_scope_var(name);
+        }
 
-        if let Some(scope) = called_scope && scope != 0 {
-            let mut res = self.remove_entry(scope, name)?;
-
-            unsafe { env::set_var(name, "") };
-            for scope in self.params.iter_mut() {
-                if let Some(d) = scope.get_mut(name) {
-                    res = true;
-                    if localvar_unset {
-                        *d = Box::new(Uninit::new(""));
-                    } else {
-                        scope.remove(name);
-                    }
+        let mut res = self.remove_entry(called_scope.unwrap(), name)?;
+        unsafe { env::set_var(name, "") };
+        for scope in self.params.iter_mut() {
+            if let Some(d) = scope.get_mut(name) {
+                res = true;
+                if localvar_unset {
+                    *d = Box::new(Uninit::new(""));
+                } else {
+                    scope.remove(name);
                 }
             }
-
-            return Ok(res);
         }
-        self.unset_surface_scope_var(name)
 
-        /*
-        let num = self.params.len();
-        for scope in (0..num).rev() {
-            if self.remove_entry(scope, name)? {
-                return Ok(true);
-            }
-        }
         Ok(res)
-        */
     }
 
     fn unset_surface_scope_var(&mut self, name: &str)
