@@ -68,24 +68,23 @@ impl DataBase {
         let mut res = false;
 
         if let Some(scope) = called_scope {
-            if scope == 0 {
-                return Ok(false);
-            }
-            res = self.remove_entry(scope, name)?;
-
-            unsafe { env::set_var(name, "") };
-            for scope in self.params.iter_mut() {
-                if let Some(d) = scope.get_mut(name) {
-                    res = true;
-                    if localvar_unset {
-                        *d = Box::new(Uninit::new(""));
-                    } else {
-                        scope.remove(name);
+            if scope != 0 {
+                res = self.remove_entry(scope, name)?;
+    
+                unsafe { env::set_var(name, "") };
+                for scope in self.params.iter_mut() {
+                    if let Some(d) = scope.get_mut(name) {
+                        res = true;
+                        if localvar_unset {
+                            *d = Box::new(Uninit::new(""));
+                        } else {
+                            scope.remove(name);
+                        }
                     }
                 }
+    
+                return Ok(res);
             }
-
-            return Ok(res);
         }
 
         let num = self.params.len();
