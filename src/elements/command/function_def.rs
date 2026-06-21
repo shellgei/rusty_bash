@@ -63,7 +63,11 @@ impl Command for FunctionDefinition {
 
 impl FunctionDefinition {
     pub fn pretty_print(&mut self, indent_num: usize) {
-        println!("{} () ", self.name);
+        if self.has_function_keyword {
+            println!("function {} () ", self.name);
+        }else{
+            println!("{} () ", self.name);
+        }
         if let Some(com) = self.command.as_mut() { 
             if ! com.get_text().starts_with("{") {
                 println!("{{ ");
