@@ -69,8 +69,7 @@ impl DataBase {
             return self.unset_surface_scope_var(name);
         }
 
-        let mut res = self.remove_entry(called_scope.unwrap(), name)?;
-        //unsafe { env::set_var(name, "") };
+        let mut res = false;
         for scope in self.params.iter_mut() {
             if let Some(d) = scope.get_mut(name) {
                 res = true;
