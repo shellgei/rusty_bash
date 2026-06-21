@@ -153,7 +153,7 @@ pub trait Command {
         for _ in 0..indent_num {
             print!("    ");
         }
-        println!("{}", &self.get_text());
+        print!("{}", &self.get_text());
     }
 }
 

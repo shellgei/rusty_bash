@@ -29,7 +29,6 @@ impl Script {
                 utils::run_error_script(core);
             }
             core.db.exit_status = es;
-            //core.error_script_run = false;
         }
 
         Ok(())
@@ -40,27 +39,35 @@ impl Script {
     }
 
     pub fn pretty_print(&mut self, indent_num: usize) {
-        let mut semicolon = false;
+        //let mut semicolon = false;
         let mut printed = false;
-        let mut end_pos = self.jobs.len() - 1;
+        //let mut end_pos = self.jobs.len() - 1;
 
-        for job in self.jobs.iter_mut().rev() {
-            if job.pipelines.is_empty() {
-                end_pos -= 1;
+        while let Some(e) = self.jobs.last() {
+            if e.pipelines.is_empty() {
+                self.jobs.pop();
+                self.job_ends.pop();
+            }else{
                 break;
             }
         }
 
         for (i, job) in self.jobs.iter_mut().enumerate() {
-            job.pretty_print(
-                indent_num,
-                &mut semicolon,
-                &mut printed,
-                &self.job_ends[i],
-                i == end_pos,
-            );
+            if job.pipelines.is_empty() {
+                continue;
+            }
+
+            printed = false;
+            job.pretty_print(indent_num, &mut printed);
+
+            if i+1 != self.job_ends.len() && printed {
+                println!(";");
+            }
         }
-        println!();
+
+        if printed {
+            println!();
+        }
     }
 
     pub fn get_one_line_text(&self) -> String {
