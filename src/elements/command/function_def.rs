@@ -137,7 +137,7 @@ impl FunctionDefinition {
             command::eat_blank_with_comment(feeder, core, &mut self.text);
         }
 
-        let len = feeder.scanner_name(core);
+        let len = feeder.scanner_function_name(core);
         self.name = feeder.consume(len).to_string();
 
         if self.name.is_empty() && utils::reserved(&self.name) {

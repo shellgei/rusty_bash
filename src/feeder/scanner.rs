@@ -329,6 +329,19 @@ impl Feeder {
         self.scanner_chars(judge, core, 0)
     }
 
+    pub fn scanner_function_name(&mut self, core: &mut ShellCore) -> usize {
+        let c = self.remaining.chars().nth(0).unwrap_or('0');
+        if c.is_ascii_digit() {
+            return 0;
+        }
+
+        let judge = |ch: char| {
+            "_%".contains(ch) || ch.is_ascii_digit() || ch.is_ascii_lowercase()
+                || ch.is_ascii_uppercase() || ch.len_utf8() > 1
+        };
+        self.scanner_chars(judge, core, 0)
+    }
+
     pub fn scanner_name_and_equal(&mut self, core: &mut ShellCore) -> usize {
         let name_len = self.scanner_name(core);
         if name_len == 0 {
