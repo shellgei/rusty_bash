@@ -220,9 +220,12 @@ impl ForCommand {
         loop {
             command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
-            let a = ArithmeticExpr::parse(feeder, core, true, "((")?;
-            if let Some(ref arith) = a {
+            let mut a = ArithmeticExpr::parse(feeder, core, true, "((")?;
+            if let Some(ref mut arith) = a {
                 ans.text += &arith.text;
+                if arith.text.is_empty() {
+                    a = None;
+                }
             }
             ans.arithmetics.push(a);
 
@@ -297,19 +300,13 @@ impl ForCommand {
             return Ok(None);
         }
 
-        let _ = Self::eat_end(feeder, &mut ans, core);// {
-          //  return Ok(None);
-        //}
+        let _ = Self::eat_end(feeder, &mut ans, core);
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
         if command::eat_inner_script(feeder, core, "do", vec!["done"], &mut ans.do_script, false)? {
             ans.text.push_str("do");
             ans.text.push_str(&ans.do_script.as_ref().unwrap().get_text());
-            /*
-            if let Some(ref mut s) = ans.do_script {
-                ans.text.push_str(&s.get_text());
-            }*/
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
@@ -320,10 +317,6 @@ impl ForCommand {
         if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.do_script, false)? {
             ans.text.push_str("{");
             ans.text.push_str(&ans.do_script.as_ref().unwrap().get_text());
-            /*
-            if let Some(ref mut s) = ans.do_script {
-                ans.text.push_str(&s.get_text());
-            }*/
             ans.text.push_str(&feeder.consume(1)); //done
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             return Ok(Some(ans));
