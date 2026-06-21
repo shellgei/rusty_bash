@@ -185,7 +185,7 @@ impl DataBase {
         let mut new_list = vec![];
 
         for (k, v) in &mut self.params[scope] {
-            if ! env::var(k).is_ok() {
+            if env::var(k).is_err() {
                 new_list.push(k.clone());
             }
             unsafe { env::set_var(k, v.get_as_single().unwrap_or("".to_string())) };

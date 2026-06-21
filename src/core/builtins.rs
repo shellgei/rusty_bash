@@ -221,7 +221,12 @@ pub fn debug(_: &mut ShellCore, _: &[String]) -> i32 {
 pub fn let_(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut last_result = 0;
     core.valid_assoc_expand_once = true;
-    let lineno = core.db.get_param("LINENO").unwrap_or("1".to_string()).parse::<usize>().unwrap_or(1);
+    let lineno = core
+        .db
+        .get_param("LINENO")
+        .unwrap_or("1".to_string())
+        .parse::<usize>()
+        .unwrap_or(1);
 
     for a in &args[1..] {
         let mut f = Feeder::new(&a.replace("$", "\\$"));

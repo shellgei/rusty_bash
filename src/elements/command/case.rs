@@ -146,7 +146,9 @@ impl CaseCommand {
             return Ok(None);
         }
         core.case_line = feeder.copy();
-        let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
+        let _ = core
+            .db
+            .set_param("LINENO", &feeder.lineno.to_string(), None);
 
         let mut ans = Self {
             lineno: feeder.lineno,

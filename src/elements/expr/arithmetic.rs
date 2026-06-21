@@ -56,7 +56,8 @@ impl ArithmeticExpr {
     }
 
     pub fn eval(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
+        core.db
+            .set_param("LINENO", &self.lineno.to_string(), None)?;
         let mut cp = self.clone();
         cp.eval_doller(core)?;
 
@@ -66,7 +67,8 @@ impl ArithmeticExpr {
                 if s.is_empty() {
                     s = cp.text.trim_start().to_string();
                 }
-                core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
+                core.db
+                    .set_param("LINENO", &self.lineno.to_string(), None)?;
                 return Err(ExecError::ArithError(s, a));
             }
             Err(e) => return Err(e),

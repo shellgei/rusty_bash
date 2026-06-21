@@ -86,7 +86,9 @@ impl ArithmeticCommand {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
+        let _ = core
+            .db
+            .set_param("LINENO", &feeder.lineno.to_string(), None);
         if !feeder.starts_with("((") {
             return Ok(None);
         }

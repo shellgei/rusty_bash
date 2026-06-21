@@ -124,11 +124,9 @@ impl JobEntry {
                     stopped = true;
                     break;
                 }
-                WaitStatus::Exited(_, es) => {
-                    if check_done {
-                        exit_status = *es;
-                        break;
-                    }
+                WaitStatus::Exited(_, es) if check_done => {
+                    exit_status = *es;
+                    break;
                 }
                 _ => {}
             }

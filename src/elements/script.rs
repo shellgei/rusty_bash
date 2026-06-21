@@ -45,7 +45,7 @@ impl Script {
             if e.pipelines.is_empty() {
                 self.jobs.pop();
                 self.job_ends.pop();
-            }else{
+            } else {
                 break;
             }
         }
@@ -58,7 +58,7 @@ impl Script {
             printed = false;
             job.pretty_print(indent_num, &mut printed);
 
-            if i+1 != self.job_ends.len() && printed {
+            if i + 1 != self.job_ends.len() && printed {
                 println!(";");
             }
         }

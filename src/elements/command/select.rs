@@ -1,12 +1,12 @@
 //SPDX-FileCopyrightText: 2026 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, Script, ShellCore, utils};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::word::Word;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::{Feeder, Script, ShellCore, utils};
 
 #[derive(Debug, Clone, Default)]
 pub struct SelectCommand {
@@ -22,7 +22,7 @@ pub struct SelectCommand {
 
 impl Command for SelectCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
-        if ! utils::is_name(&self.name, core) {
+        if !utils::is_name(&self.name, core) {
             core.db.exit_status = 1;
             ExecError::VariableInvalid(self.name.to_string()).print(core);
             return Ok(());
@@ -51,20 +51,20 @@ impl Command for SelectCommand {
             if input_value == "\n" {
                 self.print(&values, true, core);
                 input_value.clear();
-                println!("");
+                println!();
                 continue;
             }
 
             input_value = input_value.trim().to_string();
-            let num = input_value.parse::<usize>().unwrap_or(values.len()+1);
+            let num = input_value.parse::<usize>().unwrap_or(values.len() + 1);
             input_value.clear();
             if num == 0 || num > values.len() {
-                println!("");
+                println!();
                 self.print(&values, false, core);
                 continue;
             }
 
-            core.db.set_param(&self.name, &values[num-1], None)?;
+            core.db.set_param(&self.name, &values[num - 1], None)?;
             if let Some(mut s) = self.do_script.clone() {
                 let _ = s.exec(core);
             }
@@ -111,10 +111,10 @@ impl SelectCommand {
         Some(ans)
     }
 
-    fn print(&mut self, values: &Vec<String>, all: bool, _: &ShellCore) {
+    fn print(&mut self, values: &[String], all: bool, _: &ShellCore) {
         if all {
             for (i, v) in values.iter().enumerate() {
-                eprintln!("{}) {}", i+1, &v);
+                eprintln!("{}) {}", i + 1, &v);
             }
         }
         eprint!("#? ");
@@ -126,7 +126,7 @@ impl SelectCommand {
         if let Ok(Some(w)) = Word::parse(feeder, core, None) {
             ans.name = w.text.clone();
             ans.text += &w.text;
-        }else{
+        } else {
             return false;
         }
 

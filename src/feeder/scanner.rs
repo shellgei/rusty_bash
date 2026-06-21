@@ -191,27 +191,17 @@ impl Feeder {
         self.backslash_check_and_feed(vec!["$"], core);
 
         match self.remaining.chars().nth(1) {
-            Some(c) => {
-                if "$?*@#-!0123456789".find(c).is_some() {
-                    2
-                } else {
-                    0
-                }
-            }
+            Some(c) if "$?*@#-!0123456789".find(c).is_some() => 2,
             None => 0,
+            _ => 0,
         }
     }
 
     pub fn scanner_special_and_positional_param(&mut self) -> usize {
         match self.remaining.chars().nth(0) {
-            Some(c) => {
-                if "$?*@#-!_0123456789".find(c).is_some() {
-                    1
-                } else {
-                    0
-                }
-            }
+            Some(c) if "$?*@#-!_0123456789".find(c).is_some() => 1,
             None => 0,
+            _ => 0,
         }
     }
 
@@ -257,14 +247,9 @@ impl Feeder {
 
     pub fn scanner_unknown_in_param_brace(&mut self) -> usize {
         match self.remaining.chars().nth(0) {
-            Some(c) => {
-                if "'$".find(c).is_none() {
-                    c.len_utf8()
-                } else {
-                    0
-                }
-            }
+            Some(c) if "'$".find(c).is_none() => c.len_utf8(),
             None => 0,
+            _ => 0,
         }
     }
 
@@ -336,8 +321,11 @@ impl Feeder {
         }
 
         let judge = |ch: char| {
-            "_%".contains(ch) || ch.is_ascii_digit() || ch.is_ascii_lowercase()
-                || ch.is_ascii_uppercase() || ch.len_utf8() > 1
+            "_%".contains(ch)
+                || ch.is_ascii_digit()
+                || ch.is_ascii_lowercase()
+                || ch.is_ascii_uppercase()
+                || ch.len_utf8() > 1
         };
         self.scanner_chars(judge, core, 0)
     }

@@ -9,7 +9,7 @@ use nix::sys::resource::{Resource, rlim_t};
 
 fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
     &[
-        #[cfg(any(target_os = "linux"))]
+        #[cfg(target_os = "linux")]
         (
             "real-time non-blocking time  ",
             "microseconds",
@@ -156,7 +156,7 @@ fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool, only
 
     if only_num {
         println!("{}", &s);
-    } else if unit == "" {
+    } else if unit.is_empty() {
         println!("{}({}) {}", &item, &opt, &s);
     } else {
         println!("{}({}, {}) {}", &item, &unit, &opt, &s);
@@ -171,8 +171,8 @@ fn print_all(soft: bool) -> i32 {
     0
 }
 
-fn set_limit(opt: &String, num: &String, soft: bool, hard: bool, core: &mut ShellCore) -> i32 {
-    let mut limit = match num.as_str() {
+fn set_limit(opt: &String, num: &str, soft: bool, hard: bool, core: &mut ShellCore) -> i32 {
+    let mut limit = match num {
         "unlimited" => nix::sys::resource::RLIM_INFINITY,
         numstr => match numstr.parse::<rlim_t>() {
             Ok(n) => n,

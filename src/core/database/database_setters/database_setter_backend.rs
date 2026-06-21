@@ -110,7 +110,7 @@ impl DataBase {
             self.params[scope].remove(name);
             if scope == 0 {
                 unsafe { env::remove_var(name) };
-            }else {
+            } else {
                 self.removed_params[scope].insert(name.to_string());
             }
 

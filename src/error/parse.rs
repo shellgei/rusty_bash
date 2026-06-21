@@ -31,25 +31,32 @@ impl ParseError {
         let mut s: String = From::<&ParseError>::from(self);
         s = s.trim_end().to_string();
 
-        let appear_c = match self {
-            Self::UnexpectedSymbol(_) | Self::SyntaxError(_) => true,
-            _ => false,
-        };
+        let appear_c = matches!(self, Self::UnexpectedSymbol(_) | Self::SyntaxError(_));
 
         if core.db.flags.contains('i') {
             eprintln!("{}: {}", &name, &s);
-        }else if core.db.flags.contains('c') && appear_c {
+        } else if core.db.flags.contains('c') && appear_c {
             let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
             eprintln!("{}: -c: line {}: {}", &name, &lineno, s);
-            if ! core.case_line.is_empty() {
-                eprintln!("{}: -c: line {}: `{}'", &name, &lineno, &core.case_line.trim_end());
+            if !core.case_line.is_empty() {
+                eprintln!(
+                    "{}: -c: line {}: `{}'",
+                    &name,
+                    &lineno,
+                    &core.case_line.trim_end()
+                );
                 core.case_line.clear();
             }
         } else {
             let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
             eprintln!("{}: line {}: {}", &name, &lineno, s);
-            if ! core.case_line.is_empty() {
-                eprintln!("{}: line {}: `{}'", &name, &lineno, &core.case_line.trim_end());
+            if !core.case_line.is_empty() {
+                eprintln!(
+                    "{}: line {}: `{}'",
+                    &name,
+                    &lineno,
+                    &core.case_line.trim_end()
+                );
                 core.case_line.clear();
             }
         }

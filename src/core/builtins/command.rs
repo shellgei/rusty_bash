@@ -129,7 +129,7 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     let default_path = arg::consume_arg("-p", &mut args);
     if default_path {
         core.exec_command_path_bkup = Some(core.db.get_param("PATH").unwrap_or("".to_string()));
-        if let Some(paths) =  get_default_paths() {
+        if let Some(paths) = get_default_paths() {
             let _ = core.db.set_param("PATH", &paths, None);
         }
     }

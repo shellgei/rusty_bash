@@ -49,7 +49,7 @@ impl Command for BraceCommand {
         println!("{{ ");
         if let Some(s) = self.script.as_mut() {
             s.pretty_print(indent_num + 1);
-            println!("");
+            println!();
         }
         println!("}}");
     }

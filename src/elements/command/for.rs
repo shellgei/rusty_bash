@@ -1,15 +1,15 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, Script, ShellCore, utils};
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::word::Word;
+use crate::elements::word::mode::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::{Feeder, Script, ShellCore, utils};
 use std::sync::atomic::Ordering::Relaxed;
-use crate::elements::word::mode::WordMode;
 
 #[derive(Debug, Clone, Default)]
 pub struct ForCommand {
@@ -28,9 +28,10 @@ pub struct ForCommand {
 
 impl Command for ForCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
-        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
+        core.db
+            .set_param("LINENO", &self.lineno.to_string(), None)?;
 
-        if ! self.has_arithmetic && ! utils::is_name(&self.name, core) {
+        if !self.has_arithmetic && !utils::is_name(&self.name, core) {
             core.db.exit_status = 1;
             ExecError::VariableInvalid(self.name.to_string()).print(core);
             return Ok(());
@@ -210,7 +211,7 @@ impl ForCommand {
         if let Ok(Some(w)) = Word::parse(feeder, core, None) {
             ans.name = w.text.clone();
             ans.text += &w.text;
-        }else{
+        } else {
             return false;
         }
 
@@ -252,7 +253,8 @@ impl ForCommand {
             } else if feeder.starts_with("))") {
                 if ans.arithmetics.len() != 3 {
                     core.case_line.clear();
-                    ParseError::SyntaxError("arithmetic expression required".to_string()).print(core);
+                    ParseError::SyntaxError("arithmetic expression required".to_string())
+                        .print(core);
                     return Ok(false);
                 }
                 ans.text += &feeder.consume(2);
@@ -323,7 +325,7 @@ impl ForCommand {
                 ans.text += &(w.text.clone() + "))");
                 ans.wrong_arith += &(w.text.clone() + "))");
                 feeder.consume(2);
-            }else{
+            } else {
                 return Ok(None);
             }
         }
@@ -332,16 +334,32 @@ impl ForCommand {
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
-        let res = if command::eat_inner_script(feeder, core, "do", vec!["done"], &mut ans.do_script, false)? {
+        let res = if command::eat_inner_script(
+            feeder,
+            core,
+            "do",
+            vec!["done"],
+            &mut ans.do_script,
+            false,
+        )? {
             ans.text.push_str("do");
-            ans.text.push_str(&ans.do_script.as_ref().unwrap().get_text());
+            ans.text
+                .push_str(&ans.do_script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             Ok(Some(ans.clone()))
-        } else if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.do_script, false)? {
-            ans.text.push_str("{");
-            ans.text.push_str(&ans.do_script.as_ref().unwrap().get_text());
+        } else if command::eat_inner_script(
+            feeder,
+            core,
+            "{",
+            vec!["}"],
+            &mut ans.do_script,
+            false,
+        )? {
+            ans.text.push('{');
+            ans.text
+                .push_str(&ans.do_script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1)); //done
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
             Ok(Some(ans.clone()))
@@ -349,7 +367,7 @@ impl ForCommand {
             Ok(None)
         };
 
-        if ! ans.wrong_arith.is_empty() {
+        if !ans.wrong_arith.is_empty() {
             let _ = core.db.set_param("LINENO", &ans.lineno.to_string(), None);
             core.db.exit_status = 2;
             ans.wrong_arith = ans.wrong_arith.trim().to_string();

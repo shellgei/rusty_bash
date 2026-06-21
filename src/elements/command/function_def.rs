@@ -1,7 +1,6 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use std::env;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
@@ -10,6 +9,7 @@ use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
 use nix::unistd::Pid;
+use std::env;
 
 #[derive(Debug, Clone, Default)]
 pub struct FunctionDefinition {
@@ -66,16 +66,16 @@ impl FunctionDefinition {
     pub fn pretty_print(&mut self, indent_num: usize) {
         if self.has_function_keyword {
             println!("function {} () ", self.name);
-        }else{
+        } else {
             println!("{} () ", self.name);
         }
-        if let Some(com) = self.command.as_mut() { 
-            if ! com.get_text().starts_with("{") {
+        if let Some(com) = self.command.as_mut() {
+            if !com.get_text().starts_with("{") {
                 println!("{{ ");
             }
-        //for com in self.command.iter_mut() {
+            //for com in self.command.iter_mut() {
             com.pretty_print(indent_num);
-            if ! com.get_text().starts_with("{") {
+            if !com.get_text().starts_with("{") {
                 println!("}}");
             }
         }
@@ -127,7 +127,9 @@ impl FunctionDefinition {
         core.source_function_level -= 1;
 
         for env in added_envs {
-            unsafe { env::set_var(env, "") ; }
+            unsafe {
+                env::set_var(env, "");
+            }
         }
 
         core.db.position_parameters.pop();
@@ -199,7 +201,9 @@ impl FunctionDefinition {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
+        let _ = core
+            .db
+            .set_param("LINENO", &feeder.lineno.to_string(), None);
         let mut ans = Self::default();
         feeder.set_backup();
         ans.lineno = feeder.lineno;
@@ -217,7 +221,7 @@ impl FunctionDefinition {
 
         if ans.command.is_some() {
             feeder.pop_backup();
-            if ! ans.has_function_keyword && ans.name == "for" {
+            if !ans.has_function_keyword && ans.name == "for" {
                 core.case_line = firstline;
                 let _ = core.db.set_param("LINENO", &ans.lineno.to_string(), None);
                 return Err(ParseError::UnexpectedSymbol("(".to_string()));

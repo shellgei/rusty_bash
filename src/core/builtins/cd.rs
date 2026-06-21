@@ -66,7 +66,11 @@ fn change_directory(core: &mut ShellCore, target: &str) -> i32 {
 
         if core.db.flags.contains('i') {
             let hostname = unistd::gethostname().unwrap_or("".to_string().into());
-            print!("\x1b]7;file://{}{}\x07",  file::oss_to_name(&hostname), &path);
+            print!(
+                "\x1b]7;file://{}{}\x07",
+                file::oss_to_name(&hostname),
+                &path
+            );
         }
         0
     } else {

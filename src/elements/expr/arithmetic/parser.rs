@@ -333,7 +333,9 @@ impl ArithmeticExpr {
     ) -> Result<Option<Self>, ParseError> {
         let mut ans = ArithmeticExpr::new();
         ans.lineno = feeder.lineno;
-        let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
+        let _ = core
+            .db
+            .set_param("LINENO", &feeder.lineno.to_string(), None);
 
         loop {
             if let Some(sp) = Self::eat_space(feeder, &mut ans, core) {
