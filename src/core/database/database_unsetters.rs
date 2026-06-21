@@ -66,27 +66,15 @@ impl DataBase {
         }
 
         if called_scope.is_none() || called_scope.unwrap() == 0 {
-            return self.unset_surface_scope_var(name);
+            self.unset_surface_var(name)
+        } else if localvar_unset {
+            self.unset_local_var(name)
+        } else {
+            self.unset_all_scope_var(name)
         }
-
-        let mut res = false;
-        for scope in self.params.iter_mut() {
-            if let Some(d) = scope.get_mut(name) {
-                res = true;
-                if localvar_unset {
-                    *d = Box::new(Uninit::new(""));
-                    break;
-                }
-
-                scope.remove(name);
-            }
-        }
-
-        Ok(res)
     }
 
-    fn unset_surface_scope_var(&mut self, name: &str)
-    -> Result<bool, ExecError> {
+    fn unset_surface_var(&mut self, name: &str) -> Result<bool, ExecError> {
         let num = self.params.len();
         for scope in (0..num).rev() {
             if self.remove_entry(scope, name)? {
@@ -94,6 +82,29 @@ impl DataBase {
             }
         }
         Ok(false)
+    }
+
+    fn unset_local_var(&mut self, name: &str) -> Result<bool, ExecError> {
+        let mut res = false;
+        for scope in self.params.iter_mut() {
+            if let Some(d) = scope.get_mut(name) {
+                res = true;
+                *d = Box::new(Uninit::new(""));
+                break;
+            }
+        }
+        Ok(res)
+    }
+
+    fn unset_all_scope_var(&mut self, name: &str) -> Result<bool, ExecError> {
+        let mut res = false;
+        for scope in self.params.iter_mut() {
+            if scope.get_mut(name).is_some() {
+                res = true;
+                scope.remove(name);
+            }
+        }
+        Ok(res)
     }
 
     pub fn unset_function(&mut self, name: &str) {
