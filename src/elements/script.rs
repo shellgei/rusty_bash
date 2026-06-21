@@ -39,7 +39,7 @@ impl Script {
     }
 
     pub fn pretty_print(&mut self, indent_num: usize) {
-        let mut printed = false;
+        let mut printed;
 
         while let Some(e) = self.jobs.last() {
             if e.pipelines.is_empty() {
@@ -63,9 +63,10 @@ impl Script {
             }
         }
 
+        /*
         if printed {
             println!();
-        }
+        }*/
     }
 
     pub fn get_one_line_text(&self) -> String {
