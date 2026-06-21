@@ -64,8 +64,15 @@ impl Command for FunctionDefinition {
 impl FunctionDefinition {
     pub fn pretty_print(&mut self, indent_num: usize) {
         println!("{} () ", self.name);
-        for com in self.command.iter_mut() {
+        if let Some(com) = self.command.as_mut() { 
+            if ! com.get_text().starts_with("{") {
+                println!("{{ ");
+            }
+        //for com in self.command.iter_mut() {
             com.pretty_print(indent_num);
+            if ! com.get_text().starts_with("{") {
+                println!("}}");
+            }
         }
     }
 
