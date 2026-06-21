@@ -72,6 +72,16 @@ impl Command for ForCommand {
     fn force_fork(&self) -> bool {
         self.force_fork
     }
+
+    /*
+    fn pretty_print(&mut self, indent_num: usize) {
+        println!("{}", &indent_num);
+        /*
+        println!("{} () ", self.name);
+        for com in self.command.iter_mut() {
+            com.pretty_print(indent_num);
+        }*/
+    }*/
 }
 
 impl ForCommand {
