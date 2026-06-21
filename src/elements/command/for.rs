@@ -234,16 +234,22 @@ impl ForCommand {
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
             if feeder.starts_with(";") {
                 if ans.arithmetics.len() >= 3 {
+                    core.case_line.clear();
+                    ParseError::SyntaxError("`;' unexpected".to_string()).print(core);
                     return Ok(false);
                 }
                 ans.text += &feeder.consume(1);
             } else if feeder.starts_with("))") {
                 if ans.arithmetics.len() != 3 {
+                    core.case_line.clear();
+                    ParseError::SyntaxError("arithmetic expression required".to_string()).print(core);
                     return Ok(false);
                 }
                 ans.text += &feeder.consume(2);
-                return Ok(ans.arithmetics.len() == 3);
+                return Ok(true);
             } else {
+                core.case_line.clear();
+                ParseError::SyntaxError("arithmetic expression required".to_string()).print(core);
                 return Ok(false);
             }
         }
@@ -336,8 +342,10 @@ impl ForCommand {
         if ! ans.wrong_arith.is_empty() {
             let _ = core.db.set_param("LINENO", &ans.lineno.to_string(), None);
             core.db.exit_status = 2;
-            ParseError::NoArith.print(core);
-            return Err(ParseError::SyntaxError(ans.wrong_arith.trim().to_string()));
+            ans.wrong_arith = ans.wrong_arith.trim().to_string();
+            ans.wrong_arith.insert(0, '`');
+            ans.wrong_arith.push('\'');
+            return Err(ParseError::SyntaxError(ans.wrong_arith));
         }
 
         res

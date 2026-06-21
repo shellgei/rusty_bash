@@ -9,7 +9,6 @@ pub enum ParseError {
     UnexpectedSymbol(String),
     Input(InputError),
     WrongAlias(String),
-    NoArith,
     SyntaxError(String),
 }
 //expected for conditional expression
@@ -21,8 +20,7 @@ impl From<&ParseError> for String {
             ParseError::UnexpectedSymbol(s) => format!("syntax error near unexpected token `{s}'"),
             ParseError::Input(e) => From::from(e),
             ParseError::WrongAlias(msg) => format!("Someting wrong alias: {msg}"),
-            ParseError::NoArith => "arithmetic expression required".to_string(),
-            ParseError::SyntaxError(s) => format!("syntax error: `{s}'"),
+            ParseError::SyntaxError(s) => format!("syntax error: {s}"),
         }
     }
 }
@@ -34,7 +32,7 @@ impl ParseError {
         s = s.trim_end().to_string();
 
         let appear_c = match self {
-            Self::UnexpectedSymbol(_) | Self::SyntaxError(_) | Self::NoArith => true,
+            Self::UnexpectedSymbol(_) | Self::SyntaxError(_) => true,
             _ => false,
         };
 
