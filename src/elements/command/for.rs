@@ -9,6 +9,7 @@ use crate::elements::word::Word;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use std::sync::atomic::Ordering::Relaxed;
+use crate::elements::word::mode::WordMode;
 
 #[derive(Debug, Clone, Default)]
 pub struct ForCommand {
@@ -22,6 +23,7 @@ pub struct ForCommand {
     redirects: Vec<Redirect>,
     force_fork: bool,
     lineno: usize,
+    wrong_arith: String,
 }
 
 impl Command for ForCommand {
@@ -294,34 +296,50 @@ impl ForCommand {
             ..Default::default()
         };
 
+        feeder.set_backup();
         if Self::eat_name(feeder, &mut ans, core) {
+            feeder.pop_backup();
             Self::eat_in_part(feeder, &mut ans, core)?;
         } else if !Self::eat_arithmetic(feeder, &mut ans, core)? {
-            return Ok(None);
+            feeder.rewind();
+            let mode = WordMode::Exclude(vec!["))".to_string()]);
+            if let Ok(Some(w)) = Word::parse(feeder, core, Some(mode)) {
+                ans.text += &(w.text.clone() + "))");
+                ans.wrong_arith += &(w.text.clone() + "))");
+                feeder.consume(2);
+            }else{
+                return Ok(None);
+            }
         }
 
         let _ = Self::eat_end(feeder, &mut ans, core);
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
-        if command::eat_inner_script(feeder, core, "do", vec!["done"], &mut ans.do_script, false)? {
+        let res = if command::eat_inner_script(feeder, core, "do", vec!["done"], &mut ans.do_script, false)? {
             ans.text.push_str("do");
             ans.text.push_str(&ans.do_script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-            return Ok(Some(ans));
-        } 
-
-        //if let Some(b) = BraceCommand::parse(feeder, core)? {
-        if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.do_script, false)? {
+            Ok(Some(ans.clone()))
+        } else if command::eat_inner_script(feeder, core, "{", vec!["}"], &mut ans.do_script, false)? {
             ans.text.push_str("{");
             ans.text.push_str(&ans.do_script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(1)); //done
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-            return Ok(Some(ans));
+            Ok(Some(ans.clone()))
         } else {
             Ok(None)
+        };
+
+        if ! ans.wrong_arith.is_empty() {
+            let _ = core.db.set_param("LINENO", &ans.lineno.to_string(), None);
+            core.db.exit_status = 2;
+            ParseError::NoArith.print(core);
+            return Err(ParseError::SyntaxError(ans.wrong_arith.trim().to_string()));
         }
+
+        res
     }
 }
