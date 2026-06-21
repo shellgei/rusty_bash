@@ -332,6 +332,7 @@ impl ArithmeticExpr {
         left: &str,
     ) -> Result<Option<Self>, ParseError> {
         let mut ans = ArithmeticExpr::new();
+        ans.lineno = feeder.lineno;
         let _ = core.db.set_param("LINENO", &feeder.lineno.to_string(), None);
 
         loop {

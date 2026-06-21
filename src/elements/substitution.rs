@@ -64,6 +64,7 @@ impl Substitution {
         if declare && r.evaluated_array.is_some() {
             self.left_hand.index = None;
         }
+
         self.set_to_shell(core, scope)
     }
 

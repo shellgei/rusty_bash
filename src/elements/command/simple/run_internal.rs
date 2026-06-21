@@ -34,6 +34,7 @@ pub fn run_builtin(com: &mut SimpleCommand, core: &mut ShellCore) -> Result<bool
         return Ok(false);
     }
 
+    core.db.set_param("LINENO", &com.lineno.to_string(), None)?;
     let func = core.builtins[&com.args[0]];
     core.db.exit_status = func(core, &com.args[..]);
     core.now_herestring = false;

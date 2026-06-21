@@ -26,6 +26,8 @@ pub struct ForCommand {
 
 impl Command for ForCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+        core.db.set_param("LINENO", &self.lineno.to_string(), None)?;
+
         if ! self.has_arithmetic && ! utils::is_name(&self.name, core) {
             core.db.exit_status = 1;
             ExecError::VariableInvalid(self.name.to_string()).print(core);
