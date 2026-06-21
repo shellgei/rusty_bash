@@ -199,6 +199,7 @@ impl ShellCore {
             .db
             .init_array("BASH_VERSINFO", Some(bash_versinfo), None, false);
         self.db.set_flag("BASH_VERSINFO", 'r', 0);
+        self.set_shlvl();
 
         let exepath = env::current_exe().unwrap_or("".into());
         unsafe {
@@ -209,6 +210,19 @@ impl ShellCore {
         }
         unsafe {
             env::set_var("BASH", &exepath);
+        }
+    }
+
+    fn set_shlvl(&mut self) {
+        let current = env::var("SHLVL")
+            .ok()
+            .and_then(|v| v.trim().parse::<i64>().ok())
+            .unwrap_or(0);
+        let next = (current + 1).to_string();
+        let _ = self.db.set_param("SHLVL", &next, Some(0));
+        self.db.set_flag("SHLVL", 'x', 0);
+        unsafe {
+            env::set_var("SHLVL", &next);
         }
     }
 

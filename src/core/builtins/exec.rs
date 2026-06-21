@@ -4,6 +4,7 @@
 use crate::{ShellCore, proc_ctrl};
 use nix::errno::Errno;
 use nix::unistd;
+use std::env;
 use std::ffi::CString;
 
 pub fn exec(core: &mut ShellCore, args: &[String]) -> i32 {
@@ -19,6 +20,7 @@ pub fn exec(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.db.flags.contains('i') || core.shopts.query("execfail") {
         exec_command(&args[1..], core, "")
     } else {
+        lower_shlvl(core);
         proc_ctrl::exec_command(&args[1..], core, "")
     }
 }
@@ -29,11 +31,13 @@ fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> i32 {
         .map(|a| CString::new(a.to_string()).unwrap())
         .collect();
     let cfullpath = CString::new(fullpath).unwrap();
+    let shlvl = lower_shlvl(core);
 
     if !fullpath.is_empty() {
         let _ = unistd::execv(&cfullpath, &cargs);
     }
     let result = unistd::execvp(&cargs[0], &cargs);
+    set_shlvl(core, &shlvl);
 
     match result {
         Err(Errno::E2BIG) => super::error_(126, &args[0], "Arg list too long", core),
@@ -46,5 +50,28 @@ fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> i32 {
             super::error_(127, &args[0], &msg, core)
         }
         _ => 127,
+    }
+}
+
+fn lower_shlvl(core: &mut ShellCore) -> String {
+    let current = core
+        .db
+        .get_param("SHLVL")
+        .unwrap_or_else(|_| "1".to_string());
+    let next = current
+        .trim()
+        .parse::<i64>()
+        .map(|n| std::cmp::max(n - 1, 0))
+        .unwrap_or(0)
+        .to_string();
+
+    set_shlvl(core, &next);
+    current
+}
+
+fn set_shlvl(core: &mut ShellCore, shlvl: &str) {
+    let _ = core.db.set_param("SHLVL", shlvl, Some(0));
+    unsafe {
+        env::set_var("SHLVL", shlvl);
     }
 }
