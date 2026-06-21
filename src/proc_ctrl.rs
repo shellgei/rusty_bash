@@ -104,6 +104,11 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
     if core.db.exit_status == 130 {
         core.sigint.store(true, Relaxed);
     }
+
+    if core.db.last_bg_pid == child.into() {
+        core.db.last_bg_exit_status = Some(core.db.exit_status);
+    }
+
     ws.expect("SUSH INTERNAL ERROR: no wait status")
 }
 

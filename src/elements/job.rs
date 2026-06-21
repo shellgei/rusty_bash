@@ -112,7 +112,8 @@ impl Job {
         if core.db.flags.contains('i') {
             eprintln!("{}", &pids[0].unwrap().as_raw());
         }
-        let _ = core.db.set_param("!", &pids[0].unwrap().to_string(), None);
+        core.db.last_bg_pid = pids[0].unwrap().into();
+        core.db.last_bg_exit_status = None;
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);

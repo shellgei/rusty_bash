@@ -35,6 +35,8 @@ impl Subword for ProcessSubstitution {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp(), core)?;
         let pid = self.command.exec(core, &mut pipe)?.unwrap();
+        core.db.last_bg_pid = pid.into();
+        core.db.last_bg_exit_status = None;
         core.proc_sub_pid.push(pid);
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
         Ok(())

@@ -32,6 +32,8 @@ pub struct DataBase {
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
     pub exit_status: i32,
+    pub last_bg_pid: i32,
+    pub last_bg_exit_status: Option<i32>,
     pub last_arg: String,
     pub hash_counter: HashMap<String, usize>,
 }

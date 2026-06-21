@@ -281,6 +281,12 @@ fn special_param(db: &DataBase, name: &str) -> Option<String> {
             let pos = db.position_parameters.len() - 1;
             (db.position_parameters[pos].len() - 1).to_string()
         }
+        "!" => {
+            match db.last_bg_pid {
+                0 => "".to_string(),
+                n => n.to_string(),
+            }
+        }
         _ => return None,
     };
 

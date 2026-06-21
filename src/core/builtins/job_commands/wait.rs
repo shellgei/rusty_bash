@@ -208,6 +208,12 @@ fn wait_pid(
     var_name: &Option<String>,
     f_opt: bool,
 ) -> Result<(i32, bool), ExecError> {
+    if pid == core.db.last_bg_pid {
+        if let Some(es) = core.db.last_bg_exit_status {
+            return Ok((es, true));
+        }
+    }
+
     match super::pid_to_array_pos(pid, &core.job_table) {
         Some(i) => wait_a_job(core, i, var_name, f_opt),
         None => Ok((127, false)),
