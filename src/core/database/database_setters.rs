@@ -181,9 +181,16 @@ impl DataBase {
         }
     }
 
-    pub fn set_scope_to_env(&mut self, scope: usize) {
+    pub fn set_scope_to_env(&mut self, scope: usize) -> Vec<String> {
+        let mut new_list = vec![];
+
         for (k, v) in &mut self.params[scope] {
+            if ! env::var(k).is_ok() {
+                new_list.push(k.clone());
+            }
             unsafe { env::set_var(k, v.get_as_single().unwrap_or("".to_string())) };
         }
+
+        new_list
     }
 }

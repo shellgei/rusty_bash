@@ -1,6 +1,7 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use std::env;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{BraceCommand, IfCommand, ParenCommand, WhileCommand};
@@ -115,12 +116,19 @@ impl FunctionDefinition {
 
         let mut dummy = Pipe::new("|".to_string());
 
+        let scope = core.db.get_scope_num() - 1;
+        let added_envs = core.db.set_scope_to_env(scope);
+
         core.source_function_level += 1;
         if let Err(e) = self.command.as_mut().unwrap().exec(core, &mut dummy) {
             e.print(core);
         }
         core.return_flag = false;
         core.source_function_level -= 1;
+
+        for env in added_envs {
+            unsafe { env::set_var(env, "") ; }
+        }
 
         core.db.position_parameters.pop();
 
