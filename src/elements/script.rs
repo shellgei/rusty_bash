@@ -39,9 +39,7 @@ impl Script {
     }
 
     pub fn pretty_print(&mut self, indent_num: usize) {
-        //let mut semicolon = false;
         let mut printed = false;
-        //let mut end_pos = self.jobs.len() - 1;
 
         while let Some(e) = self.jobs.last() {
             if e.pipelines.is_empty() {
