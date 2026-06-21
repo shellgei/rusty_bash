@@ -49,9 +49,15 @@ impl DataBase {
 
     pub fn get_scope_pos(&mut self, name: &str) -> Option<usize> {
         let num = self.params.len();
-        (0..num)
+        let ppos = (0..num)
             .rev()
-            .find(|&scope| self.params[scope].contains_key(name))
+            .find(|&scope| self.params[scope].contains_key(name));
+
+        let rpos = (0..num)
+            .rev()
+            .find(|&scope| self.removed_params[scope].contains(name));
+
+        std::cmp::max(ppos, rpos)
     }
 
     pub fn get_position_params(&self) -> Vec<String> {

@@ -22,12 +22,13 @@ use self::data::single_int::IntData;
 use self::data::uninit::Uninit;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::error::exec::ExecError;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default)]
 pub struct DataBase {
     pub flags: String,
     pub params: Vec<HashMap<String, Box<dyn Data>>>,
+    pub removed_params: Vec<HashSet<String>>, //for local unset
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
     pub exit_status: i32,
@@ -39,6 +40,7 @@ impl DataBase {
     pub fn new() -> DataBase {
         let mut data = DataBase {
             params: vec![HashMap::new()],
+            removed_params: vec![HashSet::new()],
             position_parameters: vec![vec![]],
             flags: "B".to_string(),
             ..Default::default()
@@ -61,10 +63,12 @@ impl DataBase {
 
     pub fn push_local(&mut self) {
         self.params.push(HashMap::new());
+        self.removed_params.push(HashSet::new());
     }
 
     pub fn pop_local(&mut self) {
         self.params.pop();
+        self.removed_params.pop();
     }
 
     pub fn init(&mut self, name: &str, scope: usize) {
