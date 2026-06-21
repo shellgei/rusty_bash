@@ -30,6 +30,7 @@ pub fn reserved(w: &str) -> bool {
             | "{"
             | "}"
             | "while"
+            | "until"
             | "for"
             | "do"
             | "done"

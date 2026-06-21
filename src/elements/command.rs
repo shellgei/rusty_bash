@@ -13,6 +13,7 @@ pub mod repeat;
 pub mod select;
 pub mod simple;
 pub mod test;
+pub mod until;
 pub mod r#while;
 
 use self::arithmetic::ArithmeticCommand;
@@ -28,6 +29,7 @@ use self::repeat::RepeatCommand;
 use self::simple::SimpleCommand;
 use self::test::TestCommand;
 use self::r#while::WhileCommand;
+use self::until::UntilCommand;
 use super::io::redirect::Redirect;
 use super::{Pipe, io};
 use crate::error::exec::ExecError;
@@ -273,6 +275,8 @@ pub fn parse(
     } else if let Some(a) = SelectCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = WhileCommand::parse(feeder, core)? {
+        Ok(Some(Box::new(a)))
+    } else if let Some(a) = UntilCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = RepeatCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))

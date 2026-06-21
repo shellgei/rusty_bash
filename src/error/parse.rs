@@ -28,6 +28,7 @@ impl ParseError {
         let name = core.db.get_param("0").unwrap();
         let mut s: String = From::<&ParseError>::from(self);
         s = s.trim_end().to_string();
+
         if core.db.flags.contains('i') {
             eprintln!("{}: {}", &name, &s);
         }else if core.db.flags.contains('c') && let Self::UnexpectedSymbol(_) = self {
