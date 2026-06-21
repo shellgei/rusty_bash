@@ -4,7 +4,7 @@
 use crate::core::DataBase;
 use crate::core::database::Uninit;
 use crate::error::exec::ExecError;
-use std::env;
+//use std::env;
 
 impl DataBase {
     pub fn unset_flag(&mut self, name: &str, flag: char, scope: usize) {
@@ -70,15 +70,16 @@ impl DataBase {
         }
 
         let mut res = self.remove_entry(called_scope.unwrap(), name)?;
-        unsafe { env::set_var(name, "") };
+        //unsafe { env::set_var(name, "") };
         for scope in self.params.iter_mut() {
             if let Some(d) = scope.get_mut(name) {
                 res = true;
                 if localvar_unset {
                     *d = Box::new(Uninit::new(""));
-                } else {
-                    scope.remove(name);
+                    break;
                 }
+
+                scope.remove(name);
             }
         }
 
