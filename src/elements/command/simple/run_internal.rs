@@ -65,6 +65,7 @@ pub fn run_substitution_builtin(
         }
     }
 
+    core.db.set_param("LINENO", &com.lineno.to_string(), None)?;
     let func = core.subst_builtins[&com.args[0]];
     core.db.exit_status = func(core, &args[..], &mut subs[..]);
     Ok(true)

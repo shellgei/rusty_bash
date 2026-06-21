@@ -158,11 +158,6 @@ impl Script {
                 }
                 Status::NeedMoreLine => feeder.feed_additional_line(core)?,
                 Status::UnexpectedSymbol(s) => {
-                    /*
-                    let _ = core
-                        .db
-                        .set_param("LINENO", &feeder.lineno.to_string(), None);
-                    */
                     core.db.exit_status = 2;
                     return Err(ParseError::UnexpectedSymbol(s));
                 }
