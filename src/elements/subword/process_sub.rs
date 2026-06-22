@@ -10,6 +10,11 @@ use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
 use nix::unistd;
+use std::thread;
+use nix::sys::wait;
+use nix::sys::wait::WaitStatus;
+use nix::sys::wait::WaitStatus::Signaled;
+use std::sync::Arc;
 
 #[derive(Debug, Clone, Default)]
 pub struct ProcessSubstitution {
@@ -35,10 +40,51 @@ impl Subword for ProcessSubstitution {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp(), core)?;
         let pid = self.command.exec(core, &mut pipe)?.unwrap();
+        //let pid_u: i32 = pid.into();
+        /*
         core.db.last_bg_pid = pid.into();
         core.db.last_bg_exit_status = None;
+        */
+       // let bg_info = ((pid_u as u64) << 32) + 1000;
+        //core.db.last_bg_proc.store(bg_info, Relaxed);
         core.proc_sub_pid.push(pid);
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
+
+        {
+            let mut bg_info = core.db.last_bg_info.lock().unwrap();
+            *bg_info = (Some(pid), None);
+        }
+
+        let proc_info = Arc::clone(&core.db.last_bg_info);
+
+        thread::spawn(move || match wait::waitpid(pid, None) {
+            Ok(WaitStatus::Exited(_, es)) => {
+                let mut bg_info = proc_info.lock().unwrap();
+                if let Some(p) = bg_info.0 {
+                    if p == pid {
+                        *bg_info = (Some(pid), Some(es));
+                    }
+                }
+                //let bg_info = ((pid as u64) << 32) + 1000;
+                //proc_info.store(
+                //dbg!("{:?}", &pid);
+                //dbg!("{:?}", &es);
+       //         exit_status.store(es, Relaxed);
+            }
+            Ok(Signaled(pid, sig, _)) => {
+                let mut bg_info = proc_info.lock().unwrap();
+                if let Some(p) = bg_info.0 {
+                    if p == pid {
+                        *bg_info = (Some(pid), Some(sig as i32 + 128));
+                    }
+                }
+        //        let _ = signal::killpg(pid, sig);
+         //       exit_status.store(sig as i32 + 128, Relaxed);
+            }
+            Err(_) => {}
+            _ => {}
+        });
+
         Ok(())
     }
 

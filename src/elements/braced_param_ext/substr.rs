@@ -30,7 +30,7 @@ impl BracedExcludeension for Substr {
         if core.db.exist(&v.name) {
             self.get(text, core)
         } else {
-            Ok(self.text.clone())
+            Ok(text.to_string())
         }
     }
 

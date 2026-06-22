@@ -112,8 +112,19 @@ impl Job {
         if core.db.flags.contains('i') {
             eprintln!("{}", &pids[0].unwrap().as_raw());
         }
+        /*
         core.db.last_bg_pid = pids[0].unwrap().into();
         core.db.last_bg_exit_status = None;
+        */
+ //       let pid: i32 = pids[0].unwrap().into();
+ //       let bg_info = ((pid as u64) << 32) + 1000; 
+//        core.db.last_bg_proc.store(bg_info, Relaxed);
+
+        {
+            let mut bg_info = core.db.last_bg_info.lock().unwrap();
+            *bg_info = (Some(pids[0].clone().unwrap()), None);
+        }
+
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);

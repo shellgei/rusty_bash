@@ -23,6 +23,8 @@ use self::data::uninit::Uninit;
 use crate::elements::command::function_def::FunctionDefinition;
 use crate::error::exec::ExecError;
 use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex};
+use nix::unistd::Pid;
 
 #[derive(Debug, Default)]
 pub struct DataBase {
@@ -32,8 +34,10 @@ pub struct DataBase {
     pub position_parameters: Vec<Vec<String>>,
     pub functions: HashMap<String, FunctionDefinition>,
     pub exit_status: i32,
-    pub last_bg_pid: i32,
-    pub last_bg_exit_status: Option<i32>,
+    //pub last_bg_pid: i32,
+    //pub last_bg_exit_status: Option<i32>,
+    pub last_bg_info: Arc<Mutex<(Option<Pid>, Option<i32>)>>, //(PID, ExitStatus)
+    //pub last_bg_proc: Arc<AtomicU64>,
     pub last_arg: String,
     pub hash_counter: HashMap<String, usize>,
 }
