@@ -197,11 +197,13 @@ fn run_command_not_found(arg: &str, core: &mut ShellCore) -> ! {
 }
 
 fn close_proc_sub(core: &mut ShellCore) {
-    while let Some(fd) = core.proc_sub_fd.pop() {
-        core.fds.close(fd);
+    while let Some((fd, level)) = core.out_proc_sub_fd.pop() {
+        if core.source_function_level == level {
+            core.fds.close(fd);
+        }
     }
 
-    while let Some(pid) = core.proc_sub_pid.pop() {
+    while let Some(pid) = core.out_proc_sub_pid.pop() {
         let _ = wait::waitpid(pid, None);
     }
 }

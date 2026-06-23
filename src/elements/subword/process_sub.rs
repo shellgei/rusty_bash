@@ -34,7 +34,7 @@ impl Subword for ProcessSubstitution {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.direction == '>' {
-            return self.substitute_in(core);
+            return self.substitute_out(core);
         }
 
         let mut pipe = Pipe::new("|".to_string());
@@ -47,7 +47,7 @@ impl Subword for ProcessSubstitution {
         */
        // let bg_info = ((pid_u as u64) << 32) + 1000;
         //core.db.last_bg_proc.store(bg_info, Relaxed);
-        core.proc_sub_pid.push(pid);
+        core.out_proc_sub_pid.push(pid);
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
 
         {
@@ -105,11 +105,11 @@ impl Subword for ProcessSubstitution {
 }
 
 impl ProcessSubstitution {
-    fn substitute_in(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute_out(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let pipe = self.pipe.as_mut().unwrap();
         let pid = self.command.exec(core, pipe)?.unwrap();
-        core.proc_sub_pid.push(pid);
-        core.proc_sub_fd.push(pipe.proc_sub_send);
+        core.out_proc_sub_pid.push(pid);
+        core.out_proc_sub_fd.push((pipe.proc_sub_send, core.source_function_level));
         self.text = "/dev/fd/".to_owned() + &pipe.proc_sub_send.to_string();
 
         Ok(())

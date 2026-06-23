@@ -71,8 +71,8 @@ pub struct ShellCore {
     pub error_script: String,
     pub error_script_run: bool,
     pub valid_assoc_expand_once: bool,
-    pub proc_sub_pid: Vec<Pid>,
-    pub proc_sub_fd: Vec<RawFd>,
+    pub out_proc_sub_pid: Vec<Pid>,
+    pub out_proc_sub_fd: Vec<(RawFd, i32)>, //i32: function level
     pub exec_command_path_bkup: Option<String>,
     pub now_herestring: bool,
     pub case_line: String,
