@@ -2,8 +2,6 @@
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
-pub mod trapscripts;
-
 use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::signal;

@@ -2,12 +2,13 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::utils::{ExecError, InputError};
-use crate::{Feeder, Script, ShellCore};
+use crate::ShellCore;
+use crate::core::trap;
 use nix::sys::signal;
 use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {
-    run_script(core);
+    trap::exit(core);
 
     if !core.is_subshell {
         core.write_history_to_file();
@@ -20,33 +21,6 @@ pub fn normal(core: &mut ShellCore) -> ! {
     }
 
     process::exit(core.db.exit_status % 256)
-}
-
-fn run_script(core: &mut ShellCore) {
-    if core.trap_info.exit_script_run {
-        return;
-    }
-
-    let exit_status_bkup = core.db.exit_status;
-    core.trap_info.exit_script_run = true;
-    if core.trap_info.exit_script.is_empty() {
-        return;
-    }
-
-    let mut feeder = Feeder::new(&core.trap_info.exit_script);
-    match Script::parse(&mut feeder, core, true) {
-        Ok(Some(mut s)) => {
-            if let Err(e) = s.exec(core) {
-                e.print(core);
-            }
-        }
-        Err(e) => {
-            e.print(core);
-        }
-        Ok(None) => {}
-    };
-
-    core.db.exit_status = exit_status_bkup;
 }
 
 /* error at exec */

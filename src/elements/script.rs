@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
-use crate::core::builtins::trap::trapscripts;
+use crate::core::trap;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
@@ -27,7 +27,7 @@ impl Script {
 
             let es = core.db.exit_status;
             if es != 0 && !core.trap_info.error_script_run {
-                trapscripts::error(core);
+                trap::error(core);
             }
 
             core.db.exit_status = es;
