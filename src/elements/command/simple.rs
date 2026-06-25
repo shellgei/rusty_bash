@@ -55,6 +55,10 @@ impl Command for SimpleCommand {
             return Ok(None);
         }
 
+        if ! ( self.args.len() >= 3 && self.args[0] == "trap" && self.args[2] == "DEBUG") {
+            utils::run_debug_script(core);
+        }
+
         core.db.set_param("BASH_COMMAND", &self.text, None)?;
 
         self.args.clear();
@@ -70,15 +74,10 @@ impl Command for SimpleCommand {
             self.args.insert(0, "fg".to_string());
         }
 
-        let res = match self.args.len() {
+        match self.args.len() {
             0 => self.exec_set_param(core),
             _ => self.exec_command(core, pipe),
-        };
-
-        if ! ( self.args.len() >= 3 && self.args[0] == "trap" && self.args[2] == "DEBUG") {
-            utils::run_debug_script(core);
         }
-        res
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {
