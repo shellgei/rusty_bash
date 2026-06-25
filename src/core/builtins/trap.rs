@@ -77,13 +77,6 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
 
     for n in not_signal {
         core.trap.list.insert(n, args[1].to_string());
-        if n == 0 {
-            core.trap.exit_script = args[1].clone();
-        } else if n == trap::ERROR {
-            core.trap.error_script = args[1].clone();
-        } else if n == trap::DEBUG {
-            core.trap.debug_script = args[1].clone();
-        }
     }
 
     0
