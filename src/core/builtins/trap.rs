@@ -2,6 +2,8 @@
 //SPDX-FileCopyrightText: 2023 @caro@mi.shellgei.org
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod trapscripts;
+
 use crate::ShellCore;
 use crate::error::exec::ExecError;
 use crate::signal;
@@ -15,9 +17,9 @@ use std::{thread, time};
 
 pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
-    core.traplist.sort();
+    core.trap_info.list.sort();
     if args.len() == 1 {
-        for e in &core.traplist {
+        for e in &core.trap_info.list {
             print_item(e.0, &e.1);
         }
         return 0;
@@ -62,19 +64,19 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if !valid_signals.is_empty() {
         for n in &valid_signals {
-            core.traplist.push((*n, args[1].to_string()));
+            core.trap_info.list.push((*n, args[1].to_string()));
         }
         run_thread(valid_signals, &args[1], core);
     }
 
     for n in not_signal {
-        core.traplist.push((n, args[1].to_string()));
+        core.trap_info.list.push((n, args[1].to_string()));
         if n == 0 {
-            core.exit_script = args[1].clone();
+            core.trap_info.exit_script = args[1].clone();
         } else if n == 1000 {
-            core.error_script = args[1].clone();
+            core.trap_info.error_script = args[1].clone();
         } else if n == 1001 {
-            core.debug_script = args[1].clone();
+            core.trap_info.debug_script = args[1].clone();
         }
     }
 
@@ -95,7 +97,7 @@ fn print_item(num: i32, script: &str) {
 
 pub fn print(core: &mut ShellCore, arg: &str) {
     if let Ok(num) = arg_to_num(arg, &[]) {
-        for e in &core.traplist {
+        for e in &core.trap_info.list {
             if num != e.0 {
                 continue;
             }
@@ -116,10 +118,10 @@ pub fn print(core: &mut ShellCore, arg: &str) {
 }
 
 fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
-    core.trapped
+    core.trap_info.trapped
         .push((Arc::new(AtomicBool::new(false)), script.to_string()));
 
-    let trap = Arc::clone(&core.trapped.last().unwrap().0);
+    let trap = Arc::clone(&core.trap_info.trapped.last().unwrap().0);
 
     thread::spawn(move || {
         let mut signals =

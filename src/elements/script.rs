@@ -2,9 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
+use crate::core::builtins::trap::trapscripts;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{Feeder, ShellCore, utils};
+use crate::{Feeder, ShellCore};
 
 enum Status {
     UnexpectedSymbol(String),
@@ -25,20 +26,12 @@ impl Script {
             job.exec(core, end == "&")?;
 
             let es = core.db.exit_status;
-            if es != 0 && !core.error_script_run {
-                utils::run_error_script(core);
+            if es != 0 && !core.trap_info.error_script_run {
+                trapscripts::error(core);
             }
 
             core.db.exit_status = es;
         }
-
-        /*
-        if !self.text.is_empty()
-        && !core.debug_script_run 
-        && self.jobs.len() != 0 {
-            dbg!("{:?}", &self.text);
-            utils::run_debug_script(core);
-        }*/
 
         Ok(())
     }

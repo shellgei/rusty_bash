@@ -10,12 +10,14 @@ pub mod history;
 pub mod jobtable;
 pub mod options;
 pub mod time_keeper;
+pub mod trap;
 
 use self::completion::{Completion, CompletionEntry};
 use self::database::DataBase;
 use self::file_descs::FileDescriptors;
 use self::options::Options;
 use self::time_keeper::TimeKeeper;
+use self::trap::Trap;
 use crate::core::jobtable::JobEntry;
 use crate::elements::substitution::Substitution;
 use crate::{error, proc_ctrl, signal};
@@ -44,8 +46,6 @@ pub struct ShellCore {
     pub subst_builtins: HashMap<String, SubstBuiltinFn>,
     pub disabled_subst_builtins: HashMap<String, SubstBuiltinFn>,
     pub sigint: Arc<AtomicBool>,
-    pub trapped: Vec<(Arc<AtomicBool>, String)>,
-    pub traplist: Vec<(i32, String)>,
     pub is_subshell: bool,
     pub source_function_level: i32,
     pub source_files: Vec<String>,
@@ -66,18 +66,15 @@ pub struct ShellCore {
     pub shopts: Options,
     pub suspend_e_option: bool,
     pub script_name: String,
-    pub exit_script: String,
-    pub exit_script_run: bool,
-    pub debug_script: String,
-    pub debug_script_run: bool,
-    pub error_script: String,
-    pub error_script_run: bool,
+
+
     pub valid_assoc_expand_once: bool,
     pub out_proc_sub_pid: Vec<Pid>,
     pub out_proc_sub_fd: Vec<(RawFd, i32)>, //i32: function level
     pub exec_command_path_bkup: Option<String>,
     pub now_herestring: bool,
     pub case_line: String,
+    pub trap_info: Trap,
 }
 
 impl ShellCore {
@@ -254,7 +251,7 @@ impl ShellCore {
         let _ = self.set_subshell_parameters();
         //self.job_table.clear();
 
-        self.exit_script.clear();
+        self.trap_info.exit_script.clear();
     }
 
     pub fn init_current_directory(&mut self) {

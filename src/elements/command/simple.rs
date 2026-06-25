@@ -6,7 +6,8 @@ pub mod hash;
 pub mod parser;
 pub mod run_internal;
 
-use crate::{ShellCore, proc_ctrl, utils};
+use crate::{ShellCore, proc_ctrl};
+use crate::core::builtins::trap::trapscripts;
 
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -55,9 +56,7 @@ impl Command for SimpleCommand {
             return Ok(None);
         }
 
-        if ! ( self.args.len() >= 3 && self.args[0] == "trap" && self.args[2] == "DEBUG") {
-            utils::run_debug_script(core);
-        }
+        trapscripts::debug(core);
 
         core.db.set_param("BASH_COMMAND", &self.text, None)?;
 

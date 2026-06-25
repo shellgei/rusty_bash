@@ -22,7 +22,7 @@ mod printf;
 mod pwd;
 mod read;
 pub mod source;
-mod trap;
+pub mod trap;
 mod type_;
 #[cfg(not(target_os = "macos"))]
 mod ulimit;

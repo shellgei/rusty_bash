@@ -23,17 +23,17 @@ pub fn normal(core: &mut ShellCore) -> ! {
 }
 
 fn run_script(core: &mut ShellCore) {
-    if core.exit_script_run {
+    if core.trap_info.exit_script_run {
         return;
     }
 
     let exit_status_bkup = core.db.exit_status;
-    core.exit_script_run = true;
-    if core.exit_script.is_empty() {
+    core.trap_info.exit_script_run = true;
+    if core.trap_info.exit_script.is_empty() {
         return;
     }
 
-    let mut feeder = Feeder::new(&core.exit_script);
+    let mut feeder = Feeder::new(&core.trap_info.exit_script);
     match Script::parse(&mut feeder, core, true) {
         Ok(Some(mut s)) => {
             if let Err(e) = s.exec(core) {
