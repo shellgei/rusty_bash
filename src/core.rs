@@ -68,6 +68,8 @@ pub struct ShellCore {
     pub script_name: String,
     pub exit_script: String,
     pub exit_script_run: bool,
+    pub debug_script: String,
+    pub debug_script_run: bool,
     pub error_script: String,
     pub error_script_run: bool,
     pub valid_assoc_expand_once: bool,

@@ -18,11 +18,7 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     core.traplist.sort();
     if args.len() == 1 {
         for e in &core.traplist {
-            if e.0 == 0 {
-                println!("trap -- '{}' EXIT", &e.1);
-            } else if let Ok(s) = Signal::try_from(e.0) {
-                println!("trap -- '{}' {}", &e.1, &s);
-            }
+            print_item(e.0, &e.1);
         }
         return 0;
     }
@@ -49,7 +45,7 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut not_signal = vec![];
     let mut valid_signals = vec![];
     for n in &signals {
-        if *n == 0 || *n == 1000 {
+        if *n == 0 || (*n >= 1000 && *n <= 1001) {
             not_signal.push(*n);
             continue;
         }
@@ -77,10 +73,24 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
             core.exit_script = args[1].clone();
         } else if n == 1000 {
             core.error_script = args[1].clone();
+        } else if n == 1001 {
+            core.debug_script = args[1].clone();
         }
     }
 
     0
+}
+
+fn print_item(num: i32, script: &str) {
+    if num == 0 {
+        println!("trap -- '{}' EXIT", &script);
+    } else if num == 1000 {
+        println!("trap -- '{}' ERR", &script);
+    } else if num == 1001 {
+        println!("trap -- '{}' DEBUG", &script);
+    } else if let Ok(s) = Signal::try_from(num) {
+        println!("trap -- '{}' {}", &script, &s);
+    }
 }
 
 pub fn print(core: &mut ShellCore, arg: &str) {
@@ -90,11 +100,17 @@ pub fn print(core: &mut ShellCore, arg: &str) {
                 continue;
             }
 
+            print_item(num, &e.1);
+            /*
             if num == 0 {
                 println!("trap -- '{}' EXIT", &e.1);
+            } else if num == 1000 {
+                println!("trap -- '{}' ERR", &e.1);
+            } else if num == 1001 {
+                println!("trap -- '{}' DEBUG", &e.1);
             } else if let Ok(s) = Signal::try_from(num) {
                 println!("trap -- '{}' {}", &e.1, &s);
-            }
+            }*/
         }
     }
 }
@@ -127,6 +143,10 @@ fn arg_to_num(arg: &str, forbiddens: &[i32]) -> Result<i32, ExecError> {
 
     if arg == "ERR" || arg == "1000" {
         return Ok(1000);
+    }
+
+    if arg == "DEBUG" || arg == "1001" {
+        return Ok(1001);
     }
 
     if let Ok(n) = Signal::from_str(arg) {

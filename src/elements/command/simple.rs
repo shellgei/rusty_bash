@@ -6,7 +6,7 @@ pub mod hash;
 pub mod parser;
 pub mod run_internal;
 
-use crate::{ShellCore, proc_ctrl};
+use crate::{ShellCore, proc_ctrl, utils};
 
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -70,10 +70,15 @@ impl Command for SimpleCommand {
             self.args.insert(0, "fg".to_string());
         }
 
-        match self.args.len() {
+        let res = match self.args.len() {
             0 => self.exec_set_param(core),
             _ => self.exec_command(core, pipe),
+        };
+
+        if ! ( self.args.len() >= 3 && self.args[0] == "trap" && self.args[2] == "DEBUG") {
+            utils::run_debug_script(core);
         }
+        res
     }
 
     fn run(&mut self, core: &mut ShellCore, fork: bool) -> Result<(), ExecError> {

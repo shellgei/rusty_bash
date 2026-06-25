@@ -85,6 +85,7 @@ impl Options {
 
         options.implemented = [
             "extglob",
+            "extdebug",
             "progcomp",
             "nullglob",
             "dotglob",

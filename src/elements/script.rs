@@ -28,8 +28,17 @@ impl Script {
             if es != 0 && !core.error_script_run {
                 utils::run_error_script(core);
             }
+
             core.db.exit_status = es;
         }
+
+        /*
+        if !self.text.is_empty()
+        && !core.debug_script_run 
+        && self.jobs.len() != 0 {
+            dbg!("{:?}", &self.text);
+            utils::run_debug_script(core);
+        }*/
 
         Ok(())
     }
