@@ -79,7 +79,7 @@ pub fn check_trap(core: &mut ShellCore) {
     let bkup = core.db.exit_status;
 
     let mut scripts = vec![];
-    for t in &core.trap_info.trapped {
+    for t in &core.trap.trapped {
         if t.0.load(Relaxed) {
             scripts.push(t.1.clone());
             t.0.store(false, Relaxed);

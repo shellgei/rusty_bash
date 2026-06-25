@@ -74,7 +74,7 @@ pub struct ShellCore {
     pub exec_command_path_bkup: Option<String>,
     pub now_herestring: bool,
     pub case_line: String,
-    pub trap_info: Trap,
+    pub trap: Trap,
 }
 
 impl ShellCore {
@@ -249,9 +249,7 @@ impl ShellCore {
         self.is_subshell = true;
         proc_ctrl::set_pgid(self, pid, pgid);
         let _ = self.set_subshell_parameters();
-        //self.job_table.clear();
-
-        self.trap_info.exit_script.clear();
+        self.trap.clear_for_subshell();
     }
 
     pub fn init_current_directory(&mut self) {

@@ -3,6 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::core::trap;
 use crate::error::exec::ExecError;
 use crate::signal;
 use nix::sys::signal::Signal;
@@ -15,9 +16,9 @@ use std::{thread, time};
 
 pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
-    core.trap_info.list.sort();
+    core.trap.list.sort();
     if args.len() == 1 {
-        for e in &core.trap_info.list {
+        for e in &core.trap.list {
             print_item(e.0, &e.1);
         }
         return 0;
@@ -45,7 +46,7 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut not_signal = vec![];
     let mut valid_signals = vec![];
     for n in &signals {
-        if *n == 0 || (*n >= 1000 && *n <= 1001) {
+        if *n == 0 || (*n >= trap::SPECIAL_TRAP_MIN && *n <= trap::SPECIAL_TRAP_MAX) {
             not_signal.push(*n);
             continue;
         }
@@ -62,19 +63,19 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if !valid_signals.is_empty() {
         for n in &valid_signals {
-            core.trap_info.list.push((*n, args[1].to_string()));
+            core.trap.list.push((*n, args[1].to_string()));
         }
         run_thread(valid_signals, &args[1], core);
     }
 
     for n in not_signal {
-        core.trap_info.list.push((n, args[1].to_string()));
+        core.trap.list.push((n, args[1].to_string()));
         if n == 0 {
-            core.trap_info.exit_script = args[1].clone();
-        } else if n == 1000 {
-            core.trap_info.error_script = args[1].clone();
-        } else if n == 1001 {
-            core.trap_info.debug_script = args[1].clone();
+            core.trap.exit_script = args[1].clone();
+        } else if n == trap::ERROR {
+            core.trap.error_script = args[1].clone();
+        } else if n == trap::DEBUG {
+            core.trap.debug_script = args[1].clone();
         }
     }
 
@@ -84,9 +85,9 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
 fn print_item(num: i32, script: &str) {
     if num == 0 {
         println!("trap -- '{}' EXIT", &script);
-    } else if num == 1000 {
+    } else if num == trap::ERROR {
         println!("trap -- '{}' ERR", &script);
-    } else if num == 1001 {
+    } else if num == trap::DEBUG {
         println!("trap -- '{}' DEBUG", &script);
     } else if let Ok(s) = Signal::try_from(num) {
         println!("trap -- '{}' {}", &script, &s);
@@ -95,31 +96,21 @@ fn print_item(num: i32, script: &str) {
 
 pub fn print(core: &mut ShellCore, arg: &str) {
     if let Ok(num) = arg_to_num(arg, &[]) {
-        for e in &core.trap_info.list {
+        for e in &core.trap.list {
             if num != e.0 {
                 continue;
             }
 
             print_item(num, &e.1);
-            /*
-            if num == 0 {
-                println!("trap -- '{}' EXIT", &e.1);
-            } else if num == 1000 {
-                println!("trap -- '{}' ERR", &e.1);
-            } else if num == 1001 {
-                println!("trap -- '{}' DEBUG", &e.1);
-            } else if let Ok(s) = Signal::try_from(num) {
-                println!("trap -- '{}' {}", &e.1, &s);
-            }*/
         }
     }
 }
 
 fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
-    core.trap_info.trapped
+    core.trap.trapped
         .push((Arc::new(AtomicBool::new(false)), script.to_string()));
 
-    let trap = Arc::clone(&core.trap_info.trapped.last().unwrap().0);
+    let trap = Arc::clone(&core.trap.trapped.last().unwrap().0);
 
     thread::spawn(move || {
         let mut signals =
@@ -137,16 +128,17 @@ fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
 }
 
 fn arg_to_num(arg: &str, forbiddens: &[i32]) -> Result<i32, ExecError> {
-    if arg == "EXIT" || arg == "0" {
+    let arg_num = arg.parse::<i32>().unwrap_or(-1);
+    if arg == "EXIT" || arg_num == 0 {
         return Ok(0);
     }
 
-    if arg == "ERR" || arg == "1000" {
-        return Ok(1000);
+    if arg == "ERR" || arg_num == trap::ERROR {
+        return Ok(trap::ERROR);
     }
 
-    if arg == "DEBUG" || arg == "1001" {
-        return Ok(1001);
+    if arg == "DEBUG" || arg_num == trap::DEBUG {
+        return Ok(trap::DEBUG);
     }
 
     if let Ok(n) = Signal::from_str(arg) {

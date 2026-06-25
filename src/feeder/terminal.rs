@@ -391,7 +391,7 @@ impl Terminal {
 }
 
 fn signal_check(core: &mut ShellCore, term: &mut Terminal) -> Result<bool, InputError> {
-    if core.sigint.load(Relaxed) || core.trap_info.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
+    if core.sigint.load(Relaxed) || core.trap.trapped.iter_mut().any(|t| t.0.load(Relaxed)) {
         term.write("\r\n");
         return Err(InputError::Interrupt);
     }

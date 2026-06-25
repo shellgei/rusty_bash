@@ -26,7 +26,7 @@ impl Script {
             job.exec(core, end == "&")?;
 
             let es = core.db.exit_status;
-            if es != 0 && !core.trap_info.error_script_run {
+            if es != 0 && !core.trap.error_script_run {
                 trap::error(core);
             }
 
