@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, Script, ShellCore};
-use super::{Arc, AtomicBool};
+use super::{Arc, AtomicBool, HashMap};
 
 pub const SPECIAL_TRAP_MIN: i32 = 1000;
 pub const ERROR: i32 = 1000;
@@ -11,7 +11,8 @@ pub const SPECIAL_TRAP_MAX: i32 = DEBUG;
 
 #[derive(Default)]
 pub struct Trap {
-    pub list: Vec<(i32, String)>,
+    //pub list: Vec<(i32, String)>,
+    pub list: HashMap<i32, String>,
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
     pub exit_script: String,
     pub exit_script_run: bool,
@@ -40,6 +41,7 @@ pub fn exit(core: &mut ShellCore) {
     }
 
     let mut feeder = Feeder::new(&core.trap.exit_script);
+    //let mut feeder = Feeder::new(&core.trap.list[0]);
     match Script::parse(&mut feeder, core, true) {
         Ok(Some(mut s)) => {
             if let Err(e) = s.exec(core) {

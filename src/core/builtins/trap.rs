@@ -16,11 +16,17 @@ use std::{thread, time};
 
 pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
-    core.trap.list.sort();
+    //core.trap.list.sort();
     if args.len() == 1 {
+        let mut keys: Vec<i32> = core.trap.list.keys().map(|e| *e).collect();
+        keys.sort();
+        for k in keys {
+            print_item(k, &core.trap.list[&k]);
+        }
+        /*
         for e in &core.trap.list {
             print_item(e.0, &e.1);
-        }
+        }*/
         return 0;
     }
 
@@ -63,13 +69,14 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if !valid_signals.is_empty() {
         for n in &valid_signals {
-            core.trap.list.push((*n, args[1].to_string()));
+            //core.trap.list.push((*n, args[1].to_string()));
+            core.trap.list.insert(*n, args[1].to_string());
         }
         run_thread(valid_signals, &args[1], core);
     }
 
     for n in not_signal {
-        core.trap.list.push((n, args[1].to_string()));
+        core.trap.list.insert(n, args[1].to_string());
         if n == 0 {
             core.trap.exit_script = args[1].clone();
         } else if n == trap::ERROR {
@@ -97,7 +104,7 @@ fn print_item(num: i32, script: &str) {
 pub fn print(core: &mut ShellCore, arg: &str) {
     if let Ok(num) = arg_to_num(arg, &[]) {
         for e in &core.trap.list {
-            if num != e.0 {
+            if num != *e.0 {
                 continue;
             }
 
