@@ -42,7 +42,7 @@ impl SingleQuoted {
         core: &mut ShellCore,
         mode: &Option<WordMode>,
     ) -> Option<Self> {
-        if let Some(WordMode::Exclude(_)) = mode
+        if let Some(WordMode::PermitAnyUntil(_)) = mode
             && core.options.query("posix")
         {
             return None;

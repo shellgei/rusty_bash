@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedExcludeension;
+use super::BracedPermitAnyUntilension;
 use crate::elements::parameter::Parameter;
 use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
@@ -21,7 +21,7 @@ pub struct Replace {
     pub has_replace_to: bool,
 }
 
-impl BracedExcludeension for Replace {
+impl BracedPermitAnyUntilension for Replace {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -37,7 +37,7 @@ impl BracedExcludeension for Replace {
         }
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
+    fn boxed_clone(&self) -> Box<dyn BracedPermitAnyUntilension> {
         Box::new(self.clone())
     }
 
@@ -197,7 +197,7 @@ impl Replace {
         if let Some(w) = Word::parse(
             feeder,
             core,
-            Some(WordMode::Exclude(vec!["}".to_string(), "/".to_string()])),
+            Some(WordMode::PermitAnyUntil(vec!["}".to_string(), "/".to_string()])),
         )? {
             ans.text += &w.text.clone();
             ans.replace_from = Some(w);
@@ -214,7 +214,7 @@ impl Replace {
         if let Some(w) = Word::parse(
             feeder,
             core,
-            Some(WordMode::Exclude(vec!["}".to_string()])),
+            Some(WordMode::PermitAnyUntil(vec!["}".to_string()])),
             //Some(WordMode::AlterWord),
         )? {
             ans.text += &w.text.clone();

@@ -320,7 +320,7 @@ impl ForCommand {
             Self::eat_in_part(feeder, &mut ans, core)?;
         } else if !Self::eat_arithmetic(feeder, &mut ans, core)? {
             feeder.rewind();
-            let mode = WordMode::Exclude(vec!["))".to_string()]);
+            let mode = WordMode::PermitAnyUntil(vec!["))".to_string()]);
             if let Ok(Some(w)) = Word::parse(feeder, core, Some(mode)) {
                 ans.text += &(w.text.clone() + "))");
                 ans.wrong_arith += &(w.text.clone() + "))");

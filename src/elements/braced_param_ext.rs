@@ -22,9 +22,9 @@ use crate::{Feeder, ShellCore};
 use core::fmt;
 use core::fmt::Debug;
 
-pub trait BracedExcludeension {
+pub trait BracedPermitAnyUntilension {
     fn exec(&mut self, _: &Parameter, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
-    fn boxed_clone(&self) -> Box<dyn BracedExcludeension>;
+    fn boxed_clone(&self) -> Box<dyn BracedPermitAnyUntilension>;
     fn get_text(&self) -> String;
     fn has_array_replace(&self) -> bool {
         false
@@ -56,7 +56,7 @@ pub trait BracedExcludeension {
 pub fn parse(
     feeder: &mut Feeder,
     core: &mut ShellCore,
-) -> Result<Option<Box<dyn BracedExcludeension>>, ParseError> {
+) -> Result<Option<Box<dyn BracedPermitAnyUntilension>>, ParseError> {
     if let Some(a) = Replace::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ValueCheck::parse(feeder, core)? {
@@ -74,13 +74,13 @@ pub fn parse(
     }
 }
 
-impl Clone for Box<dyn BracedExcludeension> {
-    fn clone(&self) -> Box<dyn BracedExcludeension> {
+impl Clone for Box<dyn BracedPermitAnyUntilension> {
+    fn clone(&self) -> Box<dyn BracedPermitAnyUntilension> {
         self.boxed_clone()
     }
 }
 
-impl Debug for dyn BracedExcludeension {
+impl Debug for dyn BracedPermitAnyUntilension {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.get_text()).finish()
     }

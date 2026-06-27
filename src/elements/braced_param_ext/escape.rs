@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedExcludeension;
+use super::BracedPermitAnyUntilension;
 use crate::elements::parameter::Parameter;
 use crate::error::exec::ExecError;
 use crate::{Feeder, ShellCore};
@@ -12,7 +12,7 @@ pub struct Escape {
     pub symbol: String,
 }
 
-impl BracedExcludeension for Escape {
+impl BracedPermitAnyUntilension for Escape {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -52,7 +52,7 @@ impl BracedExcludeension for Escape {
         Ok(())
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
+    fn boxed_clone(&self) -> Box<dyn BracedPermitAnyUntilension> {
         Box::new(self.clone())
     }
     fn has_array_replace(&self) -> bool {

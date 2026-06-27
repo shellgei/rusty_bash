@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedExcludeension;
+use super::BracedPermitAnyUntilension;
 use crate::elements::parameter::Parameter;
 use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
@@ -9,7 +9,7 @@ use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::{Feeder, ShellCore};
 
-impl BracedExcludeension for Remove {
+impl BracedPermitAnyUntilension for Remove {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -22,7 +22,7 @@ impl BracedExcludeension for Remove {
         self.set(text, core)
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
+    fn boxed_clone(&self) -> Box<dyn BracedPermitAnyUntilension> {
         Box::new(self.clone())
     }
 
@@ -120,7 +120,7 @@ impl Remove {
         if let Some(w) = Word::parse(
             feeder,
             core,
-            Some(WordMode::Exclude(vec!["}".to_string()])),
+            Some(WordMode::PermitAnyUntil(vec!["}".to_string()])),
             //Some(WordMode::AlterWord),
         )? {
             ans.text += &w.text.clone();
