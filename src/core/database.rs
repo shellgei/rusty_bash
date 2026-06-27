@@ -230,9 +230,8 @@ impl DataBase {
             return n < self.position_parameters[scope].len();
         }
 
-        let num = self.params.len();
-        for scope in (0..num).rev() {
-            if self.params[scope].contains_key(name) {
+        for scope in self.params.iter_mut() {
+            if scope.contains_key(name) {
                 return true;
             }
         }
