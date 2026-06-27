@@ -226,15 +226,9 @@ impl DataBase {
 
     pub fn exist(&mut self, name: &str) -> bool {
         if let Ok(n) = name.parse::<usize>() {
-            let scope = self.position_parameters.len() - 1;
-            return n < self.position_parameters[scope].len();
+            return self.position_parameters.last().unwrap().len() > n;
         }
 
-        for scope in self.params.iter_mut() {
-            if scope.contains_key(name) {
-                return true;
-            }
-        }
-        false
+        self.params.iter().any(|s| s.contains_key(name))
     }
 }
