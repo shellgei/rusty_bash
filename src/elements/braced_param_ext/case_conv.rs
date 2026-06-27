@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedPermitAnyUntilension;
+use super::BracedParamExtension;
 use crate::elements::parameter::Parameter;
 use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
@@ -10,7 +10,7 @@ use crate::utils::glob;
 use crate::utils::glob::GlobElem;
 use crate::{Feeder, ShellCore};
 
-impl BracedPermitAnyUntilension for CaseConv {
+impl BracedParamExtension for CaseConv {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -23,7 +23,7 @@ impl BracedPermitAnyUntilension for CaseConv {
         self.get_text(text, core)
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedPermitAnyUntilension> {
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
         Box::new(self.clone())
     }
 }

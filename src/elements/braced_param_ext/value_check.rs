@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedPermitAnyUntilension;
+use super::BracedParamExtension;
 use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
 use crate::elements::subword::simple::SimpleSubword;
@@ -26,7 +26,7 @@ pub struct ValueCheck {
     in_double_quoted: bool,
 }
 
-impl BracedPermitAnyUntilension for ValueCheck {
+impl BracedParamExtension for ValueCheck {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -59,7 +59,7 @@ impl BracedPermitAnyUntilension for ValueCheck {
         }
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedPermitAnyUntilension> {
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
         Box::new(self.clone())
     }
     fn is_value_check(&self) -> bool {

@@ -6,7 +6,7 @@ mod parse;
 mod subscript;
 
 use super::splitter;
-use crate::elements::braced_param_ext::BracedPermitAnyUntilension;
+use crate::elements::braced_param_ext::BracedParamExtension;
 use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
@@ -17,7 +17,7 @@ pub struct BracedParam {
     text: String,
     array: Option<Vec<String>>,
     param: Parameter,
-    extension: Option<Box<dyn BracedPermitAnyUntilension>>,
+    extension: Option<Box<dyn BracedParamExtension>>,
     unknown: String,
     treat_as_array: bool,
     num: bool,
