@@ -191,4 +191,8 @@ impl Feeder {
         self.backslash_check_and_feed(vec![">", "&"], core);
         self.scanner_one_of(&["&>", ">&", ">>", "<", ">"])
     }
+
+    pub fn scanner_parameter_remove_symbol(&mut self) -> usize {
+        self.scanner_one_of(&["##", "#", "%%", "%"])
+    }
 }
