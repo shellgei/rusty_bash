@@ -54,30 +54,28 @@ impl BracedParamExtension for Remove {
 #[derive(Debug, Clone, Default)]
 pub struct Remove {
     pub text: String,
-    pub remove_symbol: String,
-    pub remove_pattern: Option<Word>,
+    pub symbol: String,
+    pub pattern: Word,
 }
 
 impl Remove {
     pub fn set(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut text = text.to_string();
         let pattern = self
-            .remove_pattern
-            .as_mut()
-            .unwrap()
+            .pattern
             .eval_for_case_word(core)
             .ok_or(ExecError::Other("evaluation error".to_string()))?;
         let extglob = core.shopts.query("extglob");
 
-        if self.remove_symbol.starts_with("##") {
+        if self.symbol.starts_with("##") {
             let pat = glob::parse(&pattern, extglob);
             let len = glob::longest_match_length(&text, &pat);
             text = text[len..].to_string();
-        } else if self.remove_symbol.starts_with("#") {
+        } else if self.symbol.starts_with("#") {
             let pat = glob::parse(&pattern, extglob);
             let len = glob::shortest_match_length(&text, &pat);
             text = text[len..].to_string();
-        } else if self.remove_symbol.starts_with("%") {
+        } else if self.symbol.starts_with("%") {
             self.percent(&mut text, &pattern, extglob);
         } else {
             return Err(ExecError::Other("unknown symbol".to_string()));
@@ -96,7 +94,7 @@ impl Remove {
 
             if glob::parse_and_compare(&s, pattern, extglob) {
                 ans_length = length;
-                if self.remove_symbol == "%" {
+                if self.symbol == "%" {
                     break;
                 }
             }
@@ -111,23 +109,13 @@ impl Remove {
             return Ok(None);
         }
 
-        let mut ans = Remove {
-            remove_symbol: feeder.consume(len),
-            ..Default::default()
-        };
-        ans.text += &ans.remove_symbol.clone();
+        let mut ans = Remove::default();
+        ans.symbol = feeder.consume(len);
+        ans.text += &ans.symbol.clone();
 
-        if let Some(w) = Word::parse(
-            feeder,
-            core,
-            Some(WordMode::PermitAnyUntil(vec!["}".to_string()])),
-            //Some(WordMode::AlterWord),
-        )? {
-            ans.text += &w.text.clone();
-            ans.remove_pattern = Some(w);
-        } else {
-            ans.remove_pattern = Some(Word::default());
-        }
+        let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
+        ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &ans.pattern.text.clone();
         Ok(Some(ans))
     }
 }
