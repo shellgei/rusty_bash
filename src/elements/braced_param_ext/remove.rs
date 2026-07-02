@@ -7,5 +7,5 @@ use crate::elements::word::Word;
 pub struct Remove {
     pub text: String,
     pub symbol: String,
-    pub pattern: Option<Word>,
+    pub pattern: Word,
 }
