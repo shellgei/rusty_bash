@@ -17,7 +17,7 @@ use super::subword::simple::SimpleSubword;
 #[derive(Debug, Clone)]
 pub enum WordMode {
     PermitAnyChar,
-    Exclude(Vec<String>),
+    PermitAnyUntil(Vec<String>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -122,7 +122,7 @@ impl Word {
         core: &mut ShellCore,
         mode: Option<WordMode>,
     ) -> Result<Option<Word>, ParseError> {
-        if let Some(WordMode::Exclude(ref v)) = mode {
+        if let Some(WordMode::PermitAnyUntil(ref v)) = mode {
             if feeder.starts_with_one_of(v) {
                 return Ok(None);
             }
@@ -134,7 +134,7 @@ impl Word {
         while let Some(sw) = subword::parse(feeder, core, &mode)? {
             subwords.push(sw);
 
-            if let Some(WordMode::Exclude(ref v)) = mode {
+            if let Some(WordMode::PermitAnyUntil(ref v)) = mode {
                 if feeder.starts_with_one_of(v) {
                     break;
                 }
