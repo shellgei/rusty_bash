@@ -53,9 +53,13 @@ impl DataBase {
             .rev()
             .find(|&scope| self.params[scope].contains_key(name));
 
+        #[cfg(not(target_os = "macos"))]
         let rpos = (0..num)
             .rev()
             .find(|&scope| self.removed_params[scope].contains(name));
+        #[cfg(target_os = "macos")] //TODO: the above implementation for redefinition of removed local
+        let rpos = Some(0);         //variables makes a problem on the bash-completion for macOS.
+                                    //I don't know why.
 
         std::cmp::max(ppos, rpos)
     }
