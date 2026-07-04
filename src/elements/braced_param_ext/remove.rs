@@ -10,8 +10,6 @@ pub struct Remove {
     pub text: String,
     pub symbol: String,
     pub pattern: Word,
-<<<<<<< HEAD
-=======
 }
 
 impl BracedParamExtension for Remove {
@@ -40,5 +38,4 @@ impl Remove {
         dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
->>>>>>> afd741c2e3da70163128a77795bb7574152b5ed3
 }
