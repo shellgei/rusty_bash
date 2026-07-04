@@ -3,13 +3,21 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::word::{Word, WordMode};
-use super::ParseError;
+use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 
 #[derive(Debug, Clone, Default)]
 pub struct Remove {
     pub text: String,
     pub symbol: String,
     pub pattern: Word,
+}
+
+impl BracedParamExtension for Remove {
+    fn exec(&mut self, _: &Parameter, _: &str, _: &mut ShellCore)
+        -> Result<String, ExecError> {Ok("".to_string())}
+    fn boxed_clone(&self)
+        -> Box<dyn BracedParamExtension> {Box::new(Self::default())}
+    fn get_text(&self) -> String {"".to_string()}
 }
 
 impl Remove {
@@ -27,6 +35,7 @@ impl Remove {
         let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
         ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
         ans.text += &ans.pattern.text.clone();
+        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
