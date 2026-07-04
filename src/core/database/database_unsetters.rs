@@ -8,10 +8,10 @@ use std::env;
 
 impl DataBase {
     pub fn unset_flag(&mut self, name: &str, flag: char, scope: usize) {
-        if flag != 'n' {
-            if let Ok(Some(nameref)) = self.get_nameref(name) {
-                return self.unset_flag(&nameref, flag, scope);
-            }
+        if flag != 'n'
+            && let Ok(Some(nameref)) = self.get_nameref(name)
+        {
+            return self.unset_flag(&nameref, flag, scope);
         }
 
         let rf = &mut self.params[scope];
@@ -27,34 +27,40 @@ impl DataBase {
         }
     }
 
-    pub fn unset_nameref(&mut self, name: &str,
-                         called_scope: Option<usize>) -> Result<(), ExecError> {
+    pub fn unset_nameref(
+        &mut self,
+        name: &str,
+        called_scope: Option<usize>,
+    ) -> Result<(), ExecError> {
         if let Some(scope) = called_scope {
-            if let Some(d) = self.params[scope].get_mut(name) {
-                if d.has_flag('n') {
-                    self.remove_entry(scope, name)?;
-                }
+            if let Some(d) = self.params[scope].get_mut(name)
+                && d.has_flag('n')
+            {
+                self.remove_entry(scope, name)?;
             }
             return Ok(());
         }
 
         let num = self.params.len();
         for scope in 0..num {
-            if let Some(d) = self.params[scope].get_mut(name) {
-                if d.has_flag('n') {
-                    self.remove_entry(scope, name)?;
-                }
+            if let Some(d) = self.params[scope].get_mut(name)
+                && d.has_flag('n')
+            {
+                self.remove_entry(scope, name)?;
             }
         }
         Ok(())
     }
 
-    pub fn unset_var(&mut self, name: &str,
-                     called_scope: Option<usize>,
-                     localvar_unset: bool) -> Result<bool, ExecError> {
+    pub fn unset_var(
+        &mut self,
+        name: &str,
+        called_scope: Option<usize>,
+        localvar_unset: bool,
+    ) -> Result<bool, ExecError> {
         if let Ok(Some(nameref)) = self.get_nameref(name) {
-            if nameref != "" {
-                 return self.unset_var(&nameref, called_scope, localvar_unset);
+            if !nameref.is_empty() {
+                return self.unset_var(&nameref, called_scope, localvar_unset);
             }
             return Ok(false);
         }
@@ -67,13 +73,13 @@ impl DataBase {
             }
             res = self.remove_entry(scope, name)?;
 
-            unsafe{env::set_var(name, "")};
+            unsafe { env::set_var(name, "") };
             for scope in self.params.iter_mut() {
                 if let Some(d) = scope.get_mut(name) {
                     res = true;
                     if localvar_unset {
-                        *d = Box::new( Uninit::new("") );
-                    }else {
+                        *d = Box::new(Uninit::new(""));
+                    } else {
                         scope.remove(name);
                     }
                 }
@@ -95,8 +101,12 @@ impl DataBase {
         self.functions.remove(name);
     }
 
-    pub fn unset(&mut self, name: &str, called_scope: Option<usize>,
-                 localvar_unset: bool) -> Result<(), ExecError> {
+    pub fn unset(
+        &mut self,
+        name: &str,
+        called_scope: Option<usize>,
+        localvar_unset: bool,
+    ) -> Result<(), ExecError> {
         if self.unset_var(name, called_scope, localvar_unset)? {
             return Ok(());
         }

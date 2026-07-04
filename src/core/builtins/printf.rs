@@ -4,8 +4,7 @@
 use crate::elements::substitution::Substitution;
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
-use crate::{error, Feeder, ShellCore};
-use std::io::{stdout, Write};
+use crate::{Feeder, ShellCore, error, utils};
 
 #[derive(Debug, Clone)]
 enum PrintfToken {
@@ -20,6 +19,7 @@ enum PrintfToken {
     Q,
     Other(String),
     Normal(String),
+    EscapedOctet(String),
     EscapedChar(char),
 }
 
@@ -174,7 +174,7 @@ impl PrintfToken {
                     .replace("!", "\\!")
                     .replace("&", "\\&");
 
-                if q == "" {
+                if q.is_empty() {
                     q = "''".to_string();
                 }
 
@@ -192,6 +192,7 @@ impl PrintfToken {
 
                 Ok(formatted)
             }
+            Self::EscapedOctet(s) => Ok(esc_to_octet(s)),
             Self::EscapedChar(c) => Ok(esc_to_str(*c)),
             Self::Normal(s) => Ok(s.clone()),
         }
@@ -205,20 +206,32 @@ fn pop(args: &mut Vec<String>) -> String {
     }
 }
 
-fn esc_to_str(ch: char) -> String {
-    match ch {
+fn esc_to_str(c: char) -> String {
+    match c {
         'a' => char::from(7).to_string(),
         'b' => char::from(8).to_string(),
         'e' | 'E' => char::from(27).to_string(),
         'f' => char::from(12).to_string(),
-        'n' => "\n".to_string(),
-        'r' => "\r".to_string(),
-        't' => "\t".to_string(),
+        'n' => '\n'.to_string(),
+        'r' => '\r'.to_string(),
+        't' => '\t'.to_string(),
         'v' => char::from(11).to_string(),
-        '\\' => "\\".to_string(),
-        '\'' => "'".to_string(),
-        '"' => "\"".to_string(),
-        _ => ("\\".to_owned() + &ch.to_string()).to_string(),
+        '\\' => '\\'.to_string(),
+        '\'' => '\''.to_string(),
+        '"' => '"'.to_string(),
+        c => ("\\".to_owned() + &c.to_string()).to_string(),
+    }
+}
+
+fn esc_to_octet(s: &str) -> String {
+    let oct = (u32::from_str_radix(s, 8).unwrap() % 256) as u8;
+
+    if oct < 128 {
+        char::from(oct).to_string()
+    } else {
+        char::from_u32(0xE000 + oct as u32)
+            .expect("printf internal error")
+            .to_string()
     }
 }
 
@@ -237,7 +250,6 @@ fn replace_escape(s: &str) -> String {
 
         ans.push(ch);
     }
-
     ans
 }
 
@@ -251,6 +263,30 @@ fn scanner_normal(remaining: &str) -> usize {
         pos += c.len_utf8();
     }
     pos
+}
+
+fn scanner_escaped_octet(remaining: &str) -> usize {
+    let mut ans = 0;
+    for (i, c) in remaining.chars().enumerate() {
+        match (i, c) {
+            (0, '\\') => {}
+            (0, _) => break,
+            (_, c) => {
+                if !('0'..'8').contains(&c) {
+                    break;
+                }
+            }
+        }
+        ans += 1;
+    }
+
+    if ans == 1 {
+        return 0;
+    }
+    if ans > 4 {
+        return 4;
+    }
+    ans
 }
 
 fn scanner_escaped_char(remaining: &str) -> usize {
@@ -300,10 +336,20 @@ fn parse(pattern: &str) -> Vec<PrintfToken> {
             continue;
         }
 
+        let len = scanner_escaped_octet(&remaining);
+        if len > 0 {
+            let tail = remaining.split_off(len);
+            let s = remaining[1..].to_string();
+            ans.push(PrintfToken::EscapedOctet(s));
+            remaining = tail;
+            continue;
+        }
+
         let len = scanner_escaped_char(&remaining);
         if len > 0 {
             remaining.remove(0);
-            ans.push(PrintfToken::EscapedChar(remaining.remove(0)));
+            let ch = remaining.remove(0);
+            ans.push(PrintfToken::EscapedChar(ch));
             continue;
         }
 
@@ -362,10 +408,11 @@ fn format(pattern: &str, args: &mut Vec<String>) -> Result<String, ExecError> {
         ans += &tok.render_value(args)?;
     }
 
-    if !args.is_empty() && !fin {
-        if let Ok(s) = format(pattern, args) {
-            ans += &s;
-        }
+    if !args.is_empty()
+        && !fin
+        && let Ok(s) = format(pattern, args)
+    {
+        ans += &s;
     }
     Ok(ans)
 }
@@ -440,7 +487,6 @@ pub fn printf(core: &mut ShellCore, args: &[String]) -> i32 {
             return 1;
         }
     };
-    print!("{}", &s);
-    stdout().flush().unwrap();
+    utils::string_binary::to_stdout(&s);
     0
 }

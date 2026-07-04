@@ -1,14 +1,24 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+use crate::utils::{ExecError, InputError};
 use crate::{Feeder, Script, ShellCore};
-use crate::utils::ExecError;
+use nix::sys::signal;
 use std::process;
 
 pub fn normal(core: &mut ShellCore) -> ! {
     run_script(core);
 
-    core.write_history_to_file();
+    if !core.is_subshell {
+        core.write_history_to_file();
+
+        for e in core.job_table.iter_mut() {
+            if e.coproc_name.is_some() {
+                let _ = signal::killpg(e.pids[0], signal::SIGTERM);
+            }
+        }
+    }
+
     process::exit(core.db.exit_status % 256)
 }
 
@@ -17,6 +27,7 @@ fn run_script(core: &mut ShellCore) {
         return;
     }
 
+    let exit_status_bkup = core.db.exit_status;
     core.exit_script_run = true;
     if core.exit_script.is_empty() {
         return;
@@ -34,16 +45,11 @@ fn run_script(core: &mut ShellCore) {
         }
         Ok(None) => {}
     };
+
+    core.db.exit_status = exit_status_bkup;
 }
 
 /* error at exec */
-/*
-fn command_error_exit(name: &str, core: &mut ShellCore, msg: &str, exit_status: i32) -> ! {
-    let msg = format!("{name}: {msg}");
-    error::print(&msg, core);
-    process::exit(exit_status)
-}*/
-
 pub fn arg_list_too_long(command_name: &str, core: &mut ShellCore) -> ! {
     ExecError::ArgListTooLong(command_name.to_string()).print(core);
     process::exit(126)
@@ -57,6 +63,16 @@ pub fn permission_denied(command_name: &str, core: &mut ShellCore) -> ! {
 pub fn not_found(command_name: &str, core: &mut ShellCore) -> ! {
     ExecError::CommandNotFound(command_name.to_string()).print(core);
     process::exit(127)
+}
+
+pub fn is_a_dir(command_name: &str, core: &mut ShellCore) -> ! {
+    ExecError::IsDir(command_name.to_string()).print(core);
+    process::exit(126)
+}
+
+pub fn is_binary(command_name: &str, core: &mut ShellCore) -> ! {
+    InputError::BinaryFile(command_name.to_string()).print(core);
+    process::exit(126)
 }
 
 pub fn internal(s: &str) -> ! {

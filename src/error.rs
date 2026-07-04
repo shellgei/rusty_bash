@@ -9,6 +9,7 @@ pub mod parse;
 use crate::ShellCore;
 use nix::sys::signal::Signal;
 use nix::unistd::Pid;
+use std::env;
 
 pub fn print(s: &str, core: &mut ShellCore) {
     let name = core.db.get_param("0").unwrap();
@@ -30,9 +31,13 @@ pub fn exponent(s: &str) -> String {
 
 /* error at wait */
 pub fn signaled(pid: Pid, signal: Signal, coredump: bool) -> i32 {
-    match coredump {
-        true => eprintln!("Pid: {pid:?}, Signal: {signal:?} (core dumped)"),
-        false => eprintln!("Pid: {pid:?}, Signal: {signal:?}"),
+    match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+        Ok("1") => {}
+        _ => match coredump {
+            true => eprintln!("Pid: {pid:?}, Signal: {signal:?} (core dumped)"),
+            false => eprintln!("Pid: {pid:?}, Signal: {signal:?}"),
+        },
     }
+
     128 + signal as i32
 }

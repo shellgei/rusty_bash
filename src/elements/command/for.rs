@@ -103,7 +103,7 @@ impl ForCommand {
                     core.db.exit_status = 1;
                     e.print(core);
                 }
-            }else{
+            } else {
                 if let Err(e) = core.db.set_param(&self.name, &p, None) {
                     core.db.exit_status = 1;
                     e.print(core);

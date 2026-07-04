@@ -2,7 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::elements::expr::arithmetic::ArithmeticExpr;
-use crate::elements::word::{Word, WordMode};
+use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
@@ -77,7 +77,7 @@ impl Subscript {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        if feeder.starts_withs(&["@", "*"]) {
+        if feeder.starts_with_one_of(&["@", "*"]) {
             let s = feeder.consume(1);
             ans.text += &s.clone();
             ans.data = SubscriptType::Array(s);

@@ -10,6 +10,7 @@ pub mod compgen;
 pub mod complete;
 mod compopt;
 mod echo;
+mod enable;
 mod exec;
 mod getopts;
 mod hash;
@@ -17,7 +18,6 @@ mod history;
 mod job_commands;
 mod loop_control;
 pub mod option;
-pub mod variable;
 mod printf;
 mod pwd;
 mod read;
@@ -27,11 +27,12 @@ mod type_;
 #[cfg(not(target_os = "macos"))]
 mod ulimit;
 mod unset;
+pub mod variable;
 
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{exit, Feeder, Script, ShellCore};
+use crate::{Feeder, Script, ShellCore, exit};
 use std::io::Write;
 use std::process::Command;
 
@@ -54,23 +55,23 @@ pub fn run_external(core: &mut ShellCore, args: &[String], err_msg_cond: fn(i32)
     match Command::new(&args[0]).args(args[1..].to_vec()).output() {
         Ok(com) => {
             let exit_status = com.status.code().unwrap_or(127);
-            if ! com.stdout.is_empty() {
+            if !com.stdout.is_empty() {
                 let _ = std::io::stdout().write_all(&com.stdout);
             }
-            if ! err_msg_cond(exit_status) {
+            if !err_msg_cond(exit_status) {
                 return exit_status;
             }
 
             let shellname = core.db.get_param("0").unwrap();
             eprint!("{}: ", &shellname);
-            if ! core.db.flags.contains('i') {
+            if !core.db.flags.contains('i') {
                 let lineno = core.db.get_param("LINENO").unwrap_or("".to_string());
                 eprint!("line {}: ", &lineno);
             }
             let _ = std::io::stderr().write_all(&com.stderr);
             exit_status
-        },
-        _ => 127
+        }
+        _ => 127,
     }
 }
 
@@ -78,7 +79,6 @@ impl ShellCore {
     pub fn set_builtins(&mut self) {
         self.builtins.insert(":".to_string(), true_);
         self.builtins.insert("alias".to_string(), alias::alias);
-        self.builtins.insert("bg".to_string(), job_commands::bg);
         self.builtins.insert("bind".to_string(), bind);
         self.builtins
             .insert("break".to_string(), loop_control::break_);
@@ -97,21 +97,17 @@ impl ShellCore {
         self.builtins
             .insert("continue".to_string(), loop_control::continue_);
         self.builtins.insert("debug".to_string(), debug);
-        self.builtins
-            .insert("disown".to_string(), job_commands::disown);
         self.builtins.insert("echo".to_string(), echo::echo);
+        self.builtins.insert("enable".to_string(), enable::enable);
         self.builtins.insert("eval".to_string(), eval);
         self.builtins.insert("exec".to_string(), exec::exec);
         self.builtins.insert("exit".to_string(), exit);
         self.builtins.insert("false".to_string(), false_);
-        self.builtins.insert("fg".to_string(), job_commands::fg);
         self.builtins
             .insert("getopts".to_string(), getopts::getopts);
         self.builtins.insert("hash".to_string(), hash::hash);
         self.builtins
             .insert("history".to_string(), history::history);
-        self.builtins.insert("jobs".to_string(), job_commands::jobs);
-        self.builtins.insert("kill".to_string(), job_commands::kill);
         self.builtins.insert("let".to_string(), let_);
         self.builtins.insert("printf".to_string(), printf::printf);
         self.builtins.insert("pwd".to_string(), pwd::pwd);
@@ -124,13 +120,10 @@ impl ShellCore {
         self.builtins.insert("shift".to_string(), option::shift);
         self.builtins.insert("shopt".to_string(), option::shopt);
 
-        //if file::search_command("ulimit").is_none() {
+        job_commands::set(self);
+
         #[cfg(not(target_os = "macos"))]
         self.builtins.insert("ulimit".to_string(), ulimit::ulimit);
-        /*
-        #[cfg(target_os = "macos")]
-                    self.builtins.insert("ulimit".to_string(), ulimit_mac::ulimit);
-                }*/
 
         self.builtins.insert("unalias".to_string(), alias::unalias);
         self.builtins.insert("unset".to_string(), unset::unset);
@@ -139,7 +132,6 @@ impl ShellCore {
         self.builtins.insert("true".to_string(), true_);
         self.builtins.insert("test".to_string(), test);
         self.builtins.insert("[".to_string(), test);
-        self.builtins.insert("wait".to_string(), job_commands::wait);
 
         self.subst_builtins
             .insert("export".to_string(), variable::export);
@@ -218,11 +210,11 @@ pub fn bind(_: &mut ShellCore, _: &[String]) -> i32 {
 }
 
 pub fn debug(_: &mut ShellCore, _: &[String]) -> i32 {
-//    let pos = core.db.get_scope_pos("words").unwrap();
-//
-//    dbg!("{:?}", &core.db.params.len());
-//    dbg!("{:?}", &pos);
-//    dbg!("{:?}", &core.db.params[pos].get("words"));
+    //    let pos = core.db.get_scope_pos("words").unwrap();
+    //
+    //    dbg!("{:?}", &core.db.params.len());
+    //    dbg!("{:?}", &pos);
+    //    dbg!("{:?}", &core.db.params[pos].get("words"));
     0
 }
 
@@ -256,14 +248,14 @@ pub fn let_(core: &mut ShellCore, args: &[String]) -> i32 {
 
 pub fn test(core: &mut ShellCore, args: &[String]) -> i32 {
     /* difference between the builtin test and the external command */
-    if (args.len() == 5 && args[0] == "[" && args[4] == "]")
-    || (args.len() == 4 && args[0] == "test") {
-        if args[2] == "=" {
-            if args[1] == args[3] {
-                return 0;
-            }else if args[1] != args[3] {
-                return 1;
-            }
+    if ((args.len() == 5 && args[0] == "[" && args[4] == "]")
+        || (args.len() == 4 && args[0] == "test"))
+        && args[2] == "="
+    {
+        if args[1] == args[3] {
+            return 0;
+        } else if args[1] != args[3] {
+            return 1;
         }
     }
 

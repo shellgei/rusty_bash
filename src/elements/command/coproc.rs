@@ -1,22 +1,27 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use libc;
 use super::{Command, Pipe, Redirect};
 use crate::elements::command;
 use crate::elements::command::{
-    BraceCommand, IfCommand, ParenCommand, SimpleCommand, WhileCommand
+    BraceCommand, IfCommand, ParenCommand, SimpleCommand, WhileCommand,
 };
+use crate::elements::parameter::Parameter;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
+use libc;
 //use nix::unistd;
-use nix::unistd::Pid;
+use crate::core::jobtable::JobEntry;
+use nix::sys::signal;
 use nix::sys::wait;
 use nix::sys::wait::WaitStatus;
+use nix::sys::wait::WaitStatus::Signaled;
+use nix::unistd::Pid;
+use std::sync::Arc;
+use std::sync::atomic::Ordering::Relaxed;
 use std::thread;
-use crate::core::jobtable::JobEntry;
 
 #[derive(Debug, Clone, Default)]
 pub struct Coprocess {
@@ -35,32 +40,50 @@ impl Command for Coprocess {
         }
         core.jobtable_check_status()?;
 
-        let backup = core.tty_fd.clone();
+        core.db
+            .set_param("LINENO", &self.lineno.to_string(), None)?;
+
+        if core.db.exist_nameref(&self.name) {
+            let mut v = Parameter {
+                text: self.name.clone(),
+                name: self.name.clone(),
+                ..Default::default()
+            };
+            v.solve_nameref(core)?;
+            if let Some(index) = v.index {
+                let name = format!("{}{}", v.name, index.text);
+                return Err(ExecError::InvalidName(name));
+            } else {
+                self.name = v.name;
+            }
+        }
+
+        let backup = core.tty_fd;
         core.tty_fd = None;
         let pgid = Pid::from_raw(0);
         let mut com = self.command.clone().unwrap().clone();
         com.set_force_fork();
 
         let mut prevp = Pipe::new("|".to_string());
-        prevp.set(-1, pgid, core);
+        prevp.set(-1, pgid, core)?;
 
-        prevp.send = unsafe{libc::fcntl(prevp.send, libc::F_DUPFD_CLOEXEC, 60)};
-        prevp.recv = unsafe{libc::fcntl(prevp.recv, libc::F_DUPFD_CLOEXEC, 60)};
+        prevp.send = unsafe { libc::fcntl(prevp.send, libc::F_DUPFD_CLOEXEC, 60) };
+        prevp.recv = unsafe { libc::fcntl(prevp.recv, libc::F_DUPFD_CLOEXEC, 60) };
 
         let mut lastp = Pipe::new("|".to_string());
-        lastp.set(prevp.recv, pgid, core);
+        lastp.set(prevp.recv, pgid, core)?;
 
-        lastp.send = unsafe{libc::fcntl(lastp.send, libc::F_DUPFD_CLOEXEC, 60)};
-        lastp.recv = unsafe{libc::fcntl(lastp.recv, libc::F_DUPFD_CLOEXEC, 60)};
+        lastp.send = unsafe { libc::fcntl(lastp.send, libc::F_DUPFD_CLOEXEC, 60) };
+        lastp.recv = unsafe { libc::fcntl(lastp.recv, libc::F_DUPFD_CLOEXEC, 60) };
 
         let pid = com.exec(core, &mut lastp)?.unwrap();
-        let fds = vec![lastp.recv.clone(), prevp.send.clone()];
+        let fds = vec![lastp.recv, prevp.send];
         let fds_str = Some(vec![lastp.recv.to_string(), prevp.send.to_string()]);
 
         let _ = core.db.init_array(&self.name, fds_str, Some(0), true);
         let pid_name = format!("{}_PID", &self.name);
         let _ = core.db.set_param(&pid_name, &pid.to_string(), Some(0));
-        let _ = core.db.set_flag(&pid_name, 'i', 0);
+        core.db.set_flag(&pid_name, 'i', 0);
 
         core.fds.close(lastp.send);
         core.fds.close(prevp.recv);
@@ -74,17 +97,20 @@ impl Command for Coprocess {
         core.job_table_priority.insert(0, new_job_id);
         let mut entry = JobEntry::new(
             vec![Some(pid)],
-            &vec![WaitStatus::StillAlive; 1],
+            &[WaitStatus::StillAlive; 1],
             &self.get_one_line_text(),
             "Running",
             new_job_id,
         );
         entry.coproc_name = Some(self.name.clone());
         entry.coproc_fds = fds.clone();
+        let exit_status = Arc::clone(&entry.coproc_exit_status);
 
         if let Some(pid) = core.get_jobentry_pid_by_coproc_name(&self.name) {
-            let msg = format!("warning: execute_coproc: coproc [{}:{}] still exists",
-                              &pid, &self.name);
+            let msg = format!(
+                "warning: execute_coproc: coproc [{}:{}] still exists",
+                &pid, &self.name
+            );
             let err = ExecError::Other(msg);
             err.print(core);
         }
@@ -96,15 +122,16 @@ impl Command for Coprocess {
         core.job_table.push(entry);
         core.tty_fd = backup;
 
-        thread::spawn(move || {
-            match wait::waitpid(pid, None) {
-                Ok(WaitStatus::Exited(_, _)) | Err(_) => {
-                    let _ = unsafe{libc::close(fds[0])};
-                    let _ = unsafe{libc::close(fds[1])};
-                    return;
-                }
-                _ => {},
+        thread::spawn(move || match wait::waitpid(pid, None) {
+            Ok(WaitStatus::Exited(_, es)) => {
+                exit_status.store(es, Relaxed);
             }
+            Ok(Signaled(pid, sig, _)) => {
+                let _ = signal::killpg(pid, sig);
+                exit_status.store(sig as i32 + 128, Relaxed);
+            }
+            Err(_) => {}
+            _ => {}
         });
 
         Ok(None)
@@ -155,7 +182,7 @@ impl Coprocess {
 
         if utils::reserved(&self.name) {
             return Err(ParseError::UnexpectedSymbol("coproc".to_string()));
-        }else if self.name.is_empty() {
+        } else if self.name.is_empty() {
             self.name = "COPROC".to_string();
         }
 
@@ -182,8 +209,9 @@ impl Coprocess {
         Ok(())
     }
 
-    fn parse_simple_command(feeder: &mut Feeder,
-        core: &mut ShellCore
+    fn parse_simple_command(
+        feeder: &mut Feeder,
+        core: &mut ShellCore,
     ) -> Result<Option<Self>, ParseError> {
         let mut ans = Self::default();
         ans.text += &feeder.consume(6);
@@ -194,7 +222,7 @@ impl Coprocess {
             ans.name = "COPROC".to_string();
 
             Some(a)
-        }else{
+        } else {
             return Err(ParseError::UnexpectedSymbol("coproc".to_string()));
         };
 
@@ -202,11 +230,13 @@ impl Coprocess {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if ! feeder.starts_with("coproc") {
+        if !feeder.starts_with("coproc") {
             return Ok(None);
         }
-        let mut ans = Self::default();
-        ans.lineno = feeder.lineno;
+        let mut ans = Self {
+            lineno: feeder.lineno,
+            ..Default::default()
+        };
 
         feeder.set_backup();
 

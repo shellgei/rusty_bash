@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::core::{builtins, ShellCore};
+use crate::core::{ShellCore, builtins};
 use crate::feed_script;
 use crate::feeder::Feeder;
 use crate::parse_and_exec;

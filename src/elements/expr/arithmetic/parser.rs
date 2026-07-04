@@ -3,8 +3,8 @@
 
 use super::elem::{float, int};
 use super::{ArithElem, ArithmeticExpr};
-use crate::elements::substitution::subscript::Subscript;
-use crate::elements::word::{Word, WordMode};
+use crate::elements::parameter::subscript::Subscript;
+use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
@@ -46,7 +46,7 @@ impl ArithmeticExpr {
     }
 
     fn eat_ternary_symbol(feeder: &mut Feeder, ans: &mut Self) -> bool {
-        if feeder.starts_withs(&["?", ":"]) {
+        if feeder.starts_with_one_of(&["?", ":"]) {
             let symbol = feeder.consume(1);
             ans.in_ternary = symbol == "?";
             ans.text += &symbol.clone();
@@ -148,10 +148,8 @@ impl ArithmeticExpr {
                 ans.elements
                     .push(ArithElem::ArrayElem(name.clone(), s, suffix));
             }
-            if !internal {
-                if let Some(s) = sp {
-                    ans.elements.push(s);
-                }
+            if !internal && let Some(s) = sp {
+                ans.elements.push(s);
             }
         } else {
             let sp = Self::eat_space(feeder, ans, core);
@@ -163,10 +161,8 @@ impl ArithmeticExpr {
                 ans.elements
                     .push(ArithElem::Word(Word::from(name.as_str()), suffix));
             }
-            if !internal {
-                if let Some(s) = sp {
-                    ans.elements.push(s);
-                }
+            if !internal && let Some(s) = sp {
+                ans.elements.push(s);
             }
         };
 
@@ -209,10 +205,10 @@ impl ArithmeticExpr {
     }
 
     fn eat_unary_operator(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
-        if let Some(e) = ans.elements.last() {
-            if e.is_operand() {
-                return false;
-            }
+        if let Some(e) = ans.elements.last()
+            && e.is_operand()
+        {
+            return false;
         }
 
         let s = match feeder.scanner_unary_operator(core) {

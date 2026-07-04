@@ -27,16 +27,16 @@ impl Subword for EscapedChar {
     }
 
     fn make_glob_string(&mut self) -> String {
-        if let Some(c) = self.text.chars().nth(1) {
-            if !"*?[]^!\\".contains(c) {
-                return c.to_string();
-            }
+        if let Some(c) = self.text.chars().nth(1)
+            && !"*?[]^!\\".contains(c)
+        {
+            return c.to_string();
         }
         self.text.clone()
     }
 
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
-        vec![]
+    fn split(&self, _: &str, _: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+        None
     }
 
     fn is_escaped_char(&self) -> bool {

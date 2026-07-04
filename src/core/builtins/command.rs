@@ -4,7 +4,8 @@
 use crate::elements::command::simple::SimpleCommand;
 use crate::elements::io::pipe::Pipe;
 use crate::utils::{arg, file};
-use crate::{error, file_check, proc_ctrl, utils, ShellCore};
+use crate::{ShellCore, error, file_check, proc_ctrl, utils};
+use std::fs;
 
 pub fn builtin(core: &mut ShellCore, args: &[String]) -> i32 {
     if args.len() <= 1 {
@@ -60,7 +61,7 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
             return_value = 0;
             match large_v {
                 true => println!("{} is {}", &com, &path),
-                false => println!("{}", &com),
+                false => println!("{}", &path),
             }
         } else if file_check::is_executable(com) {
             return_value = 0;
@@ -77,12 +78,28 @@ fn command_v(words: &[String], core: &mut ShellCore, large_v: bool) -> i32 {
     return_value
 }
 
-pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
-    if args.len() > 1 {
-        if core.subst_builtins.contains_key(&args[1]) {
-            //TODO
-            return super::error_(1, &args[0], "substitution command are not supported", core);
+fn get_default_paths() -> Option<String> {
+    if let Ok(mut s) = fs::read_to_string("/etc/environment") {
+        s.retain(|e| e != '"');
+        s = s.trim_end().to_string();
+        if s.starts_with("PATH=") {
+            s = s[5..].to_string();
         }
+        return Some(s);
+    } else if let Ok(mut s) = fs::read_to_string("/etc/paths") {
+        if s.ends_with(":") {
+            s.pop();
+        }
+        return Some(s.replace('\n', ":"));
+    }
+
+    None
+}
+
+pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
+    if args.len() > 1 && core.subst_builtins.contains_key(&args[1]) {
+        //TODO
+        return super::error_(1, &args[0], "substitution command are not supported", core);
     }
 
     let mut args = arg::dissolve_options(args);
@@ -109,11 +126,31 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
 
     let mut args = args[..pos].to_vec();
     args = arg::dissolve_options(&args);
+    let default_path = arg::consume_arg("-p", &mut args);
+    if default_path {
+        core.exec_command_path_bkup = Some(core.db.get_param("PATH").unwrap_or("".to_string()));
+        if let Some(paths) =  get_default_paths() {
+            let _ = core.db.set_param("PATH", &paths, None);
+        }
+    }
 
     let last_option = args.last().unwrap();
     if last_option == "-V" || last_option == "-v" {
-        return command_v(&words, core, last_option == "-V");
+        let ans = command_v(&words, core, last_option == "-V");
+        if default_path {
+            let _ = core
+                .db
+                .set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+            core.exec_command_path_bkup = None;
+        }
+        return ans;
     } else if core.builtins.contains_key(&words[0]) {
+        if default_path {
+            let _ = core
+                .db
+                .set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+            core.exec_command_path_bkup = None;
+        }
         return core.builtins[&words[0]](core, &words[..]);
     }
 
@@ -121,7 +158,14 @@ pub fn command(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut pipe = Pipe::new("".to_string());
     command.args = words;
     if let Ok(pid) = command.exec_command(core, &mut pipe) {
-        proc_ctrl::wait_pipeline(core, vec![pid], false, false);
+        proc_ctrl::wait_pipeline(core, vec![pid], false);
+    }
+
+    if default_path {
+        let _ = core
+            .db
+            .set_param("PATH", core.exec_command_path_bkup.as_ref().unwrap(), None);
+        core.exec_command_path_bkup = None;
     }
 
     core.db.exit_status

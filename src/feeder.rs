@@ -6,9 +6,9 @@ mod terminal;
 
 use crate::error::input::InputError;
 use crate::error::parse::ParseError;
-use crate::{utils, ShellCore};
+use crate::{ShellCore, utils};
 use std::fs::File;
-use std::io::{BufRead, BufReader, Lines};
+use std::io::{BufRead, BufReader, ErrorKind, Lines};
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Default)]
@@ -22,6 +22,7 @@ pub struct Feeder {
     pub main_feeder: bool,
     c_mode_buffer: Vec<String>,
     c_mode: bool,
+    script_file: String,
 }
 
 impl Feeder {
@@ -49,6 +50,7 @@ impl Feeder {
             Ok(f) => f,
             Err(_) => return Err(InputError::NoSuchFile(s.to_string())),
         };
+        self.script_file = s.to_string();
         self.script_lines = Some(BufReader::new(file).lines());
         Ok(())
     }
@@ -115,11 +117,18 @@ impl Feeder {
         if let Some(lines) = self.script_lines.as_mut() {
             match lines.next() {
                 Some(Ok(line)) => return Ok(line + "\n"),
+                Some(Err(e)) => {
+                    if e.kind() == ErrorKind::InvalidData {
+                        return Err(InputError::BinaryFile(self.script_file.clone()));
+                    }
+                    return Err(InputError::Eof);
+                }
                 _ => return Err(InputError::Eof),
             }
         }
 
-        utils::read_line_stdin_unbuffered("")
+        let mut tmp = usize::MAX;
+        utils::read_line_stdin_unbuffered("", None, false, &mut tmp)
     }
 
     fn feed_additional_line_core(&mut self, core: &mut ShellCore) -> Result<(), InputError> {
@@ -187,7 +196,7 @@ impl Feeder {
         self.remaining.starts_with(s)
     }
 
-    pub fn starts_withs<T: AsRef<str>>(&self, vs: &[T]) -> bool {
+    pub fn starts_with_one_of<T: AsRef<str>>(&self, vs: &[T]) -> bool {
         vs.iter().any(|s| self.remaining.starts_with(s.as_ref()))
     }
 

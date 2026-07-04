@@ -1,23 +1,27 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use std::env;
 use super::{ArrayData, Data, Uninit};
 use crate::core::DataBase;
 use crate::error::exec::ExecError;
+use std::env;
 
 impl DataBase {
-    pub(super) fn set_elem(&mut self, scope: usize, name: &str,
-        pos: isize, val: &String, i_flag: bool
-        ) -> Result<(), ExecError> {
+    pub(super) fn set_elem(
+        &mut self,
+        scope: usize,
+        name: &str,
+        pos: isize,
+        val: &String,
+        i_flag: bool,
+    ) -> Result<(), ExecError> {
         if self.is_readonly(name) {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
-        if ! self.params[scope].contains_key(name) {
+        if !self.params[scope].contains_key(name) {
             self.set_uninit_array(scope, name, i_flag)?;
             return self.set_elem(scope, name, pos, val, i_flag);
         }
-
 
         let d = self.params[scope].get_mut(name).unwrap();
         if let Some(init_d) = d.initialize() {
@@ -36,13 +40,17 @@ impl DataBase {
                 self.set_elem(scope, name, 0, &data, i_flag)?;
             }
             self.set_elem(scope, name, pos, val, i_flag)
-        } 
+        }
     }
 
-    pub(super) fn append_elem(&mut self, scope: usize, 
-        name: &str, pos: isize, val: &String,
+    pub(super) fn append_elem(
+        &mut self,
+        scope: usize,
+        name: &str,
+        pos: isize,
+        val: &String,
     ) -> Result<(), ExecError> {
-        if ! self.params[scope].contains_key(name) {
+        if !self.params[scope].contains_key(name) {
             self.set_uninit_array(scope, name, false)?;
             return self.set_elem(scope, name, pos, val, false);
         }
@@ -64,20 +72,27 @@ impl DataBase {
         }
     }
 
-    pub(super) fn set_uninit_array(&mut self, scope: usize,
-        name: &str, i_flag: bool,
+    pub(super) fn set_uninit_array(
+        &mut self,
+        scope: usize,
+        name: &str,
+        i_flag: bool,
     ) -> Result<(), ExecError> {
         let obj = if i_flag {
-            Box::new(Uninit::new("ai")) as Box::<dyn Data>
-        }else {
-            Box::new(ArrayData::from(Some(vec![]))) as Box::<dyn Data>
+            Box::new(Uninit::new("ai")) as Box<dyn Data>
+        } else {
+            Box::new(ArrayData::from(Some(vec![]))) as Box<dyn Data>
         };
 
         self.set_entry(scope, name, obj)
     }
 
-    pub fn set_entry(&mut self, scope: usize, name: &str,
-                     data: Box::<dyn Data>) -> Result<(), ExecError> {
+    pub fn set_entry(
+        &mut self,
+        scope: usize,
+        name: &str,
+        data: Box<dyn Data>,
+    ) -> Result<(), ExecError> {
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
@@ -90,11 +105,11 @@ impl DataBase {
         if self.has_flag(name, 'r') {
             return Err(ExecError::VariableReadOnly(name.to_string()));
         }
-        
+
         if self.params[scope].contains_key(name) {
             self.params[scope].remove(name);
             if scope == 0 {
-                unsafe{env::remove_var(name)};
+                unsafe { env::remove_var(name) };
             }
 
             return Ok(true);

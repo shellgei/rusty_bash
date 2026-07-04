@@ -2,8 +2,8 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::Subword;
+use crate::elements::word::mode::WordMode;
 use crate::{Feeder, ShellCore};
-use crate::elements::word::WordMode;
 
 #[derive(Debug, Clone)]
 pub struct SingleQuoted {
@@ -31,20 +31,23 @@ impl Subword for SingleQuoted {
             .replace("]", "\\]")
     }
 
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
-        vec![]
+    fn split(&self, _: &str, _: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+        None
     }
 }
 
 impl SingleQuoted {
-    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore,
-                 mode: &Option<WordMode>) -> Option<Self> {
-        if let Some(WordMode::ParamOption(_)) = mode {
-            if core.options.query("posix") {
-                return None;
-            }
+    pub fn parse(
+        feeder: &mut Feeder,
+        core: &mut ShellCore,
+        mode: &Option<WordMode>,
+    ) -> Option<Self> {
+        if let Some(WordMode::Exclude(_)) = mode
+            && core.options.query("posix")
+        {
+            return None;
         }
-        
+
         match feeder.scanner_single_quoted_subword(core) {
             0 => None,
             n => {

@@ -1,13 +1,13 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::command::paren::ParenCommand;
-use crate::elements::command::Command;
-use crate::elements::subword::Subword;
 use crate::elements::Pipe;
+use crate::elements::command::Command;
+use crate::elements::command::paren::ParenCommand;
+use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{proc_ctrl, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, proc_ctrl};
 use nix::unistd;
 use std::io::{BufRead, BufReader, Error};
 use std::os::fd::RawFd;
@@ -30,10 +30,10 @@ impl Subword for CommandSubstitution {
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut pipe = Pipe::new("|".to_string());
-        pipe.set(-1, unistd::getpgrp(), core);
+        pipe.set(-1, unistd::getpgrp(), core)?;
         let pid = self.command.exec(core, &mut pipe)?;
         let result = self.read(pipe.recv, core);
-        proc_ctrl::wait_pipeline(core, vec![pid], false, false);
+        proc_ctrl::wait_pipeline(core, vec![pid], false);
         result?;
         self.text = self.text.trim_end_matches("\n").to_string();
         Ok(())

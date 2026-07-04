@@ -4,11 +4,11 @@
 use crate::elements::subword;
 use crate::elements::subword::filler::FillerSubword;
 use crate::elements::word::Word;
-use crate::elements::word::WordMode;
+use crate::elements::word::mode::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::{exit, file_check};
-use crate::{error, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, error};
 use nix::unistd;
 use nix::unistd::ForkResult;
 use std::fs::{File, OpenOptions};
@@ -29,6 +29,7 @@ pub struct Redirect {
     extra_left_backup: RawFd, // &>, &>>用
     here_data: Word,
     pub called_as_heredoc: bool,
+    right_close: bool,
 }
 
 impl Redirect {
@@ -56,6 +57,10 @@ impl Redirect {
         }
 
         self.right.text = args[0].clone();
+        self.right_close = self.right.text.ends_with("-");
+        if self.right_close {
+            self.right.text.pop();
+        }
 
         if core.options.query("noclobber")
             && (self.symbol.as_str() == ">" || self.symbol.as_str() == ">>")
@@ -67,10 +72,10 @@ impl Redirect {
         }
 
         match self.symbol.as_str() {
-            "<" => self.redirect_simple_input(restore, core),  // <
+            "<" => self.redirect_simple_input(restore, core), // <
             ">" => self.redirect_simple_output(restore, core), // >
-            ">&" => self.redirect_output_fd(restore, core),    // >&2
-            "<&" => self.redirect_input_fd(restore, core),     // <&2
+            ">&" => self.redirect_output_fd(restore, core),   // >&2
+            "<&" => self.redirect_input_fd(restore, core),    // <&2
             ">>" => self.redirect_append(restore, core),
             "&>" => self.redirect_both_output(restore, core),
             _ => exit::internal(" (Unknown redirect symbol)"),
@@ -101,6 +106,10 @@ impl Redirect {
         match file_open_result {
             Ok(file) => {
                 let fd = file.into_raw_fd();
+                if fd == self.left_fd {
+                    return Ok(());
+                }
+
                 if let Err(e) = core.fds.replace(fd, self.left_fd) {
                     core.fds.close(fd);
                     self.left_fd = -1;
@@ -115,20 +124,28 @@ impl Redirect {
         }
     }
 
-    fn redirect_simple_input(&mut self, restore: bool,
-                             core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_simple_input(
+        &mut self,
+        restore: bool,
+        core: &mut ShellCore,
+    ) -> Result<(), ExecError> {
         self.set_left_fd(0);
         self.connect_to_file(File::open(&self.right.text), restore, core)
     }
 
-    fn redirect_simple_output(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_simple_output(
+        &mut self,
+        restore: bool,
+        core: &mut ShellCore,
+    ) -> Result<(), ExecError> {
         self.set_left_fd(1);
         self.connect_to_file(File::create(&self.right.text), restore, core)
     }
 
     fn redirect_output_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.right.text == "-" {
+        if self.right_close && self.right.text.is_empty() {
             self.set_left_fd(1);
+            self.coproc_check(self.left_fd, -1, core);
             core.fds.close(self.left_fd);
             return Ok(());
         }
@@ -143,13 +160,18 @@ impl Redirect {
             self.left_backup = core.fds.backup(self.left_fd);
         }
 
-        core.fds.share(right_fd, self.left_fd)
+        if self.right_close {
+            self.coproc_check(right_fd, self.left_fd, core);
+            core.fds.replace(right_fd, self.left_fd)
+        } else {
+            core.fds.share(right_fd, self.left_fd)
+        }
     }
 
-    fn redirect_input_fd(&mut self, restore: bool,
-                         core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.right.text == "-" {
+    fn redirect_input_fd(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+        if self.right_close && self.right.text.is_empty() {
             self.set_left_fd(0);
+            self.coproc_check(self.left_fd, -1, core);
             core.fds.close(self.left_fd);
             return Ok(());
         }
@@ -164,7 +186,12 @@ impl Redirect {
             self.left_backup = core.fds.backup(self.left_fd);
         }
 
-        core.fds.share(right_fd, self.left_fd)
+        if self.right_close {
+            self.coproc_check(right_fd, self.left_fd, core);
+            core.fds.replace(right_fd, self.left_fd)
+        } else {
+            core.fds.share(right_fd, self.left_fd)
+        }
     }
 
     fn redirect_append(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -179,7 +206,11 @@ impl Redirect {
         )
     }
 
-    fn redirect_both_output(&mut self, restore: bool, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn redirect_both_output(
+        &mut self,
+        restore: bool,
+        core: &mut ShellCore,
+    ) -> Result<(), ExecError> {
         self.left_fd = 1;
         self.connect_to_file(File::create(&self.right.text), restore, core)?;
 
@@ -195,7 +226,7 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (recv, send) = core.fds.pipe();
+        let (recv, send) = core.fds.pipe()?;
 
         if restore {
             self.left_backup = core.fds.backup(0);
@@ -209,8 +240,8 @@ impl Redirect {
             true => self.here_data.text.clone(),
         };
 
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = write!(&mut f, "{}", &text);
@@ -218,10 +249,11 @@ impl Redirect {
                 core.fds.close(send);
                 process::exit(0);
             }
-            ForkResult::Parent { child: _ } => {
+            Ok(ForkResult::Parent { child: _ }) => {
                 core.fds.close(send);
                 core.fds.replace(recv, 0)?;
             }
+            Err(e) => return Err(ExecError::Errno("here document".to_string(), e)),
         }
         Ok(())
     }
@@ -232,7 +264,7 @@ impl Redirect {
         restore: bool,
     ) -> Result<(), ExecError> {
         self.left_fd = 0;
-        let (recv, send) = core.fds.pipe();
+        let (recv, send) = core.fds.pipe()?;
 
         if restore {
             self.left_backup = core.fds.backup(0);
@@ -240,8 +272,8 @@ impl Redirect {
 
         let text = self.right.eval_as_herestring(core)?;
 
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 core.fds.close(recv);
                 let mut f = unsafe { File::from_raw_fd(send) };
                 let _ = writeln!(&mut f, "{}", &text);
@@ -249,10 +281,12 @@ impl Redirect {
                 core.fds.close(send);
                 process::exit(0);
             }
-            ForkResult::Parent { child: _ } => {
+            Ok(ForkResult::Parent { child: _ }) => {
+                core.now_herestring = true;
                 core.fds.close(send);
                 core.fds.replace(recv, 0)?;
             }
+            Err(e) => return Err(ExecError::Errno("here string".to_string(), e)),
         }
         Ok(())
     }
@@ -263,12 +297,36 @@ impl Redirect {
                 core.fds.close(self.left_fd);
             } else {
                 core.fds.replace(self.left_backup, self.left_fd)?;
+                if core.fds.read_used_fd == self.left_fd {
+                    core.fds.read_used_fd = -1;
+                    core.fds.close(self.left_fd);
+                }
             }
         }
         if self.extra_left_backup >= 0 {
             core.fds.replace(self.extra_left_backup, 2)?;
         }
         Ok(())
+    }
+
+    fn coproc_check(&mut self, old_fd: RawFd, new_fd: RawFd, core: &mut ShellCore) {
+        for e in core.job_table.iter_mut() {
+            if let Some(name) = &e.coproc_name {
+                if let Ok(fd0) = core.db.get_elem(name, "0")
+                    && old_fd.to_string() == fd0
+                {
+                    let _ = core.db.set_array_elem(name, "-1", 0, Some(0), false);
+                    e.coproc_fds[0] = new_fd;
+                }
+
+                if let Ok(fd1) = core.db.get_elem(name, "1")
+                    && old_fd.to_string() == fd1
+                {
+                    let _ = core.db.set_array_elem(name, "-1", 1, Some(0), false);
+                    e.coproc_fds[1] = new_fd;
+                }
+            }
+        }
     }
 
     pub fn new() -> Redirect {
@@ -281,8 +339,14 @@ impl Redirect {
     }
 
     fn show_heredoc_warning(&self, lineno: usize, feeder_lineno: usize, core: &mut ShellCore) {
-        let msg = format!("warning: here-document at line {} delimited by end-of-file (wanted `{}')", lineno, &self.right.text.replace("\\", ""));
-        let _ = core.db.set_param("LINENO", &feeder_lineno.to_string(), None);
+        let msg = format!(
+            "warning: here-document at line {} delimited by end-of-file (wanted `{}')",
+            lineno,
+            &self.right.text.replace("\\", "")
+        );
+        let _ = core
+            .db
+            .set_param("LINENO", &feeder_lineno.to_string(), None);
         error::print(&msg, core);
     }
 
@@ -306,7 +370,7 @@ impl Redirect {
             "`" => {
                 back_quote = true;
                 end_nest += ")";
-            },
+            }
             _ => end_nest += "\n",
         }
 
@@ -315,8 +379,8 @@ impl Redirect {
         }
 
         loop {
-            if feeder.is_empty() &&feeder.feed_additional_line(core).is_err() {
-                self.show_heredoc_warning(lineno, feeder.lineno-1, core);
+            if feeder.is_empty() && feeder.feed_additional_line(core).is_err() {
+                self.show_heredoc_warning(lineno, feeder.lineno - 1, core);
                 break;
             }
 
@@ -331,7 +395,7 @@ impl Redirect {
                     self.show_heredoc_warning(lineno, feeder.lineno, core);
                 }
                 break;
-            }else if feeder.starts_with(&(end.clone())) {
+            } else if feeder.starts_with(&(end.clone())) {
                 feeder.consume(end.len());
                 self.show_heredoc_warning(lineno, feeder.lineno, core);
                 break;
@@ -395,7 +459,7 @@ impl Redirect {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Option<Redirect> {
         let mut ans = Self::new();
-        feeder.set_backup(); //追加
+        feeder.set_backup();
 
         if Self::eat_left(feeder, &mut ans, core)
             && Self::eat_symbol(feeder, &mut ans, core)
@@ -404,7 +468,7 @@ impl Redirect {
             feeder.pop_backup();
             Some(ans)
         } else {
-            feeder.rewind(); //追加
+            feeder.rewind();
             None
         }
     }

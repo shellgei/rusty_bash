@@ -1,7 +1,8 @@
 //SPDX-FileCopyrightText: 2025 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{arg, ShellCore};
+use crate::error::exec::ExecError;
+use crate::{ShellCore, arg};
 use nix::libc;
 use nix::sys::resource;
 use nix::sys::resource::{Resource, rlim_t};
@@ -121,11 +122,11 @@ fn items() -> &'static [(&'static str, &'static str, &'static str, Resource)] {
     ]
 }
 
-fn print_items(args: &[String], soft: bool) -> i32 {
+fn print_one_item(args: &[String], soft: bool) -> i32 {
     for a in args {
         for (item, unit, opt, key) in items() {
             if a == opt {
-                print_item(item, unit, opt, *key, soft);
+                print_item(item, unit, opt, *key, soft, true);
             }
         }
     }
@@ -133,7 +134,7 @@ fn print_items(args: &[String], soft: bool) -> i32 {
     0
 }
 
-fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i32 {
+fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool, only_num: bool) -> i32 {
     let (soft_limit, hard_limit) = resource::getrlimit(key).unwrap();
     let mut v = if soft { soft_limit } else { hard_limit };
     let mut infty = nix::sys::resource::RLIM_INFINITY;
@@ -153,7 +154,9 @@ fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i
         &v.to_string()
     };
 
-    if unit == "" {
+    if only_num {
+        println!("{}", &s);
+    } else if unit == "" {
         println!("{}({}) {}", &item, &opt, &s);
     } else {
         println!("{}({}, {}) {}", &item, &unit, &opt, &s);
@@ -163,12 +166,12 @@ fn print_item(item: &str, unit: &str, opt: &str, key: Resource, soft: bool) -> i
 
 fn print_all(soft: bool) -> i32 {
     for (item, unit, opt, key) in items() {
-        print_item(item, unit, opt, *key, soft);
+        print_item(item, unit, opt, *key, soft, false);
     }
     0
 }
 
-fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
+fn set_limit(opt: &String, num: &String, soft: bool, hard: bool, core: &mut ShellCore) -> i32 {
     let mut limit = match num.as_str() {
         "unlimited" => nix::sys::resource::RLIM_INFINITY,
         numstr => match numstr.parse::<rlim_t>() {
@@ -186,6 +189,8 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
 
             if unit.starts_with("kbytes") {
                 limit *= 1024;
+            } else if *opt2 == "-n" {
+                limit = std::cmp::max(4, limit);
             }
 
             if soft {
@@ -197,8 +202,12 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
 
             match resource::setrlimit(*key, soft_limit, hard_limit) {
                 Err(e) => {
-                    dbg!("{:?}", &e);
-                    return 1;
+                    return super::error(
+                        1,
+                        "ulimit",
+                        &ExecError::Errno("cannot modify limit".to_string(), e),
+                        core,
+                    );
                 }
                 _ => return 0,
             }
@@ -208,7 +217,7 @@ fn set_limit(opt: &String, num: &String, soft: bool, hard: bool) -> i32 {
     0
 }
 
-pub fn ulimit(_: &mut ShellCore, args: &[String]) -> i32 {
+pub fn ulimit(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut args = arg::dissolve_options(args);
     let mut soft = arg::consume_arg("-S", &mut args);
     let mut hard = arg::consume_arg("-H", &mut args);
@@ -222,8 +231,8 @@ pub fn ulimit(_: &mut ShellCore, args: &[String]) -> i32 {
             soft = true;
             hard = true;
         }
-        return set_limit(&args[1], &args[2], soft, hard);
+        return set_limit(&args[1], &args[2], soft, hard, core);
     }
 
-    print_items(&args, !hard)
+    print_one_item(&args, !hard)
 }

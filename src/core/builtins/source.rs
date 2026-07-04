@@ -1,8 +1,8 @@
-//SPDX-FileCopyrightText: 2024 Ryuichi Ueda <ryuichiueda@gmail.com>
+//SPDX-FileCopyrightText: 2026 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::error::parse::ParseError;
-use crate::{file_check, Feeder, Script, ShellCore};
+use crate::{Feeder, InputError, Script, ShellCore, file_check};
 
 fn check_error(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.db.flags.contains('r') && args[1].contains('/') {
@@ -17,8 +17,9 @@ fn check_error(core: &mut ShellCore, args: &[String]) -> i32 {
     }
 
     if file_check::is_dir(&args[1]) {
-        eprintln!("sush: source: {}: is a directory", &args[1]);
-        return 1;
+        let err = InputError::IsDir(args[1].clone());
+        return super::error(1, &args[0], &err.into(), core);
+        //eprintln!("sush: source: {}: is a directory", &args[1]);
     }
     0
 }
@@ -48,7 +49,9 @@ pub fn source(core: &mut ShellCore, args: &[String]) -> i32 {
     core.source_files.push(args[1].to_string());
     core.db.position_parameters.push(args[1..].to_vec());
     source.insert(0, args[1].clone());
-    let _ = core.db.init_array("BASH_SOURCE", Some(source.clone()), None, false);
+    let _ = core
+        .db
+        .init_array("BASH_SOURCE", Some(source.clone()), None, false);
 
     feeder.main_feeder = true;
     while let Ok(()) = feeder.feed_line(core) {

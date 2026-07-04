@@ -1,23 +1,23 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-mod optional_operation;
+mod indirect;
 mod parse;
+mod subscript;
 
-use self::optional_operation::OptionalOperation;
-use crate::elements::substitution::variable::Variable;
+use super::splitter;
+use crate::elements::braced_param_ext::BracedExcludeension;
+use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
-use crate::utils;
-use crate::utils::splitter;
-use crate::{Feeder, ShellCore};
+use crate::{ShellCore, utils};
 
 #[derive(Debug, Clone, Default)]
 pub struct BracedParam {
     text: String,
     array: Option<Vec<String>>,
-    param: Variable,
-    optional_operation: Option<Box<dyn OptionalOperation>>,
+    param: Parameter,
+    extension: Option<Box<dyn BracedExcludeension>>,
     unknown: String,
     treat_as_array: bool,
     num: bool,
@@ -26,8 +26,10 @@ pub struct BracedParam {
 
 impl From<&str> for BracedParam {
     fn from(s: &str) -> Self {
-        let mut ans: Self = Default::default();
-        ans.text = "$".to_owned() + s;
+        let mut ans = Self {
+            text: "$".to_owned() + s,
+            ..Default::default()
+        };
         ans.param.text = s.to_string();
         ans.param.name = s.to_string();
         ans
@@ -43,43 +45,21 @@ impl Subword for BracedParam {
     }
 
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if core.db.exist_nameref(&self.param.name) && ! self.indirect {
-            let mut circular_check_vec = vec![];
-            let org_name = self.param.name.clone();
-            loop {
-                let bkup = self.param.name.clone();
-                self.param.check_nameref(core)?;
-                if self.param.name == bkup {
-                    self.param.name = utils::gen_not_exist_var(core);
-                }
-
-                if circular_check_vec.contains(&self.param.name) {
-                    ExecError::CircularNameRef(org_name).print(core);
-                    self.param.name = utils::gen_not_exist_var(core);
-                    break;
-                }
-                if ! core.db.exist_nameref(&self.param.name) {
-                    break;
-                }
-                circular_check_vec.push(self.param.name.clone());
-            }
-
+        if core.db.exist_nameref(&self.param.name) && !self.indirect {
+            self.param.solve_nameref(core)?;
             return self.substitute(core);
         }
         self.check()?;
 
-        if self.indirect {
-            if ! self.indirect_preparation(core)? {
-                return Ok(());
-            }
+        if self.indirect && !self.indirect_preparation(core)? {
+            return Ok(());
         }
 
-        if self.param.is_array() {
-            if let Some(op) = self.optional_operation.as_mut() {
-                if op.has_array_replace() {
-                    return self.array_replace(core);
-                }
-            }
+        if self.param.is_array()
+            && let Some(op) = self.extension.as_mut()
+            && op.has_array_replace()
+        {
+            return self.array_replace(core);
         }
 
         match self.param.index.is_some() {
@@ -97,51 +77,45 @@ impl Subword for BracedParam {
     }
 
     fn get_elem(&mut self) -> Vec<String> {
-        if let Some(op) = self.optional_operation.as_mut() {
-            if op.array_to_single() {
-                return vec![self.text.clone()];
-            }
+        if let Some(op) = self.extension.as_mut()
+            && op.array_to_single()
+        {
+            return vec![self.text.clone()];
         }
 
         self.array.clone().unwrap_or_default()
     }
 
     fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        match self.optional_operation.as_mut() {
+        match self.extension.as_mut() {
             Some(op) => Ok(op.get_alternative()),
             None => Ok(vec![]),
         }
     }
 
-    fn split(&self, ifs: &str, prev_char: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.text.is_empty() {
-            return vec![];
+            return None;
         }
 
-        let index_is_asterisk =
-            self.param.index.is_some() && self.param.index.as_ref().unwrap().text == "[*]";
+        let asterisk = self.param.index.is_some()
+            && self.param.index.as_ref().unwrap().text == "[*]"
+            || self.param.name == "*";
 
-        if ifs.is_empty() && (self.param.name == "*" || index_is_asterisk) {
-            return self.make_split();
+        let non_array =
+            (!self.treat_as_array && !asterisk) || ifs.starts_with(" ") || self.array.is_none();
+
+        if ifs.is_empty() && asterisk {
+            self.array_to_split()
+        } else if non_array {
+            splitter::split(self.get_text(), ifs, strip_left)
+        } else {
+            self.array_to_split()
         }
-
-        if (!self.treat_as_array && !index_is_asterisk && self.param.name != "*")
-            || ifs.starts_with(" ")
-            || self.array.is_none()
-        {
-            return splitter::split(&self.text, ifs, prev_char)
-                .iter()
-                .map(|s| (From::from(&s.0), s.1))
-                .collect();
-        }
-
-        self.make_split()
     }
 
     fn set_heredoc_flag(&mut self) {
-        self.optional_operation
-            .iter_mut()
-            .for_each(|e| e.set_heredoc_flag());
+        self.extension.iter_mut().for_each(|e| e.set_heredoc_flag());
     }
 }
 
@@ -160,20 +134,18 @@ impl BracedParam {
         Ok(())
     }
 
-    fn make_split(&self) -> Vec<(Box<dyn Subword>, bool)> {
-        if self.array.is_none() {
-            return vec![];
-        }
+    fn array_to_split(&self) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+        self.array.as_ref()?;
 
         let mut ans = vec![];
         for p in self.array.clone().unwrap() {
             ans.push((From::from(&p), true));
         }
-        ans
+        Some(ans)
     }
 
     fn index_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if self.optional_operation.is_some() {
+        if self.extension.is_some() {
             let msg = core.db.get_vec(&self.param.name, true)?.join(" ");
             return Err(ExecError::InvalidName(msg));
         }
@@ -197,73 +169,17 @@ impl BracedParam {
 
     fn array_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut arr = vec![];
-        let op = self.optional_operation.as_mut().unwrap();
+        let op = self.extension.as_mut().unwrap();
         op.init_array(&self.param, &mut arr, &mut self.text, core)?;
         self.array = Some(arr.clone());
         if let Some(index) = &self.param.index {
             if index.text == "[*]" {
                 self.text = arr.join(&core.db.get_ifs_head());
-            }else if index.text == "[@]" {
+            } else if index.text == "[@]" {
                 self.text = arr.join(" ");
             }
         }
 
-        Ok(())
-    }
-
-    fn indirect_preparation(&mut self, core: &mut ShellCore) -> Result<bool, ExecError> {
-        if ! core.db.exist(&self.param.name)
-        && ! core.db.exist_nameref(&self.param.name) {
-            return Err(ExecError::InvalidIndirectExpansion(self.param.name.to_string()));
-        }
-
-        if core.db.has_flag(&self.param.name, 'n') {
-            if self.text.contains("[") {
-                self.text = String::new();
-            } else if let Some(nameref) = core.db.get_nameref(&self.param.name)? {
-                self.text = nameref;
-            }else{
-                self.text = String::new();
-            }
-            return Ok(false);
-        }
-
-        if self.param.is_var_array() { // ${!name[@]}, ${!name[*]}
-            self.index_replace(core)?;
-            return Ok(false);
-        }
-
-        self.indirect_replace(core)?;
-        self.check()?;
-        Ok(true)
-    }
-
-    fn indirect_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let mut sw = self.clone();
-        sw.indirect = false;
-        sw.unknown = String::new();
-        sw.treat_as_array = false;
-        sw.num = false;
-
-        sw.substitute(core)?;
-
-        if sw.text.contains('[') {
-            let mut feeder = Feeder::new(&("${".to_owned() + &sw.text + "}"));
-            if let Ok(Some(mut bp)) = BracedParam::parse(&mut feeder, core) {
-                bp.substitute(core)?;
-                self.param.name = bp.param.name;
-                self.param.index = bp.param.index;
-            } else {
-                return Err(ExecError::InvalidName(sw.text.clone()));
-            }
-        } else {
-            self.param.name = sw.text.clone();
-            self.param.index = None;
-        }
-
-        if !utils::is_param(&self.param.name) {
-            return Err(ExecError::InvalidName(self.param.name.clone()));
-        }
         Ok(())
     }
 
@@ -274,91 +190,17 @@ impl BracedParam {
 
         let value = core.db.get_param(&self.param.name).unwrap_or_default();
         self.text = match self.num {
-            true => core.db.get_braced_param_hash_length(&self.param.name)?.to_string(),
+            true => core
+                .db
+                .get_braced_param_hash_length(&self.param.name)?
+                .to_string(),
             false => value.to_string(),
         };
 
-        self.text = self.optional_operation(self.text.clone(), core)?;
+        if let Some(op) = self.extension.as_mut() {
+            self.text = op.exec(&self.param, &self.text, core)?;
+        }
+
         Ok(())
-    }
-
-    fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        let index = self
-            .param
-            .index
-            .clone()
-            .unwrap()
-            .eval(core, &self.param.name)?;
-
-        if self.num {
-            self.text = core.db.get_elem_len(&self.param.name, &index)?.to_string();
-            return Ok(());
-        }
-
-        if core.db.is_single(&self.param.name) {
-            let param = core.db.get_param(&self.param.name)?;
-            let tmp = match index.as_str() {
-                //case: a=aaa; echo ${a[@]}; (output: aaa)
-                "@" | "*" | "0" => param, //.unwrap_or("".to_string()),
-                _ => "".to_string(),
-            };
-            self.text = self.optional_operation(tmp, core)?;
-            return Ok(());
-        }
-
-        let ifs = core.db.get_ifs_head();
-
-        if index.as_str() == "@" {
-            self.atmark_operation(core, " ")
-        } else if index.as_str() == "*" {
-            self.atmark_operation(core, &ifs)
-        } else {
-            let tmp = core.db.get_elem(&self.param.name, &index)?;
-            self.text = self.optional_operation(tmp, core)?;
-            Ok(())
-        }
-    }
-
-    fn atmark_operation(&mut self, core: &mut ShellCore, ifs: &str) -> Result<(), ExecError> {
-        let mut arr = core.db.get_vec(&self.param.name, true)?;
-        self.array = Some(arr.clone());
-        if self.num {
-            self.text = arr.len().to_string();
-            return Ok(());
-        }
-
-        self.text = match self.num {
-            true => core.db.get_var_len(&self.param.name).to_string(),
-            false => core.db.get_vec(&self.param.name, true)?.join(ifs),
-        };
-
-        if arr.len() <= 1 || self.has_value_check() {
-            self.text = self.optional_operation(self.text.clone(), core)?;
-        } else {
-            for item in arr.iter_mut() {
-                *item = self.optional_operation(item.clone(), core)?;
-            }
-            self.text = arr.join(ifs);
-            self.array = Some(arr);
-        }
-        Ok(())
-    }
-
-    fn has_value_check(&mut self) -> bool {
-        match self.optional_operation.as_mut() {
-            Some(op) => op.is_value_check(),
-            _ => false,
-        }
-    }
-
-    fn optional_operation(
-        &mut self,
-        text: String,
-        core: &mut ShellCore,
-    ) -> Result<String, ExecError> {
-        match self.optional_operation.as_mut() {
-            Some(op) => op.exec(&self.param, &text, core),
-            None => Ok(text.clone()),
-        }
     }
 }

@@ -1,34 +1,34 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::super::Variable;
-use super::OptionalOperation;
-use crate::elements::word::{Word, WordMode};
+use super::BracedExcludeension;
+use crate::elements::parameter::Parameter;
+use crate::elements::word::{Word, mode::WordMode};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::utils::glob;
 use crate::{Feeder, ShellCore};
 
-impl OptionalOperation for Remove {
+impl BracedExcludeension for Remove {
     fn get_text(&self) -> String {
         self.text.clone()
     }
     fn exec(
         &mut self,
-        _: &Variable,
+        _: &Parameter,
         text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
         self.set(text, core)
     }
 
-    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {
+    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
         Box::new(self.clone())
     }
 
     fn init_array(
         &mut self,
-        param: &Variable,
+        param: &Parameter,
         array: &mut Vec<String>,
         text: &mut String,
         core: &mut ShellCore,
@@ -120,7 +120,7 @@ impl Remove {
         if let Some(w) = Word::parse(
             feeder,
             core,
-            Some(WordMode::ParamOption(vec!["}".to_string()])),
+            Some(WordMode::Exclude(vec!["}".to_string()])),
             //Some(WordMode::AlterWord),
         )? {
             ans.text += &w.text.clone();

@@ -14,7 +14,7 @@ use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
 use self::value_check::ValueCheck;
-use super::Variable;
+use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -22,9 +22,9 @@ use crate::{Feeder, ShellCore};
 use core::fmt;
 use core::fmt::Debug;
 
-pub trait OptionalOperation {
-    fn exec(&mut self, _: &Variable, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
-    fn boxed_clone(&self) -> Box<dyn OptionalOperation>;
+pub trait BracedExcludeension {
+    fn exec(&mut self, _: &Parameter, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
+    fn boxed_clone(&self) -> Box<dyn BracedExcludeension>;
     fn get_text(&self) -> String;
     fn has_array_replace(&self) -> bool {
         false
@@ -34,7 +34,7 @@ pub trait OptionalOperation {
     }
     fn init_array(
         &mut self,
-        _: &Variable,
+        _: &Parameter,
         _: &mut Vec<String>,
         _: &mut String,
         _: &mut ShellCore,
@@ -49,12 +49,14 @@ pub trait OptionalOperation {
     fn array_to_single(&mut self) -> bool {
         false
     }
+
+    fn receive_unknown(&mut self, _: &mut String) {}
 }
 
 pub fn parse(
     feeder: &mut Feeder,
     core: &mut ShellCore,
-) -> Result<Option<Box<dyn OptionalOperation>>, ParseError> {
+) -> Result<Option<Box<dyn BracedExcludeension>>, ParseError> {
     if let Some(a) = Replace::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ValueCheck::parse(feeder, core)? {
@@ -63,7 +65,7 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if let Some(a) = Remove::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
-    } else if let Some(a) = Substr::parse(feeder, core) {
+    } else if let Some(a) = Substr::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = Escape::parse(feeder, core) {
         Ok(Some(Box::new(a)))
@@ -72,13 +74,13 @@ pub fn parse(
     }
 }
 
-impl Clone for Box<dyn OptionalOperation> {
-    fn clone(&self) -> Box<dyn OptionalOperation> {
+impl Clone for Box<dyn BracedExcludeension> {
+    fn clone(&self) -> Box<dyn BracedExcludeension> {
         self.boxed_clone()
     }
 }
 
-impl Debug for dyn OptionalOperation {
+impl Debug for dyn BracedExcludeension {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct(&self.get_text()).finish()
     }

@@ -113,10 +113,15 @@ impl Options {
             false => "off",
         };
 
-        match opt.len() < 16 {
-            true => format!("{opt:16}{onoff_str}"),
-            false => format!("{opt}\t{onoff_str}"),
-        }
+        format!("{opt:20}\t{onoff_str}")
+        /*
+        if opt.len() < 15 {
+            format!("{opt:20}\t{onoff_str}")
+        } else if opt.len() < 16 {
+            format!("{opt:16}{onoff_str}")
+        }else{
+            format!("{opt}\t{onoff_str}")
+        }*/
     }
 
     pub fn format2(opt: &str, onoff: bool) -> String {

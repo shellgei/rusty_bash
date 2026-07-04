@@ -8,9 +8,9 @@ impl DataBase {
         self.get_param_keys()
             .into_iter()
             .for_each(|k| self.print_param(&k));
-        self.get_func_keys()
-            .into_iter()
-            .for_each(|k| { self.print_func(&k); });
+        self.get_func_keys().into_iter().for_each(|k| {
+            self.print_func(&k);
+        });
     }
 
     pub fn print_param(&mut self, name: &str) {
@@ -33,12 +33,12 @@ impl DataBase {
         }
     }
 
-    fn print_with_name(d: &mut Box::<dyn Data>, name: &str, declare_print: bool) {
+    fn print_with_name(d: &mut Box<dyn Data>, name: &str, declare_print: bool) {
         let body = d.get_fmt_string();
         if !d.is_initialized() {
             println!("{name}");
         } else if declare_print
-            && (d.is_single() || d.is_special() )
+            && (d.is_single() || d.is_special())
             && !body.starts_with("\"")
             && !body.ends_with("\"")
         {

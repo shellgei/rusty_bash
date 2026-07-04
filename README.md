@@ -130,20 +130,20 @@ Followings are not difficult but very important tasks.
 | exit | :heavy_check_mark: | source | :heavy_check_mark: | set | :construction: |
 | shopt | :construction: | : | :heavy_check_mark: | . | :heavy_check_mark: | [ | :no_good: |
 | alias | :heavy_check_mark: | bg | :construction: | bind | :no_good: |
-| break | :heavy_check_mark: | builtin | :heavy_check_mark: | caller | :under_construction: |
+| break | :heavy_check_mark: | builtin | :heavy_check_mark: | caller | :construction: |
 | command | :heavy_check_mark: | compgen | :construction: | complete | :construction: |
 | compopt | :no_good: | continue | :heavy_check_mark: | declare | :no_good: |
 | dirs | :no_good: | disown | :heavy_check_mark: | echo | :no_good: |
 | enable | :no_good: | eval | :heavy_check_mark: | exec | :no_good: |
 | fc | :no_good: | fg | :construction: | getopts | :construction: |
-| hash | :no_good: | help | :no_good: | history | :construction: |
-| jobs | :construction: | kill | :under_construction: | let | :no_good: |
+| hash | :heavy_check_mark: | help | :no_good: | history | :construction: |
+| jobs | :construction: | kill | :construction: | let | :no_good: |
 | local | :heavy_check_mark: | logout | :no_good: | mapfile | :no_good: |
 | popd | :no_good: | printf | :heavy_check_mark: | pushd | :no_good: |
 | readonly | :no_good: | return | :heavy_check_mark: | false | :heavy_check_mark: |
 | shift | :heavy_check_mark: | suspend | :no_good: | test | :heavy_check_mark: |
-| times | :no_good: | trap | :no_good: | true | :heavy_check_mark: |
-| type | :no_good: | typeset | :no_good: | ulimit | :heavy_check_mark: |
+| times | :no_good: | trap | :construction: | true | :heavy_check_mark: |
+| type | :no_good: | typeset | :heavy_check_mark: | ulimit | :heavy_check_mark: |
 | umask | :no_good: | unalias | :heavy_check_mark: | unset | :construction: |
 | wait | :construction: | export | :heavy_check_mark: |
 
@@ -156,7 +156,7 @@ Followings are not difficult but very important tasks.
 | [-+]O | :no_good: | -- | :no_good: | --debugger | :no_good: |
 | --dimp-po-strings | :no_good: | --help | :heavy_check_mark: | --init-file | :no_good: |
 | --rcfile | :no_good: | --noediting | :no_good: | --noprofile | :no_good: |
-| --norc | :no_good: | --posix | :under_construction: | --restricted | :heavy_check_mark: |
+| --norc | :no_good: | --posix | :construction: | --restricted | :heavy_check_mark: |
 | -v, --verbose | :no_good: | --version | :heavy_check_mark: | -e | :heavy_check_mark: |
 | --pipefail | :heavy_check_mark: | -B | :heavy_check_mark: |  |  |
 
@@ -169,7 +169,7 @@ Followings are not difficult but very important tasks.
 | checkhash | :no_good: | checkjobs | :no_good: | checkwinsize | :no_good: |
 | cmdhist | :no_good: | compat31 | :no_good: | compat32 | :no_good: |
 | compat40 | :no_good: | compat41 | :no_good: | dirspell | :no_good: |
-| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :no_good: |
+| dotglob | :heavy_check_mark: | execfail | :no_good: | expand_aliases | :construction: |
 | extdebug | :no_good: | extglob | :heavy_check_mark: | extquote | :no_good: |
 | failglob | :no_good: | force_fignore | :no_good: | globstar | :heavy_check_mark: |
 | gnu_errfmt | :no_good: | histappend | :no_good: | histreedit | :no_good: |
@@ -197,7 +197,7 @@ Bash Variables
 |-------------------|----|-------------------|----|-------------------|----|
 | _ | :heavy_check_mark: | BASH | :no_good: | BASHOPTS | :no_good: |
 | BASHPID | :heavy_check_mark: | BASH_ALIASES | :no_good: | BASH_ARGC | :no_good: |
-| BASH_ARGV | :no_good: | BASH_ARGV0 | :no_good: | BASH_CMDS | :no_good: |
+| BASH_ARGV | :construction: | BASH_ARGV0 | :construction: | BASH_CMDS | :no_good: |
 | BASH_COMMAND | :no_good: | BASH_COMPAT | :no_good: | BASH_ENV | :no_good: |
 | BASH_EXECUTION_STRING | :no_good: | BASH_LINENO | :no_good: | BASH_LOADABLES_PATH | :no_good: |
 | BASH_REMATCH | :heavy_check_mark: | BASH_SOURCE | :no_good: | BASH_SUBSHELL | :heavy_check_mark: |
@@ -205,7 +205,7 @@ Bash Variables
 | CHILD_MAX | :no_good: | COLUMNS | :no_good: | COMP_CWORD | :no_good: |
 | COMP_LINE | :no_good: | COMP_POINT | :no_good: | COMP_TYPE | :no_good: |
 | COMP_KEY | :no_good: | COMP_WORDBREAKS | :no_good: | COMP_WORDS | :no_good: |
-| COMPREPLY | :no_good: | COPROC | :no_good: | DIRSTACK | :no_good: |
+| COMPREPLY | :no_good: | COPROC | :heavy_check_mark: | DIRSTACK | :no_good: |
 | EMACS | :no_good: | ENV | :no_good: | EPOCHREALTIME | :heavy_check_mark: |
 | EPOCHSECONDS | :heavy_check_mark: | EUID | :no_good: | EXECIGNORE | :no_good: |
 | FCEDIT | :no_good: | FIGNORE | :no_good: | FUNCNAME | :heavy_check_mark: |
@@ -227,7 +227,7 @@ Bash Variables
 | READLINE_POINT | :no_good: | REPLY | :no_good: | SECONDS | :heavy_check_mark: |
 | SHELL | :heavy_check_mark: | SHELLOPTS | :no_good: | SHLVL | :heavy_check_mark: |
 | SRANDOM | :heavy_check_mark: | TIMEFORMAT | :no_good: | TMOUT | :no_good: |
-| TMPDIR | :no_good: | UID | :no_good: | | |
+| TMPDIR | :no_good: | UID | :heavy_check_mark: | | |
 
 ### beyond Bash
 

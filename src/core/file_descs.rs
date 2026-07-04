@@ -4,21 +4,22 @@
 extern crate libc;
 use libc::dup2;
 use libc::fcntl;
-use libc::{F_GETFD, F_DUPFD_CLOEXEC};
+use libc::{F_DUPFD_CLOEXEC, F_GETFD};
 
 use crate::error::exec::ExecError;
-use nix::unistd::Pid;
-use std::os::fd::{OwnedFd, FromRawFd, RawFd};
 use nix::unistd;
-use std::os::fd::AsRawFd;
+use nix::unistd::Pid;
 use std::fs::File;
+use std::os::fd::AsRawFd;
+use std::os::fd::{FromRawFd, OwnedFd, RawFd};
 
-/* We want to control all opening FDs with this. 
+/* We want to control all opening FDs with this.
  * However, I have no idea how to handle
  * files and std{in, out, err}. */
 #[derive(Default, Debug)]
 pub struct FileDescriptors {
     fds: Vec<Option<OwnedFd>>,
+    pub read_used_fd: i32,
 }
 
 impl FileDescriptors {
@@ -27,13 +28,16 @@ impl FileDescriptors {
         for _ in 0..256 {
             data.fds.push(None);
         }
+        data.read_used_fd = -1;
 
         data
     }
 
-    pub fn dupfd_cloexec(&mut self, from: RawFd,
-                                hereafter: RawFd) -> Result<RawFd, ExecError> {
-        let fd = unsafe{fcntl(from, F_DUPFD_CLOEXEC, hereafter)};
+    pub fn dupfd_cloexec(&mut self, from: RawFd, hereafter: RawFd) -> Result<RawFd, ExecError> {
+        let fd = unsafe { fcntl(from, F_DUPFD_CLOEXEC, hereafter) };
+        if fd < 0 {
+            return Err(ExecError::Other("bad fd".to_string()));
+        }
         self.fds[fd as usize] = Some(unsafe { OwnedFd::from_raw_fd(fd) });
 
         Ok(fd)
@@ -41,40 +45,50 @@ impl FileDescriptors {
 
     pub fn tcsetpgrp(&mut self, fd: RawFd, pgid: Pid) -> Result<(), ExecError> {
         if let Some(fd) = self.fds[fd as usize].as_mut() {
-            return Ok(unistd::tcsetpgrp(fd, pgid)?);
+            return match unistd::tcsetpgrp(fd, pgid) {
+                Ok(res) => Ok(res),
+                Err(e) => return Err(ExecError::Errno("tcsetpgrp".to_string(), e)),
+            };
         }
         Ok(())
     }
 
     pub fn tcgetpgrp(&mut self, fd: RawFd) -> Result<Pid, ExecError> {
         if let Some(fd) = self.fds[fd as usize].as_mut() {
-            return Ok(unistd::tcgetpgrp(fd)?);
+            return match unistd::tcgetpgrp(fd) {
+                Ok(res) => Ok(res),
+                Err(e) => return Err(ExecError::Errno("tcgetpgrp".to_string(), e)),
+            };
         }
         Err(ExecError::Other("cannot get process group".to_string()))
     }
 
     pub fn close(&mut self, fd: RawFd) {
-        if fd < 0 || fd >= 256 {
+        if !(0..256).contains(&fd) {
             return;
         }
+
         self.fds[fd as usize] = None;
         let _ = unistd::close(fd);
     }
 
-    pub fn pipe(&mut self) -> (RawFd, RawFd) {
-        let (recv, send) = unistd::pipe().expect("Cannot open pipe");
+    pub fn pipe(&mut self) -> Result<(RawFd, RawFd), ExecError> {
+        let (recv, send) = match unistd::pipe() {
+            Ok(fds) => fds,
+            Err(e) => return Err(ExecError::Errno("cannot make pipe".to_string(), e)),
+        };
+
         let fd_recv = recv.as_raw_fd();
         let fd_send = send.as_raw_fd();
 
         self.fds[fd_recv as usize] = Some(recv);
         self.fds[fd_send as usize] = Some(send);
 
-        (fd_recv, fd_send)
+        Ok((fd_recv, fd_send))
     }
 
     pub fn backup(&mut self, from: RawFd) -> RawFd {
-        //if fcntl::fcntl(from, fcntl::F_GETFD).is_err() {
-        if unsafe{fcntl(from, F_GETFD)} == -1 {
+        if unsafe { fcntl(from, F_GETFD) } == -1 {
             return from;
         }
         self.dupfd_cloexec(from, 10).unwrap()
@@ -85,7 +99,7 @@ impl FileDescriptors {
             return Ok(());
         }
 
-        if unsafe{dup2(from, to)} < 0 {
+        if unsafe { dup2(from, to) } < 0 {
             return Err(ExecError::Other("dup2 error".to_string()));
         }
 
@@ -99,9 +113,8 @@ impl FileDescriptors {
             return Err(ExecError::Other("minus fd number".to_string()));
         }
 
-        if unsafe{dup2(from, to)} < 0 {
-            //return Err(ExecError::Other("dup2 error".to_string()));
-            return Err(ExecError:: BadFd(from));
+        if unsafe { dup2(from, to) } < 0 {
+            return Err(ExecError::BadFd(from));
         }
 
         Ok(())

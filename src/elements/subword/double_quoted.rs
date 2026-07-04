@@ -3,7 +3,7 @@
 
 use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 use crate::elements::subword::{Arithmetic, CommandSubstitution};
-use crate::elements::word::{substitution, Word, WordMode};
+use crate::elements::word::{Word, mode::WordMode, substitution};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
@@ -78,7 +78,7 @@ impl Subword for DoubleQuoted {
         Some(text)
     }
 
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
+    fn split(&self, _: &str, _: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         let mut ans = vec![];
         let mut last = 0;
         let mut tmp = Self::default();
@@ -87,7 +87,7 @@ impl Subword for DoubleQuoted {
             ans.push((tmp.boxed_clone(), true));
             last = *p;
         }
-        ans
+        Some(ans)
     }
 }
 

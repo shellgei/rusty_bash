@@ -3,7 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::utils::{arg, file};
-use crate::{error, ShellCore};
+use crate::{ShellCore, error};
 
 pub fn cd(core: &mut ShellCore, args: &[String]) -> i32 {
     if core.db.flags.contains('r') {

@@ -1,12 +1,12 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::super::Variable;
-use super::OptionalOperation;
-use crate::elements::subword::SimpleSubword;
-use crate::elements::subword::SingleQuoted;
+use super::BracedExcludeension;
+use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
-use crate::elements::word::{Word, WordMode};
+use crate::elements::subword::simple::SimpleSubword;
+use crate::elements::subword::single_quoted::SingleQuoted;
+use crate::elements::word::{Word, mode::WordMode};
 use crate::error::arith::ArithError;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -26,14 +26,14 @@ pub struct ValueCheck {
     in_double_quoted: bool,
 }
 
-impl OptionalOperation for ValueCheck {
+impl BracedExcludeension for ValueCheck {
     fn get_text(&self) -> String {
         self.text.clone()
     }
 
     fn exec(
         &mut self,
-        variable: &Variable,
+        variable: &Parameter,
         text: &str,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
@@ -59,7 +59,7 @@ impl OptionalOperation for ValueCheck {
         }
     }
 
-    fn boxed_clone(&self) -> Box<dyn OptionalOperation> {
+    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
         Box::new(self.clone())
     }
     fn is_value_check(&self) -> bool {
@@ -93,17 +93,17 @@ impl ValueCheck {
 
         if self.in_double_quoted {
             for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
-//                if e.is_escaped_char() {
-                    match e.get_text() {
-                        "\\$" | "\\\\" | "\\\"" | "\\`" => {}
-                        txt => {
-                            let sw = SimpleSubword {
-                                text: txt.to_string(),
-                            };
-                            *e = Box::new(sw);
-                        }
+                //                if e.is_escaped_char() {
+                match e.get_text() {
+                    "\\$" | "\\\\" | "\\\"" | "\\`" => {}
+                    txt => {
+                        let sw = SimpleSubword {
+                            text: txt.to_string(),
+                        };
+                        *e = Box::new(sw);
                     }
- //               }
+                }
+                //               }
             }
 
             self.alternative_value = Some(v.dollar_expansion(core)?);
@@ -153,7 +153,7 @@ impl ValueCheck {
 
     fn set_value(
         &mut self,
-        variable: &Variable,
+        variable: &Parameter,
         core: &mut ShellCore,
     ) -> Result<String, ExecError> {
         let mut value = self.set_alter_word(core)?;
@@ -192,7 +192,7 @@ impl ValueCheck {
 
         let num = feeder.scanner_blank(core);
         ans.text += &feeder.consume(num);
-        let mode = WordMode::ParamOption(vec!["}".to_string()]);
+        let mode = WordMode::Exclude(vec!["}".to_string()]);
         //let mode = WordMode::AlterWord;
         ans.alternative_value = Some(Word::default());
 

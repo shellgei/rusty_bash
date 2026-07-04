@@ -1,8 +1,8 @@
 //SPDXFileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDXLicense-Identifier: BSD-3-Clause
 
-use super::assoc::AssocData;
 use super::Data;
+use super::assoc::AssocData;
 use crate::error::exec::ExecError;
 use crate::utils;
 use std::collections::HashMap;
@@ -53,8 +53,7 @@ impl Data for IntAssocData {
         Ok(())
     }
 
-    fn set_as_assoc(&mut self, name: &str, key: &str,
-                    value: &str) -> Result<(), ExecError> {
+    fn set_as_assoc(&mut self, name: &str, key: &str, value: &str) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         let n = super::to_int(value)?;
         self.body.insert(key.to_string(), n);
@@ -62,8 +61,12 @@ impl Data for IntAssocData {
         Ok(())
     }
 
-    fn append_to_assoc_elem(&mut self, name: &str, key: &str,
-                            value: &str) -> Result<(), ExecError> {
+    fn append_to_assoc_elem(
+        &mut self,
+        name: &str,
+        key: &str,
+        value: &str,
+    ) -> Result<(), ExecError> {
         self.readonly_check(name)?;
         let n = super::to_int(value)?;
 
@@ -173,7 +176,7 @@ impl Data for IntAssocData {
     }
 
     fn set_flag(&mut self, flag: char) {
-        if ! self.flags.contains(flag) {
+        if !self.flags.contains(flag) {
             self.flags.push(flag);
         }
     }
@@ -196,7 +199,11 @@ impl Data for IntAssocData {
 
 impl IntAssocData {
     pub fn new() -> Self {
-        Self { body: HashMap::new(), last: None, flags: "i".to_string() }
+        Self {
+            body: HashMap::new(),
+            last: None,
+            flags: "i".to_string(),
+        }
     }
 
     pub fn get(&self, key: &str) -> Option<String> {

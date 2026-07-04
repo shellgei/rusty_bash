@@ -3,7 +3,8 @@
 
 use super::{BracedParam, EscapedChar, Parameter, Subword, VarName};
 use crate::elements::subword::{Arithmetic, CommandSubstitution, DoubleQuoted};
-use crate::elements::word::{Word, WordMode};
+use crate::elements::word::Word;
+use crate::elements::word::mode::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use crate::{Feeder, ShellCore};
@@ -30,8 +31,8 @@ impl Subword for EvalLetParen {
         Ok(())
     }
 
-    fn split(&self, _: &str, _: Option<char>) -> Vec<(Box<dyn Subword>, bool)> {
-        vec![]
+    fn split(&self, _: &str, _: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
+        None
     }
 }
 

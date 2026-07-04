@@ -2,30 +2,26 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::error::exec::ExecError;
-use crate::utils::c_string;
-use crate::{error, exit, signal, Feeder, Script, ShellCore};
+use crate::utils::string_binary;
+use crate::{Feeder, Script, ShellCore, error, exit, file_check, signal};
 use nix::errno::Errno;
-use nix::sys::resource::UsageWho;
 use nix::sys::signal::Signal;
+use nix::sys::wait;
 use nix::sys::wait::{WaitPidFlag, WaitStatus};
-use nix::sys::{resource, wait};
-use nix::time::{clock_gettime, ClockId};
 use nix::unistd;
 use nix::unistd::Pid;
 use std::ffi::CString;
-use std::process;
 use std::sync::atomic::Ordering::Relaxed;
+use std::{env, process};
 
 pub fn wait_pipeline(
     core: &mut ShellCore,
     pids: Vec<Option<Pid>>,
     exclamation: bool,
-    time: bool,
 ) -> Vec<WaitStatus> {
     if pids.len() == 1 && pids[0].is_none() {
-        if time {
-            show_time(core);
-        }
+        core.time_keeper.print_diff();
+        //show_time(core);
         if exclamation {
             core.flip_exit_status();
         }
@@ -49,9 +45,8 @@ pub fn wait_pipeline(
         }
     }
 
-    if time {
-        show_time(core);
-    }
+    core.time_keeper.print_diff();
+    //show_time(core);
     let _ = set_foreground(core);
     let _ = core.db.init_array(
         "PIPESTATUS",
@@ -90,7 +85,10 @@ fn wait_process(core: &mut ShellCore, child: Pid) -> WaitStatus {
         Ok(WaitStatus::Exited(_pid, status)) => status,
         Ok(WaitStatus::Signaled(pid, signal, coredump)) => error::signaled(pid, signal, coredump),
         Ok(WaitStatus::Stopped(pid, signal)) => {
-            eprintln!("Stopped Pid: {pid:?}, Signal: {signal:?}");
+            match env::var("SUSH_COMPAT_TEST_MODE").as_deref() {
+                Ok("1") => {}
+                _ => eprintln!("Stopped Pid: {pid:?}, Signal: {signal:?}"),
+            }
             148
         }
         Ok(unsupported) => {
@@ -118,10 +116,10 @@ fn set_foreground(core: &mut ShellCore) -> Result<(), ExecError> {
     let pgid = unistd::getpgid(Some(Pid::from_raw(0)))
         .unwrap_or_else(|_| panic!("{}", error::internal("cannot get pgid")));
 
-    if let Ok(n) = core.fds.tcgetpgrp(*fd) {
-        if n == pgid {
-            return Ok(());
-        }
+    if let Ok(n) = core.fds.tcgetpgrp(*fd)
+        && n == pgid
+    {
+        return Ok(());
     }
 
     signal::ignore(Signal::SIGTTOU); //SIGTTOUを無視
@@ -140,48 +138,40 @@ pub fn set_pgid(core: &mut ShellCore, pid: Pid, pgid: Pid) {
     }
 }
 
-fn show_time(core: &ShellCore) {
-    let real_end_time = clock_gettime(ClockId::CLOCK_MONOTONIC).unwrap();
-
-    let core_usage = resource::getrusage(UsageWho::RUSAGE_SELF).unwrap();
-    let children_usage = resource::getrusage(UsageWho::RUSAGE_CHILDREN).unwrap();
-
-    let real_diff = real_end_time - core.measured_time.real;
-    eprintln!(
-        "\nreal\t{}m{}.{:06}s",
-        real_diff.tv_sec() / 60,
-        real_diff.tv_sec() % 60,
-        real_diff.tv_nsec() / 1000
-    );
-    let user_diff = core_usage.user_time() + children_usage.user_time() - core.measured_time.user;
-    eprintln!(
-        "user\t{}m{}.{:06}s",
-        user_diff.tv_sec() / 60,
-        user_diff.tv_sec() % 60,
-        user_diff.tv_usec()
-    );
-    let sys_diff = core_usage.system_time() + children_usage.system_time() - core.measured_time.sys;
-    eprintln!(
-        "sys \t{}m{}.{:06}s",
-        sys_diff.tv_sec() / 60,
-        sys_diff.tv_sec() % 60,
-        sys_diff.tv_usec()
-    );
-}
-
 pub fn exec_command(args: &[String], core: &mut ShellCore, fullpath: &str) -> ! {
-    let cargs = c_string::to_cargs(args);
+    if file_check::is_dir(&args[0]) {
+        exit::is_a_dir(&args[0], core);
+    }
+
+    let cargs = string_binary::to_cargs(args);
     let cfullpath = CString::new(fullpath.to_string()).unwrap();
+
+    if let Some(path) = core.exec_command_path_bkup.as_ref() {
+        let _ = core.db.set_param("PATH", path, Some(0));
+        unsafe {
+            env::set_var("PATH", path);
+        }
+    }
 
     if !fullpath.is_empty() {
         let _ = unistd::execv(&cfullpath, &cargs);
     }
-    let result = unistd::execvp(&cargs[0], &cargs);
 
-    match result {
+    match unistd::execvp(&cargs[0], &cargs) {
         Err(Errno::E2BIG) => exit::arg_list_too_long(&args[0], core),
         Err(Errno::EACCES) => exit::permission_denied(&args[0], core),
-        Err(Errno::ENOENT) => run_command_not_found(&args[0], core),
+        Err(Errno::ENOENT) => {
+            if core
+                .db
+                .get_param("PATH")
+                .unwrap_or("".to_string())
+                .is_empty()
+            {
+                ExecError::NoFile(args[0].clone()).print(core);
+                process::exit(127);
+            }
+            run_command_not_found(&args[0], core)
+        }
         Err(err) => {
             eprintln!("Failed to execute. {err:?}");
             process::exit(127)

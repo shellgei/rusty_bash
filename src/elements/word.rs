@@ -2,33 +2,18 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod brace_expansion;
+pub mod mode;
 pub mod path_expansion;
 mod split;
 pub mod substitution;
 pub mod tilde_expansion;
 
+use self::mode::WordMode;
 use super::subword::Subword;
 use crate::elements::subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{utils, Feeder, ShellCore};
-
-#[derive(Debug, Clone)]
-pub enum WordMode {
-    Alias,
-//    AlterWord,
-    Arithmetic,
-    AssocIndex,
-    EvalLet,
-    CompgenF,
-    ReadCommand,
-    Heredoc,
-    RightOfSubstitution,
-    Value,
-    PermitAnyChar,
-    //ReparseOfSubstitution,
-    ParamOption(Vec<String>),
-}
+use crate::{Feeder, ShellCore, utils};
 
 #[derive(Debug, Clone, Default)]
 pub struct Word {
@@ -146,10 +131,11 @@ impl Word {
         Ok(w.make_glob_string())
     }
 
-    pub fn set_pipe(&mut self, core: &mut ShellCore) {
+    pub fn set_pipe(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         for sw in self.subwords.iter_mut() {
-            sw.set_pipe(core);
+            sw.set_pipe(core)?;
         }
+        Ok(())
     }
 
     pub fn dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
@@ -266,22 +252,8 @@ impl Word {
     fn pre_check(feeder: &mut Feeder, mode: &Option<WordMode>) -> bool {
         if feeder.starts_with("#") && mode.is_none() || feeder.is_empty() {
             return false;
-        }
-
-        match mode {
-            Some(WordMode::Arithmetic) 
-            //| Some(WordMode::AlterWord) 
-            | Some(WordMode::CompgenF) => {
-                if feeder.starts_with("}") {
-                    return false;
-                }
-            }
-            Some(WordMode::ParamOption(v)) => {
-                if feeder.starts_withs(v) {
-                    return false;
-                }
-            }
-            _ => {}
+        } else if let Some(m) = mode {
+            return m.word_pre_check(feeder);
         }
         true
     }
@@ -289,27 +261,10 @@ impl Word {
     fn post_check(feeder: &mut Feeder, core: &mut ShellCore, mode: &Option<WordMode>) -> bool {
         if feeder.is_empty() {
             return false;
+        } else if let Some(m) = mode {
+            return m.word_post_check(feeder, core);
         }
 
-        match mode {
-            Some(WordMode::Arithmetic) | Some(WordMode::CompgenF) => {
-                if feeder.starts_withs(&["]", "}"]) || feeder.scanner_math_symbol(core) != 0 {
-                    return false;
-                }
-            },
-            /*
-            Some(WordMode::AlterWord) => {
-                if feeder.starts_with("}") {
-                    return false;
-                }
-            },*/
-            Some(WordMode::ParamOption(v)) => {
-                if feeder.starts_withs(v) {
-                    return false;
-                }
-            }
-            _ => {}
-        }
         true
     }
 

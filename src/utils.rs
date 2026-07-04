@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 pub mod arg;
-pub mod c_string;
 pub mod clock;
 pub mod directory;
 pub mod exit;
@@ -10,17 +9,19 @@ pub mod file;
 pub mod file_check;
 pub mod glob;
 pub mod restricted_shell;
-pub mod splitter;
+pub mod string_binary;
 
-use libc;
-use crate::{Feeder, ShellCore};
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::error::exec::ExecError;
 use crate::error::input::InputError;
+use crate::{Feeder, Script, ShellCore};
 use faccess::PathExt;
 use io_streams::StreamReader;
 use std::io::Read;
 use std::path::Path;
+use std::sync::mpsc;
+use std::time::Duration;
+use std::{thread, time};
 
 pub fn reserved(w: &str) -> bool {
     matches!(
@@ -130,17 +131,6 @@ pub fn is_param(s: &str) -> bool {
     }
 
     is_var(s)
-    /*
-    /* variable */
-    if first_ch.is_ascii_digit() {
-        return false;
-    }
-
-    let name_c = |c: char| {
-        c.is_ascii_lowercase() || c.is_ascii_uppercase() || c.is_ascii_digit() || '_' == c
-    };
-    !s.chars().any(|c| !name_c(c))
-        */
 }
 
 pub fn is_var(s: &str) -> bool {
@@ -158,7 +148,20 @@ pub fn is_var(s: &str) -> bool {
     !s.chars().any(|c| !name_c(c))
 }
 
-pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
+pub fn read_line_stdin_unbuffered(
+    delim: &str,
+    timeout: Option<f32>,
+    subshell: bool,
+    limit: &mut usize,
+) -> Result<String, InputError> {
+    if let Some(timeout) = timeout {
+        if subshell {
+            return read_line_stdin_unbuffered_thread(delim, timeout, limit);
+        } else {
+            return read_line_stdin_unbuffered_nonblock(delim, timeout, limit);
+        }
+    }
+
     let mut line = vec![];
     let mut ch: [u8; 1] = Default::default();
     let mut stdin = StreamReader::stdin().unwrap();
@@ -178,7 +181,8 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
             }
             Ok(_) => {
                 line.push(ch[0]);
-                if d == ch[0] {
+                *limit -= 1;
+                if d == ch[0] || *limit == 0 {
                     break;
                 }
             }
@@ -189,6 +193,110 @@ pub fn read_line_stdin_unbuffered(delim: &str) -> Result<String, InputError> {
     match String::from_utf8(line) {
         Ok(s) => Ok(s),
         Err(_) => Err(InputError::NotUtf8),
+    }
+}
+
+pub fn read_line_stdin_unbuffered_nonblock(
+    delim: &str,
+    timeout: f32,
+    limit: &mut usize,
+) -> Result<String, InputError> {
+    let start = clock::monotonic_time();
+
+    let mut stdin = termion::async_stdin();
+    let mut line = vec![];
+    let mut ch: [u8; 1] = Default::default();
+
+    let mut d = 10; //\n
+    if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+        d = c;
+    }
+
+    loop {
+        let cur = clock::monotonic_time();
+
+        if (cur - start).as_secs_f32() > timeout {
+            return Err(InputError::Timeout);
+        }
+
+        if timeout > 0.001 {
+            thread::sleep(time::Duration::from_millis(1));
+        }
+
+        match stdin.read(&mut ch) {
+            Ok(0) => {}
+            Ok(_) => {
+                line.push(ch[0]);
+                *limit -= 1;
+                if d == ch[0] || *limit == 0 {
+                    break;
+                }
+            }
+            Err(_) => return Err(InputError::Eof),
+        }
+    }
+
+    match String::from_utf8(line) {
+        Ok(s) => Ok(s),
+        Err(_) => Err(InputError::NotUtf8),
+    }
+}
+
+pub fn read_line_stdin_unbuffered_thread(
+    delim: &str,
+    timeout: f32,
+    limit: &mut usize,
+) -> Result<String, InputError> {
+    let (tx, rx) = mpsc::channel();
+    let delim = delim.to_string();
+
+    let mut limit_internal = *limit;
+
+    thread::spawn(move || {
+        let mut line = vec![];
+        let mut ch: [u8; 1] = Default::default();
+        let mut stdin = StreamReader::stdin().unwrap();
+
+        let mut d = 10; //\n
+        if let Some(Ok(c)) = delim.as_bytes().bytes().next() {
+            d = c;
+        }
+
+        loop {
+            match stdin.read(&mut ch) {
+                Ok(0) => {
+                    if line.is_empty() {
+                        return Err(InputError::Eof);
+                    }
+                    break;
+                }
+                Ok(_) => {
+                    line.push(ch[0]);
+                    limit_internal -= 1;
+                    if d == ch[0] || limit_internal == 0 {
+                        break;
+                    }
+                }
+                Err(_) => return Err(InputError::Eof),
+            }
+        }
+
+        match String::from_utf8(line) {
+            Ok(s) => {
+                let _: () = tx.send(s).unwrap();
+                Ok(())
+            }
+            Err(_) => Err(InputError::Eof),
+        }
+    });
+
+    match rx.recv_timeout(Duration::from_secs_f32(timeout)) {
+        Ok(line) => {
+            *limit -= line.len();
+            Ok(line)
+        }
+        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => Err(InputError::Timeout),
+        Err(_) => Err(InputError::Eof),
     }
 }
 
@@ -256,10 +364,10 @@ pub fn get_command_path(s: &str, core: &mut ShellCore) -> String {
 
 pub fn string_to_calculated_string(from: &str, core: &mut ShellCore) -> Result<String, ExecError> {
     let mut f = Feeder::new(from);
-    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")? {
-        if f.is_empty() {
-            return a.eval(core);
-        }
+    if let Some(mut a) = ArithmeticExpr::parse(&mut f, core, false, "")?
+        && f.is_empty()
+    {
+        return a.eval(core);
     }
 
     Err(ExecError::SyntaxError(f.consume(f.len())))
@@ -274,8 +382,31 @@ pub fn gen_not_exist_var(core: &mut ShellCore) -> String {
 }
 
 pub fn groups() -> Vec<String> {
-    let num = unsafe{libc::getgroups(0, ::std::ptr::null_mut())};
+    let num = unsafe { libc::getgroups(0, ::std::ptr::null_mut()) };
     let mut groups = vec![0; num as usize];
-    unsafe{libc::getgroups(num, groups.as_mut_ptr())};
+    unsafe { libc::getgroups(num, groups.as_mut_ptr()) };
     groups.iter().map(|e| e.to_string()).collect()
+}
+
+pub fn run_error_script(core: &mut ShellCore) {
+    if core.error_script.is_empty() {
+        return;
+    }
+
+    core.error_script_run = true;
+    let mut feeder = Feeder::new(&core.error_script);
+    match Script::parse(&mut feeder, core, true) {
+        Ok(Some(mut s)) => {
+            if let Err(e) = s.exec(core) {
+                e.print(core);
+            }
+        }
+        Err(e) => {
+            e.print(core);
+        }
+        Ok(None) => {}
+    };
+
+    core.db.exit_status = 0;
+    core.error_script_run = false;
 }

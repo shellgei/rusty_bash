@@ -1,37 +1,64 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
+pub mod subscript;
+
 use crate::core::database::data::uninit::Uninit;
+use crate::elements::parameter::subscript::Subscript;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::utils;
 use crate::utils::arg;
 use crate::{Feeder, ShellCore};
-use super::subscript::Subscript;
 
 #[derive(Debug, Clone, Default)]
-pub struct Variable {
+pub struct Parameter {
     pub text: String,
     pub name: String,
     pub index: Option<Subscript>,
     pub lineno: usize,
 }
 
-impl Variable {
+impl Parameter {
     pub fn check_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let nameref = match core.db.get_nameref(&self.name)? {
             Some(nref) => nref,
             None => return Ok(()),
         };
 
-        if ! nameref.contains('[') {
+        if !nameref.contains('[') {
             self.name = nameref;
             return Ok(());
-        }else {
+        } else {
             let mut f = Feeder::new(&nameref);
             if let Some(v) = Self::parse(&mut f, core)? {
                 self.name = v.name;
                 self.index = v.index;
             }
+        }
+
+        Ok(())
+    }
+
+    pub fn solve_nameref(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        let mut circular_check_vec = vec![];
+        let org_name = self.name.clone();
+        loop {
+            let bkup = self.name.clone();
+            self.check_nameref(core)?;
+            if self.name == bkup {
+                self.name = utils::gen_not_exist_var(core);
+            }
+
+            if circular_check_vec.contains(&self.name) {
+                ExecError::CircularNameRef(org_name).print(core);
+                self.name = utils::gen_not_exist_var(core);
+                break;
+            }
+            if !core.db.exist_nameref(&self.name) {
+                break;
+            }
+            circular_check_vec.push(self.name.clone());
         }
 
         Ok(())
@@ -137,7 +164,7 @@ impl Variable {
 
         if a_opt || (!la_opt && self.index.is_some()) {
             let data = match prev.is_empty() {
-                true  => None,
+                true => None,
                 false => Some(prev),
             };
             return core.db.init_array(&self.name, data, scope, i_opt);
@@ -152,27 +179,23 @@ impl Variable {
         }
 
         match prev.len() {
-            0 => {
-                match i_opt {
-                    true =>  core.db.init_as_num(&self.name, "", scope),
-                    false => {
-                        let mut opts = String::new();
-                        if a_opt {
-                            opts.push('a');
-                        }
-                        if la_opt {
-                            opts.push('A');
-                        }
-                        let d = Box::new(Uninit::new(&opts));
-                        core.db.set_entry(scope.unwrap_or(0), &self.name, d)
-                    },
+            0 => match i_opt {
+                true => core.db.init_as_num(&self.name, "", scope),
+                false => {
+                    let mut opts = String::new();
+                    if a_opt {
+                        opts.push('a');
+                    }
+                    if la_opt {
+                        opts.push('A');
+                    }
+                    let d = Box::new(Uninit::new(&opts));
+                    core.db.set_entry(scope.unwrap_or(0), &self.name, d)
                 }
             },
-            _ => {
-                match i_opt {
-                    true => core.db.init_as_num(&self.name, &prev[0], scope),
-                    false => core.db.set_param(&self.name, &prev[0], scope),
-                }
+            _ => match i_opt {
+                true => core.db.init_as_num(&self.name, &prev[0], scope),
+                false => core.db.set_param(&self.name, &prev[0], scope),
             },
         }
     }

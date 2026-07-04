@@ -5,9 +5,9 @@ use super::pipeline::Pipeline;
 use crate::core::jobtable::JobEntry;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::signal;
+//use crate::signal;
 use crate::utils::exit;
-use crate::{proc_ctrl, Feeder, ShellCore};
+use crate::{Feeder, ShellCore, proc_ctrl};
 use nix::sys::wait::WaitStatus;
 use nix::unistd;
 use nix::unistd::{ForkResult, Pid};
@@ -38,7 +38,7 @@ impl Job {
         let mut do_next = true;
         let susp_e_option = core.suspend_e_option;
 
-        signal::check_trap(core);
+        //signal::check_trap(core);
 
         for (pipeline, end) in self.pipelines.iter_mut().zip(self.pipeline_ends.iter()) {
             if core.return_flag {
@@ -52,8 +52,8 @@ impl Job {
             core.suspend_e_option = susp_e_option || end == "&&" || end == "||";
             if do_next {
                 core.jobtable_check_status()?;
-                let (pids, exclamation, time, err) = pipeline.exec(core, pgid);
-                let waitstatuses = proc_ctrl::wait_pipeline(core, pids.clone(), exclamation, time);
+                let (pids, exclamation, err) = pipeline.exec(core, pgid);
+                let waitstatuses = proc_ctrl::wait_pipeline(core, pids.clone(), exclamation);
 
                 Self::check_stop(core, &pipeline.get_one_line_text(), &pids, &waitstatuses);
 
@@ -63,9 +63,9 @@ impl Job {
             }
 
             do_next = (core.db.exit_status == 0) == (end == "&&");
-            signal::check_trap(core);
+            //signal::check_trap(core);
         }
-        signal::check_trap(core);
+        //signal::check_trap(core);
         Ok(())
     }
 
@@ -91,7 +91,7 @@ impl Job {
     }
 
     fn exec_bg(&mut self, core: &mut ShellCore, pgid: Pid) {
-        let backup = core.tty_fd.clone();//core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
+        let backup = core.tty_fd; //core.tty_fd.as_ref().map(|fd| fd.try_clone().unwrap());
         core.tty_fd = None;
 
         let pids = if self.pipelines.len() == 1 {
@@ -134,18 +134,19 @@ impl Job {
     }
 
     fn exec_fork_bg(&mut self, core: &mut ShellCore, pgid: Pid) -> Result<Option<Pid>, ExecError> {
-        match unsafe { unistd::fork()? } {
-            ForkResult::Child => {
+        match unsafe { unistd::fork() } {
+            Ok(ForkResult::Child) => {
                 core.initialize_as_subshell(Pid::from_raw(0), pgid);
                 if let Err(e) = self.exec(core, false) {
                     e.print(core);
                 }
                 exit::normal(core)
             }
-            ForkResult::Parent { child } => {
+            Ok(ForkResult::Parent { child }) => {
                 proc_ctrl::set_pgid(core, child, pgid);
                 Ok(Some(child))
             }
+            Err(e) => Err(ExecError::Errno("fork".to_string(), e)),
         }
     }
 
@@ -272,7 +273,7 @@ impl Job {
             true => {
                 ans.read_heredoc(feeder, core)?;
                 Ok(Some(ans))
-            },
+            }
             false => Ok(None),
         }
     }
