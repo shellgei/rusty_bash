@@ -96,7 +96,7 @@ fn last_resort(
     mode: &Option<WordMode>,
 ) -> Result<Option<Box<dyn Subword>>, ParseError> {
     match mode {
-        Some(WordMode::Exclude(v)) => {
+        Some(WordMode::PermitAnyUntil(v)) => {
             if feeder.is_empty() || feeder.starts_with_one_of(v) {
                 return Ok(None);
             }

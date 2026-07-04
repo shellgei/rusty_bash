@@ -1,11 +1,44 @@
 //SPDX-FileCopyrightText: 2026 Ryuichi Ueda <ryuichiueda@gmail.com>
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::elements::word::Word;
+use crate::{Feeder, ShellCore};
+use crate::elements::word::{Word, WordMode};
+use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 
 #[derive(Debug, Clone, Default)]
 pub struct Remove {
     pub text: String,
     pub symbol: String,
     pub pattern: Word,
+<<<<<<< HEAD
+=======
+}
+
+impl BracedParamExtension for Remove {
+    fn exec(&mut self, _: &Parameter, _: &str, _: &mut ShellCore)
+        -> Result<String, ExecError> {Ok("".to_string())}
+    fn boxed_clone(&self)
+        -> Box<dyn BracedParamExtension> {Box::new(Self::default())}
+    fn get_text(&self) -> String {"".to_string()}
+}
+
+impl Remove {
+    pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
+    -> Result<Option<Self>, ParseError> {
+        let len = feeder.scanner_parameter_remove_symbol();
+        if len == 0 { 
+            return Ok(None);
+        }   
+
+        let mut ans = Remove::default();
+        ans.symbol = feeder.consume(len);
+        ans.text += &ans.symbol.clone();
+
+        let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
+        ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &ans.pattern.text.clone();
+        dbg!("{:?}", &ans);
+        Ok(Some(ans))
+    }
+>>>>>>> afd741c2e3da70163128a77795bb7574152b5ed3
 }
