@@ -67,7 +67,9 @@ impl Command for SimpleCommand {
         }
 
         if ! (self.args.len() > 2 && self.args[0] == "trap" && self.args[2] == "DEBUG" ) {
-            trap::debug(core);
+            if ! trap::debug(core) {
+                return Ok(None);
+            }
         }
 
         if !self.args.is_empty() && self.args[0].starts_with("%") {

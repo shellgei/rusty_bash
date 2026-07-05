@@ -16,6 +16,7 @@ pub struct Trap {
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
     pub exit_script_run: bool,
     pub debug_script_run: bool,
+    pub debug_script_skip: bool,
     pub error_script_run: bool,
     pub return_script_run: bool,
 }
@@ -74,10 +75,10 @@ pub fn error(core: &mut ShellCore) {
     core.trap.error_script_run = false;
 }
 
-pub fn debug(core: &mut ShellCore) {
+pub fn debug(core: &mut ShellCore) -> bool {
     if ! core.trap.list.contains_key(&DEBUG) 
     || core.trap.debug_script_run {
-        return;
+        return true;
     }
 
     core.trap.debug_script_run = true;
@@ -87,8 +88,17 @@ pub fn debug(core: &mut ShellCore) {
     let lineno = core.db.get_param("LINENO").unwrap_or("0".to_string()).parse::<usize>().unwrap_or(0);
     feeder.lineno += lineno - 1;
     run_(&mut feeder, core);
+
     core.trap.list.insert(DEBUG, bkup);
     core.trap.debug_script_run = false;
+
+    if core.db.exit_status != 0 {
+        if core.shopts.query("extdebug") {
+            return false;
+        }
+    }
+
+    true
 }
 
 pub fn r#return(core: &mut ShellCore) {
