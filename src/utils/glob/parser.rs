@@ -151,6 +151,46 @@ fn oneof_to_string(inner: &Vec<MetaChar>) -> String {
     ans
 }
 
+fn col_to_range(inner: &mut Vec<MetaChar>) -> bool {
+    let len = inner.len();
+    if len < 3 {
+        return false;
+    }
+
+    for s in 0..len-2 {
+        let range = if let MetaChar::Normal('-') = inner[s+1] {
+            match (&inner[s], &inner[s+2]) {
+                ( MetaChar::CollatingSymbol(sc), MetaChar::Normal(ec) ) => {
+                    let sc = col_symbol_to_char(sc);
+                    Some(MetaChar::Range(sc, *ec))
+                },
+                ( MetaChar::Normal(sc), MetaChar::CollatingSymbol(ec) ) => {
+                    let ec = col_symbol_to_char(ec);
+                    Some(MetaChar::Range(*sc, ec))
+                },
+                ( MetaChar::CollatingSymbol(sc), MetaChar::CollatingSymbol(ec) ) => {
+                    let sc = col_symbol_to_char(sc);
+                    let ec = col_symbol_to_char(ec);
+                    Some(MetaChar::Range(sc, ec))
+                },
+                _ => {None},
+            }
+        }else{
+            None
+        };
+
+        if range.is_some() {
+            for _ in 0..3 {
+                inner.remove(s);
+            }
+            inner.insert(s, range.unwrap());
+            return true;
+        }
+    }
+
+    false
+}
+
 fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     if !pattern.starts_with("[") {
         return false;
@@ -171,6 +211,8 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
                 ans.push(GlobElem::Normal(s));
                 return true;
             }
+
+            while col_to_range(&mut inner) {}
 
             ans.push(GlobElem::OneOf(!not, inner));
             return true;
@@ -240,4 +282,12 @@ fn consume(remaining: &mut String, cutpos: usize) -> String {
     *remaining = remaining.split_off(cutpos);
 
     cut
+}
+
+fn col_symbol_to_char(symbol: &str) -> char {
+    if symbol == "hyphen" {
+        return '-';
+    }
+
+    symbol.chars().nth(0).unwrap()
 }

@@ -80,7 +80,7 @@ fn compare_head(cand: &str, c: &MetaChar) -> bool {
 }
 
 fn range_check(from: char, to: char, c: char) -> bool {
-    if ('0' <= from && from <= to && to <= '9')
+    if ('!' <= from && from <= to && to <= '9')
         || ('a' <= from && from <= to && to <= 'z')
         || ('A' <= from && from <= to && to <= 'Z')
     {
