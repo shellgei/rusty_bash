@@ -19,6 +19,7 @@ pub enum MetaChar {
     Range(char, char),
     CharClass(String),
     CollatingSymbol(String),
+    EquivalenceClass(char),
 }
 
 pub fn parse_and_compare(word: &str, pattern: &str, extglob: bool) -> bool {

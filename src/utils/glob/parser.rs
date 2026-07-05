@@ -67,6 +67,34 @@ fn cut_col_symbol(pattern: &mut String) -> Option<MetaChar> {
     None
 }
 
+fn cut_equiv_class(pattern: &mut String) -> Option<MetaChar> {
+    if ! pattern.starts_with("[=") {
+        return None;
+    }
+
+    let len;
+    let ch;
+    if let Some(c) = pattern.chars().nth(2) {
+        ch = c;
+        len = ch.len_utf8();
+    }else{
+        return None;
+    }
+
+    if let Some('=') = pattern.chars().nth(3) {
+    }else{
+        return None;
+    }
+
+    if let Some(']') = pattern.chars().nth(4) {
+    }else{
+        return None;
+    }
+
+    consume(pattern, len + 4);
+    Some(MetaChar::EquivalenceClass(ch))
+}
+
 fn cut_metachar(pattern: &mut String) -> Option<MetaChar> {
     if pattern.starts_with("]") {
         return None;
@@ -80,6 +108,12 @@ fn cut_metachar(pattern: &mut String) -> Option<MetaChar> {
 
     if pattern.starts_with("[.")
         && let Some(cls) = cut_col_symbol(pattern)
+    {
+        return Some(cls);
+    }
+
+    if pattern.starts_with("[=")
+        && let Some(cls) = cut_equiv_class(pattern)
     {
         return Some(cls);
     }
@@ -284,7 +318,7 @@ fn consume(remaining: &mut String, cutpos: usize) -> String {
     cut
 }
 
-fn col_symbol_to_char(symbol: &str) -> char {
+fn col_symbol_to_char(symbol: &str) -> char { //TODO: complete!
     if symbol == "hyphen" {
         return '-';
     }else if symbol == "space" {

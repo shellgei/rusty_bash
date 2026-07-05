@@ -76,6 +76,7 @@ fn compare_head(cand: &str, c: &MetaChar) -> bool {
         MetaChar::Range(f, t) => range_check(*f, *t, head),
         MetaChar::CharClass(cls) => charclass_check(cls, head),
         MetaChar::CollatingSymbol(s) => col_symbol_check(s, head),
+        MetaChar::EquivalenceClass(c) => equiv_class_check(*c, head),
     }
 }
 
@@ -110,7 +111,7 @@ fn charclass_check(cls: &str, c: char) -> bool {
     }
 }
 
-fn col_symbol_check(symbol: &str, c: char) -> bool {
+fn col_symbol_check(symbol: &str, c: char) -> bool { //TODO: complete!
     if symbol == "hyphen" {
         return c == '-';
     }else if symbol == "space" {
@@ -122,4 +123,8 @@ fn col_symbol_check(symbol: &str, c: char) -> bool {
     }
 
     symbol == c.to_string()
+}
+
+fn equiv_class_check(cls: char, c: char) -> bool { //TODO: complete!
+    cls == c
 }
