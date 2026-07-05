@@ -33,7 +33,7 @@ impl Substr {
         }
         self.text += &feeder.consume(1);
 
-        let mode = WordMode::Exclude(vec!["}".to_string()]);
+        let mode = WordMode::PermitAnyUntil(vec!["}".to_string()]);
         self.length = Some( Word::parse(feeder, core, Some(mode))?.unwrap_or(Word::default()) );
         self.text += &self.length.as_mut().unwrap().text.clone();
 
@@ -48,7 +48,7 @@ impl Substr {
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
 
-        let mode = WordMode::Exclude(vec![":".to_string(), "}".to_string()]);
+        let mode = WordMode::PermitAnyUntil(vec![":".to_string(), "}".to_string()]);
         ans.offset = Word::parse(feeder, core, Some(mode))?.unwrap_or(Word::default());
         ans.text += &ans.offset.text.clone();
         ans.eat_length(feeder, core)?;
