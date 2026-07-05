@@ -75,6 +75,7 @@ fn compare_head(cand: &str, c: &MetaChar) -> bool {
         MetaChar::Normal(c) => head == *c,
         MetaChar::Range(f, t) => range_check(*f, *t, head),
         MetaChar::CharClass(cls) => charclass_check(cls, head),
+        MetaChar::CollatingSymbol(s) => col_symbol_check(s, head),
     }
 }
 
@@ -107,4 +108,12 @@ fn charclass_check(cls: &str, c: char) -> bool {
         "[:xdigit:]" => c.is_ascii_hexdigit(),
         _ => false,
     }
+}
+
+fn col_symbol_check(symbol: &str, c: char) -> bool {
+    if symbol == "hyphen" {
+        return c == '-';
+    }
+
+    symbol == c.to_string()
 }

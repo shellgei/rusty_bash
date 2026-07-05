@@ -41,6 +41,32 @@ fn cut_charclass(pattern: &mut String) -> Option<MetaChar> {
     None
 }
 
+fn cut_col_symbol(pattern: &mut String) -> Option<MetaChar> {
+    if ! pattern.starts_with("[.") {
+        return None;
+    }
+
+    let mut len = 2;
+    let mut last_dot = false;
+    for c in pattern.chars().skip(2) {
+        if c == ']' && last_dot {
+            let whole_part = consume(pattern, len + 1);
+            let whole_len = whole_part.len();
+            return Some(MetaChar::CollatingSymbol(whole_part[2..whole_len-2].to_string()));
+        }
+
+        if c == '.' {
+            last_dot = true;
+        }else if ! c.is_ascii_alphabetic() {
+            return None;
+        }
+
+        len += c.len_utf8();
+    }
+
+    None
+}
+
 fn cut_metachar(pattern: &mut String) -> Option<MetaChar> {
     if pattern.starts_with("]") {
         return None;
@@ -48,6 +74,12 @@ fn cut_metachar(pattern: &mut String) -> Option<MetaChar> {
 
     if pattern.starts_with("[:")
         && let Some(cls) = cut_charclass(pattern)
+    {
+        return Some(cls);
+    }
+
+    if pattern.starts_with("[.")
+        && let Some(cls) = cut_col_symbol(pattern)
     {
         return Some(cls);
     }
