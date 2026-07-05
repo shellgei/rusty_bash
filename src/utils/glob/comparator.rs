@@ -113,6 +113,12 @@ fn charclass_check(cls: &str, c: char) -> bool {
 fn col_symbol_check(symbol: &str, c: char) -> bool {
     if symbol == "hyphen" {
         return c == '-';
+    }else if symbol == "space" {
+        return c == ' ';
+    }else if symbol == "tab" {
+        return c == '\t';
+    }else if symbol == "newline" {
+        return c == '\n';
     }
 
     symbol == c.to_string()

@@ -57,7 +57,7 @@ fn cut_col_symbol(pattern: &mut String) -> Option<MetaChar> {
 
         if c == '.' {
             last_dot = true;
-        }else if ! c.is_ascii_alphabetic() {
+        }else if ! c.is_ascii_graphic() {
             return None;
         }
 
@@ -287,6 +287,12 @@ fn consume(remaining: &mut String, cutpos: usize) -> String {
 fn col_symbol_to_char(symbol: &str) -> char {
     if symbol == "hyphen" {
         return '-';
+    }else if symbol == "space" {
+        return ' ';
+    }else if symbol == "tab" {
+        return '\t';
+    }else if symbol == "newline" {
+        return '\n';
     }
 
     symbol.chars().nth(0).unwrap()
