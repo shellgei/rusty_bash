@@ -89,8 +89,9 @@ impl SimpleCommand {
         feeder.set_backup();
 
         while command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?
-            || ans.eat_substitution(feeder, core)?
-        {}
+            || ans.eat_substitution(feeder, core)?  {
+            ans.lineno = feeder.lineno;
+        }
 
         loop {
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;

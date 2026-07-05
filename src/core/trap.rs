@@ -6,7 +6,8 @@ use super::{Arc, AtomicBool, HashMap};
 
 pub const SPECIAL_TRAP_MIN: i32 = 1000;
 pub const ERROR: i32 = 1000;
-pub const DEBUG: i32 = 1001;
+pub const RETURN: i32 = 1001;
+pub const DEBUG: i32 = 1002;
 pub const SPECIAL_TRAP_MAX: i32 = DEBUG;
 
 #[derive(Default)]
@@ -16,13 +17,18 @@ pub struct Trap {
     pub exit_script_run: bool,
     pub debug_script_run: bool,
     pub error_script_run: bool,
+    pub return_script_run: bool,
 }
 
 impl Trap {
-    pub fn clear_for_subshell(&mut self) {
-        for n in [0, DEBUG, ERROR] {
+    pub fn clear_for_subshell(&mut self, extdebug: bool) {
+        for n in [0, DEBUG, RETURN, ERROR] {
             if self.list.contains_key(&n) {
                 self.list.remove(&n);
+            }
+
+            if extdebug {
+                return;
             }
         }
     }
@@ -85,27 +91,20 @@ pub fn debug(core: &mut ShellCore) {
     core.trap.debug_script_run = false;
 }
 
-/*
 pub fn r#return(core: &mut ShellCore) {
-    if core.error_script.is_empty() {
+    if ! core.trap.list.contains_key(&RETURN) 
+    || core.trap.return_script_run {
         return;
     }
 
-    core.error_script_run = true;
-    let mut feeder = Feeder::new(&core.error_script);
-    match Script::parse(&mut feeder, core, true) {
-        Ok(Some(mut s)) => {
-            if let Err(e) = s.exec(core) {
-                e.print(core);
-            }
-        }
-        Err(e) => {
-            e.print(core);
-        }
-        Ok(None) => {}
-    };
-
-    core.db.exit_status = 0;
-    core.error_script_run = false;
+    core.trap.return_script_run = true;
+    let bkup = core.trap.list[&RETURN].clone();
+    core.trap.list.remove(&RETURN);
+    let mut feeder = Feeder::new(&bkup);
+    //let lineno = core.db.get_param("LINENO").unwrap_or("0".to_string()).parse::<usize>().unwrap_or(0);
+    //feeder.lineno += lineno - 1;
+    run_(&mut feeder, core);
+    core.trap.list.insert(RETURN, bkup);
+    core.trap.return_script_run = false;
 }
-*/
+

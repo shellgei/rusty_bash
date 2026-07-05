@@ -56,8 +56,6 @@ impl Command for SimpleCommand {
             return Ok(None);
         }
 
-        trap::debug(core);
-
         core.db.set_param("BASH_COMMAND", &self.text, None)?;
 
         self.args.clear();
@@ -66,6 +64,10 @@ impl Command for SimpleCommand {
         for w in words.iter_mut() {
             w.set_pipe(core)?; //for >()
             self.set_arg(w, core)?;
+        }
+
+        if ! (self.args.len() > 2 && self.args[0] == "trap" && self.args[2] == "DEBUG" ) {
+            trap::debug(core);
         }
 
         if !self.args.is_empty() && self.args[0].starts_with("%") {

@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::core::trap;
 
 pub fn return_(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
@@ -9,6 +10,9 @@ pub fn return_(core: &mut ShellCore, args: &[String]) -> i32 {
         eprintln!("sush: return: can only `return' from a function or sourced script");
         return 2;
     }
+
+    trap::r#return(core);
+
     core.return_flag = true;
 
     if args.len() < 2 {
