@@ -16,7 +16,6 @@ pub struct Trap {
     pub trapped: Vec<(Arc<AtomicBool>, String)>,
     pub exit_script_run: bool,
     pub debug_script_run: bool,
-    pub debug_script_skip: bool,
     pub error_script_run: bool,
     pub return_script_run: bool,
 }
