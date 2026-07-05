@@ -82,6 +82,43 @@ fn cut_metachar(pattern: &mut String) -> Option<MetaChar> {
     None
 }
 
+fn false_charclass_check(inner: &Vec<MetaChar>) -> bool {
+    if inner.len() < 3 {
+        return false;
+    }
+
+    if let MetaChar::Normal(':') = inner[1] {
+        if let Some(MetaChar::Normal(':')) = inner.last() {
+            let len = inner.len() - 1;
+            for e in &inner[2..len] {
+                if let MetaChar::Normal(c) = e {
+                    if ! c.is_ascii_alphanumeric() {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+    }
+
+    false
+}
+
+fn oneof_to_string(inner: &Vec<MetaChar>) -> String {
+    let mut ans = String::new();
+
+    for e in inner.iter() {
+        match e {
+            MetaChar::Normal(c) => ans.push(*c),
+            _ => {},
+        }
+    }
+
+    ans.push(']');
+    ans
+}
+
 fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     if !pattern.starts_with("[") {
         return false;
@@ -96,6 +133,13 @@ fn eat_bracket(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     while !pattern.is_empty() {
         if pattern.starts_with("]") {
             *pattern = pattern.split_off(1);
+
+            if false_charclass_check(&inner) {
+                let s = oneof_to_string(&inner);
+                ans.push(GlobElem::Normal(s));
+                return true;
+            }
+
             ans.push(GlobElem::OneOf(!not, inner));
             return true;
         }
