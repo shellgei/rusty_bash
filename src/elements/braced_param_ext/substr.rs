@@ -52,9 +52,9 @@ impl BracedParamExtension for Substr {
             None => Ok(ans),
             Some(w) => {
                 let length = word_to_num(w, &ans, core)?;
-                let ans = ans.chars().enumerate()
-                            .filter(|(i, _)| (*i as i32) < length)
-                            .map(|(_, c)| c).collect::<String>();
+                let ans = ans.chars()
+                    .take(std::cmp::max(0, length) as usize)
+                    .collect();
 
                 Ok(ans)
             },
