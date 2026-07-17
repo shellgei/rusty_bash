@@ -14,10 +14,17 @@ pub struct Remove {
 
 impl BracedParamExtension for Remove {
     fn exec(&mut self, _: &Parameter, _: &str, _: &mut ShellCore)
-        -> Result<String, ExecError> {Ok("".to_string())}
-    fn boxed_clone(&self)
-        -> Box<dyn BracedParamExtension> {Box::new(Self::default())}
-    fn get_text(&self) -> String {"".to_string()}
+        -> Result<String, ExecError> {
+            Ok("".to_string())
+    }
+
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
+        Box::new(self.clone())
+    }
+
+    fn get_text(&self) -> String {
+        self.text.clone()
+    }
 }
 
 impl Remove {
