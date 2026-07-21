@@ -70,15 +70,10 @@ impl Word {
         Ok( Self::make_args(&mut ws)?.join(" ") )
     }
 
-    pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Option<String> {
-        match self.tilde_and_dollar_expansion(core) {
-            Ok(mut w) => w.make_unquoted_word(),
-            Err(e) => {
-                e.print(core);
-                None
-            }   
-        }   
-    } 
+    pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let mut w = self.tilde_and_dollar_expansion(core)?;
+        Ok(w.make_unquoted_word().unwrap_or_default())
+    }
 
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
         let mut w = self.clone();
