@@ -63,8 +63,8 @@ impl Remove {
         let mut text = text.to_string();
         let pattern = self
             .pattern
-            .eval_for_case_word(core)
-            .ok_or(ExecError::Other("evaluation error".to_string()))?;
+            .eval_for_case_word(core)?;
+            //.ok_or(ExecError::Other("evaluation error".to_string()))?;
         let extglob = core.shopts.query("extglob");
 
         if self.symbol.starts_with("##") {

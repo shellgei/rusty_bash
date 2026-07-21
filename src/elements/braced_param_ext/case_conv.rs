@@ -38,13 +38,15 @@ pub struct CaseConv {
 impl CaseConv {
     fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, ExecError> {
         if let Some(w) = &w {
+            return w.eval_for_case_word(core);
+            /*
             match w.eval_for_case_word(core) {
                 Some(s) => return Ok(s),
                 None => match w.subwords.len() {
                     0 => return Ok("".to_string()),
                     _ => return Err(ExecError::Other("parse error".to_string())),
                 },
-            }
+            }*/
         }
 
         Ok("".to_string())

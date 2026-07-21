@@ -31,10 +31,12 @@ impl Command for CaseCommand {
             eprintln!("\r{} case {} in\r", ps4, word.text);
         }
 
+        let w = word.eval_for_case_word(core)?;
+        /*
         let w = match word.eval_for_case_word(core) {
             Some(w) => w,
             _ => "".to_string(),
-        };
+        };*/
 
         let extglob = core.shopts.query("extglob");
 
