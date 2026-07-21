@@ -32,12 +32,6 @@ impl Command for CaseCommand {
         }
 
         let w = word.eval_for_case_word(core)?;
-        /*
-        let w = match word.eval_for_case_word(core) {
-            Some(w) => w,
-            _ => "".to_string(),
-        };*/
-
         let extglob = core.shopts.query("extglob");
 
         for e in &mut self.patterns_script_end {
