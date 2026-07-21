@@ -15,11 +15,8 @@ pub struct Remove {
 impl BracedParamExtension for Remove {
     fn exec(&mut self, _: &Parameter, _: &str, core: &mut ShellCore)
         -> Result<String, ExecError> {
-        let pattern = self
-            .pattern
-            .eval_for_case_word(core)?;
-            //.ok_or(ExecError::Other("evaluation error".to_string()))?;
-            Ok("".to_string())
+        let pattern = self.pattern.eval_for_case_word(core)?;
+        Ok("".to_string())
     }
 
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
