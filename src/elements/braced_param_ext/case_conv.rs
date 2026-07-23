@@ -38,7 +38,7 @@ pub struct CaseConv {
 impl CaseConv {
     fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, ExecError> {
         match w {
-            Some(w) => w.eval_for_case_word(core),
+            Some(w) => w.eval_as_pattern(core),
             None    => Ok("".to_string()),
         }
     }

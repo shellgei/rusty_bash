@@ -31,7 +31,7 @@ impl Command for CaseCommand {
             eprintln!("\r{} case {} in\r", ps4, word.text);
         }
 
-        let w = word.eval_for_case_word(core)?;
+        let w = word.eval_as_pattern(core)?;
         let extglob = core.shopts.query("extglob");
 
         for e in &mut self.patterns_script_end {

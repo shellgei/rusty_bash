@@ -96,7 +96,7 @@ impl Word {
         utils::string_to_calculated_string(&self.text, core)
     }
 
-    pub fn eval_for_case_word(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn eval_as_pattern(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut w = self.tilde_and_dollar_expansion(core)?;
         Ok(w.make_unquoted_word().unwrap_or_default())
     }
