@@ -17,7 +17,7 @@ impl BracedParamExtension for Remove {
     fn exec(&mut self, _: &Parameter, text: &str, core: &mut ShellCore)
         -> Result<String, ExecError> {
         let mut text = text.to_string();
-        let pattern = self.pattern.eval_for_case_word(core)?;
+        let pattern = self.pattern.eval_as_pattern(core)?;
 
         if self.symbol.starts_with("#") {
             let pat = glob::parse(&pattern);
