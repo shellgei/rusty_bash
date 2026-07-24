@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::utils::glob;
 use crate::elements::word::{Word, WordMode};
 use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 
@@ -17,7 +18,13 @@ impl BracedParamExtension for Remove {
         -> Result<String, ExecError> {
         let mut text = text.to_string();
         let pattern = self.pattern.eval_as_pattern(core)?;
-        dbg!("{:?}", &pattern);
+
+        if pattern.starts_with("#") {
+            let pat = glob::parse(&pattern);
+            let len = glob::match_length(&text, &pat, pattern.starts_with("##"));
+            text = text[len..].to_string();
+        }
+
         Ok(text)
     }
 
