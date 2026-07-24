@@ -14,22 +14,12 @@ pub fn compare(word: &String, pattern: &[GlobElem]) -> bool {
     comparator::shave_word(word, pattern).iter().any(|c| c.is_empty())
 }
 
-pub fn longest_match_length(word: &String, pattern: &[GlobElem]) -> usize {
-    word.len()
-        - comparator::shave_word(word, pattern)
-            .iter()
-            .map(|c| c.len())
-            .min()
-            .unwrap_or(word.len())
-}
-
-pub fn shortest_match_length(word: &String, pattern: &[GlobElem]) -> usize {
-    word.len()
-        - comparator::shave_word(word, pattern)
-            .iter()
-            .map(|c| c.len())
-            .max()
-            .unwrap_or(word.len())
+pub fn match_length(word: &String, pattern: &[GlobElem], longest: bool) -> usize {
+    let remaining_lengths = comparator::shave_word(word, pattern).into_iter().map(|c| c.len());
+    match longest {
+        true  => word.len() - remaining_lengths.min().unwrap_or(word.len()),
+        false => word.len() - remaining_lengths.max().unwrap_or(word.len()),
+    }
 }
 
 pub fn parse(pattern: &str) -> Vec<GlobElem> {
