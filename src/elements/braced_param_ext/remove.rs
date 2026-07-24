@@ -3,6 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::utils::glob;
+use crate::utils::glob::GlobElem;
 use crate::elements::word::{Word, WordMode};
 use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 
@@ -18,11 +19,13 @@ impl BracedParamExtension for Remove {
         -> Result<String, ExecError> {
         let mut text = text.to_string();
         let pattern = self.pattern.eval_as_pattern(core)?;
+        let pat = glob::parse(&pattern);
 
         if self.symbol.starts_with("#") {
-            let pat = glob::parse(&pattern);
             let len = glob::match_length(&text, &pat, self.symbol == "##");
             text = text[len..].to_string();
+        }else if self.symbol.starts_with("%") {
+            self.percent(&mut text, &pat);
         }
 
         Ok(text)
@@ -38,6 +41,25 @@ impl BracedParamExtension for Remove {
 }
 
 impl Remove {
+    pub fn percent(&self, text: &mut String, pattern: &[GlobElem]) {
+        let mut length = text.len();
+        let mut ans_length = length;
+
+        for ch in text.chars().rev() {
+            length -= ch.len_utf8();
+            let s = text[length..].to_string();
+
+            if glob::compare(&s, pattern) {
+                ans_length = length;
+                if self.symbol == "%" {
+                    break;
+                }
+            }
+        }
+
+        *text = text[0..ans_length].to_string();
+    } 
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_parameter_remove_symbol();
