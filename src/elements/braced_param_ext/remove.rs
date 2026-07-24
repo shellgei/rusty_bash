@@ -19,9 +19,9 @@ impl BracedParamExtension for Remove {
         let mut text = text.to_string();
         let pattern = self.pattern.eval_as_pattern(core)?;
 
-        if pattern.starts_with("#") {
+        if self.symbol.starts_with("#") {
             let pat = glob::parse(&pattern);
-            let len = glob::match_length(&text, &pat, pattern.starts_with("##"));
+            let len = glob::match_length(&text, &pat, self.symbol == "##");
             text = text[len..].to_string();
         }
 
