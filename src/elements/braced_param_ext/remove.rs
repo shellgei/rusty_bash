@@ -16,8 +16,8 @@ impl BracedParamExtension for Remove {
     fn exec(&mut self, _: &Parameter, text: &str, core: &mut ShellCore)
         -> Result<String, ExecError> {
         let mut text = text.to_string();
-        let pattern = self.pattern.eval_as_pattern(core)?;
-        dbg!("{:?}", &pattern);
+        let pat_str = self.pattern.eval_as_pattern(core)?;
+        dbg!("{:?}", &pat_str);
         Ok(text)
     }
 
