@@ -69,7 +69,8 @@ impl CaseConv {
     pub fn get_text(&self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let tmp = self.to_string(&self.pattern, core)?;
         let extglob = core.shopts.query("extglob");
-        let pattern = glob::parse(&tmp, extglob);
+        let nocasematch = core.shopts.query("nocasematch");
+        let pattern = glob::parse(&tmp, extglob, nocasematch);
 
         let mut start = 0;
         let mut ans = String::new();

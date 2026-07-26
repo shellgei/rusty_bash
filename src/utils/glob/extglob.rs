@@ -21,7 +21,7 @@ fn question(cands: &mut Vec<String>, patterns: &[String]) {
     let mut ans = cands.clone();
     for p in patterns {
         let mut tmp = cands.clone();
-        parser::parse(p, true)
+        parser::parse(p, true, false)
             .iter()
             .for_each(|w| comparator::shave(&mut tmp, w));
         ans.append(&mut tmp);
@@ -68,7 +68,7 @@ fn once(cands: &mut Vec<String>, patterns: &[String]) {
     let mut ans = vec![];
     for p in patterns {
         let mut tmp = cands.clone();
-        parser::parse(p, true)
+        parser::parse(p, true, false)
             .iter()
             .for_each(|w| comparator::shave(&mut tmp, w));
         ans.append(&mut tmp);

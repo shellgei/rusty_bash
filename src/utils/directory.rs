@@ -72,7 +72,8 @@ pub fn glob(dir: &str, pattern: &str, shopts: &Options) -> Vec<String> {
 
     let dotglob = shopts.query("dotglob");
     let extglob = shopts.query("extglob");
-    let pat = glob::parse(pattern, extglob);
+    //let nocasematch = shopts.query("nocasematch");
+    let pat = glob::parse(pattern, extglob, false);
     let mut ans: Vec<String> = files(dir)
         .iter()
         .filter(|f| !f.starts_with(".") || pattern.starts_with(".") || dotglob)
