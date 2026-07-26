@@ -104,7 +104,7 @@ impl Options {
         .iter()
         .map(|s| s.to_string())
         .collect();
-        //TODO: nocasematch and xpg_echo are dummy
+        //TODO: xpg_echo is dummy
 
         options
     }

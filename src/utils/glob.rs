@@ -24,7 +24,10 @@ pub enum MetaChar {
 
 pub fn parse_and_compare(word: &str, pattern: &str, extglob: bool, nocasematch: bool) -> bool {
     let pat = parser::parse(pattern, extglob, nocasematch);
-    compare(word, &pat)
+    match nocasematch {
+        true  => compare(&word.to_lowercase(), &pat),
+        false => compare(word, &pat),
+    }
 }
 
 pub fn compare(word: &str, pattern: &[GlobElem]) -> bool {
