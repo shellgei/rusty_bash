@@ -27,7 +27,7 @@ impl Subword for DoubleQuoted {
     fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         self.connect_array(core)?;
 
-        let mut word = match self.subwords.iter().any(|sw| sw.is_array()) {
+        let mut word = match self.subwords.iter_mut().any(|sw| sw.is_array(core)) {
             true => Word::from(self.replace_array(core)?),
             false => Word::from(self.subwords.clone()),
         };
@@ -108,7 +108,7 @@ impl DoubleQuoted {
         let mut flg = false;
 
         for sw in &mut self.subwords {
-            if !sw.is_array() {
+            if !sw.is_array(core) {
                 ans.push(sw.boxed_clone());
                 continue;
             }
