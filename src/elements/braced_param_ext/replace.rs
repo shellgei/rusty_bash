@@ -18,7 +18,6 @@ pub struct Replace {
     pub all_replace: bool,
     pub replace_from: Option<Word>,
     pub replace_to: Option<Word>,
-    pub has_replace_to: bool,
 }
 
 impl BracedParamExtension for Replace {
@@ -202,7 +201,6 @@ impl Replace {
             return Ok(Some(ans));
         }
         ans.text += &feeder.consume(1);
-        ans.has_replace_to = true;
 
         if let Some(w) = Word::parse(
             feeder,
