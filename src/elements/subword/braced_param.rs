@@ -72,7 +72,11 @@ impl Subword for BracedParam {
         self.text = text.to_string();
     }
 
-    fn is_array(&self) -> bool {
+    fn is_array(&mut self, core: &mut ShellCore) -> bool {
+        if self.indirect {
+            let _ = self.indirect_preparation(core);
+        }
+
         self.treat_as_array
     }
 

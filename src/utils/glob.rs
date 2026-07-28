@@ -22,9 +22,12 @@ pub enum MetaChar {
     EquivalenceClass(char),
 }
 
-pub fn parse_and_compare(word: &str, pattern: &str, extglob: bool) -> bool {
-    let pat = parser::parse(pattern, extglob);
-    compare(word, &pat)
+pub fn parse_and_compare(word: &str, pattern: &str, extglob: bool, nocasematch: bool) -> bool {
+    let pat = parser::parse(pattern, extglob, nocasematch);
+    match nocasematch {
+        true  => compare(&word.to_lowercase(), &pat),
+        false => compare(word, &pat),
+    }
 }
 
 pub fn compare(word: &str, pattern: &[GlobElem]) -> bool {
@@ -51,6 +54,6 @@ pub fn shortest_match_length(word: &str, pattern: &[GlobElem]) -> usize {
             .unwrap_or(word.len())
 }
 
-pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
-    parser::parse(pattern, extglob)
+pub fn parse(pattern: &str, extglob: bool, nocasematch: bool) -> Vec<GlobElem> {
+    parser::parse(pattern, extglob, nocasematch)
 }

@@ -316,10 +316,11 @@ impl ConditionalExpr {
         };
 
         let extglob = core.shopts.query("extglob");
+        let nocasematch = core.shopts.query("nocasematch");
         if op.starts_with("=") || op == "!=" || op == "<" || op == ">" {
             let ans = match op {
-                "==" | "=" => glob::parse_and_compare(&left, &right, extglob),
-                "!=" => !glob::parse_and_compare(&left, &right, extglob),
+                "==" | "=" => glob::parse_and_compare(&left, &right, extglob, nocasematch),
+                "!=" => !glob::parse_and_compare(&left, &right, extglob, nocasematch),
                 ">" => left > right,
                 "<" => left < right,
                 _ => false,

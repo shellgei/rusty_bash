@@ -289,8 +289,11 @@ fn eat_chars(pattern: &mut String, ans: &mut Vec<GlobElem>) -> bool {
     true
 }
 
-pub fn parse(pattern: &str, extglob: bool) -> Vec<GlobElem> {
-    let pattern = pattern.to_string();
+pub fn parse(pattern: &str, extglob: bool, nomatchcase: bool) -> Vec<GlobElem> {
+    let mut pattern = pattern.to_string();
+    if nomatchcase {
+        pattern = pattern.to_lowercase();
+    }
     let mut remaining = pattern.to_string();
     let mut ans = vec![];
 

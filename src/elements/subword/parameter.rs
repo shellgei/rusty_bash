@@ -34,7 +34,7 @@ impl Subword for Parameter {
         Ok(())
     }
 
-    fn is_array(&self) -> bool {
+    fn is_array(&mut self, _: &mut ShellCore) -> bool {
         self.text == "$@"
     }
 

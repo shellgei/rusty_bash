@@ -111,7 +111,7 @@ pub trait Subword {
     fn is_name(&self) -> bool {
         false
     }
-    fn is_array(&self) -> bool {
+    fn is_array(&mut self, _: &mut ShellCore) -> bool {
         false
     }
     fn get_elem(&mut self) -> Vec<String> {

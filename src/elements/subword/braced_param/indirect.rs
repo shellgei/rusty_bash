@@ -31,6 +31,7 @@ impl BracedParam {
 
         self.indirect_replace(core)?;
         self.check()?;
+
         Ok(true)
     }
 
@@ -42,13 +43,19 @@ impl BracedParam {
         sw.num = false;
 
         sw.substitute(core)?;
+        self.indirect = false;
 
         if sw.text.contains('[') {
-            let mut feeder = Feeder::new(&("${".to_owned() + &sw.text + "}"));
+            self.text = ("${".to_owned() + &sw.text + "}").to_string();
+            let mut feeder = Feeder::new(&self.text);
             if let Ok(Some(mut bp)) = BracedParam::parse(&mut feeder, core) {
                 bp.substitute(core)?;
                 self.param.name = bp.param.name;
-                self.param.index = bp.param.index;
+                self.param.index = bp.param.index.clone();
+
+                if let Some(idx) = bp.param.index.as_ref() {
+                    self.treat_as_array = idx.text == "[@]";
+                }
             } else {
                 return Err(ExecError::InvalidName(sw.text.clone()));
             }

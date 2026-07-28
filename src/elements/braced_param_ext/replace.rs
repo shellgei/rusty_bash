@@ -122,8 +122,9 @@ impl Replace {
 
     pub fn get_text(&self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let extglob = core.shopts.query("extglob");
+        let nocasematch = core.shopts.query("nocasematch");
         let tmp = self.to_string(&self.replace_from, core)?;
-        let pattern = glob::parse(&tmp, extglob);
+        let pattern = glob::parse(&tmp, extglob, nocasematch);
         let string_to = self.to_string(&self.replace_to, core)?;
 
         if self.head_only_replace {
