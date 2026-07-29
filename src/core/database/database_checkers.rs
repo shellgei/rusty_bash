@@ -48,6 +48,11 @@ impl DataBase {
             return n < self.position_parameters[scope].len();
         }
 
+        if name.len() == 1
+        && "$?*@#-!_".contains(name.chars().nth(0).unwrap()) {
+            return true;
+        }
+
         let num = self.params.len();
         for scope in (0..num).rev() {
             if self.params[scope].contains_key(name) {
