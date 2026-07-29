@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod remove;
-mod replace;
 mod substr;
 
 use crate::{Feeder, ShellCore};
@@ -12,7 +11,6 @@ use crate::error::parse::ParseError;
 use core::fmt;
 use core::fmt::Debug;
 use self::remove::Remove;
-use self::replace::Replace;
 use self::substr::Substr;
 
 impl Clone for Box<dyn BracedParamExtension> {
@@ -38,8 +36,6 @@ pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     if let Some(a) = Substr::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = Remove::parse(feeder, core)? {
-        Ok(Some(Box::new(a)))
-    } else if let Some(a) = Replace::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else {
         Ok(None)
