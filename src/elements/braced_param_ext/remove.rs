@@ -61,7 +61,7 @@ pub struct Remove {
 impl Remove {
     pub fn set(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut text = text.to_string();
-        let pattern = self.pattern.eval_as_pattern(core)?;
+        let pattern = self.pattern.eval_as_pattern(core).unwrap_or_default();
         let extglob = core.shopts.query("extglob");
         let nocasematch = core.shopts.query("nocasematch");
 
