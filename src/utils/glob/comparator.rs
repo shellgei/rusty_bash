@@ -75,11 +75,13 @@ fn compare_head(cand: &str, c: &MetaChar) -> bool {
         MetaChar::Normal(c) => head == *c,
         MetaChar::Range(f, t) => range_check(*f, *t, head),
         MetaChar::CharClass(cls) => charclass_check(cls, head),
+        MetaChar::CollatingSymbol(s) => col_symbol_check(s, head),
+        MetaChar::EquivalenceClass(c) => equiv_class_check(*c, head),
     }
 }
 
 fn range_check(from: char, to: char, c: char) -> bool {
-    if ('0' <= from && from <= to && to <= '9')
+    if ('!' <= from && from <= to && to <= '9')
         || ('a' <= from && from <= to && to <= 'z')
         || ('A' <= from && from <= to && to <= 'Z')
     {
@@ -107,4 +109,22 @@ fn charclass_check(cls: &str, c: char) -> bool {
         "[:xdigit:]" => c.is_ascii_hexdigit(),
         _ => false,
     }
+}
+
+fn col_symbol_check(symbol: &str, c: char) -> bool { //TODO: complete!
+    if symbol == "hyphen" {
+        return c == '-';
+    }else if symbol == "space" {
+        return c == ' ';
+    }else if symbol == "tab" {
+        return c == '\t';
+    }else if symbol == "newline" {
+        return c == '\n';
+    }
+
+    symbol == c.to_string()
+}
+
+fn equiv_class_check(cls: char, c: char) -> bool { //TODO: complete!
+    cls == c
 }

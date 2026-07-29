@@ -61,22 +61,20 @@ pub struct Remove {
 impl Remove {
     pub fn set(&mut self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut text = text.to_string();
-        let pattern = self
-            .pattern
-            .eval_for_case_word(core)
-            .ok_or(ExecError::Other("evaluation error".to_string()))?;
+        let pattern = self.pattern.eval_as_pattern(core)?;
         let extglob = core.shopts.query("extglob");
+        let nocasematch = core.shopts.query("nocasematch");
 
         if self.symbol.starts_with("##") {
-            let pat = glob::parse(&pattern, extglob);
+            let pat = glob::parse(&pattern, extglob, nocasematch);
             let len = glob::longest_match_length(&text, &pat);
             text = text[len..].to_string();
         } else if self.symbol.starts_with("#") {
-            let pat = glob::parse(&pattern, extglob);
+            let pat = glob::parse(&pattern, extglob, nocasematch);
             let len = glob::shortest_match_length(&text, &pat);
             text = text[len..].to_string();
         } else if self.symbol.starts_with("%") {
-            self.percent(&mut text, &pattern, extglob);
+            self.percent(&mut text, &pattern, extglob, nocasematch);
         } else {
             return Err(ExecError::Other("unknown symbol".to_string()));
         }
@@ -84,7 +82,7 @@ impl Remove {
         Ok(text)
     }
 
-    pub fn percent(&self, text: &mut String, pattern: &str, extglob: bool) {
+    pub fn percent(&self, text: &mut String, pattern: &str, extglob: bool, nocasematch: bool) {
         let mut length = text.len();
         let mut ans_length = length;
 
@@ -92,7 +90,7 @@ impl Remove {
             length -= ch.len_utf8();
             let s = text[length..].to_string();
 
-            if glob::parse_and_compare(&s, pattern, extglob) {
+            if glob::parse_and_compare(&s, pattern, extglob, nocasematch) {
                 ans_length = length;
                 if self.symbol == "%" {
                     break;

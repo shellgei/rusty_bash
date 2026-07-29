@@ -16,7 +16,6 @@ pub struct Replace {
     pub symbol: String,
     pub replace_from: Option<Word>,
     pub replace_to: Option<Word>,
-    pub has_replace_to: bool,
 }
 
 impl BracedParamExtension for Replace {
@@ -74,17 +73,10 @@ impl BracedParamExtension for Replace {
 
 impl Replace {
     fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, ExecError> {
-        if let Some(w) = &w {
-            match w.eval_for_case_word(core) {
-                Some(s) => return Ok(s),
-                None => match w.subwords.len() {
-                    0 => return Ok("".to_string()),
-                    _ => return Err(ExecError::Other("parse error".to_string())),
-                },
-            }
+        match w {
+            Some(w) => w.eval_as_pattern(core),
+            None    => Ok("".to_string()),
         }
-
-        Ok("".to_string())
     }
 
     fn get_text_head(
@@ -128,8 +120,9 @@ impl Replace {
 
     pub fn get_text(&self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let extglob = core.shopts.query("extglob");
+        let nocasematch = core.shopts.query("nocasematch");
         let tmp = self.to_string(&self.replace_from, core)?;
-        let pattern = glob::parse(&tmp, extglob);
+        let pattern = glob::parse(&tmp, extglob, nocasematch);
         let string_to = self.to_string(&self.replace_to, core)?;
 
         if self.symbol == "/#" {
@@ -201,7 +194,6 @@ impl Replace {
             return Ok(Some(ans));
         }
         ans.text += &feeder.consume(1);
-        ans.has_replace_to = true;
 
         if let Some(w) = Word::parse(
             feeder,

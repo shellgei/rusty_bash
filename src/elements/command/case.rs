@@ -31,12 +31,9 @@ impl Command for CaseCommand {
             eprintln!("\r{} case {} in\r", ps4, word.text);
         }
 
-        let w = match word.eval_for_case_word(core) {
-            Some(w) => w,
-            _ => "".to_string(),
-        };
-
+        let w = word.eval_as_pattern(core)?;
         let extglob = core.shopts.query("extglob");
+        let nocasematch = core.shopts.query("nocasematch");
 
         for e in &mut self.patterns_script_end {
             for pattern in &mut e.0 {
@@ -50,7 +47,7 @@ impl Command for CaseCommand {
                             return Err(e);
                         }
                     };
-                    exec_script = glob::parse_and_compare(&w, &p, extglob);
+                    exec_script = glob::parse_and_compare(&w, &p, extglob, nocasematch);
                 }
 
                 if next || exec_script {

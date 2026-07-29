@@ -37,17 +37,10 @@ pub struct CaseConv {
 
 impl CaseConv {
     fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, ExecError> {
-        if let Some(w) = &w {
-            match w.eval_for_case_word(core) {
-                Some(s) => return Ok(s),
-                None => match w.subwords.len() {
-                    0 => return Ok("".to_string()),
-                    _ => return Err(ExecError::Other("parse error".to_string())),
-                },
-            }
+        match w {
+            Some(w) => w.eval_as_pattern(core),
+            None    => Ok("".to_string()),
         }
-
-        Ok("".to_string())
     }
 
     fn get_match_length(&self, text: &str, pattern: &[GlobElem], ch: char) -> usize {
@@ -76,7 +69,8 @@ impl CaseConv {
     pub fn get_text(&self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let tmp = self.to_string(&self.pattern, core)?;
         let extglob = core.shopts.query("extglob");
-        let pattern = glob::parse(&tmp, extglob);
+        let nocasematch = core.shopts.query("nocasematch");
+        let pattern = glob::parse(&tmp, extglob, nocasematch);
 
         let mut start = 0;
         let mut ans = String::new();

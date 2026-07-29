@@ -174,7 +174,8 @@ pub fn compgen(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if let Some(pattern) = exclude {
         let extglob = core.shopts.query("extglob");
-        ans.retain(|a| !glob::parse_and_compare(a, &pattern, extglob));
+        let nocasematch = core.shopts.query("nocasematch");
+        ans.retain(|a| !glob::parse_and_compare(a, &pattern, extglob, nocasematch));
     }
 
     if let Some(p) = prefix {
