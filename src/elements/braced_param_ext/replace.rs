@@ -13,9 +13,7 @@ use crate::{Feeder, ShellCore};
 #[derive(Debug, Clone, Default)]
 pub struct Replace {
     pub text: String,
-    pub head_only_replace: bool,
-    pub tail_only_replace: bool,
-    pub all_replace: bool,
+    pub symbol: String,
     pub replace_from: Option<Word>,
     pub replace_to: Option<Word>,
     pub has_replace_to: bool,
@@ -134,9 +132,9 @@ impl Replace {
         let pattern = glob::parse(&tmp, extglob);
         let string_to = self.to_string(&self.replace_to, core)?;
 
-        if self.head_only_replace {
+        if self.symbol == "/#" {
             return Self::get_text_head(text, &pattern, &string_to);
-        } else if self.tail_only_replace {
+        } else if self.symbol == "/%" {
             return Self::get_text_tail(text, &pattern, &string_to);
         }
 
@@ -151,7 +149,7 @@ impl Replace {
             }
 
             let len = glob::longest_match_length(&text[start..], &pattern);
-            if len != 0 && self.tail_only_replace {
+            if len != 0 && self.symbol == "/%" {
                 if len == text[start..].len() {
                     return Ok([&text[..start], &string_to[0..]].concat());
                 } else {
@@ -159,7 +157,7 @@ impl Replace {
                     start += ch.len_utf8();
                     continue;
                 }
-            } else if len != 0 && !self.all_replace {
+            } else if len != 0 && self.symbol != "//" {
                 return Ok([&text[..start], &string_to[0..], &text[start + len..]].concat());
             }
 
@@ -181,18 +179,12 @@ impl Replace {
         }
 
         let mut ans = Replace::default();
-
         ans.text += &feeder.consume(1);
-        if feeder.starts_with("/") {
+
+        if feeder.starts_with_one_of(&["/", "#", "%"]) {
             ans.text += &feeder.consume(1);
-            ans.all_replace = true;
-        } else if feeder.starts_with("#") {
-            ans.text += &feeder.consume(1);
-            ans.head_only_replace = true;
-        } else if feeder.starts_with("%") {
-            ans.text += &feeder.consume(1);
-            ans.tail_only_replace = true;
         }
+        ans.symbol = ans.text.clone();
 
         if let Some(w) = Word::parse(
             feeder,
