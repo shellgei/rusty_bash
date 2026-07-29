@@ -14,7 +14,7 @@ use crate::{Feeder, ShellCore};
 pub struct Replace {
     pub text: String,
     pub symbol: String,
-    pub replace_from: Option<Word>,
+    pub replace_from: Word,
     pub replace_to: Option<Word>,
 }
 
@@ -121,7 +121,7 @@ impl Replace {
     pub fn get_text(&self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let extglob = core.shopts.query("extglob");
         let nocasematch = core.shopts.query("nocasematch");
-        let tmp = self.to_string(&self.replace_from, core)?;
+        let tmp = self.replace_from.eval_as_pattern(core)?;// self.to_string(&self.replace_from, core)?;
         let pattern = glob::parse(&tmp, extglob, nocasematch);
         let string_to = self.to_string(&self.replace_to, core)?;
 
@@ -179,16 +179,16 @@ impl Replace {
         }
         ans.symbol = ans.text.clone();
 
-        if let Some(w) = Word::parse(
-            feeder,
-            core,
-            Some(WordMode::PermitAnyUntil(vec!["}".to_string(), "/".to_string()])),
-        )? {
+        let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string(), "/".to_string()]));
+        ans.replace_from = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &ans.replace_from.text.clone();
+        /*
+        if let Some(w) = Word::parse(feeder, core, mode)? {
             ans.text += &w.text.clone();
             ans.replace_from = Some(w);
         } else {
             ans.replace_from = Some(Word::default());
-        }
+        }*/
 
         if !feeder.starts_with("/") {
             return Ok(Some(ans));
