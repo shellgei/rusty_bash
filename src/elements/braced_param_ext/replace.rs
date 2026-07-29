@@ -11,15 +11,15 @@ use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 pub struct Replace {
     pub text: String,
     pub symbol: String,
-    pub replace_from: Option<Word>,
-    pub replace_to: Option<Word>,
+    pub pattern: Word,
+    pub string: Word,
 }
 
 impl BracedParamExtension for Replace {
     fn exec(&mut self, _: &Parameter, text: &str, core: &mut ShellCore)
         -> Result<String, ExecError> {
         let mut text = text.to_string();
-        let pat_str = self.replace_from.eval_as_replace_from(core)?;
+        let pat_str = self.pattern.eval_as_pattern(core)?;
         let pat = glob::parse(&pat_str);
 
         if self.symbol.starts_with("#") {
@@ -42,7 +42,7 @@ impl BracedParamExtension for Replace {
 }
 
 impl Replace {
-    pub fn percent(&self, text: &mut String, replace_from: &[GlobElem]) {
+    pub fn percent(&self, text: &mut String, pattern: &[GlobElem]) {
         let mut length = text.len();
         let mut ans_length = length;
 
@@ -50,7 +50,7 @@ impl Replace {
             length -= ch.len_utf8();
             let s = text[length..].to_string();
 
-            if glob::compare(&s, replace_from) {
+            if glob::compare(&s, pattern) {
                 ans_length = length;
                 if self.symbol == "%" {
                     break;
@@ -73,8 +73,8 @@ impl Replace {
         ans.text += &ans.symbol.clone();
 
         let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
-        ans.replace_from = Word::parse(feeder, core, mode)?.unwrap_or_default();
-        ans.text += &ans.replace_from.text.clone();
+        ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &ans.pattern.text.clone();
 //        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
