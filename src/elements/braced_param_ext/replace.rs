@@ -72,16 +72,7 @@ impl BracedParamExtension for Replace {
 }
 
 impl Replace {
-    /*
-    fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, ExecError> {
-        match w {
-            Some(w) => w.eval_as_pattern(core),
-            None    => Ok("".to_string()),
-        }
-    }*/
-
-    fn get_text_head(
-        text: &str,
+    fn get_text_head(text: &str,
         pattern: &[GlobElem],
         string_to: &str,
     ) -> Result<String, ExecError> {
@@ -168,17 +159,14 @@ impl Replace {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if !feeder.starts_with("/") {
+        let len = feeder.scanner_parameter_replace_symbol();
+        if len == 0 {
             return Ok(None);
         }
-
+        
         let mut ans = Replace::default();
-        ans.text += &feeder.consume(1);
-
-        if feeder.starts_with_one_of(&["/", "#", "%"]) {
-            ans.text += &feeder.consume(1);
-        }
-        ans.symbol = ans.text.clone();
+        ans.symbol = feeder.consume(len);
+        ans.text += &ans.symbol.clone();
 
         let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string(), "/".to_string()]));
         ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
@@ -192,13 +180,6 @@ impl Replace {
         let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
         ans.string = Word::parse(feeder, core, mode)?.unwrap_or_default();
         ans.text += &ans.string.text.clone();
-        /*
-        if let Some(w) = Word::parse(feeder, core, mode)? {
-            ans.text += &w.text.clone();
-            ans.string = Some(w);
-        } else {
-            ans.string = Some(Word::default());
-        }*/
 
         Ok(Some(ans))
     }

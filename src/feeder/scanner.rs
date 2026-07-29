@@ -390,6 +390,10 @@ impl Feeder {
         self.scanner_one_of(&["##", "#", "%%", "%"])
     }
 
+    pub fn scanner_parameter_replace_symbol(&mut self) -> usize {
+        self.scanner_one_of(&["//", "/%", "/#", "/"])
+    }
+
     pub fn scanner_tabs(&mut self) -> usize {
         self.scanner_one_of(&["\t"])
     }
