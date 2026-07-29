@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 mod remove;
+mod replace;
 mod substr;
 
 use crate::{Feeder, ShellCore};
