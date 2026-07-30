@@ -49,7 +49,7 @@ impl Remove {
         let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
         ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
         ans.text += &ans.pattern.text.clone();
-//        dbg!("{:?}", &ans);
+        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
 }
