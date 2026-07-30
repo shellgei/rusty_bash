@@ -19,7 +19,7 @@ pub fn match_length(word: &String, pattern: &[GlobElem], longest: bool) -> usize
     match longest {
         true  => word.len() - remaining_lengths.min().unwrap_or(word.len()),
         false => word.len() - remaining_lengths.max().unwrap_or(word.len()),
-    }
+    }   
 }
 
 pub fn parse(pattern: &str) -> Vec<GlobElem> {
