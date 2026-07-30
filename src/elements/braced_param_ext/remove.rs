@@ -3,6 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::utils::glob;
+use crate::utils::glob::GlobElem;
 use crate::elements::word::{Word, WordMode};
 use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 
@@ -27,6 +28,8 @@ impl BracedParamExtension for Remove {
         if self.symbol.starts_with("#") {
             let len = glob::match_length(&text, &pat, self.symbol == "##");
             text = text[len..].to_string();
+        } else if self.symbol.starts_with("%") {
+            self.percent(&mut text, &pat);
         }
 
         Ok(text)
@@ -42,6 +45,25 @@ impl BracedParamExtension for Remove {
 }
 
 impl Remove {
+    pub fn percent(&self, text: &mut String, pattern: &[GlobElem]) {
+        let mut length = text.len();
+        let mut ans_length = length; //ans_length: 最終的に残す文字列の長さ
+     
+        for ch in text.chars().rev() { //文字列の末端から走査
+            length -= ch.len_utf8();   //部分文字列の開始位置を計算
+            let s = text[length..].to_string();
+     
+            if glob::compare(&s, pattern) {
+                ans_length = length;
+                if self.symbol == "%" {
+                    break; //最短一致の場合はここで終わり
+                }   
+            }   
+        }   
+     
+        *text = text[0..ans_length].to_string(); //マッチした部分を削除
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_parameter_remove_symbol();
