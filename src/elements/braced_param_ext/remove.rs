@@ -14,8 +14,12 @@ pub struct Remove {
 }
 
 impl BracedParamExtension for Remove {
-    fn exec(&mut self, _: &Parameter, text: &str, core: &mut ShellCore)
+    fn exec(&mut self, v: &Parameter, text: &str, core: &mut ShellCore)
         -> Result<String, ExecError> {
+        if ! core.db.exist(&v.text) {
+            return Ok("".to_string());
+        }
+
         let mut text = text.to_string();
         let pat_str = self.pattern.eval_as_pattern(core)?;
         let pat = glob::parse(&pat_str);
