@@ -229,6 +229,11 @@ impl DataBase {
             return self.position_parameters.last().unwrap().len() > n;
         }
 
+        if name.len() == 1
+        && "$?*@#-!_".contains(name.chars().nth(0).unwrap()) {
+            return true;
+        }
+
         self.params.iter().any(|s| s.contains_key(name))
     }
 }
