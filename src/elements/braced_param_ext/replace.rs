@@ -12,6 +12,7 @@ pub struct Replace {
     pub text: String,
     pub symbol: String,
     pub pattern: Word,
+    pub string: Word,
 }
 
 impl BracedParamExtension for Replace {
