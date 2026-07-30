@@ -56,9 +56,14 @@ impl Replace {
                 continue;
             }
 
+            if !first && self.symbol == "/" {
+                ans.push(ch);
+                continue;
+            }
+
             let s = text[start..].to_string();
             let len = glob::match_length(&s, &pattern, true);
-            if len != 0 && (first || self.symbol == "//") {
+            if len != 0 {
                 ans.push_str(string_to);
                 skip = len - ch.len_utf8();
                 first = false;
