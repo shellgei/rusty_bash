@@ -67,7 +67,7 @@ impl Replace {
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
-        let len = feeder.scanner_parameter_remove_symbol();
+        let len = feeder.scanner_parameter_replace_symbol();
         if len == 0 { 
             return Ok(None);
         }   
@@ -76,10 +76,19 @@ impl Replace {
         ans.symbol = feeder.consume(len);
         ans.text += &ans.symbol.clone();
 
-        let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
+        let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string(), "/".to_string()]));
         ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
         ans.text += &ans.pattern.text.clone();
-//        dbg!("{:?}", &ans);
+
+        if !feeder.starts_with("/") { //79〜86行目まで追加
+            return Ok(Some(ans));
+        }
+        ans.text += &feeder.consume(1);
+    
+        let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
+        ans.string = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &ans.string.text.clone();
+
         Ok(Some(ans))
     }
 }
