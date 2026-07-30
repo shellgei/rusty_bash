@@ -134,6 +134,7 @@ impl Replace {
             }
 
             let len = glob::longest_match_length(&text[start..], &pattern);
+            /*
             if len != 0 && self.symbol == "/%" {
                 if len == text[start..].len() {
                     return Ok([&text[..start], &string_to[0..]].concat());
@@ -142,7 +143,9 @@ impl Replace {
                     start += ch.len_utf8();
                     continue;
                 }
-            } else if len != 0 && self.symbol != "//" {
+            } else*/
+
+            if len != 0 && self.symbol != "//" {
                 return Ok([&text[..start], &string_to[0..], &text[start + len..]].concat());
             }
 
