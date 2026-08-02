@@ -63,12 +63,12 @@ impl Replace {
                 },
                 len => {
                     ans.push_str(string_to);
+                    pos += len;
                     if self.symbol == "/" {
-                        return ans + &text[pos+len..];
+                        return ans + &text[pos..];
                     }
     
                     skip = len - ch.len_utf8();
-                    pos += len;
                 },
             }
         }   
