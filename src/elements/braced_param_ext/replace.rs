@@ -46,30 +46,30 @@ impl Replace {
     pub fn replace(&self, text: &str, pattern: &[GlobElem],
                    string_to: &str) -> String {
         let mut ans = String::new();
-        let mut start = 0;
-        let mut first = true;
+        let mut pos = 0;
         let mut skip = 0;
      
         for ch in text.chars() {
-            if !first && self.symbol == "/" {
-                return ans + &text[start..];
-            }
-
             if skip > 0 {
                 skip -= ch.len_utf8();
                 continue;
             }
 
-            let s = text[start..].to_string();
-            let len = glob::match_length(&s, &pattern, true);
-            if len != 0 {
-                ans.push_str(string_to);
-                skip = len - ch.len_utf8();
-                first = false;
-                start += len;
-            }else{
-                ans.push(ch);
-                start += ch.len_utf8();
+            let s = text[pos..].to_string();
+            match glob::match_length(&s, &pattern, true) {
+                0 => {
+                    ans.push(ch);
+                    pos += ch.len_utf8();
+                },
+                len => {
+                    ans.push_str(string_to);
+                    if self.symbol == "/" {
+                        return ans + &text[pos+len..];
+                    }
+    
+                    skip = len - ch.len_utf8();
+                    pos += len;
+                },
             }
         }   
 
