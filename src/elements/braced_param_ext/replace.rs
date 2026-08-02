@@ -51,17 +51,13 @@ impl Replace {
         let mut skip = 0;
      
         for ch in text.chars() {
+            if !first && self.symbol == "/" {
+                return ans + &text[start..];
+            }
+
             if skip > 0 {
                 skip -= ch.len_utf8();
                 continue;
-            }
-
-            if !first && self.symbol == "/" {
-                return ans + &text[start..];
-                /*
-                ans.push(ch);
-                continue;
-                */
             }
 
             let s = text[start..].to_string();
