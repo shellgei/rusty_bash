@@ -864,4 +864,29 @@ res=$($com <<< 'A=${ }; echo NG')
 res=$($com <<< 'A=${ }')
 [ "$?" == 1 ] || err $LINENO
 
+res=$($com <<< 'a=abca ; echo @${a//a}@')
+[ "$res" = "@bc@" ] || err $LINENO
+
+res=$($com <<< 'a=abca ; echo @${a//a/}@')
+[ "$res" = "@bc@" ] || err $LINENO
+
+res=$($com <<< 'A="あいう うえお"; echo ${A/あ/}' )
+[ "$res" = "いう うえお" ] || err $LINENO
+
+res=$($com <<< 'A="あいう うえお"; echo ${A/あ//}' )
+[ "$res" = "/いう うえお" ] || err $LINENO
+
+res=$($com <<< 'A="あいう うえお"; echo ${A/い/え}' )
+[ "$res" = "あえう うえお" ] || err $LINENO
+
+res=$($com <<< 'A="あいう うえお"; echo ${A/いう/えええeee}' )
+[ "$res" = "あえええeee うえお" ] || err $LINENO
+
+res=$($com <<< 'A="あいう うえお"; echo ${A//う/えええeee}' )
+[ "$res" = "あいえええeee えええeeeえお" ] || err $LINENO
+
+res=$($com <<< 'A="あいう いうえお"; echo ${A//いう/えええeee}' )
+[ "$res" = "あえええeee えええeeeえお" ] || err $LINENO
+
+
 echo OK $0
