@@ -57,8 +57,11 @@ impl Replace {
             }
 
             if !first && self.symbol == "/" {
+                return ans + &text[start..];
+                /*
                 ans.push(ch);
                 continue;
+                */
             }
 
             let s = text[start..].to_string();
@@ -67,10 +70,11 @@ impl Replace {
                 ans.push_str(string_to);
                 skip = len - ch.len_utf8();
                 first = false;
+                start += len;
             }else{
                 ans.push(ch);
+                start += ch.len_utf8();
             }
-            start += ch.len_utf8();
         }   
 
         ans
