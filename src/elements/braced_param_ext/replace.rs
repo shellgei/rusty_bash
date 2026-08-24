@@ -91,7 +91,7 @@ impl Replace {
         ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
         ans.text += &ans.pattern.text.clone();
 
-        if !feeder.starts_with("/") { //79〜86行目まで追加
+        if !feeder.starts_with("/") { //84〜90行目まで追加
             return Ok(Some(ans));
         }
         ans.text += &feeder.consume(1);
