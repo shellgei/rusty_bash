@@ -888,5 +888,37 @@ res=$($com <<< 'A="あいう うえお"; echo ${A//う/えええeee}' )
 res=$($com <<< 'A="あいう いうえお"; echo ${A//いう/えええeee}' )
 [ "$res" = "あえええeee えええeeeえお" ] || err $LINENO
 
+res=$($com <<< 'A="あいう いうえお"; echo ${A/#いう/えええeee}' )
+[ "$res" = "あいう いうえお" ] || err $LINENO
+
+res=$($com <<< 'A="あいう いうえお"; echo ${A/#あいう/えええeee}' )
+[ "$res" = "えええeee いうえお" ] || err $LINENO
+
+res=$($com <<< 'A="あいう いうえお"; echo ${A/%えお/えええeee}' )
+[ "$res" = "あいう いうえええeee" ] || err $LINENO
+
+res=$($com <<< 'A="あいうえお いうえお"; echo ${A/%えお/えええeee}' )
+[ "$res" = "あいうえお いうえええeee" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo ${A/#//d}')
+[ "$res" = "/d1" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo ${A/#1//d}')
+[ "$res" = "/d" ] || err $LINENO
+
+res=$($com <<< 'A= ; echo ${A/#//d}')
+[ "$res" = "/d" ] || err $LINENO
+
+res=$($com <<< 'echo ${A/#//d}')
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=1; echo ${A/%//d}')
+[ "$res" = "1/d" ] || err $LINENO
+
+res=$($com <<< 'A= ; echo ${A/%//d}')
+[ "$res" = "/d" ] || err $LINENO
+
+res=$($com <<< 'echo ${A/%//d}')
+[ "$res" = "" ] || err $LINENO
 
 echo OK $0
