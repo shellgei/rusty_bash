@@ -30,8 +30,6 @@ impl BracedParamExtension for Replace {
             return Ok(self.replace(text, &pat, &string_to));
         }else if self.symbol == "/#" {
             return Self::replace_head(text, &pat, &string_to);
-        }else if self.symbol == "/%" {
-            return Self::replace_tail(text, &pat, &string_to);
         }
 
         Ok(text.to_string())
@@ -89,25 +87,6 @@ impl Replace {
 
         let ans = string_to.to_string() + &text[len..];
         Ok(ans)
-    }
-
-    fn replace_tail(text: &str, pattern: &[GlobElem], string_to: &str)
-    -> Result<String, ExecError> {
-        if pattern.is_empty() {
-            let ans = text.to_string() + string_to;
-            return Ok(ans);
-        }
-
-        let mut start = 0;
-        for ch in text.chars() {
-            let len = glob::match_length(&text[start..].to_string(), pattern, true);
-            if len == text[start..].len() {
-                let ans = text[..start].to_string() + string_to;
-                return Ok(ans);
-            }
-            start += ch.len_utf8();
-        }
-        Ok(text.to_string())
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)

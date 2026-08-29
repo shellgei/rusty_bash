@@ -894,12 +894,6 @@ res=$($com <<< 'A="あいう いうえお"; echo ${A/#いう/えええeee}' )
 res=$($com <<< 'A="あいう いうえお"; echo ${A/#あいう/えええeee}' )
 [ "$res" = "えええeee いうえお" ] || err $LINENO
 
-res=$($com <<< 'A="あいう いうえお"; echo ${A/%えお/えええeee}' )
-[ "$res" = "あいう いうえええeee" ] || err $LINENO
-
-res=$($com <<< 'A="あいうえお いうえお"; echo ${A/%えお/えええeee}' )
-[ "$res" = "あいうえお いうえええeee" ] || err $LINENO
-
 res=$($com <<< 'A=1; echo ${A/#//d}')
 [ "$res" = "/d1" ] || err $LINENO
 
@@ -912,13 +906,5 @@ res=$($com <<< 'A= ; echo ${A/#//d}')
 res=$($com <<< 'echo ${A/#//d}')
 [ "$res" = "" ] || err $LINENO
 
-res=$($com <<< 'A=1; echo ${A/%//d}')
-[ "$res" = "1/d" ] || err $LINENO
-
-res=$($com <<< 'A= ; echo ${A/%//d}')
-[ "$res" = "/d" ] || err $LINENO
-
-res=$($com <<< 'echo ${A/%//d}')
-[ "$res" = "" ] || err $LINENO
 
 echo OK $0
