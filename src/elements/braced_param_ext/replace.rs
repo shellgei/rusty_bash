@@ -93,8 +93,7 @@ impl Replace {
     fn replace_tail(text: &str, pattern: &[GlobElem], string_to: &str)
     -> Result<String, ExecError> {
         if pattern.is_empty() {
-            let ans = text.to_string() + string_to;
-            return Ok(ans);
+            return Ok(text.to_string() + string_to);
         }
 
         let mut start = 0;
