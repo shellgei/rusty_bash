@@ -30,6 +30,8 @@ impl BracedParamExtension for Replace {
             return Ok(self.replace(text, &pat, &string_to));
         }else if self.symbol == "/#" {
             return Self::replace_head(text, &pat, &string_to);
+        //}else if self.symbol == "/%" {
+        //    return Self::replace_tail(text, &pat, &string_to);
         }
 
         Ok(text.to_string())
