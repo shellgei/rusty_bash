@@ -87,8 +87,7 @@ impl Replace {
             return Ok(text.to_string());
         }
 
-        let ans = string_to.to_string() + &text[len..];
-        Ok(ans)
+        Ok(string_to.to_string() + &text[len..])
     }
 
     fn replace_tail(text: &str, pattern: &[GlobElem], string_to: &str)
