@@ -82,10 +82,10 @@ impl Replace {
 
     fn replace_head(text: &str, pattern: &[GlobElem], string_to: &str)
     -> Result<String, ExecError> {
-        let len = glob::match_length(&text.to_string(), pattern, true);
-        if len == 0 && !pattern.is_empty() {
-            return Ok(text.to_string());
+        if pattern.is_empty() {
+            return Ok(string_to.to_string() + text)
         }
+        let len = glob::match_length(&text.to_string(), pattern, true);
 
         Ok(string_to.to_string() + &text[len..])
     }
