@@ -22,7 +22,7 @@ fn is_special_param(name: &str) -> bool {
 pub struct ValueCheck {
     pub text: String,
     pub symbol: Option<String>,
-    alternative_value: Option<Word>,
+    alter: Option<Word>,
     in_double_quoted: bool,
 }
 
@@ -48,7 +48,7 @@ impl BracedParamExtension for ValueCheck {
         }
 
         if check_ok {
-            self.alternative_value = None;
+            self.alter = None;
             return Ok(text.to_string());
         }
 
@@ -67,26 +67,26 @@ impl BracedParamExtension for ValueCheck {
     }
 
     fn get_alternative(&self) -> Vec<Box<dyn Subword>> {
-        match &self.alternative_value {
+        match &self.alter {
             Some(w) => w.subwords.to_vec(),
             None => vec![],
         }
     }
 
     fn set_heredoc_flag(&mut self) {
-        self.alternative_value
+        self.alter
             .iter_mut()
             .for_each(|e| e.set_heredoc_flag());
     }
 
     fn array_to_single(&mut self) -> bool {
-        self.alternative_value.is_some()
+        self.alter.is_some()
     }
 }
 
 impl ValueCheck {
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let mut v = match &self.alternative_value {
+        let mut v = match &self.alter {
             Some(av) => av.clone(),
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
@@ -106,12 +106,12 @@ impl ValueCheck {
                 //               }
             }
 
-            self.alternative_value = Some(v.dollar_expansion(core)?);
+            self.alter = Some(v.dollar_expansion(core)?);
         } else {
-            self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);
+            self.alter = Some(v.tilde_and_dollar_expansion(core)?);
         }
         if self.in_double_quoted {
-            for sw in self.alternative_value.as_mut().unwrap().subwords.iter_mut() {
+            for sw in self.alter.as_mut().unwrap().subwords.iter_mut() {
                 if sw.get_text().starts_with("'") {
                     Self::apply_single_quote_rule(sw);
                 }
@@ -168,7 +168,7 @@ impl ValueCheck {
         }
 
         variable.clone().set_value(&value, core)?;
-        self.alternative_value = None;
+        self.alter = None;
         Ok(value)
     }
 
@@ -194,11 +194,11 @@ impl ValueCheck {
         ans.text += &feeder.consume(num);
         let mode = WordMode::PermitAnyUntil(vec!["}".to_string()]);
         //let mode = WordMode::AlterWord;
-        ans.alternative_value = Some(Word::default());
+        ans.alter = Some(Word::default());
 
         if let Some(w) = Word::parse(feeder, core, Some(mode))? {
             ans.text += &w.text.clone();
-            ans.alternative_value = Some(w);
+            ans.alter = Some(w);
         }
 
         if feeder.nest.iter().any(|e| e.0 == "\"") {
