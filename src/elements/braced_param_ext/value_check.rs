@@ -179,7 +179,7 @@ impl ValueCheck {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let num = feeder.scanner_parameter_alternative_symbol();
+        let num = feeder.scanner_parameter_check_symbol();
         if num == 0 {
             return Ok(None);
         }
