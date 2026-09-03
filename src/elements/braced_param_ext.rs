@@ -4,6 +4,7 @@
 mod remove;
 mod replace;
 mod substr;
+mod value_check;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::parameter::Parameter;
@@ -14,6 +15,7 @@ use core::fmt::Debug;
 use self::remove::Remove;
 use self::replace::Replace;
 use self::substr::Substr;
+use self::value_check::ValueCheck;
 
 impl Clone for Box<dyn BracedParamExtension> {
     fn clone(&self) -> Box<dyn BracedParamExtension> {
@@ -35,7 +37,9 @@ pub trait BracedParamExtension {
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
 -> Result<Option<Box<dyn BracedParamExtension>>, ParseError> {
-    if let Some(a) = Substr::parse(feeder, core)? {
+    if let Some(a) = ValueCheck::parse(feeder, core)? {
+        Ok(Some(Box::new(a)))
+    } else if let Some(a) = Substr::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = Remove::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
