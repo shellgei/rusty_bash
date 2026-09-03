@@ -20,6 +20,14 @@ impl BracedParamExtension for ValueCheck {
             false => core.db.exist(&v.text),
         };
 
+        if self.symbol.ends_with("+") {
+            check_ok = !check_ok;
+        }
+
+        if check_ok {
+            return Ok(text.to_string());
+        }
+
         Ok(text.to_string())
     }
 
