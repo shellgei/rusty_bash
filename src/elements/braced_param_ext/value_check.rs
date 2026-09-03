@@ -13,8 +13,13 @@ pub struct ValueCheck {
 }
 
 impl BracedParamExtension for ValueCheck {
-    fn exec(&mut self, _: &Parameter, text: &str, _: &mut ShellCore)
+    fn exec(&mut self, v: &Parameter, text: &str, core: &mut ShellCore)
         -> Result<String, ExecError> {
+        let mut check_ok = match self.symbol.starts_with(":") {
+            true  => !text.is_empty(),
+            false => core.db.exist(&v.text),
+        };
+
         Ok(text.to_string())
     }
 
