@@ -2,8 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::utils::glob;
-use crate::utils::glob::GlobElem;
 use crate::elements::word::{Word, WordMode};
 use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 
@@ -15,7 +13,7 @@ pub struct ValueCheck {
 }
 
 impl BracedParamExtension for ValueCheck {
-    fn exec(&mut self, v: &Parameter, text: &str, core: &mut ShellCore)
+    fn exec(&mut self, _: &Parameter, text: &str, _: &mut ShellCore)
         -> Result<String, ExecError> {
         Ok(text.to_string())
     }
