@@ -9,7 +9,7 @@ use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 pub struct ValueCheck {
     pub text: String,
     pub symbol: String,
-    pub pattern: Word,
+    pub alter: Word,
 }
 
 impl BracedParamExtension for ValueCheck {
@@ -35,13 +35,13 @@ impl ValueCheck {
             return Ok(None);
         }   
 
-        let mut ans = ValueCheck::default();
+        let mut ans = Self::default();
         ans.symbol = feeder.consume(len);
         ans.text += &ans.symbol.clone();
 
         let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
-        ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
-        ans.text += &ans.pattern.text.clone();
+        ans.alter = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &ans.alter.text.clone();
 //        dbg!("{:?}", &ans);
         Ok(Some(ans))
     }
