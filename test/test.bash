@@ -1043,4 +1043,14 @@ echo "$res" | grep '^/' || err $LINENO
 res=$($com <<< ': ${A:=~/bin:~/bin2}; echo $A')
 echo "$res" | grep '^/.*~' || err $LINENO
 
+res=$($com <<< 'echo ${A:?error}' )
+[ "$?" = "1" ] || err $LINENO
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< '(echo ${A:?eRRor}) |& cat' )
+echo "$res" | grep -q eRRor || err $LINENO
+
+res=$($com <<< 'A=123; echo ${A:?eRRor}' )
+[ "$res" = "123" ] || err $LINENO
+
 echo OK $0
