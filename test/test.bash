@@ -1023,5 +1023,24 @@ res=$($com <<< 'echo ${A:-~}')
 #res=$($com <<< 'echo "${A:-~}"')
 #[ "$res" = '~' ] || err $LINENO
 
+res=$($com <<< 'echo ${A:=abc}; echo $A' )
+[ "$res" = "abc
+abc" ] || err $LINENO
+
+res=$($com <<< 'echo ${A:="aaa
+bbb"}
+echo "$A"' )
+[ "$res" = "aaa bbb
+aaa
+bbb" ] || err $LINENO
+
+res=$($com <<< ': ${A:=~}; echo $A')
+echo "$res" | grep '^/' || err $LINENO
+
+#res=$($com <<< ': ${A:=~:aa}; echo $A')
+#echo "$res" | grep '^/' || err $LINENO
+
+res=$($com <<< ': ${A:=~/bin:~/bin2}; echo $A')
+echo "$res" | grep '^/.*~' || err $LINENO
 
 echo OK $0
