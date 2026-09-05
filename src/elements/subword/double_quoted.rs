@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{ShellCore, Feeder};
+use crate::elements::subword::BracedParam;
 use crate::elements::word::{substitution, Word};
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
@@ -49,7 +50,8 @@ impl DoubleQuoted {
     fn eat_element(feeder: &mut Feeder, ans: &mut Self,
                    core: &mut ShellCore) -> Result<bool, ParseError> {
         let sw: Box<dyn Subword>
-            = if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
+            = if let Some(a) = BracedParam::parse(feeder, core)? { Box::new(a) }
+            else if let Some(a) = CommandSubstitution::parse(feeder, core)? {Box::new(a)}
             else if let Some(a) = Parameter::parse(feeder, core) {Box::new(a)}
             else if let Some(a) = Self::parse_escaped_char(feeder) { Box::new(a) }
             else if let Some(a) = Self::parse_name(feeder, core) {Box::new(a)}
