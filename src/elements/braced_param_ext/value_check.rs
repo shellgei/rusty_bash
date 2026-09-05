@@ -28,11 +28,11 @@ impl BracedParamExtension for ValueCheck {
             return Ok(text.to_string());
         }
 
-        if self.symbol.ends_with('=') {
-            return self.set_value(v, core);
+        match self.symbol.as_ref() {
+            "?" | ":?" => self.show_error(&v.text, core),
+            "=" | ":=" => self.set_value(v, core),
+            _ => self.replace(core),
         }
-
-        self.replace(core)
     }
 
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
@@ -54,6 +54,13 @@ impl ValueCheck {
         let value = self.replace(core)?;
         core.db.set_param(&v.text, &value, None)?;
         Ok(value)
+    }
+
+    fn show_error(&mut self, name: &str, core: &mut ShellCore)
+    -> Result<String, ExecError> {
+        let value = self.replace(core)?;
+        let msg = format!("{}: {}", &name, &value);
+        Err(ExecError::Other(msg))
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
