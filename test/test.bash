@@ -921,4 +921,107 @@ res=$($com <<< 'A= ; echo ${A/%//d}')
 res=$($com <<< 'echo ${A/%//d}')
 [ "$res" = "" ] || err $LINENO
 
+res=$($com <<< 'echo ${A:-abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'echo ${A:-abc}; echo $A' )
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'A= ; echo ${A:+set}' )
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=aaa ; echo ${A:+set}' )
+[ "$res" = "set" ] || err $LINENO
+
+#res=$($com <<< 'A=aaa ; echo ${A:+"set
+#ok"}' )
+#[ "$res" = "set
+#ok" ] || err $LINENO
+
+res=$($com <<< 'echo ${A-abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'A=a ; echo ${A-abc}' )
+[ "$res" = "a" ] || err $LINENO
+
+res=$($com <<< 'echo ${A+abc}' )
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=a ; echo ${A+abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'A=aaa ; echo ${A- - - - -}' )
+[ "$res" = "aaa" ] || err $LINENO
+
+res=$($com <<< 'A=aaa ; echo ${A+- - - - bbb}' )
+[ "$res" = "- - - - bbb" ] || err $LINENO
+
+res=$($com <<< 'A= ; echo ${A+- - - - bbb}' )
+[ "$res" = "- - - - bbb" ] || err $LINENO
+
+res=$($com <<< 'echo ${A:-   abc}' )
+[ "$res" = "abc" ] || err $LINENO
+
+res=$($com <<< 'echo ${A:-abc def}' )
+[ "$res" = "abc def" ] || err $LINENO
+
+res=$($com <<< 'echo ${A:-abc   def}' )
+[ "$res" = "abc def" ] || err $LINENO
+
+res=$($com <<< 'B=あ ; echo ${A:-$B def}' )
+[ "$res" = "あ def" ] || err $LINENO
+
+res=$($com <<< 'B=あ ; echo ${A:-$B
+def}' )
+[ "$res" = "あ def" ] || err $LINENO
+
+#res=$($com <<< 'B=あ ; echo ${A:-"$B
+#def"}' )
+#[ "$res" = "あ
+#def" ] || err $LINENO
+
+res=$($com <<< 'A=aaa; B= ; echo ${B+$A}' )
+[ "$res" = "aaa" ] || err $LINENO
+
+res=$($com <<< 'A=aaa; echo ${B+$A}' )
+[ "$res" = "" ] || err $LINENO
+
+res=$($com <<< 'A=aaa; B=b ; echo ${B+$A}' )
+[ "$res" = "aaa" ] || err $LINENO
+
+#res=$($com << 'EOF'
+#_cur=a
+#b=(${_cur:+-- "$_cur"})
+#echo ${b[0]}
+#echo ${b[1]}
+#EOF
+#)
+#[ "$res" = "--
+#a" ] || err $LINENO
+
+res=$($com <<< 'a=A ; echo ${a:-B}' )
+[ "$res" = "A" ] || err $LINENO
+
+#res=$($com <<< 'set a ; b=${1-" "}; echo $b' )
+#[ "$res" = "a" ] || err $LINENO
+
+#res=$($com << 'EOF'
+#echo "${dbg-'"'hey}"
+#EOF
+#)
+#[ "$res" == "''hey" ] || err $LINENO
+
+res=$($com <<< 'echo ${A:-\a}')
+[ "$res" == 'a' ] || err $LINENO
+
+#res=$($com <<< 'echo "${A:-\a}"')
+#[ "$res" == '\a' ] || err $LINENO
+
+res=$($com <<< 'echo ${A:-~}')
+[ "$res" != '~' ] || err $LINENO
+
+#res=$($com <<< 'echo "${A:-~}"')
+#[ "$res" = '~' ] || err $LINENO
+
+
 echo OK $0
