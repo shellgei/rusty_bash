@@ -1002,8 +1002,8 @@ res=$($com <<< 'A=aaa; B=b ; echo ${B+$A}' )
 res=$($com <<< 'a=A ; echo ${a:-B}' )
 [ "$res" = "A" ] || err $LINENO
 
-#res=$($com <<< 'set a ; b=${1-" "}; echo $b' )
-#[ "$res" = "a" ] || err $LINENO
+res=$($com <<< 'A=a ; b=${A-" "}; echo $b' )
+[ "$res" = "a" ] || err $LINENO
 
 #res=$($com << 'EOF'
 #echo "${dbg-'"'hey}"

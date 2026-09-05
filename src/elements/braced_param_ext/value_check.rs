@@ -28,7 +28,7 @@ impl BracedParamExtension for ValueCheck {
             return Ok(text.to_string());
         }
 
-        Ok(self.alter.eval_as_value(core)?)
+        self.replace(core)
     }
 
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
@@ -41,6 +41,10 @@ impl BracedParamExtension for ValueCheck {
 }
 
 impl ValueCheck {
+    fn replace(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
+        Ok(self.alter.eval_as_value(core)?)
+    }
+
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
     -> Result<Option<Self>, ParseError> {
         let len = feeder.scanner_parameter_check_symbol();
