@@ -28,6 +28,10 @@ impl BracedParamExtension for ValueCheck {
             return Ok(text.to_string());
         }
 
+        if self.symbol.ends_with('=') {
+            return self.set_value(v, core);
+        }
+
         self.replace(core)
     }
 
@@ -43,6 +47,13 @@ impl BracedParamExtension for ValueCheck {
 impl ValueCheck {
     fn replace(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         Ok(self.alter.eval_as_value(core)?)
+    }
+
+    fn set_value(&mut self, v: &Parameter, core: &mut ShellCore)
+    -> Result<String, ExecError> {
+        let value = self.replace(core)?;
+        core.db.set_param(&v.text, &value, None)?;
+        Ok(value)
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)
