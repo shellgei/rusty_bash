@@ -23,7 +23,7 @@ impl BracedParamExtension for ValueCheck {
         if self.symbol.ends_with("+") {
             check_ok = !check_ok;
         }
-
+        println!("{:?}", if check_ok { "チェックOK" } else {"処理が必要"} );
         if check_ok {
             return Ok(text.to_string());
         }
