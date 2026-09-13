@@ -24,7 +24,7 @@ impl Subword for DoubleQuoted {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         self.connect_array(core)?;
 
         let mut word = match self.subwords.iter_mut().any(|sw| sw.is_array(core)) {
@@ -43,7 +43,7 @@ impl Subword for DoubleQuoted {
             self.text += sw.get_text();
         }
 
-        Ok(())
+        Ok(vec![])
     }
 
     fn make_glob_string(&mut self) -> String {

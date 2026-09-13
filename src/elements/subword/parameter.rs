@@ -21,9 +21,9 @@ impl Subword for Parameter {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         if !self.text.starts_with("$") {
-            return Ok(());
+            return Ok(vec![]);
         }
 
         if self.text == "$*" || self.text == "$@" {
@@ -31,7 +31,7 @@ impl Subword for Parameter {
         }
 
         self.text = core.db.get_param(&self.text[1..])?;
-        Ok(())
+        Ok(vec![])
     }
 
     fn is_array(&mut self, _: &mut ShellCore) -> bool {

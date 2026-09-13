@@ -28,7 +28,7 @@ impl Subword for CommandSubstitution {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp(), core)?;
         let pid = self.command.exec(core, &mut pipe)?;
@@ -36,7 +36,7 @@ impl Subword for CommandSubstitution {
         proc_ctrl::wait_pipeline(core, vec![pid], false);
         result?;
         self.text = self.text.trim_end_matches("\n").to_string();
-        Ok(())
+        Ok(vec![])
     }
 }
 

@@ -23,12 +23,12 @@ impl Subword for EvalLetParen {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         self.connect_array(core)?;
 
         let word = Word::from(self.subwords.clone());
         self.text = word.eval_as_value(core)?;
-        Ok(())
+        Ok(vec![])
     }
 
     fn split(&self, _: &str, _: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {

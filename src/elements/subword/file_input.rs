@@ -24,7 +24,7 @@ impl Subword for FileInput {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let args = self.redirect.right.eval(core)?;
         if args.len() != 1 {
             return Err(ExecError::AmbiguousRedirect(
@@ -49,7 +49,7 @@ impl Subword for FileInput {
         }
 
         self.text.pop();
-        Ok(())
+        Ok(vec![])
     }
 }
 
