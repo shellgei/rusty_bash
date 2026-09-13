@@ -18,12 +18,13 @@ impl Subword for DoubleQuoted {
     fn get_text(&self) -> &str {&self.text}
     fn boxed_clone(&self) -> Box<dyn Subword> {Box::new(self.clone())}
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore)
+    -> Result<Vec<Box<dyn Subword>>, ExecError> {
         let mut word = Word::from(self.subwords.clone());
         substitution::eval(&mut word, core)?;
         self.subwords = word.subwords;
         self.text = word.text;
-        Ok(())
+        Ok(vec![])
     }
 
     fn make_unquoted_string(&mut self) -> Option<String> {
