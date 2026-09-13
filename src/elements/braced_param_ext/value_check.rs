@@ -46,7 +46,9 @@ impl BracedParamExtension for ValueCheck {
 
 impl ValueCheck {
     fn replace(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        Ok(self.alter.eval_as_value(core)?)
+        let ans = self.alter.eval_as_value(core)?;
+        dbg!("{:?}", &ans);
+        Ok(ans)
     }
 
     fn set_value(&mut self, v: &Parameter, core: &mut ShellCore)
