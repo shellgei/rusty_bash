@@ -89,7 +89,7 @@ pub trait Subword {
 
     fn is_name(&self) -> bool {false}
 
-    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn get_alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         Ok(vec![])
     }
 }

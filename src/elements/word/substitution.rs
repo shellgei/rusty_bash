@@ -14,7 +14,7 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
     let mut tmp = vec![];
     for sw in word.subwords.iter_mut() {
         sw.substitute(core)?;
-        let mut new_objs = sw.alter()?;
+        let mut new_objs = sw.get_alter()?;
         match new_objs.is_empty() {
             true => tmp.push(sw.clone()),
             false => tmp.append(&mut new_objs),
