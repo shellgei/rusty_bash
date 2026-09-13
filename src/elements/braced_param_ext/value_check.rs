@@ -25,6 +25,7 @@ impl BracedParamExtension for ValueCheck {
         }
         //println!("{:?}", if check_ok { "チェックOK" } else {"処理が必要"} );
         if check_ok {
+            self.alter = None;
             return Ok(text.to_string());
         }
 
@@ -47,7 +48,7 @@ impl BracedParamExtension for ValueCheck {
         match &self.alter {
             Some(w) => w.subwords.to_vec(),
             None => vec![],
-        }   
+        }
     }
 }
 
@@ -75,7 +76,7 @@ impl ValueCheck {
         let len = feeder.scanner_parameter_check_symbol();
         if len == 0 { 
             return Ok(None);
-        }   
+        }
 
         let mut ans = Self::default();
         ans.symbol = feeder.consume(len);
