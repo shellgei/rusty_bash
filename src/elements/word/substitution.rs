@@ -18,12 +18,6 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
             true => tmp.push(w.clone()),
             false => tmp.append(&mut subs),
         }
-        /*
-        let mut new_objs = w.alter()?;
-        match new_objs.is_empty() {
-            true => tmp.push(w.clone()),
-            false => tmp.append(&mut new_objs),
-        }*/
     }
 
     word.subwords = tmp;

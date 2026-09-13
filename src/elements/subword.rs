@@ -81,10 +81,6 @@ pub trait Subword {
     fn substitute(&mut self, _: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         Ok(vec![])
     }
-    /*
-    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        Ok(vec![])
-    }*/
 
     fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         //bool: true if it should remain as an arg

@@ -75,14 +75,6 @@ impl Subword for BracedParam {
         self.array.clone().unwrap_or_default()
     }
 
-    /*
-    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        match self.extension.as_mut() {
-            Some(op) => Ok(op.get_alternative()),
-            None => Ok(vec![]),
-        }
-    }*/
-
     fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.text.is_empty() {
             return None;
