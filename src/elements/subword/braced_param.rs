@@ -27,7 +27,8 @@ impl Subword for BracedParam {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore)
+    -> Result<Vec<Box<dyn Subword>>, ExecError> {
         if self.param.text.is_empty() || !self.unknown.is_empty() {
             return Err(ExecError::BadSubstitution(self.text.clone()));
         }
@@ -36,16 +37,10 @@ impl Subword for BracedParam {
 
         if let Some(op) = self.extension.as_mut() {
             self.text = op.exec(&self.param, &self.text, core)?;
+            return Ok(op.get_alter());
         }
 
-        Ok(())
-    }
-
-    fn get_alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        match self.extension.as_mut() {
-            Some(op) => Ok(op.get_alter()),
-            None => Ok(vec![]),
-        }
+        Ok(vec![])
     }
 }
 
