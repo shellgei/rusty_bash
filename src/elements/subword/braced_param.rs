@@ -45,7 +45,7 @@ impl Subword for BracedParam {
         match self.extension.as_mut() {
             Some(op) => Ok(op.get_alter()),
             None => Ok(vec![]),
-        }   
+        }
     }
 }
 
