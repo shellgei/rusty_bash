@@ -51,29 +51,6 @@ impl Subword for BracedParam {
             Some(op) => Ok(op.get_alternative()),
             None => Ok(vec![]),
         }
-
-        /*
-        if core.db.exist_nameref(&self.param.name) && !self.indirect {
-            self.param.solve_nameref(core)?;
-            return self.substitute(core);
-        }
-        self.check()?;
-
-        if self.indirect && !self.indirect_preparation(core)? {
-            return Ok(vec![]);
-        }
-
-        if self.param.is_array()
-            && let Some(op) = self.extension.as_mut()
-            && op.has_array_replace()
-        {
-            return self.array_replace(core);
-        }
-
-        match self.param.index.is_some() {
-            true => self.subscript_operation(core),
-            false => self.non_subscript_operation(core),
-        }*/
     }
 
     fn set_text(&mut self, text: &str) {
@@ -98,12 +75,13 @@ impl Subword for BracedParam {
         self.array.clone().unwrap_or_default()
     }
 
+    /*
     fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         match self.extension.as_mut() {
             Some(op) => Ok(op.get_alternative()),
             None => Ok(vec![]),
         }
-    }
+    }*/
 
     fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
         if self.text.is_empty() {
@@ -146,15 +124,15 @@ impl BracedParam {
         Ok(())
     }
 
-    fn substitute_main(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn substitute_main(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if core.db.exist_nameref(&self.param.name) && !self.indirect {
             self.param.solve_nameref(core)?;
-            return self.substitute(core);
+            return self.substitute_main(core);
         }
         self.check()?;
 
         if self.indirect && !self.indirect_preparation(core)? {
-            return Ok(vec![]);
+            return Ok(());
         }
 
         if self.param.is_array()
@@ -203,7 +181,7 @@ impl BracedParam {
         Ok(())
     }
 
-    fn array_replace(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn array_replace(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let mut arr = vec![];
         let op = self.extension.as_mut().unwrap();
         op.init_array(&self.param, &mut arr, &mut self.text, core)?;
@@ -216,10 +194,10 @@ impl BracedParam {
             }
         }
 
-        Ok(vec![])
+        Ok(())
     }
 
-    fn non_subscript_operation(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn non_subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         if self.param.name == "*" || self.param.name == "@" {
             self.array = Some(core.db.get_position_params());
         }
@@ -237,6 +215,6 @@ impl BracedParam {
             self.text = op.exec(&self.param, &self.text, core)?;
         }
 
-        Ok(vec![])
+        Ok(())
     }
 }

@@ -3,10 +3,9 @@
 
 use super::{BracedParam, ExecError};
 use crate::ShellCore;
-use crate::elements::subword::Subword;
 
 impl BracedParam {
-    pub fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    pub fn subscript_operation(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
         let index = self
             .param
             .index
@@ -16,7 +15,7 @@ impl BracedParam {
 
         if self.num {
             self.text = core.db.get_elem_len(&self.param.name, &index)?.to_string();
-            return Ok(vec![]);
+            return Ok(());
         }
 
         if core.db.is_single(&self.param.name) {
@@ -27,7 +26,7 @@ impl BracedParam {
                 _ => "".to_string(),
             };
             self.text = self.extension(tmp, core)?;
-            return Ok(vec![]);
+            return Ok(());
         }
 
         let ifs = core.db.get_ifs_head();
@@ -39,16 +38,16 @@ impl BracedParam {
         } else {
             let tmp = core.db.get_elem(&self.param.name, &index)?;
             self.text = self.extension(tmp, core)?;
-            Ok(vec![])
+            Ok(())
         }
     }
 
-    fn atmark_operation(&mut self, core: &mut ShellCore, ifs: &str) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn atmark_operation(&mut self, core: &mut ShellCore, ifs: &str) -> Result<(), ExecError> {
         let mut arr = core.db.get_vec(&self.param.name, true)?;
         self.array = Some(arr.clone());
         if self.num {
             self.text = arr.len().to_string();
-            return Ok(vec![]);
+            return Ok(());
         }
 
         self.text = match self.num {
@@ -66,7 +65,7 @@ impl BracedParam {
             self.array = Some(arr);
             self.treat_as_array = true;
         }
-        Ok(vec![])
+        Ok(())
     }
 
     fn has_value_check(&mut self) -> bool {
