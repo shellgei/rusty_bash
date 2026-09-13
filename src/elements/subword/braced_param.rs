@@ -40,6 +40,13 @@ impl Subword for BracedParam {
 
         Ok(())
     }
+
+    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+        match self.extension.as_mut() {
+            Some(op) => Ok(op.get_alter()),
+            None => Ok(vec![]),
+        }   
+    }
 }
 
 impl BracedParam {

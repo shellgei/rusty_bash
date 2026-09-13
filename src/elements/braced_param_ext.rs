@@ -8,6 +8,7 @@ mod value_check;
 
 use crate::{Feeder, ShellCore};
 use crate::elements::parameter::Parameter;
+use crate::elements::subword::Subword;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
 use core::fmt;
@@ -33,6 +34,7 @@ pub trait BracedParamExtension {
     fn exec(&mut self, _: &Parameter, _: &str, _: &mut ShellCore) -> Result<String, ExecError>;
     fn boxed_clone(&self) -> Box<dyn BracedParamExtension>;
     fn get_text(&self) -> String;
+    fn get_alter(&self) -> Vec<Box<dyn Subword>> { vec![] }
 }
 
 pub fn parse(feeder: &mut Feeder, core: &mut ShellCore)

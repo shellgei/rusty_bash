@@ -3,7 +3,7 @@
 
 use crate::{Feeder, ShellCore};
 use crate::elements::word::{Word, WordMode};
-use super::{BracedParamExtension, ExecError, ParseError, Parameter};
+use super::{BracedParamExtension, ExecError, ParseError, Parameter, Subword};
 
 #[derive(Debug, Clone, Default)]
 pub struct ValueCheck {
@@ -41,6 +41,13 @@ impl BracedParamExtension for ValueCheck {
 
     fn get_text(&self) -> String {
         self.text.clone()
+    }
+
+    fn get_alter(&self) -> Vec<Box<dyn Subword>> {
+        match &self.alter {
+            Some(w) => w.subwords.to_vec(),
+            None => vec![],
+        }   
     }
 }
 
