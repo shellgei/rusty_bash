@@ -9,7 +9,7 @@ use super::{BracedParamExtension, ExecError, ParseError, Parameter};
 pub struct ValueCheck {
     pub text: String,
     pub symbol: String,
-    pub alter: Word,
+    pub alter: Option<Word>,
 }
 
 impl BracedParamExtension for ValueCheck {
@@ -46,8 +46,7 @@ impl BracedParamExtension for ValueCheck {
 
 impl ValueCheck {
     fn replace(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let ans = self.alter.eval_as_value(core)?;
-        Ok(ans)
+        Ok(self.alter.clone().unwrap().eval_as_value(core)?)
     }
 
     fn set_value(&mut self, v: &Parameter, core: &mut ShellCore)
@@ -76,9 +75,9 @@ impl ValueCheck {
         ans.text += &ans.symbol.clone();
 
         let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
-        ans.alter = Word::parse(feeder, core, mode)?.unwrap_or_default();
-        ans.text += &ans.alter.text.clone();
-//        dbg!("{:?}", &ans);
+        let w = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &w.text;
+        ans.alter = Some(w);
         Ok(Some(ans))
     }
 }
