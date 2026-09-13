@@ -11,9 +11,16 @@ pub fn eval(word: &mut Word, core: &mut ShellCore) -> Result<(), ExecError> {
     for i in word.scan_pos("$") {
         connect_names(&mut word.subwords[i..]);
     }
+
+    let mut tmp = vec![];
     for sw in word.subwords.iter_mut() {
-        sw.substitute(core)?;
+        let mut replace = sw.substitute(core)?;
+        match replace.is_empty() {
+            true  => tmp.push(sw.clone()),
+            false => tmp.append(&mut replace),
+        }
     };
+    word.subwords = tmp;
 
     word.text = word.subwords.iter()
         .map(|sw| sw.get_text())
