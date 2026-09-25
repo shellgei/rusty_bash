@@ -975,10 +975,10 @@ res=$($com <<< 'B=あ ; echo ${A:-$B
 def}' )
 [ "$res" = "あ def" ] || err $LINENO
 
-#res=$($com <<< 'B=あ ; echo ${A:-"$B
-#def"}' )
-#[ "$res" = "あ
-#def" ] || err $LINENO
+res=$($com <<< 'B=あ ; echo ${A:-"$B
+def"}' )
+[ "$res" = "あ
+def" ] || err $LINENO
 
 res=$($com <<< 'A=aaa; B= ; echo ${B+$A}' )
 [ "$res" = "aaa" ] || err $LINENO
