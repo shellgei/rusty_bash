@@ -46,19 +46,19 @@ impl BracedParamExtension for ValueCheck {
 
 impl ValueCheck {
     fn replace(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        Ok(self.alter.clone().unwrap().eval_as_value(core)?)
+        self.alter.clone().unwrap().eval_as_value(core)
     }
 
     fn set_value(&mut self, v: &Parameter, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let value = self.replace(core)?;
+        let value = self.alter.clone().unwrap().eval_as_value(core)?;
         core.db.set_param(&v.text, &value, None)?;
         Ok(value)
     }
 
     fn show_error(&mut self, name: &str, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let value = self.replace(core)?;
+        let value = self.alter.clone().unwrap().eval_as_value(core)?;
         let msg = format!("{}: {}", &name, &value);
         Err(ExecError::Other(msg))
     }
