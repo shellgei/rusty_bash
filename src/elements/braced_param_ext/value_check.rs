@@ -51,7 +51,7 @@ impl ValueCheck {
 
     fn set_value(&mut self, v: &Parameter, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let value = self.replace(core)?;
+        let value = self.alter.eval_as_value(core)?;
         core.db.set_param(&v.text, &value, None)?;
         Ok(value)
     }
