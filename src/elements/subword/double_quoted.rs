@@ -101,10 +101,12 @@ impl DoubleQuoted {
             return Ok(None);
         }
         let mut ans = Self { text: feeder.consume(1), ..Default::default() };
+        feeder.nest.push(("\"".to_string(), vec!["\"".to_string()]));
 
         while Self::eat_element(feeder, &mut ans, core)?
            || Self::eat_char(feeder, &mut ans, core)? {}
 
+        feeder.nest.pop();
         Ok(Some(ans))
     }
 }

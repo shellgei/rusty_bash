@@ -10,6 +10,7 @@ pub struct ValueCheck {
     pub text: String,
     pub symbol: String,
     pub alter: Option<Word>,
+    in_double_quote: bool,
 }
 
 impl BracedParamExtension for ValueCheck {
@@ -23,7 +24,7 @@ impl BracedParamExtension for ValueCheck {
         if self.symbol.ends_with("+") {
             check_ok = !check_ok;
         }
-        //println!("{:?}", if check_ok { "チェックOK" } else {"処理が必要"} );
+
         if check_ok {
             self.alter = None;
             return Ok(text.to_string());
@@ -90,6 +91,7 @@ impl ValueCheck {
         let w = Word::parse(feeder, core, mode)?.unwrap_or_default();
         ans.text += &w.text;
         ans.alter = Some(w);
+        ans.in_double_quote = feeder.nest.iter().any(|e| e.0 == "\"");
         Ok(Some(ans))
     }
 }
