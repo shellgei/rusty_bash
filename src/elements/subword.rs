@@ -3,7 +3,7 @@
 
 mod braced_param;
 mod command_sub;
-mod double_quoted;
+pub mod double_quoted;
 mod escaped_char;
 pub mod parameter;
 pub mod simple;

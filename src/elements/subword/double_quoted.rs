@@ -10,8 +10,8 @@ use super::{CommandSubstitution, EscapedChar, Parameter, SimpleSubword, Subword,
 
 #[derive(Debug, Clone, Default)]
 pub struct DoubleQuoted {
-    text: String,
-    subwords: Vec<Box<dyn Subword>>,
+    pub text: String,
+    pub subwords: Vec<Box<dyn Subword>>,
 }
 
 impl Subword for DoubleQuoted {

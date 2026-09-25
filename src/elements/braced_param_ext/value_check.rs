@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::elements::subword::double_quoted::DoubleQuoted;
 use crate::elements::word::{Word, WordMode};
 use super::{BracedParamExtension, ExecError, ParseError, Parameter, Subword};
 
@@ -28,6 +29,18 @@ impl BracedParamExtension for ValueCheck {
         if check_ok {
             self.alter = None;
             return Ok(text.to_string());
+        }
+
+        if self.in_double_quote {
+            let alt = self.alter.clone().unwrap();
+            let dq = DoubleQuoted {
+                text: alt.text,
+                subwords: alt.subwords,
+            };
+            self.alter = Some(Word {
+                text: dq.text.clone(),
+                subwords: vec![Box::new(dq)],
+            });
         }
 
         match self.symbol.as_ref() {
