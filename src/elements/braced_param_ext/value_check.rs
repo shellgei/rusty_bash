@@ -54,13 +54,13 @@ impl BracedParamExtension for ValueCheck {
 
 impl ValueCheck {
     fn replace(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let mut v = match &self.alter {
+        let mut alt = match &self.alter {
             Some(av) => av.clone(),
             None => return Ok("".to_string()),
         };
 
-        self.alter = Some(v.tilde_and_dollar_expansion(core)?);
-        v.eval_as_value(core) //=のときに使われる
+        self.alter = Some(alt.tilde_and_dollar_expansion(core)?);
+        alt.eval_as_value(core) //=のときに使われる
     }
 
     fn set_value(&mut self, v: &Parameter, core: &mut ShellCore)
