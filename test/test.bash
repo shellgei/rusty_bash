@@ -1010,8 +1010,14 @@ res=$($com <<< 'echo ${A:-\a}')
 res=$($com <<< 'echo ${A:-~}')
 [ "$res" != '~' ] || err $LINENO
 
-#res=$($com <<< 'echo "${A:-~}"')
-#[ "$res" = '~' ] || err $LINENO
+res=$($com <<< 'echo "${A:-~}"')
+[ "$res" = '~' ] || err $LINENO
+
+res=$($com <<< 'echo ${A:=~}')
+[ "$res" != '~' ] || err $LINENO
+
+res=$($com <<< 'echo "${A:=~}"')
+[ "$res" = '~' ] || err $LINENO
 
 res=$($com <<< 'echo ${A:=abc}; echo $A' )
 [ "$res" = "abc

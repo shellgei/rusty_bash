@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword::double_quoted::DoubleQuoted;
 use crate::elements::word::{Word, WordMode};
 use super::{BracedParamExtension, ExecError, ParseError, Parameter, Subword};
 
@@ -58,13 +57,26 @@ impl ValueCheck {
     fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
         let alt = self.alter.clone().unwrap();
-        self.alter = Some(alt.tilde_and_dollar_expansion(core)?);
+        if self.in_double_quote {
+            self.alter = Some(alt.dollar_expansion(core)?);
+        }else{
+            self.alter = Some(alt.tilde_and_dollar_expansion(core)?);
+        }
         Ok("".to_string())
+    }
+
+    fn to_string(&mut self, core: &mut ShellCore)
+    -> Result<String, ExecError> {
+        if self.in_double_quote {
+            self.alter.clone().unwrap().eval_as_alter(core)
+        }else{
+            self.alter.clone().unwrap().eval_as_value(core)
+        }
     }
 
     fn set_value(&mut self, v: &Parameter, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let value = self.alter.clone().unwrap().eval_as_value(core)?;
+        let value = self.to_string(core)?;
         core.db.set_param(&v.text, &value, None)?;
         self.alter = None;
         Ok(value)
@@ -72,7 +84,7 @@ impl ValueCheck {
 
     fn show_error(&mut self, name: &str, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let value = self.alter.clone().unwrap().eval_as_value(core)?;
+        let value = self.to_string(core)?;
         let msg = format!("{}: {}", &name, &value);
         Err(ExecError::Other(msg))
     }

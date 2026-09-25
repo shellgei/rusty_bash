@@ -68,11 +68,24 @@ impl Word {
         let mut w = self.tilde_and_dollar_expansion(core)?;
         let mut ws = path_expansion::eval(&mut w);
         Ok( Self::make_args(&mut ws)?.join(" ") )
+    } 
+
+    pub fn eval_as_alter(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+        let mut w = self.clone();
+        substitution::eval(&mut w, core)?;
+        let mut ws = path_expansion::eval(&mut w);
+        Ok(Self::make_args(&mut ws)?.join(" "))
     }
 
     pub fn eval_as_pattern(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut w = self.tilde_and_dollar_expansion(core)?;
         Ok(w.make_unquoted_word().unwrap_or_default())
+    }
+
+    pub fn dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
+        let mut w = self.clone();
+        substitution::eval(&mut w, core)?;
+        Ok(w)
     }
 
     pub fn tilde_and_dollar_expansion(&self, core: &mut ShellCore) -> Result<Word, ExecError> {
