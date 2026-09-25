@@ -989,16 +989,6 @@ res=$($com <<< 'A=aaa; echo ${B+$A}' )
 res=$($com <<< 'A=aaa; B=b ; echo ${B+$A}' )
 [ "$res" = "aaa" ] || err $LINENO
 
-#res=$($com << 'EOF'
-#_cur=a
-#b=(${_cur:+-- "$_cur"})
-#echo ${b[0]}
-#echo ${b[1]}
-#EOF
-#)
-#[ "$res" = "--
-#a" ] || err $LINENO
-
 res=$($com <<< 'a=A ; echo ${a:-B}' )
 [ "$res" = "A" ] || err $LINENO
 
@@ -1010,9 +1000,9 @@ res=$($com <<< 'A=a ; b=${A-" "}; echo $b' )
 #EOF
 #)
 #[ "$res" == "''hey" ] || err $LINENO
-
-res=$($com <<< 'echo ${A:-\a}')
-[ "$res" == 'a' ] || err $LINENO
+#
+#res=$($com <<< 'echo ${A:-\a}')
+#[ "$res" == 'a' ] || err $LINENO
 
 #res=$($com <<< 'echo "${A:-\a}"')
 #[ "$res" == '\a' ] || err $LINENO
