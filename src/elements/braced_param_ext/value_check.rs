@@ -107,12 +107,6 @@ impl ValueCheck {
 
         if self.in_double_quoted {
             Self::invalidate_escape(&mut v);
-            self.alter = Some(v.dollar_expansion(core)?);
-            for sw in self.alter.as_mut().unwrap().subwords.iter_mut() {
-                Self::apply_single_quote_rule(sw);
-            }
-        } else {
-            self.alter = Some(v.tilde_and_dollar_expansion(core)?);
         }
 
         if v.text.starts_with("~") && !self.in_double_quoted {
@@ -149,7 +143,22 @@ impl ValueCheck {
     }
 
     fn replace(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.set_alter_word(core)
+        let mut v = match &self.alter {
+            Some(av) => av.clone(),
+            None => return Err(ArithError::OperandExpected("".to_string()).into()),
+        };
+
+        if self.in_double_quoted {
+            Self::invalidate_escape(&mut v);
+            self.alter = Some(v.dollar_expansion(core)?);
+            for sw in self.alter.as_mut().unwrap().subwords.iter_mut() {
+                Self::apply_single_quote_rule(sw);
+            }
+        } else {
+            self.alter = Some(v.tilde_and_dollar_expansion(core)?);
+        }
+
+        Ok("".to_string())
     }
 
     fn set_value(
