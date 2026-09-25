@@ -31,18 +31,6 @@ impl BracedParamExtension for ValueCheck {
             return Ok(text.to_string());
         }
 
-        if self.in_double_quote {
-            let alt = self.alter.clone().unwrap();
-            let dq = DoubleQuoted {
-                text: alt.text,
-                subwords: alt.subwords,
-            };
-            self.alter = Some(Word {
-                text: dq.text.clone(),
-                subwords: vec![Box::new(dq)],
-            });
-        }
-
         match self.symbol.as_ref() {
             "?" | ":?" => self.show_error(&v.text, core),
             "=" | ":=" => self.set_value(v, core),
