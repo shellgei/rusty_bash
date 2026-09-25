@@ -58,7 +58,7 @@ impl ValueCheck {
 
     fn show_error(&mut self, name: &str, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let value = self.replace(core)?;
+        let value = self.alter.eval_as_value(core)?;
         let msg = format!("{}: {}", &name, &value);
         Err(ExecError::Other(msg))
     }
