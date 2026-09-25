@@ -933,10 +933,10 @@ res=$($com <<< 'A= ; echo ${A:+set}' )
 res=$($com <<< 'A=aaa ; echo ${A:+set}' )
 [ "$res" = "set" ] || err $LINENO
 
-#res=$($com <<< 'A=aaa ; echo ${A:+"set
-#ok"}' )
-#[ "$res" = "set
-#ok" ] || err $LINENO
+res=$($com <<< 'A=aaa ; echo ${A:+"set
+ok"}' )
+[ "$res" = "set
+ok" ] || err $LINENO
 
 res=$($com <<< 'echo ${A-abc}' )
 [ "$res" = "abc" ] || err $LINENO
