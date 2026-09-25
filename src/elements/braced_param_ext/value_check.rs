@@ -85,6 +85,20 @@ impl BracedParamExtension for ValueCheck {
 }
 
 impl ValueCheck {
+    fn invalidate_escape(v: &mut Word) {
+        for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
+            match e.get_text() {
+                "\\$" | "\\\\" | "\\\"" | "\\`" => {}
+                txt => {
+                    let sw = SimpleSubword {
+                        text: txt.to_string(),
+                    };
+                    *e = Box::new(sw);
+                }
+            }
+        }
+    }
+
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut v = match &self.alter {
             Some(av) => av.clone(),
@@ -92,30 +106,13 @@ impl ValueCheck {
         };
 
         if self.in_double_quoted {
-            for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
-                //                if e.is_escaped_char() {
-                match e.get_text() {
-                    "\\$" | "\\\\" | "\\\"" | "\\`" => {}
-                    txt => {
-                        let sw = SimpleSubword {
-                            text: txt.to_string(),
-                        };
-                        *e = Box::new(sw);
-                    }
-                }
-                //               }
-            }
-
+            Self::invalidate_escape(&mut v);
             self.alter = Some(v.dollar_expansion(core)?);
+            for sw in self.alter.as_mut().unwrap().subwords.iter_mut() {
+                Self::apply_single_quote_rule(sw);
+            }
         } else {
             self.alter = Some(v.tilde_and_dollar_expansion(core)?);
-        }
-        if self.in_double_quoted {
-            for sw in self.alter.as_mut().unwrap().subwords.iter_mut() {
-                if sw.get_text().starts_with("'") {
-                    Self::apply_single_quote_rule(sw);
-                }
-            }
         }
 
         if v.text.starts_with("~") && !self.in_double_quoted {
@@ -126,6 +123,10 @@ impl ValueCheck {
     }
 
     fn apply_single_quote_rule(sw: &mut Box<dyn Subword>) {
+        if !sw.get_text().starts_with("'") {
+            return;
+        }
+
         let mut escaped = false;
         let mut ans = String::new();
         for c in sw.get_text().chars() {
