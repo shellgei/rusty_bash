@@ -60,14 +60,14 @@ impl ValueCheck {
                 "\\$" | "\\\\" | "\\\"" | "\\`" => {},
                 txt => *e = From::from(&txt.to_string()),
             }
-        }   
+        }
     }
 
     fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
         let mut alt = self.alter.clone().unwrap();
         if self.in_double_quote {
-            Self::invalidate_escape(&mut alt); 
+            Self::invalidate_escape(&mut alt);
             self.alter = Some(alt.dollar_expansion(core)?);
         }else{
             self.alter = Some(alt.tilde_and_dollar_expansion(core)?);
@@ -79,7 +79,7 @@ impl ValueCheck {
     -> Result<String, ExecError> {
         let mut alt = self.alter.clone().unwrap();
         if self.in_double_quote {
-            Self::invalidate_escape(&mut alt); 
+            Self::invalidate_escape(&mut alt);
             alt.eval_as_dq_alter(core)
         }else{
             alt.eval_as_value(core)
