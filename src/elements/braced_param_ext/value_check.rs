@@ -30,6 +30,10 @@ impl BracedParamExtension for ValueCheck {
             return Ok(text.to_string());
         }
 
+        if self.in_double_quote {
+            self.invalidate_escape();
+        }
+
         match self.symbol.as_ref() {
             "?" | ":?" => self.show_error(&v.text, core),
             "=" | ":=" => self.set_value(v, core),
@@ -54,20 +58,21 @@ impl BracedParamExtension for ValueCheck {
 }
 
 impl ValueCheck {
-    fn invalidate_escape(v: &mut Word) {
-        for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
+    fn invalidate_escape(&mut self) {
+        let alt = self.alter.as_mut().unwrap();
+        for e in alt.subwords.iter_mut()
+                    .filter(|e| e.is_escaped_char()) {
             match e.get_text() {
                 "\\$" | "\\\\" | "\\\"" | "\\`" => {},
                 txt => *e = From::from(&txt.to_string()),
-            }                 //↑これでBoxに入ったSimpleSubword型に
+            }
         }
     }
 
     fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let mut alt = self.alter.clone().unwrap();
+        let alt = self.alter.clone().unwrap();
         if self.in_double_quote {
-            Self::invalidate_escape(&mut alt);
             self.alter = Some(alt.dollar_expansion(core)?);
         }else{
             self.alter = Some(alt.tilde_and_dollar_expansion(core)?);
@@ -77,9 +82,8 @@ impl ValueCheck {
 
     fn to_string(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let mut alt = self.alter.clone().unwrap();
+        let alt = self.alter.clone().unwrap();
         if self.in_double_quote {
-            Self::invalidate_escape(&mut alt);
             alt.eval_as_dq_alter(core)
         }else{
             alt.eval_as_value(core)
