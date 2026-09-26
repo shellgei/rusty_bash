@@ -59,7 +59,7 @@ impl ValueCheck {
             match e.get_text() {
                 "\\$" | "\\\\" | "\\\"" | "\\`" => {},
                 txt => *e = From::from(&txt.to_string()),
-            }
+            }                 //↑これでBoxに入ったSimpleSubword型に
         }
     }
 
