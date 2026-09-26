@@ -31,7 +31,7 @@ impl Subword for EscapedChar {
     }
 
     fn invalidate_escape(&mut self) -> Option<Box<dyn Subword>> {
-        match self.get_text() {
+        match &self.text {
             "\\$" | "\\\\" | "\\\"" | "\\`" => None,
             txt => Some(From::from(&txt.to_string())),
         }
