@@ -92,6 +92,7 @@ pub trait Subword {
     }
 
     fn is_name(&self) -> bool {false}
+    fn is_escaped_char(&self) -> bool {false}
 }
 
 fn last_resort(

@@ -29,6 +29,8 @@ impl Subword for EscapedChar {
         }
         self.text.clone()
     }
+
+    fn is_escaped_char(&self) -> bool {true}
 }
 
 impl EscapedChar {

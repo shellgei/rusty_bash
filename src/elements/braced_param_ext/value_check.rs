@@ -2,6 +2,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
+use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::word::{Word, WordMode};
 use super::{BracedParamExtension, ExecError, ParseError, Parameter, Subword};
 
@@ -54,10 +55,25 @@ impl BracedParamExtension for ValueCheck {
 }
 
 impl ValueCheck {
+    fn invalidate_escape(v: &mut Word) {
+        for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
+            match e.get_text() {
+                "\\$" | "\\\\" | "\\\"" | "\\`" => {}
+                txt => {
+                    let sw = SimpleSubword {
+                        text: txt.to_string(),
+                    };  
+                    *e = Box::new(sw);
+                }   
+            }   
+        }   
+    }
+
     fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
-        let alt = self.alter.clone().unwrap();
+        let mut alt = self.alter.clone().unwrap();
         if self.in_double_quote {
+            Self::invalidate_escape(&mut alt); 
             self.alter = Some(alt.dollar_expansion(core)?);
         }else{
             self.alter = Some(alt.tilde_and_dollar_expansion(core)?);
@@ -68,6 +84,7 @@ impl ValueCheck {
     fn to_string(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
         if self.in_double_quote {
+            Self::invalidate_escape(&mut self.alter); 
             self.alter.clone().unwrap().eval_as_dq_alter(core)
         }else{
             self.alter.clone().unwrap().eval_as_value(core)
