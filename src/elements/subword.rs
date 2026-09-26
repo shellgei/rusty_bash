@@ -93,6 +93,7 @@ pub trait Subword {
 
     fn is_name(&self) -> bool {false}
     fn invalidate_escape(&mut self) -> Option<Box<dyn Subword>> {None}
+    fn alter_single_quote_rule(&mut self) {}
 }
 
 fn last_resort(

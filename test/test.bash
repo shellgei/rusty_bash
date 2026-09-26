@@ -995,11 +995,11 @@ res=$($com <<< 'a=A ; echo ${a:-B}' )
 res=$($com <<< 'A=a ; b=${A-" "}; echo $b' )
 [ "$res" = "a" ] || err $LINENO
 
-#res=$($com << 'EOF'
-#echo "${dbg-'"'hey}"
-#EOF
-#)
-#[ "$res" == "''hey" ] || err $LINENO
+res=$($com << 'EOF'
+echo "${a-'"'b}"
+EOF
+)
+[ "$res" == "''b" ] || err $LINENO
 
 res=$($com <<< 'echo ${A:-\a} ${A:-"\a"} "${A:-\a}"') # "${A:-"\a"}"')
 [ "$res" == 'a \a \a' ] || err $LINENO

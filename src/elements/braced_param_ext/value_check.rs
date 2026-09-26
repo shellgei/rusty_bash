@@ -31,7 +31,12 @@ impl BracedParamExtension for ValueCheck {
         }
 
         if self.in_double_quote {
-            self.invalidate_escape();
+            let alt = self.alter.as_mut().unwrap();
+            for e in alt.subwords.iter_mut() {
+                if let Some(sw) = e.invalidate_escape() {
+                    *e = sw;
+                }
+            }
         }
 
         match self.symbol.as_ref() {
@@ -58,20 +63,13 @@ impl BracedParamExtension for ValueCheck {
 }
 
 impl ValueCheck {
-    fn invalidate_escape(&mut self) {
-        let alt = self.alter.as_mut().unwrap();
-        for e in alt.subwords.iter_mut() {
-            if let Some(sw) = e.invalidate_escape() {
-                *e = sw;
-            }
-        }
-    }
-
     fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
         let alt = self.alter.clone().unwrap();
         if self.in_double_quote {
             self.alter = Some(alt.dollar_expansion(core)?);
+            let alt = self.alter.as_mut().unwrap();
+            alt.subwords.iter_mut().for_each(|e| e.alter_single_quote_rule());
         }else{
             self.alter = Some(alt.tilde_and_dollar_expansion(core)?);
         }

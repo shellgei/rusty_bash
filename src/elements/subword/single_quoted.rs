@@ -26,6 +26,23 @@ impl Subword for SingleQuoted {
     }
 
     fn split(&self) -> Vec<Box<dyn Subword>>{ vec![] }
+
+    fn alter_single_quote_rule(&mut self) {
+        let mut escaped = false;
+        let mut ans = String::new();
+        for c in self.text.chars() {
+            if escaped || c == '\\' {
+                escaped = !escaped;
+                if c == '"' {
+                    ans.pop();
+                }
+            } else if c == '"' {
+                continue;
+            }
+            ans.push(c);
+        }
+        self.text = format!("'{}'", ans);
+    }
 }
 
 impl SingleQuoted {
