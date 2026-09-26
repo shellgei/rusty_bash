@@ -30,7 +30,12 @@ impl Subword for EscapedChar {
         self.text.clone()
     }
 
-    fn is_escaped_char(&self) -> bool {true}
+    fn invalidate_escape(&mut self) -> Option<Box<dyn Subword>> {
+        match self.get_text() {
+            "\\$" | "\\\\" | "\\\"" | "\\`" => None,
+            txt => Some(From::from(&txt.to_string())),
+        }
+    }
 }
 
 impl EscapedChar {

@@ -60,11 +60,9 @@ impl BracedParamExtension for ValueCheck {
 impl ValueCheck {
     fn invalidate_escape(&mut self) {
         let alt = self.alter.as_mut().unwrap();
-        for e in alt.subwords.iter_mut()
-                    .filter(|e| e.is_escaped_char()) {
-            match e.get_text() {
-                "\\$" | "\\\\" | "\\\"" | "\\`" => {},
-                txt => *e = From::from(&txt.to_string()),
+        for e in alt.subwords.iter_mut() {
+            if let Some(sw) = e.invalidate_escape() {
+                *e = sw;
             }
         }
     }
