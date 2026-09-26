@@ -70,7 +70,7 @@ impl Word {
         Ok( Self::make_args(&mut ws)?.join(" ") )
     } 
 
-    pub fn eval_as_alter(&self, core: &mut ShellCore) -> Result<String, ExecError> {
+    pub fn eval_as_dq_alter(&self, core: &mut ShellCore) -> Result<String, ExecError> {
         let mut w = self.clone();
         substitution::eval(&mut w, core)?;
         let mut ws = path_expansion::eval(&mut w);
