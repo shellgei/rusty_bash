@@ -30,9 +30,14 @@ impl BracedParamExtension for ValueCheck {
             return Ok(text.to_string());
         }
 
-        if self.in_double_quote {
-            self.invalidate_escape();
-        }
+       if self.in_double_quote {
+           let alt = self.alter.as_mut().unwrap();
+           for e in alt.subwords.iter_mut() {
+               if let Some(sw) = e.invalidate_escape() {
+                   *e = sw;
+               }
+           }
+       }
 
         match self.symbol.as_ref() {
             "?" | ":?" => self.show_error(&v.text, core),
@@ -58,15 +63,6 @@ impl BracedParamExtension for ValueCheck {
 }
 
 impl ValueCheck {
-    fn invalidate_escape(&mut self) {
-        let alt = self.alter.as_mut().unwrap();
-        for e in alt.subwords.iter_mut() {
-            if let Some(sw) = e.invalidate_escape() {
-                *e = sw;
-            }
-        }
-    }
-
     fn replace(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
         let alt = self.alter.clone().unwrap();
