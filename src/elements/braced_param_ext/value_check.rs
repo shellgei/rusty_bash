@@ -2,7 +2,6 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::{Feeder, ShellCore};
-use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::word::{Word, WordMode};
 use super::{BracedParamExtension, ExecError, ParseError, Parameter, Subword};
 
@@ -58,14 +57,9 @@ impl ValueCheck {
     fn invalidate_escape(v: &mut Word) {
         for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
             match e.get_text() {
-                "\\$" | "\\\\" | "\\\"" | "\\`" => {}
-                txt => {
-                    let sw = SimpleSubword {
-                        text: txt.to_string(),
-                    };  
-                    *e = Box::new(sw);
-                }   
-            }   
+                "\\$" | "\\\\" | "\\\"" | "\\`" => {},
+                txt => *e = From::from(&txt.to_string()),
+            }
         }   
     }
 
