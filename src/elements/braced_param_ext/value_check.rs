@@ -30,14 +30,14 @@ impl BracedParamExtension for ValueCheck {
             return Ok(text.to_string());
         }
 
-        if self.in_double_quote {
-            let alt = self.alter.as_mut().unwrap();
-            for e in alt.subwords.iter_mut() {
-                if let Some(sw) = e.invalidate_escape() {
-                    *e = sw;
-                }
-            }
-        }
+       if self.in_double_quote {
+           let alt = self.alter.as_mut().unwrap();
+           for e in alt.subwords.iter_mut() {
+               if let Some(sw) = e.invalidate_escape() {
+                   *e = sw;
+               }
+           }
+       }
 
         match self.symbol.as_ref() {
             "?" | ":?" => self.show_error(&v.text, core),
