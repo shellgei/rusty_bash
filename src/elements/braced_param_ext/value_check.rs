@@ -4,7 +4,6 @@
 use super::BracedParamExtension;
 use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
-use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subword::single_quoted::SingleQuoted;
 use crate::elements::word::{Word, mode::WordMode};
 use crate::error::arith::ArithError;
@@ -88,13 +87,8 @@ impl ValueCheck {
     fn invalidate_escape(v: &mut Word) {
         for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
             match e.get_text() {
-                "\\$" | "\\\\" | "\\\"" | "\\`" => {}
-                txt => {
-                    let sw = SimpleSubword {
-                        text: txt.to_string(),
-                    };
-                    *e = Box::new(sw);
-                }
+                "\\$" | "\\\\" | "\\\"" | "\\`" => {},
+                txt => *e = From::from(&txt.to_string()),
             }
         }
     }
