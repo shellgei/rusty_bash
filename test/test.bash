@@ -1001,11 +1001,11 @@ res=$($com <<< 'A=a ; b=${A-" "}; echo $b' )
 #)
 #[ "$res" == "''hey" ] || err $LINENO
 
-res=$($com <<< 'echo ${A:-\a}')
-[ "$res" == 'a' ] || err $LINENO
+res=$($com <<< 'echo ${A:-\a} ${A:-"\a"} "${A:-\a}"') # "${A:-"\a"}"')
+[ "$res" == 'a \a \a' ] || err $LINENO
 
-#res=$($com <<< 'echo "${A:-\a}"')
-#[ "$res" == '\a' ] || err $LINENO
+res=$($com <<< 'echo ${A:-\$} ${A:-"\$"} "${A:-\$}" "${A:-"\$"}"')
+[ "$res" == '$ $ $ $' ] || err $LINENO
 
 res=$($com <<< 'echo ${A:-~}')
 [ "$res" != '~' ] || err $LINENO
