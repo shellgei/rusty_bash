@@ -67,10 +67,11 @@ impl ValueCheck {
 
     fn to_string(&mut self, core: &mut ShellCore)
     -> Result<String, ExecError> {
+        let alt = self.alter.clone().unwrap();
         if self.in_double_quote {
-            self.alter.clone().unwrap().eval_as_dq_alter(core)
+            alt.eval_as_dq_alter(core)
         }else{
-            self.alter.clone().unwrap().eval_as_value(core)
+            alt.eval_as_value(core)
         }
     }
 
