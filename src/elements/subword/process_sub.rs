@@ -32,7 +32,7 @@ impl Subword for ProcessSubstitution {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         if self.direction == '>' {
             return self.substitute_out(core);
         }
@@ -40,13 +40,6 @@ impl Subword for ProcessSubstitution {
         let mut pipe = Pipe::new("|".to_string());
         pipe.set(-1, unistd::getpgrp(), core)?;
         let pid = self.command.exec(core, &mut pipe)?.unwrap();
-        //let pid_u: i32 = pid.into();
-        /*
-        core.db.last_bg_pid = pid.into();
-        core.db.last_bg_exit_status = None;
-        */
-       // let bg_info = ((pid_u as u64) << 32) + 1000;
-        //core.db.last_bg_proc.store(bg_info, Relaxed);
         core.out_proc_sub_pid.push(pid);
         self.text = "/dev/fd/".to_owned() + &pipe.recv.to_string();
 
@@ -65,11 +58,6 @@ impl Subword for ProcessSubstitution {
                         *bg_info = (Some(pid), Some(es));
                     }
                 }
-                //let bg_info = ((pid as u64) << 32) + 1000;
-                //proc_info.store(
-                //dbg!("{:?}", &pid);
-                //dbg!("{:?}", &es);
-       //         exit_status.store(es, Relaxed);
             }
             Ok(Signaled(pid, sig, _)) => {
                 let mut bg_info = proc_info.lock().unwrap();
@@ -78,14 +66,12 @@ impl Subword for ProcessSubstitution {
                         *bg_info = (Some(pid), Some(sig as i32 + 128));
                     }
                 }
-        //        let _ = signal::killpg(pid, sig);
-         //       exit_status.store(sig as i32 + 128, Relaxed);
             }
             Err(_) => {}
             _ => {}
         });
 
-        Ok(())
+        Ok(vec![])
     }
 
     fn set_pipe(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
@@ -105,14 +91,14 @@ impl Subword for ProcessSubstitution {
 }
 
 impl ProcessSubstitution {
-    fn substitute_out(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute_out(&mut self, core: &mut ShellCore)-> Result<Vec<Box<dyn Subword>>, ExecError> {
         let pipe = self.pipe.as_mut().unwrap();
         let pid = self.command.exec(core, pipe)?.unwrap();
         core.out_proc_sub_pid.push(pid);
         core.out_proc_sub_fd.push((pipe.proc_sub_send, core.source_function_level));
         self.text = "/dev/fd/".to_owned() + &pipe.proc_sub_send.to_string();
 
-        Ok(())
+        Ok(vec![])
     }
 
     pub fn parse(

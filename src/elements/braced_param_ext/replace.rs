@@ -13,12 +13,9 @@ use crate::{Feeder, ShellCore};
 #[derive(Debug, Clone, Default)]
 pub struct Replace {
     pub text: String,
-    pub head_only_replace: bool,
-    pub tail_only_replace: bool,
-    pub all_replace: bool,
-    pub replace_from: Option<Word>,
-    pub replace_to: Option<Word>,
-    pub has_replace_to: bool,
+    pub symbol: String,
+    pub pattern: Word,
+    pub string: Word,
 }
 
 impl BracedParamExtension for Replace {
@@ -75,22 +72,7 @@ impl BracedParamExtension for Replace {
 }
 
 impl Replace {
-    fn to_string(&self, w: &Option<Word>, core: &mut ShellCore) -> Result<String, ExecError> {
-        if let Some(w) = &w {
-            match w.eval_for_case_word(core) {
-                Some(s) => return Ok(s),
-                None => match w.subwords.len() {
-                    0 => return Ok("".to_string()),
-                    _ => return Err(ExecError::Other("parse error".to_string())),
-                },
-            }
-        }
-
-        Ok("".to_string())
-    }
-
-    fn get_text_head(
-        text: &str,
+    fn get_text_head(text: &str,
         pattern: &[GlobElem],
         string_to: &str,
     ) -> Result<String, ExecError> {
@@ -130,13 +112,14 @@ impl Replace {
 
     pub fn get_text(&self, text: &str, core: &mut ShellCore) -> Result<String, ExecError> {
         let extglob = core.shopts.query("extglob");
-        let tmp = self.to_string(&self.replace_from, core)?;
-        let pattern = glob::parse(&tmp, extglob);
-        let string_to = self.to_string(&self.replace_to, core)?;
+        let nocasematch = core.shopts.query("nocasematch");
+        let tmp = self.pattern.eval_as_pattern(core)?;
+        let pattern = glob::parse(&tmp, extglob, nocasematch);
+        let string_to = self.string.eval_as_pattern(core)?;
 
-        if self.head_only_replace {
+        if self.symbol == "/#" {
             return Self::get_text_head(text, &pattern, &string_to);
-        } else if self.tail_only_replace {
+        } else if self.symbol == "/%" {
             return Self::get_text_tail(text, &pattern, &string_to);
         }
 
@@ -151,7 +134,8 @@ impl Replace {
             }
 
             let len = glob::longest_match_length(&text[start..], &pattern);
-            if len != 0 && self.tail_only_replace {
+            /*
+            if len != 0 && self.symbol == "/%" {
                 if len == text[start..].len() {
                     return Ok([&text[..start], &string_to[0..]].concat());
                 } else {
@@ -159,7 +143,9 @@ impl Replace {
                     start += ch.len_utf8();
                     continue;
                 }
-            } else if len != 0 && !self.all_replace {
+            } else*/
+
+            if len != 0 && self.symbol != "//" {
                 return Ok([&text[..start], &string_to[0..], &text[start + len..]].concat());
             }
 
@@ -176,52 +162,27 @@ impl Replace {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        if !feeder.starts_with("/") {
+        let len = feeder.scanner_parameter_replace_symbol();
+        if len == 0 {
             return Ok(None);
         }
-
+        
         let mut ans = Replace::default();
+        ans.symbol = feeder.consume(len);
+        ans.text += &ans.symbol.clone();
 
-        ans.text += &feeder.consume(1);
-        if feeder.starts_with("/") {
-            ans.text += &feeder.consume(1);
-            ans.all_replace = true;
-        } else if feeder.starts_with("#") {
-            ans.text += &feeder.consume(1);
-            ans.head_only_replace = true;
-        } else if feeder.starts_with("%") {
-            ans.text += &feeder.consume(1);
-            ans.tail_only_replace = true;
-        }
-
-        if let Some(w) = Word::parse(
-            feeder,
-            core,
-            Some(WordMode::PermitAnyUntil(vec!["}".to_string(), "/".to_string()])),
-        )? {
-            ans.text += &w.text.clone();
-            ans.replace_from = Some(w);
-        } else {
-            ans.replace_from = Some(Word::default());
-        }
+        let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string(), "/".to_string()]));
+        ans.pattern = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &ans.pattern.text.clone();
 
         if !feeder.starts_with("/") {
             return Ok(Some(ans));
         }
         ans.text += &feeder.consume(1);
-        ans.has_replace_to = true;
 
-        if let Some(w) = Word::parse(
-            feeder,
-            core,
-            Some(WordMode::PermitAnyUntil(vec!["}".to_string()])),
-            //Some(WordMode::AlterWord),
-        )? {
-            ans.text += &w.text.clone();
-            ans.replace_to = Some(w);
-        } else {
-            ans.replace_to = Some(Word::default());
-        }
+        let mode = Some(WordMode::PermitAnyUntil(vec!["}".to_string()]));
+        ans.string = Word::parse(feeder, core, mode)?.unwrap_or_default();
+        ans.text += &ans.string.text.clone();
 
         Ok(Some(ans))
     }

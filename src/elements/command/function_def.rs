@@ -119,12 +119,23 @@ impl FunctionDefinition {
         let scope = core.db.get_scope_num() - 1;
         let added_envs = core.db.set_scope_to_env(scope);
 
+        let mut trap_bkup = None;
+        if ! core.shopts.query("extdebug") {
+            trap_bkup = Some(core.trap.list.clone());
+            core.trap.list.clear();
+        }
+
         core.source_function_level += 1;
         if let Err(e) = self.command.as_mut().unwrap().exec(core, &mut dummy) {
             e.print(core);
         }
         core.return_flag = false;
         core.source_function_level -= 1;
+
+        if trap_bkup.is_some() {
+            core.trap.list = trap_bkup.unwrap();
+        }
+            
 
         for env in added_envs {
             unsafe {
@@ -169,10 +180,6 @@ impl FunctionDefinition {
 
         if feeder.starts_with("()") {
             self.text += &feeder.consume(2);
-            /*
-            if self.name == "for" {
-                return Err(ParseError::UnexpectedSymbol("(".to_string()));
-            }*/
         } else if !self.has_function_keyword {
             return false;
         }

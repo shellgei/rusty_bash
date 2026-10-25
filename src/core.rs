@@ -249,7 +249,7 @@ impl ShellCore {
         self.is_subshell = true;
         proc_ctrl::set_pgid(self, pid, pgid);
         let _ = self.set_subshell_parameters();
-        self.trap.clear_for_subshell();
+        self.trap.clear_for_subshell(self.shopts.query("extdebug"));
     }
 
     pub fn init_current_directory(&mut self) {

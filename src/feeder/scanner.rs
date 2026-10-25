@@ -382,12 +382,16 @@ impl Feeder {
         self.scanner_one_of(&["<<<", "<<-", "&>", ">&", "<&", ">>", "<<", "<", ">"])
     }
 
-    pub fn scanner_parameter_alternative_symbol(&mut self) -> usize {
+    pub fn scanner_parameter_check_symbol(&mut self) -> usize {
         self.scanner_one_of(&[":-", ":=", ":?", ":+", "-", "+", "?", "="])
     }
 
     pub fn scanner_parameter_remove_symbol(&mut self) -> usize {
         self.scanner_one_of(&["##", "#", "%%", "%"])
+    }
+
+    pub fn scanner_parameter_replace_symbol(&mut self) -> usize {
+        self.scanner_one_of(&["//", "/%", "/#", "/"])
     }
 
     pub fn scanner_tabs(&mut self) -> usize {

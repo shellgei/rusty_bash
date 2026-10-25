@@ -89,6 +89,8 @@ fn print_item(num: i32, script: &str) {
         println!("trap -- '{}' ERR", &script);
     } else if num == trap::DEBUG {
         println!("trap -- '{}' DEBUG", &script);
+    } else if num == trap::RETURN {
+        println!("trap -- '{}' RETURN", &script);
     } else if let Ok(s) = Signal::try_from(num) {
         println!("trap -- '{}' {}", &script, &s);
     }
@@ -135,6 +137,10 @@ fn arg_to_num(arg: &str, forbiddens: &[i32]) -> Result<i32, ExecError> {
 
     if arg == "ERR" || arg_num == trap::ERROR {
         return Ok(trap::ERROR);
+    }
+
+    if arg == "RETURN" || arg_num == trap::RETURN {
+        return Ok(trap::RETURN);
     }
 
     if arg == "DEBUG" || arg_num == trap::DEBUG {

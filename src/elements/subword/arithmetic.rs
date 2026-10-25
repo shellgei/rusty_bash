@@ -21,9 +21,9 @@ impl Subword for Arithmetic {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         self.text = self.com.eval(core)?;
-        Ok(())
+        Ok(vec![])
     }
 }
 

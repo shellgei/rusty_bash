@@ -4,7 +4,6 @@
 use super::BracedParamExtension;
 use crate::elements::parameter::Parameter;
 use crate::elements::subword::Subword;
-use crate::elements::subword::simple::SimpleSubword;
 use crate::elements::subword::single_quoted::SingleQuoted;
 use crate::elements::word::{Word, mode::WordMode};
 use crate::error::arith::ArithError;
@@ -22,7 +21,7 @@ fn is_special_param(name: &str) -> bool {
 pub struct ValueCheck {
     pub text: String,
     pub symbol: Option<String>,
-    alternative_value: Option<Word>,
+    alter: Option<Word>,
     in_double_quoted: bool,
 }
 
@@ -48,7 +47,7 @@ impl BracedParamExtension for ValueCheck {
         }
 
         if check_ok {
-            self.alternative_value = None;
+            self.alter = None;
             return Ok(text.to_string());
         }
 
@@ -67,55 +66,41 @@ impl BracedParamExtension for ValueCheck {
     }
 
     fn get_alternative(&self) -> Vec<Box<dyn Subword>> {
-        match &self.alternative_value {
+        match &self.alter {
             Some(w) => w.subwords.to_vec(),
             None => vec![],
         }
     }
 
     fn set_heredoc_flag(&mut self) {
-        self.alternative_value
+        self.alter
             .iter_mut()
             .for_each(|e| e.set_heredoc_flag());
     }
 
     fn array_to_single(&mut self) -> bool {
-        self.alternative_value.is_some()
+        self.alter.is_some()
     }
 }
 
 impl ValueCheck {
+    fn invalidate_escape(v: &mut Word) {
+        for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
+            match e.get_text() {
+                "\\$" | "\\\\" | "\\\"" | "\\`" => {},
+                txt => *e = From::from(&txt.to_string()),
+            }
+        }
+    }
+
     fn set_alter_word(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        let mut v = match &self.alternative_value {
+        let mut v = match &self.alter {
             Some(av) => av.clone(),
             None => return Err(ArithError::OperandExpected("".to_string()).into()),
         };
 
         if self.in_double_quoted {
-            for e in v.subwords.iter_mut().filter(|e| e.is_escaped_char()) {
-                //                if e.is_escaped_char() {
-                match e.get_text() {
-                    "\\$" | "\\\\" | "\\\"" | "\\`" => {}
-                    txt => {
-                        let sw = SimpleSubword {
-                            text: txt.to_string(),
-                        };
-                        *e = Box::new(sw);
-                    }
-                }
-                //               }
-            }
-
-            self.alternative_value = Some(v.dollar_expansion(core)?);
-        } else {
-            self.alternative_value = Some(v.tilde_and_dollar_expansion(core)?);
-        }
-        if self.in_double_quoted {
-            for sw in self.alternative_value.as_mut().unwrap().subwords.iter_mut() {
-                if sw.get_text().starts_with("'") {
-                    Self::apply_single_quote_rule(sw);
-                }
-            }
+            Self::invalidate_escape(&mut v);
         }
 
         if v.text.starts_with("~") && !self.in_double_quoted {
@@ -126,6 +111,10 @@ impl ValueCheck {
     }
 
     fn apply_single_quote_rule(sw: &mut Box<dyn Subword>) {
+        if !sw.get_text().starts_with("'") {
+            return;
+        }
+
         let mut escaped = false;
         let mut ans = String::new();
         for c in sw.get_text().chars() {
@@ -148,7 +137,22 @@ impl ValueCheck {
     }
 
     fn replace(&mut self, core: &mut ShellCore) -> Result<String, ExecError> {
-        self.set_alter_word(core)
+        let mut v = match &self.alter {
+            Some(av) => av.clone(),
+            None => return Err(ArithError::OperandExpected("".to_string()).into()),
+        };
+
+        if self.in_double_quoted {
+            Self::invalidate_escape(&mut v);
+            self.alter = Some(v.dollar_expansion(core)?);
+            for sw in self.alter.as_mut().unwrap().subwords.iter_mut() {
+                Self::apply_single_quote_rule(sw);
+            }
+        } else {
+            self.alter = Some(v.tilde_and_dollar_expansion(core)?);
+        }
+
+        Ok("".to_string())
     }
 
     fn set_value(
@@ -168,7 +172,7 @@ impl ValueCheck {
         }
 
         variable.clone().set_value(&value, core)?;
-        self.alternative_value = None;
+        self.alter = None;
         Ok(value)
     }
 
@@ -179,7 +183,7 @@ impl ValueCheck {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
-        let num = feeder.scanner_parameter_alternative_symbol();
+        let num = feeder.scanner_parameter_check_symbol();
         if num == 0 {
             return Ok(None);
         }
@@ -194,11 +198,11 @@ impl ValueCheck {
         ans.text += &feeder.consume(num);
         let mode = WordMode::PermitAnyUntil(vec!["}".to_string()]);
         //let mode = WordMode::AlterWord;
-        ans.alternative_value = Some(Word::default());
+        ans.alter = Some(Word::default());
 
         if let Some(w) = Word::parse(feeder, core, Some(mode))? {
             ans.text += &w.text.clone();
-            ans.alternative_value = Some(w);
+            ans.alter = Some(w);
         }
 
         if feeder.nest.iter().any(|e| e.0 == "\"") {

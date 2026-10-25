@@ -44,27 +44,12 @@ impl Subword for BracedParam {
         Box::new(self.clone())
     }
 
-    fn substitute(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
-        if core.db.exist_nameref(&self.param.name) && !self.indirect {
-            self.param.solve_nameref(core)?;
-            return self.substitute(core);
-        }
-        self.check()?;
+    fn substitute(&mut self, core: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+        self.substitute_main(core)?;
 
-        if self.indirect && !self.indirect_preparation(core)? {
-            return Ok(());
-        }
-
-        if self.param.is_array()
-            && let Some(op) = self.extension.as_mut()
-            && op.has_array_replace()
-        {
-            return self.array_replace(core);
-        }
-
-        match self.param.index.is_some() {
-            true => self.subscript_operation(core),
-            false => self.non_subscript_operation(core),
+        match self.extension.as_mut() {
+            Some(op) => Ok(op.get_alternative()),
+            None => Ok(vec![]),
         }
     }
 
@@ -72,7 +57,11 @@ impl Subword for BracedParam {
         self.text = text.to_string();
     }
 
-    fn is_array(&self) -> bool {
+    fn is_array(&mut self, core: &mut ShellCore) -> bool {
+        if self.indirect {
+            let _ = self.indirect_preparation(core);
+        }
+
         self.treat_as_array
     }
 
@@ -84,13 +73,6 @@ impl Subword for BracedParam {
         }
 
         self.array.clone().unwrap_or_default()
-    }
-
-    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
-        match self.extension.as_mut() {
-            Some(op) => Ok(op.get_alternative()),
-            None => Ok(vec![]),
-        }
     }
 
     fn split(&self, ifs: &str, strip_left: bool) -> Option<Vec<(Box<dyn Subword>, bool)>> {
@@ -132,6 +114,30 @@ impl BracedParam {
             return Err(ExecError::BadSubstitution(self.param.name.clone()));
         }
         Ok(())
+    }
+
+    fn substitute_main(&mut self, core: &mut ShellCore) -> Result<(), ExecError> {
+        if core.db.exist_nameref(&self.param.name) && !self.indirect {
+            self.param.solve_nameref(core)?;
+            return self.substitute_main(core);
+        }
+        self.check()?;
+
+        if self.indirect && !self.indirect_preparation(core)? {
+            return Ok(());
+        }
+
+        if self.param.is_array()
+            && let Some(op) = self.extension.as_mut()
+            && op.has_array_replace()
+        {
+            return self.array_replace(core);
+        }
+
+        match self.param.index.is_some() {
+            true => self.subscript_operation(core),
+            false => self.non_subscript_operation(core),
+        }
     }
 
     fn array_to_split(&self) -> Option<Vec<(Box<dyn Subword>, bool)>> {

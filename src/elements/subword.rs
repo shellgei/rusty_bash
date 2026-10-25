@@ -78,10 +78,7 @@ pub trait Subword {
     fn get_text(&self) -> &str;
     fn set_text(&mut self, _: &str) {}
     fn boxed_clone(&self) -> Box<dyn Subword>;
-    fn substitute(&mut self, _: &mut ShellCore) -> Result<(), ExecError> {
-        Ok(())
-    }
-    fn alter(&mut self) -> Result<Vec<Box<dyn Subword>>, ExecError> {
+    fn substitute(&mut self, _: &mut ShellCore) -> Result<Vec<Box<dyn Subword>>, ExecError> {
         Ok(vec![])
     }
 
@@ -111,7 +108,7 @@ pub trait Subword {
     fn is_name(&self) -> bool {
         false
     }
-    fn is_array(&self) -> bool {
+    fn is_array(&mut self, _: &mut ShellCore) -> bool {
         false
     }
     fn get_elem(&mut self) -> Vec<String> {

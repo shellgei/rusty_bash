@@ -63,6 +63,7 @@ impl BracedParam {
             }
             self.text = arr.join(ifs);
             self.array = Some(arr);
+            self.treat_as_array = true;
         }
         Ok(())
     }
