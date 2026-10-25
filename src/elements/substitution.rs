@@ -55,7 +55,10 @@ impl Substitution {
         }
 
         let r = self.right_hand.as_mut().unwrap();
-        r.eval(core, &self.left_hand.name, self.append)?;
+        if let Err(e) = r.eval(core, &self.left_hand.name, self.append) {
+            let _ = core.db.set_param("LINENO", &self.lineno.to_string(), None);
+            return Err(e);
+        }
 
         if r.is_obj() {
             return Ok(());
@@ -64,6 +67,7 @@ impl Substitution {
         if declare && r.evaluated_array.is_some() {
             self.left_hand.index = None;
         }
+
         self.set_to_shell(core, scope)
     }
 

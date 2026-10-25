@@ -11,6 +11,7 @@ use crate::{Feeder, ShellCore};
 pub struct Subscript {
     pub text: String,
     data: SubscriptType,
+    pub lineno: usize,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -41,6 +42,15 @@ impl Subscript {
             }
 
             let mut f = Feeder::new(&a.text);
+            /*
+            let lineno = core
+                .db.get_param("LINENO")
+                .unwrap_or("1".to_string())
+                .parse::<usize>().unwrap_or(1);
+
+            f.lineno += lineno - 1;
+            */
+            f.lineno = self.lineno;
             if let Some(w) = Word::parse(&mut f, core, Some(WordMode::AssocIndex))? {
                 return w.eval_as_assoc_index(core);
             } else {
@@ -76,6 +86,7 @@ impl Subscript {
 
         let mut ans = Self::default();
         ans.text += &feeder.consume(1);
+        ans.lineno = feeder.lineno;
 
         if feeder.starts_with_one_of(&["@", "*"]) {
             let s = feeder.consume(1);

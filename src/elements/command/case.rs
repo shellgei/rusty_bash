@@ -87,17 +87,6 @@ impl Command for CaseCommand {
 }
 
 impl CaseCommand {
-    /*
-    fn new() -> Self {
-        CaseCommand {
-            text: String::new(),
-            word: None,
-            patterns_script_end: vec![],
-            redirects: vec![],
-            force_fork: false,
-        }
-    }*/
-
     fn eat_word(
         feeder: &mut Feeder,
         ans: &mut Self,
@@ -156,6 +145,10 @@ impl CaseCommand {
         if !feeder.starts_with("case") {
             return Ok(None);
         }
+        core.case_line = feeder.copy();
+        let _ = core
+            .db
+            .set_param("LINENO", &feeder.lineno.to_string(), None);
 
         let mut ans = Self {
             lineno: feeder.lineno,

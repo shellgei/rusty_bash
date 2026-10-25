@@ -15,6 +15,7 @@ impl Options {
         let mut options = Options::default();
         options.opts.insert("allexport".to_string(), false);
         options.opts.insert("pipefail".to_string(), false);
+        options.opts.insert("functrace".to_string(), false);
         options.opts.insert("monitor".to_string(), true);
         options.opts.insert("noclobber".to_string(), false);
         options.opts.insert("noglob".to_string(), false);
@@ -85,6 +86,7 @@ impl Options {
 
         options.implemented = [
             "extglob",
+            "extdebug",
             "progcomp",
             "nullglob",
             "dotglob",

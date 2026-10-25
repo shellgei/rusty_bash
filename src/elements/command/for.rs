@@ -1,14 +1,14 @@
 //SPDX-FileCopyrightText: 2022 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use crate::{Feeder, Script, ShellCore};
-
 use super::{Command, Redirect};
 use crate::elements::command;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::word::Word;
+use crate::elements::word::mode::WordMode;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
+use crate::{Feeder, Script, ShellCore, utils};
 use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Debug, Clone, Default)]
@@ -23,10 +23,20 @@ pub struct ForCommand {
     redirects: Vec<Redirect>,
     force_fork: bool,
     lineno: usize,
+    wrong_arith: String,
 }
 
 impl Command for ForCommand {
     fn run(&mut self, core: &mut ShellCore, _: bool) -> Result<(), ExecError> {
+        core.db
+            .set_param("LINENO", &self.lineno.to_string(), None)?;
+
+        if !self.has_arithmetic && !utils::is_name(&self.name, core) {
+            core.db.exit_status = 1;
+            ExecError::VariableInvalid(self.name.to_string()).print(core);
+            return Ok(());
+        }
+
         core.loop_level += 1;
 
         let ok = match self.has_arithmetic {
@@ -63,6 +73,16 @@ impl Command for ForCommand {
     fn force_fork(&self) -> bool {
         self.force_fork
     }
+
+    /*
+    fn pretty_print(&mut self, indent_num: usize) {
+        println!("{}", &indent_num);
+        /*
+        println!("{} () ", self.name);
+        for com in self.command.iter_mut() {
+            com.pretty_print(indent_num);
+        }*/
+    }*/
 }
 
 impl ForCommand {
@@ -188,13 +208,13 @@ impl ForCommand {
     fn eat_name(feeder: &mut Feeder, ans: &mut Self, core: &mut ShellCore) -> bool {
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
 
-        let len = feeder.scanner_name(core);
-        if len == 0 {
+        if let Ok(Some(w)) = Word::parse(feeder, core, None) {
+            ans.name = w.text.clone();
+            ans.text += &w.text;
+        } else {
             return false;
         }
 
-        ans.name = feeder.consume(len);
-        ans.text += &ans.name.clone();
         command::eat_blank_with_comment(feeder, core, &mut ans.text);
         true
     }
@@ -213,25 +233,35 @@ impl ForCommand {
         loop {
             command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
-            let a = ArithmeticExpr::parse(feeder, core, true, "((")?;
-            if let Some(ref arith) = a {
+            let mut a = ArithmeticExpr::parse(feeder, core, true, "((")?;
+            if let Some(ref mut arith) = a {
                 ans.text += &arith.text;
+                if arith.text.is_empty() {
+                    a = None;
+                }
             }
             ans.arithmetics.push(a);
 
             command::eat_blank_with_comment(feeder, core, &mut ans.text);
             if feeder.starts_with(";") {
                 if ans.arithmetics.len() >= 3 {
+                    core.case_line.clear();
+                    ParseError::SyntaxError("`;' unexpected".to_string()).print(core);
                     return Ok(false);
                 }
                 ans.text += &feeder.consume(1);
             } else if feeder.starts_with("))") {
                 if ans.arithmetics.len() != 3 {
+                    core.case_line.clear();
+                    ParseError::SyntaxError("arithmetic expression required".to_string())
+                        .print(core);
                     return Ok(false);
                 }
                 ans.text += &feeder.consume(2);
-                return Ok(ans.arithmetics.len() == 3);
+                return Ok(true);
             } else {
+                core.case_line.clear();
+                ParseError::SyntaxError("arithmetic expression required".to_string()).print(core);
                 return Ok(false);
             }
         }
@@ -276,35 +306,76 @@ impl ForCommand {
         if !feeder.starts_with("for") {
             return Ok(None);
         }
+        core.case_line = feeder.copy();
+
         let mut ans = Self {
             lineno: feeder.lineno,
             text: feeder.consume(3),
             ..Default::default()
         };
 
+        feeder.set_backup();
         if Self::eat_name(feeder, &mut ans, core) {
+            feeder.pop_backup();
             Self::eat_in_part(feeder, &mut ans, core)?;
         } else if !Self::eat_arithmetic(feeder, &mut ans, core)? {
-            return Ok(None);
+            feeder.rewind();
+            let mode = WordMode::PermitAnyUntil(vec!["))".to_string()]);
+            if let Ok(Some(w)) = Word::parse(feeder, core, Some(mode)) {
+                ans.text += &(w.text.clone() + "))");
+                ans.wrong_arith += &(w.text.clone() + "))");
+                feeder.consume(2);
+            } else {
+                return Ok(None);
+            }
         }
 
-        if !Self::eat_end(feeder, &mut ans, core) {
-            return Ok(None);
-        }
+        let _ = Self::eat_end(feeder, &mut ans, core);
 
         command::eat_blank_lines(feeder, core, &mut ans.text)?;
 
-        if command::eat_inner_script(feeder, core, "do", vec!["done"], &mut ans.do_script, false)? {
+        let res = if command::eat_inner_script(
+            feeder,
+            core,
+            "do",
+            vec!["done"],
+            &mut ans.do_script,
+            false,
+        )? {
             ans.text.push_str("do");
-            if let Some(ref mut s) = ans.do_script {
-                ans.text.push_str(&s.get_text());
-            }
+            ans.text
+                .push_str(&ans.do_script.as_ref().unwrap().get_text());
             ans.text.push_str(&feeder.consume(4)); //done
 
             command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
-            Ok(Some(ans))
+            Ok(Some(ans.clone()))
+        } else if command::eat_inner_script(
+            feeder,
+            core,
+            "{",
+            vec!["}"],
+            &mut ans.do_script,
+            false,
+        )? {
+            ans.text.push('{');
+            ans.text
+                .push_str(&ans.do_script.as_ref().unwrap().get_text());
+            ans.text.push_str(&feeder.consume(1)); //done
+            command::eat_redirects(feeder, core, &mut ans.redirects, &mut ans.text)?;
+            Ok(Some(ans.clone()))
         } else {
             Ok(None)
+        };
+
+        if !ans.wrong_arith.is_empty() {
+            let _ = core.db.set_param("LINENO", &ans.lineno.to_string(), None);
+            core.db.exit_status = 2;
+            ans.wrong_arith = ans.wrong_arith.trim().to_string();
+            ans.wrong_arith.insert(0, '`');
+            ans.wrong_arith.push('\'');
+            return Err(ParseError::SyntaxError(ans.wrong_arith));
         }
+
+        res
     }
 }

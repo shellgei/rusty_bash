@@ -70,6 +70,14 @@ impl Pipeline {
         (pids, self.exclamation % 2 == 1, err)
     }
 
+    pub fn pretty_print(&mut self, indent_num: usize) {
+        for _ in 0..indent_num {
+            print!("    ");
+        }
+
+        print!("{}", &self.text.trim());
+    }
+
     /*
     fn set_time(&mut self, core: &mut ShellCore) {
         if !self.time {

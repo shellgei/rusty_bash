@@ -208,6 +208,24 @@ fn wait_pid(
     var_name: &Option<String>,
     f_opt: bool,
 ) -> Result<(i32, bool), ExecError> {
+    {
+        let bg_info = core.db.last_bg_info.lock().unwrap();
+        if let Some(bg_pid) = bg_info.0 {
+            if pid == bg_pid.into() {
+                if let Some(es) = bg_info.1 {
+                    return Ok((es, true));
+                }
+            }
+        }
+    }
+    /*
+    let bg = core.db.last_bg_proc.load(Relaxed);
+    let bg_pid = (bg >> 32) as i32;
+    let bg_es = (bg & 0xFFFF).try_into().unwrap();
+    if pid == bg_pid && bg_es < 256 {
+        return Ok((bg_es, true));
+    }*/
+
     match super::pid_to_array_pos(pid, &core.job_table) {
         Some(i) => wait_a_job(core, i, var_name, f_opt),
         None => Ok((127, false)),

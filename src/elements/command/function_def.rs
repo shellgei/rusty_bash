@@ -9,6 +9,7 @@ use crate::error::parse::ParseError;
 use crate::utils;
 use crate::{Feeder, ShellCore};
 use nix::unistd::Pid;
+use std::env;
 
 #[derive(Debug, Clone, Default)]
 pub struct FunctionDefinition {
@@ -19,6 +20,7 @@ pub struct FunctionDefinition {
     force_fork: bool,
     _dummy: Vec<Redirect>,
     lineno: usize,
+    has_function_keyword: bool,
 }
 
 impl Command for FunctionDefinition {
@@ -62,9 +64,20 @@ impl Command for FunctionDefinition {
 
 impl FunctionDefinition {
     pub fn pretty_print(&mut self, indent_num: usize) {
-        println!("{} () ", self.name);
-        for com in self.command.iter_mut() {
+        if self.has_function_keyword {
+            println!("function {} () ", self.name);
+        } else {
+            println!("{} () ", self.name);
+        }
+        if let Some(com) = self.command.as_mut() {
+            if !com.get_text().starts_with("{") {
+                println!("{{ ");
+            }
+            //for com in self.command.iter_mut() {
             com.pretty_print(indent_num);
+            if !com.get_text().starts_with("{") {
+                println!("}}");
+            }
         }
     }
 
@@ -103,12 +116,21 @@ impl FunctionDefinition {
 
         let mut dummy = Pipe::new("|".to_string());
 
+        let scope = core.db.get_scope_num() - 1;
+        let added_envs = core.db.set_scope_to_env(scope);
+
         core.source_function_level += 1;
         if let Err(e) = self.command.as_mut().unwrap().exec(core, &mut dummy) {
             e.print(core);
         }
         core.return_flag = false;
         core.source_function_level -= 1;
+
+        for env in added_envs {
+            unsafe {
+                env::set_var(env, "");
+            }
+        }
 
         core.db.position_parameters.pop();
 
@@ -130,13 +152,13 @@ impl FunctionDefinition {
     }
 
     fn eat_header(&mut self, feeder: &mut Feeder, core: &mut ShellCore) -> bool {
-        let has_function_keyword = feeder.starts_with("function");
-        if has_function_keyword {
+        self.has_function_keyword = feeder.starts_with("function");
+        if self.has_function_keyword {
             self.text += &feeder.consume(8);
             command::eat_blank_with_comment(feeder, core, &mut self.text);
         }
 
-        let len = feeder.scanner_name(core);
+        let len = feeder.scanner_function_name(core);
         self.name = feeder.consume(len).to_string();
 
         if self.name.is_empty() && utils::reserved(&self.name) {
@@ -147,7 +169,11 @@ impl FunctionDefinition {
 
         if feeder.starts_with("()") {
             self.text += &feeder.consume(2);
-        } else if !has_function_keyword {
+            /*
+            if self.name == "for" {
+                return Err(ParseError::UnexpectedSymbol("(".to_string()));
+            }*/
+        } else if !self.has_function_keyword {
             return false;
         }
 
@@ -175,9 +201,13 @@ impl FunctionDefinition {
     }
 
     pub fn parse(feeder: &mut Feeder, core: &mut ShellCore) -> Result<Option<Self>, ParseError> {
+        let _ = core
+            .db
+            .set_param("LINENO", &feeder.lineno.to_string(), None);
         let mut ans = Self::default();
         feeder.set_backup();
         ans.lineno = feeder.lineno;
+        let firstline = feeder.copy();
 
         if !ans.eat_header(feeder, core) {
             feeder.rewind();
@@ -191,6 +221,11 @@ impl FunctionDefinition {
 
         if ans.command.is_some() {
             feeder.pop_backup();
+            if !ans.has_function_keyword && ans.name == "for" {
+                core.case_line = firstline;
+                let _ = core.db.set_param("LINENO", &ans.lineno.to_string(), None);
+                return Err(ParseError::UnexpectedSymbol("(".to_string()));
+            }
             if let Some(f) = core.source_files.last() {
                 ans.file = f.clone();
             }

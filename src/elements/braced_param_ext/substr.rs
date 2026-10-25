@@ -1,7 +1,7 @@
 //SPDX-FileCopyrightText: 2024 Ryuichi Ueda ryuichiueda@gmail.com
 //SPDX-License-Identifier: BSD-3-Clause
 
-use super::BracedExcludeension;
+use super::BracedParamExtension;
 use crate::elements::expr::arithmetic::ArithmeticExpr;
 use crate::elements::parameter::Parameter;
 //use crate::error::arith::ArithError;
@@ -17,7 +17,7 @@ pub struct Substr {
     unknown: String,
 }
 
-impl BracedExcludeension for Substr {
+impl BracedParamExtension for Substr {
     fn get_text(&self) -> String {
         self.text.clone()
     }
@@ -30,11 +30,11 @@ impl BracedExcludeension for Substr {
         if core.db.exist(&v.name) {
             self.get(text, core)
         } else {
-            Ok(self.text.clone())
+            Ok(text.to_string())
         }
     }
 
-    fn boxed_clone(&self) -> Box<dyn BracedExcludeension> {
+    fn boxed_clone(&self) -> Box<dyn BracedParamExtension> {
         Box::new(self.clone())
     }
     fn has_array_replace(&self) -> bool {

@@ -4,7 +4,7 @@
 use crate::core::DataBase;
 use crate::core::database::Uninit;
 use crate::error::exec::ExecError;
-use std::env;
+//use std::env;
 
 impl DataBase {
     pub fn unset_flag(&mut self, name: &str, flag: char, scope: usize) {
@@ -65,33 +65,43 @@ impl DataBase {
             return Ok(false);
         }
 
-        let mut res = false;
-
-        if let Some(scope) = called_scope {
-            if scope == 0 {
-                return Ok(false);
-            }
-            res = self.remove_entry(scope, name)?;
-
-            unsafe { env::set_var(name, "") };
-            for scope in self.params.iter_mut() {
-                if let Some(d) = scope.get_mut(name) {
-                    res = true;
-                    if localvar_unset {
-                        *d = Box::new(Uninit::new(""));
-                    } else {
-                        scope.remove(name);
-                    }
-                }
-            }
-
-            return Ok(res);
+        if called_scope.is_none() || called_scope.unwrap() == 0 {
+            self.unset_surface_var(name)
+        } else if localvar_unset {
+            self.unset_local_var(name)
+        } else {
+            self.unset_all_scope_var(name)
         }
+    }
 
+    fn unset_surface_var(&mut self, name: &str) -> Result<bool, ExecError> {
         let num = self.params.len();
         for scope in (0..num).rev() {
             if self.remove_entry(scope, name)? {
                 return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    fn unset_local_var(&mut self, name: &str) -> Result<bool, ExecError> {
+        let mut res = false;
+        for scope in self.params.iter_mut() {
+            if let Some(d) = scope.get_mut(name) {
+                res = true;
+                *d = Box::new(Uninit::new(""));
+                break;
+            }
+        }
+        Ok(res)
+    }
+
+    fn unset_all_scope_var(&mut self, name: &str) -> Result<bool, ExecError> {
+        let mut res = false;
+        for scope in self.params.iter_mut() {
+            if scope.get_mut(name).is_some() {
+                res = true;
+                scope.remove(name);
             }
         }
         Ok(res)

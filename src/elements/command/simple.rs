@@ -7,6 +7,7 @@ pub mod parser;
 pub mod run_internal;
 
 use crate::{ShellCore, proc_ctrl};
+use crate::core::trap;
 
 use super::{Command, Pipe, Redirect};
 use crate::elements::substitution::Substitution;
@@ -54,6 +55,8 @@ impl Command for SimpleCommand {
         if Self::break_continue_or_return(core) {
             return Ok(None);
         }
+
+        trap::debug(core);
 
         core.db.set_param("BASH_COMMAND", &self.text, None)?;
 
@@ -232,7 +235,6 @@ impl SimpleCommand {
                 Ok(())
             }
             Err(e) => {
-                //   e.print(core);
                 if !core.sigint.load(Relaxed) {
                     core.db.exit_status = 1;
                 }

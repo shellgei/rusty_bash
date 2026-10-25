@@ -112,7 +112,19 @@ impl Job {
         if core.db.flags.contains('i') {
             eprintln!("{}", &pids[0].unwrap().as_raw());
         }
-        let _ = core.db.set_param("!", &pids[0].unwrap().to_string(), None);
+        /*
+        core.db.last_bg_pid = pids[0].unwrap().into();
+        core.db.last_bg_exit_status = None;
+        */
+ //       let pid: i32 = pids[0].unwrap().into();
+ //       let bg_info = ((pid as u64) << 32) + 1000; 
+//        core.db.last_bg_proc.store(bg_info, Relaxed);
+
+        {
+            let mut bg_info = core.db.last_bg_info.lock().unwrap();
+            *bg_info = (Some(pids[0].clone().unwrap()), None);
+        }
+
         let len = pids.len();
         let new_job_id = core.generate_new_job_id();
         core.job_table_priority.insert(0, new_job_id);
@@ -150,42 +162,15 @@ impl Job {
         }
     }
 
-    pub fn pretty_print(
-        &mut self,
-        indent_num: usize,
-        semicolon: &mut bool,
-        printed: &mut bool,
-        job_end: &str,
-        end: bool,
-    ) -> bool {
-        let tmp = self.text.clone();
-        let job_text = tmp.trim_ascii();
-
-        if job_text.is_empty() {
-            *semicolon = *printed;
+    pub fn pretty_print(&mut self, indent_num: usize, printed: &mut bool) -> bool {
+        if self.pipelines.is_empty() {
             return false;
         }
 
-        if *semicolon && !end {
-            println!(";");
-            *semicolon = false;
-        } else if *printed {
-            println!();
-        }
-
-        let tmp = job_end.to_string();
-        let job_end = tmp.trim_ascii_end();
-
-        let text = match end {
-            false => job_text.to_owned() + job_end,
-            true => job_text.to_owned(),
-        };
-
-        for _ in 0..indent_num {
-            print!("    ");
-        }
-        print!("{}", &text);
         *printed = true;
+        for p in self.pipelines.iter_mut() {
+            p.pretty_print(indent_num);
+        }
         true
     }
 

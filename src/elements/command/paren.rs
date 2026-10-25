@@ -92,6 +92,14 @@ impl Command for ParenCommand {
             None => "()".to_string(),
         }
     }
+
+    fn pretty_print(&mut self, indent_num: usize) {
+        print!("( ");
+        if let Some(s) = self.script.as_mut() {
+            s.pretty_print(indent_num + 1);
+        }
+        println!(" )");
+    }
 }
 
 impl ParenCommand {

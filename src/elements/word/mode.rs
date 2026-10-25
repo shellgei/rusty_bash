@@ -18,7 +18,7 @@ pub enum WordMode {
     RightOfSubstitution,
     Value,
     PermitAnyChar,
-    Exclude(Vec<String>),
+    PermitAnyUntil(Vec<String>),
 }
 
 impl WordMode {
@@ -29,7 +29,7 @@ impl WordMode {
 
         match self {
             Self::Arithmetic | Self::CompgenF => !feeder.starts_with("}"),
-            Self::Exclude(v) => !feeder.starts_with_one_of(v),
+            Self::PermitAnyUntil(v) => !feeder.starts_with_one_of(v),
             _ => true,
         }
     }
@@ -39,7 +39,7 @@ impl WordMode {
             WordMode::Arithmetic | WordMode::CompgenF => {
                 !feeder.starts_with_one_of(&["]", "}"]) && feeder.scanner_math_symbol(core) == 0
             }
-            WordMode::Exclude(v) => !feeder.starts_with_one_of(v),
+            WordMode::PermitAnyUntil(v) => !feeder.starts_with_one_of(v),
             _ => true,
         }
     }
@@ -50,7 +50,7 @@ impl WordMode {
         core: &mut ShellCore,
     ) -> Result<Option<Box<dyn Subword>>, ParseError> {
         match self {
-            WordMode::Exclude(v) => {
+            WordMode::PermitAnyUntil(v) => {
                 if feeder.is_empty() || feeder.starts_with_one_of(v) {
                     return Ok(None);
                 }

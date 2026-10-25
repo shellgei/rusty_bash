@@ -66,6 +66,9 @@ impl DataBase {
         self.init_assoc("BASH_ALIASES", None, true, false)?;
         self.init_assoc("BASH_CMDS", None, true, false)?;
 
+        let _ = self.get_param("PWD");
+        self.set_flag("PWD", 'x', 0);
+
         Ok(())
     }
 

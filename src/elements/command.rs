@@ -10,8 +10,10 @@ pub mod function_def;
 pub mod r#if;
 pub mod paren;
 pub mod repeat;
+pub mod select;
 pub mod simple;
 pub mod test;
+pub mod until;
 pub mod r#while;
 
 use self::arithmetic::ArithmeticCommand;
@@ -23,8 +25,10 @@ use self::function_def::FunctionDefinition;
 use self::r#if::IfCommand;
 use self::paren::ParenCommand;
 use self::repeat::RepeatCommand;
+use self::select::SelectCommand;
 use self::simple::SimpleCommand;
 use self::test::TestCommand;
+use self::until::UntilCommand;
 use self::r#while::WhileCommand;
 use super::io::redirect::Redirect;
 use super::{Pipe, io};
@@ -96,6 +100,7 @@ pub trait Command {
 
     fn nofork_exec(&mut self, core: &mut ShellCore) -> Result<Option<Pid>, ExecError> {
         let mut result = Ok(None);
+
         for r in self.get_redirects().iter_mut() {
             if let Err(e) = r.connect(true, core) {
                 result = Err(e);
@@ -148,7 +153,7 @@ pub trait Command {
         for _ in 0..indent_num {
             print!("    ");
         }
-        println!("{}", &self.get_text());
+        print!("{}", &self.get_text());
     }
 }
 
@@ -249,6 +254,8 @@ pub fn parse(
     feeder: &mut Feeder,
     core: &mut ShellCore,
 ) -> Result<Option<Box<dyn Command>>, ParseError> {
+    core.case_line.clear();
+
     if let Some(a) = FunctionDefinition::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = SimpleCommand::parse(feeder, core)? {
@@ -265,7 +272,11 @@ pub fn parse(
         Ok(Some(Box::new(a)))
     } else if let Some(a) = ForCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
+    } else if let Some(a) = SelectCommand::parse(feeder, core)? {
+        Ok(Some(Box::new(a)))
     } else if let Some(a) = WhileCommand::parse(feeder, core)? {
+        Ok(Some(Box::new(a)))
+    } else if let Some(a) = UntilCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))
     } else if let Some(a) = RepeatCommand::parse(feeder, core)? {
         Ok(Some(Box::new(a)))

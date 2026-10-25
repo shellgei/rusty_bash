@@ -2,9 +2,10 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use super::job::Job;
+use crate::core::trap;
 use crate::error::exec::ExecError;
 use crate::error::parse::ParseError;
-use crate::{Feeder, ShellCore, utils};
+use crate::{Feeder, ShellCore};
 
 enum Status {
     UnexpectedSymbol(String),
@@ -25,11 +26,11 @@ impl Script {
             job.exec(core, end == "&")?;
 
             let es = core.db.exit_status;
-            if es != 0 && !core.error_script_run {
-                utils::run_error_script(core);
+            if es != 0 && !core.trap.error_script_run {
+                trap::error(core);
             }
+
             core.db.exit_status = es;
-            //core.error_script_run = false;
         }
 
         Ok(())
@@ -40,27 +41,34 @@ impl Script {
     }
 
     pub fn pretty_print(&mut self, indent_num: usize) {
-        let mut semicolon = false;
-        let mut printed = false;
-        let mut end_pos = self.jobs.len() - 1;
+        let mut printed;
 
-        for job in self.jobs.iter_mut().rev() {
-            if job.pipelines.is_empty() {
-                end_pos -= 1;
+        while let Some(e) = self.jobs.last() {
+            if e.pipelines.is_empty() {
+                self.jobs.pop();
+                self.job_ends.pop();
+            } else {
                 break;
             }
         }
 
         for (i, job) in self.jobs.iter_mut().enumerate() {
-            job.pretty_print(
-                indent_num,
-                &mut semicolon,
-                &mut printed,
-                &self.job_ends[i],
-                i == end_pos,
-            );
+            if job.pipelines.is_empty() {
+                continue;
+            }
+
+            printed = false;
+            job.pretty_print(indent_num, &mut printed);
+
+            if i + 1 != self.job_ends.len() && printed {
+                println!(";");
+            }
         }
-        println!();
+
+        /*
+        if printed {
+            println!();
+        }*/
     }
 
     pub fn get_one_line_text(&self) -> String {
@@ -158,9 +166,6 @@ impl Script {
                 }
                 Status::NeedMoreLine => feeder.feed_additional_line(core)?,
                 Status::UnexpectedSymbol(s) => {
-                    let _ = core
-                        .db
-                        .set_param("LINENO", &feeder.lineno.to_string(), None);
                     core.db.exit_status = 2;
                     return Err(ParseError::UnexpectedSymbol(s));
                 }

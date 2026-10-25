@@ -49,9 +49,19 @@ impl DataBase {
 
     pub fn get_scope_pos(&mut self, name: &str) -> Option<usize> {
         let num = self.params.len();
-        (0..num)
+        let ppos = (0..num)
             .rev()
-            .find(|&scope| self.params[scope].contains_key(name))
+            .find(|&scope| self.params[scope].contains_key(name));
+
+        #[cfg(not(target_os = "macos"))]
+        let rpos = (0..num)
+            .rev()
+            .find(|&scope| self.removed_params[scope].contains(name));
+        #[cfg(target_os = "macos")] //TODO: the above implementation for redefinition of removed local
+        let rpos = None;            //variables makes a problem on the bash-completion for macOS.
+                                    //I don't know why.
+
+        std::cmp::max(ppos, rpos)
     }
 
     pub fn get_position_params(&self) -> Vec<String> {
@@ -274,6 +284,13 @@ fn special_param(db: &DataBase, name: &str) -> Option<String> {
         "#" => {
             let pos = db.position_parameters.len() - 1;
             (db.position_parameters[pos].len() - 1).to_string()
+        }
+        "!" => {
+            let bg_info = db.last_bg_info.lock().unwrap();
+            match bg_info.0 {
+                Some(n) => n.to_string(),
+                None    => "".to_string(),
+            }
         }
         _ => return None,
     };

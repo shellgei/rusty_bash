@@ -3,6 +3,7 @@
 //SPDX-License-Identifier: BSD-3-Clause
 
 use crate::ShellCore;
+use crate::core::trap;
 use crate::error::exec::ExecError;
 use crate::signal;
 use nix::sys::signal::Signal;
@@ -15,15 +16,17 @@ use std::{thread, time};
 
 pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     let args = args.to_owned();
-    core.traplist.sort();
+    //core.trap.list.sort();
     if args.len() == 1 {
-        for e in &core.traplist {
-            if e.0 == 0 {
-                println!("trap -- '{}' EXIT", &e.1);
-            } else if let Ok(s) = Signal::try_from(e.0) {
-                println!("trap -- '{}' {}", &e.1, &s);
-            }
+        let mut keys: Vec<i32> = core.trap.list.keys().map(|e| *e).collect();
+        keys.sort();
+        for k in keys {
+            print_item(k, &core.trap.list[&k]);
         }
+        /*
+        for e in &core.trap.list {
+            print_item(e.0, &e.1);
+        }*/
         return 0;
     }
 
@@ -49,7 +52,7 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
     let mut not_signal = vec![];
     let mut valid_signals = vec![];
     for n in &signals {
-        if *n == 0 || *n == 1000 {
+        if *n == 0 || (*n >= trap::SPECIAL_TRAP_MIN && *n <= trap::SPECIAL_TRAP_MAX) {
             not_signal.push(*n);
             continue;
         }
@@ -66,44 +69,48 @@ pub fn trap(core: &mut ShellCore, args: &[String]) -> i32 {
 
     if !valid_signals.is_empty() {
         for n in &valid_signals {
-            core.traplist.push((*n, args[1].to_string()));
+            //core.trap.list.push((*n, args[1].to_string()));
+            core.trap.list.insert(*n, args[1].to_string());
         }
         run_thread(valid_signals, &args[1], core);
     }
 
     for n in not_signal {
-        core.traplist.push((n, args[1].to_string()));
-        if n == 0 {
-            core.exit_script = args[1].clone();
-        } else if n == 1000 {
-            core.error_script = args[1].clone();
-        }
+        core.trap.list.insert(n, args[1].to_string());
     }
 
     0
 }
 
+fn print_item(num: i32, script: &str) {
+    if num == 0 {
+        println!("trap -- '{}' EXIT", &script);
+    } else if num == trap::ERROR {
+        println!("trap -- '{}' ERR", &script);
+    } else if num == trap::DEBUG {
+        println!("trap -- '{}' DEBUG", &script);
+    } else if let Ok(s) = Signal::try_from(num) {
+        println!("trap -- '{}' {}", &script, &s);
+    }
+}
+
 pub fn print(core: &mut ShellCore, arg: &str) {
     if let Ok(num) = arg_to_num(arg, &[]) {
-        for e in &core.traplist {
-            if num != e.0 {
+        for e in &core.trap.list {
+            if num != *e.0 {
                 continue;
             }
 
-            if num == 0 {
-                println!("trap -- '{}' EXIT", &e.1);
-            } else if let Ok(s) = Signal::try_from(num) {
-                println!("trap -- '{}' {}", &e.1, &s);
-            }
+            print_item(num, &e.1);
         }
     }
 }
 
 fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
-    core.trapped
+    core.trap.trapped
         .push((Arc::new(AtomicBool::new(false)), script.to_string()));
 
-    let trap = Arc::clone(&core.trapped.last().unwrap().0);
+    let trap = Arc::clone(&core.trap.trapped.last().unwrap().0);
 
     thread::spawn(move || {
         let mut signals =
@@ -121,12 +128,17 @@ fn run_thread(signal_nums: Vec<i32>, script: &str, core: &mut ShellCore) {
 }
 
 fn arg_to_num(arg: &str, forbiddens: &[i32]) -> Result<i32, ExecError> {
-    if arg == "EXIT" || arg == "0" {
+    let arg_num = arg.parse::<i32>().unwrap_or(-1);
+    if arg == "EXIT" || arg_num == 0 {
         return Ok(0);
     }
 
-    if arg == "ERR" || arg == "1000" {
-        return Ok(1000);
+    if arg == "ERR" || arg_num == trap::ERROR {
+        return Ok(trap::ERROR);
+    }
+
+    if arg == "DEBUG" || arg_num == trap::DEBUG {
+        return Ok(trap::DEBUG);
     }
 
     if let Ok(n) = Signal::from_str(arg) {
