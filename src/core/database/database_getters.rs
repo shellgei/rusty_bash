@@ -53,15 +53,17 @@ impl DataBase {
             .rev()
             .find(|&scope| self.params[scope].contains_key(name));
 
-        #[cfg(not(target_os = "macos"))]
-        let rpos = (0..num)
-            .rev()
-            .find(|&scope| self.removed_params[scope].contains(name));
-        #[cfg(target_os = "macos")] //TODO: the above implementation for redefinition of removed local
-        let rpos = None;            //variables makes a problem on the bash-completion for macOS.
+//        #[cfg(not(target_os = "macos"))]
+//        let rpos = (0..num)
+//            .rev()
+//            .find(|&scope| self.removed_params[scope].contains(name));
+//        #[cfg(target_os = "macos")] //TODO: the above implementation for redefinition of removed local
+//        let rpos = None;            //variables makes a problem on the bash-completion for macOS.
                                     //I don't know why.
+                                    //TODO: the same problem occurs on Linux 20271101
 
-        std::cmp::max(ppos, rpos)
+//        std::cmp::max(ppos, rpos)
+        ppos
     }
 
     pub fn get_position_params(&self) -> Vec<String> {
