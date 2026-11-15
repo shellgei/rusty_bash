@@ -87,13 +87,21 @@ impl Terminal {
         let _ = core.db.init_array("COMPREPLY", Some(vec![]), None, false);
         self.set_completion_info(core)?;
 
-        if self.set_custom_compreply(core).is_err() && self.set_default_compreply(core).is_err() {
+        if self.set_custom_compreply(core).is_err()
+        && self.set_default_compreply(core).is_err() {
             self.cloop();
             return Ok(());
         }
 
         let mut cands = core.db.get_vec("COMPREPLY", true)?;
         cands.retain(|c| !c.is_empty());
+
+        for c in &mut cands {
+            if c.starts_with("~") {
+                *c = c.replace(" ", "\\ ");
+            }
+        }
+
         let o_options = core.completion.current.o_options.clone();
         for cand in cands.iter_mut() {
             apply_o_options(cand, core, &o_options);
