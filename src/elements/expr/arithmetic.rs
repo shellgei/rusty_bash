@@ -61,18 +61,37 @@ impl ArithmeticExpr {
         let mut cp = self.clone();
         cp.eval_doller(core)?;
 
-        let ans = match cp.eval_elems(core, true) {
-            Ok(a) => a,
-            Err(ExecError::ArithError(mut s, a)) => {
-                if s.is_empty() {
-                    s = cp.text.trim_start().to_string();
+        let mut comma_pos = vec![];
+        for (i, e) in cp.elements.iter_mut().enumerate() {
+            if let ArithElem::BinaryOp(s) = e {
+                if s == "," {
+                    comma_pos.push(i);
                 }
-                core.db
-                    .set_param("LINENO", &self.lineno.to_string(), None)?;
-                return Err(ExecError::ArithError(s, a));
             }
-            Err(e) => return Err(e),
-        };
+        }
+
+        comma_pos.push(cp.elements.len());
+        //TODO: cpをカンマで分ける
+        let mut ans = ArithElem::Integer(0);
+        let mut from = 0;
+        let elements = cp.elements.clone();
+
+        for to in comma_pos {
+            cp.elements = elements[from..to].to_vec();
+            ans = match cp.eval_elems(core, true) {
+                Ok(a) => a,
+                Err(ExecError::ArithError(mut s, a)) => {
+                    if s.is_empty() {
+                        s = cp.text.trim_start().to_string();
+                    }
+                    core.db
+                        .set_param("LINENO", &self.lineno.to_string(), None)?;
+                    return Err(ExecError::ArithError(s, a));
+                }
+                Err(e) => return Err(e),
+            };
+            from = to + 1;
+        }
 
         match ans {
             ArithElem::Integer(n) => match self.ans_to_string(n) {
