@@ -99,12 +99,6 @@ fn bin_calc_operation(
     core: &mut ShellCore,
 ) -> Result<(), ExecError> {
     let (left, right) = pop_operands(stack, core)?;
-
-    if op == "," {
-        stack.push(right);
-        return Ok(());
-    }
-
     match (left, right) {
         (ArithElem::Float(fl), ArithElem::Float(fr)) => float::bin_calc(op, fl, fr, stack)?,
         (ArithElem::Float(fl), ArithElem::Integer(nr)) => {

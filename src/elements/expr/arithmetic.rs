@@ -61,34 +61,18 @@ impl ArithmeticExpr {
         let mut cp = self.clone();
         cp.eval_doller(core)?;
 
-        let mut comma_pos = vec![];
-        for (i, e) in cp.elements.iter_mut().enumerate() {
-            if let ArithElem::BinaryOp(s) = e {
-                if s == "," {
-                    comma_pos.push(i);
+        let ans = match cp.eval_elems(core, true) {
+            Ok(a) => a,
+            Err(ExecError::ArithError(mut s, a)) => {
+                if s.is_empty() {
+                    s = cp.text.trim_start().to_string();
                 }
+                core.db
+                    .set_param("LINENO", &self.lineno.to_string(), None)?;
+                return Err(ExecError::ArithError(s, a));
             }
-        }
-
-        comma_pos.push(cp.elements.len());
-        let mut ans = ArithElem::Integer(0);
-        let mut from = 0;
-
-        for to in comma_pos {
-            ans = match cp.eval_elems(core, true, from, to) {
-                Ok(a) => a,
-                Err(ExecError::ArithError(mut s, a)) => {
-                    if s.is_empty() {
-                        s = cp.text.trim_start().to_string();
-                    }
-                    core.db
-                        .set_param("LINENO", &self.lineno.to_string(), None)?;
-                    return Err(ExecError::ArithError(s, a));
-                }
-                Err(e) => return Err(e),
-            };
-            from = to + 1;
-        }
+            Err(e) => return Err(e),
+        };
 
         match ans {
             ArithElem::Integer(n) => match self.ans_to_string(n) {
@@ -106,7 +90,7 @@ impl ArithmeticExpr {
     pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Result<i128, ExecError> {
         let _ = self.eval_doller(core);
 
-        match self.eval_elems(core, true, 0, self.elements.len())? {
+        match self.eval_elems(core, true)? {
             ArithElem::Integer(n) => Ok(n),
             e => {
                 let msg = format!("sush: {}: Not integer. {}", &self.text, e);
@@ -119,14 +103,29 @@ impl ArithmeticExpr {
         &mut self,
         core: &mut ShellCore,
         permit_empty: bool,
-        from: usize,
-        to: usize,
     ) -> Result<ArithElem, ExecError> {
-        if self.elements.is_empty() && !permit_empty {
-            return Err(ArithError::OperandExpected("\")\"".to_string()).into());
+        let mut ans = Ok(ArithElem::Integer(0));
+        let mut comma_pos = vec![];
+        for (i, e) in self.elements.iter_mut().enumerate() {
+            if let ArithElem::BinaryOp(s) = e {
+                if s == "," {
+                    comma_pos.push(i);
+                }
+            }
         }
-        let es = self.decompose_increments(from, to)?;
-        calculate(&es, core)
+        comma_pos.push(self.elements.len());
+        let mut from = 0;
+
+        for to in comma_pos {
+            if self.elements.is_empty() && !permit_empty {
+                return Err(ArithError::OperandExpected("\")\"".to_string()).into());
+            }
+            let es = self.decompose_increments(from, to)?;
+            ans = calculate(&es, core);
+
+            from = to + 1;
+        }
+        ans
     }
 
     fn ans_to_string(&self, n: i128) -> Result<String, ArithError> {

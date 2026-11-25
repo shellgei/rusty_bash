@@ -49,7 +49,7 @@ fn resolve_arithmetic_op(name: &str, core: &mut ShellCore) -> Result<ArithElem, 
         _ => return Err(ArithError::OperandExpected(name.to_string()).into()),
     };
 
-    parsed.eval_elems(core, true, 0, parsed.elements.len())
+    parsed.eval_elems(core, true)
 }
 
 fn try_parse_to_num(name: &str) -> Result<ArithElem, ExecError> {
