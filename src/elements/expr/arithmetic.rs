@@ -71,14 +71,11 @@ impl ArithmeticExpr {
         }
 
         comma_pos.push(cp.elements.len());
-        //TODO: cpをカンマで分ける
         let mut ans = ArithElem::Integer(0);
         let mut from = 0;
-        let elements = cp.elements.clone();
 
         for to in comma_pos {
-            cp.elements = elements[from..to].to_vec();
-            ans = match cp.eval_elems(core, true) {
+            ans = match cp.eval_elems(core, true, from, to) {
                 Ok(a) => a,
                 Err(ExecError::ArithError(mut s, a)) => {
                     if s.is_empty() {
@@ -109,7 +106,7 @@ impl ArithmeticExpr {
     pub fn eval_as_int(&mut self, core: &mut ShellCore) -> Result<i128, ExecError> {
         let _ = self.eval_doller(core);
 
-        match self.eval_elems(core, true)? {
+        match self.eval_elems(core, true, 0, self.elements.len())? {
             ArithElem::Integer(n) => Ok(n),
             e => {
                 let msg = format!("sush: {}: Not integer. {}", &self.text, e);
@@ -122,12 +119,13 @@ impl ArithmeticExpr {
         &mut self,
         core: &mut ShellCore,
         permit_empty: bool,
+        from: usize,
+        to: usize,
     ) -> Result<ArithElem, ExecError> {
         if self.elements.is_empty() && !permit_empty {
             return Err(ArithError::OperandExpected("\")\"".to_string()).into());
         }
-        let es = self.decompose_increments()?;
-
+        let es = self.decompose_increments(from, to)?;
         calculate(&es, core)
     }
 
@@ -196,7 +194,7 @@ impl ArithmeticExpr {
     }
 
     fn eval_in_cond(&mut self, core: &mut ShellCore) -> Result<ArithElem, ExecError> {
-        let es = self.decompose_increments()?;
+        let es = self.decompose_increments(0, self.elements.len())?;
         calculate(&es, core)
     }
 
@@ -222,12 +220,13 @@ impl ArithmeticExpr {
         0
     }
 
-    fn decompose_increments(&mut self) -> Result<Vec<ArithElem>, ExecError> {
+    fn decompose_increments(&mut self, from: usize, to: usize)
+    -> Result<Vec<ArithElem>, ExecError> {
         let mut ans = vec![];
         let mut pre_increment = 0;
 
-        let len = self.elements.len();
-        for i in 0..len {
+        //let len = self.elements.len();
+        for i in from..to {
             let e = self.elements[i].clone();
             pre_increment = match e {
                 ArithElem::Variable(_, _, _) => {
